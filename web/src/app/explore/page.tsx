@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { discoverMovies, tmdbImage } from '@/services/tmdb';
+import { discoverMovies, tmdbImage, searchMovies } from '@/services/tmdb';
 import { getContentStats } from '@/services/movieLogs';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
@@ -20,6 +20,7 @@ function ExploreContent() {
   const page = sp.page || '1';
   const yearMin = sp.yearMin || '';
   const yearMax = sp.yearMax || '';
+  const searchQuery = sp.search || '';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,17 +28,25 @@ function ExploreContent() {
         setLoading(true);
         setError(null);
         
-        const gte = yearMin ? `${yearMin}-01-01` : undefined;
-        const lte = yearMax ? `${yearMax}-12-31` : undefined;
+        let result;
+        
+        if (searchQuery.trim()) {
+          // If there's a search query, use search endpoint
+          result = await searchMovies(searchQuery, parseInt(page));
+        } else {
+          // Otherwise use discover endpoint
+          const gte = yearMin ? `${yearMin}-01-01` : undefined;
+          const lte = yearMax ? `${yearMax}-12-31` : undefined;
 
-        const result = await discoverMovies({
-          sort_by,
-          with_original_language,
-          with_genres,
-          page,
-          'primary_release_date.gte': gte,
-          'primary_release_date.lte': lte,
-        });
+          result = await discoverMovies({
+            sort_by,
+            with_original_language,
+            with_genres,
+            page,
+            'primary_release_date.gte': gte,
+            'primary_release_date.lte': lte,
+          });
+        }
         
         // Get database ratings for each movie
         if (result?.results?.length) {
@@ -76,7 +85,7 @@ function ExploreContent() {
     };
 
     fetchData();
-  }, [sort_by, with_original_language, with_genres, page, yearMin, yearMax]);
+  }, [sort_by, with_original_language, with_genres, page, yearMin, yearMax, searchQuery]);
 
   const results = data?.results || [];
 
@@ -88,6 +97,7 @@ function ExploreContent() {
       with_genres,
       yearMin,
       yearMax,
+      search: searchQuery,
     };
     const all = { ...base, ...entries };
     Object.entries(all).forEach(([k, v]) => {
@@ -100,15 +110,18 @@ function ExploreContent() {
     <div className="space-y-8">
       {/* Page Header */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Keşfet</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          {searchQuery ? `"${searchQuery}" için arama sonuçları` : 'Keşfet'}
+        </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Popüler filmler ve yeni çıkanları keşfet
+          {searchQuery ? `${data?.total_results || 0} sonuç bulundu` : 'Popüler filmler ve yeni çıkanları keşfet'}
         </p>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
-        <form className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Filters - Hide when searching */}
+      {!searchQuery && (
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+          <form className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Sırala
@@ -180,6 +193,7 @@ function ExploreContent() {
           </div>
         </form>
       </div>
+      )}
 
       {/* Errors */}
       {error ? (

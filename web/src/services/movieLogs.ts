@@ -975,3 +975,327 @@ export async function isReviewReplyLikedByUser(replyId: number): Promise<{ isLik
     return { isLiked: false }
   }
 }
+
+// ============= USER CONTENT LOG MANAGEMENT =============
+
+export interface UserContentLog {
+  id: number
+  user_id: string
+  content_id: number
+  content_status_id: number
+  rating: number | null
+  is_favorite: boolean
+  is_consume_later: boolean
+  review_id: number | null
+  date: string
+  updated_at: string
+}
+
+// Get user's log for specific content
+export async function getUserContentLog(contentId: number): Promise<{ data: UserContentLog | null; error?: any }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userRes.user?.id
+  if (!uid) return { data: null, error: 'not_authenticated' }
+
+  try {
+    const { data, error } = await supabase
+      .from('user_content_log')
+      .select('*')
+      .eq('user_id', uid)
+      .eq('content_id', contentId)
+      .order('date', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (error) return { data: null, error }
+    return { data: data as UserContentLog | null }
+  } catch (error) {
+    return { data: null, error }
+  }
+}
+
+// Get all user's logs for specific content
+export async function getUserContentLogs(contentId: number): Promise<{ data: UserContentLog[]; error?: any }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userRes.user?.id
+  if (!uid) return { data: [], error: 'not_authenticated' }
+
+  try {
+    const { data, error } = await supabase
+      .from('user_content_log')
+      .select('*')
+      .eq('user_id', uid)
+      .eq('content_id', contentId)
+      .order('date', { ascending: false })
+
+    if (error) return { data: [], error }
+    return { data: (data as UserContentLog[]) || [] }
+  } catch (error) {
+    return { data: [], error }
+  }
+}
+
+// Update user's content log
+export async function updateUserContentLog(
+  contentId: number,
+  updates: {
+    rating?: number | null
+    is_favorite?: boolean
+    is_consume_later?: boolean
+    content_status_id?: number
+    date?: string
+  }
+): Promise<{ data: boolean; error?: any }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userRes.user?.id
+  if (!uid) return { data: false, error: 'not_authenticated' }
+
+  try {
+    // Get existing log
+    const { data: existingLog } = await getUserContentLog(contentId)
+    
+    if (!existingLog) {
+      // Create new log if doesn't exist
+      const { error } = await supabase
+        .from('user_content_log')
+        .insert({
+          user_id: uid,
+          content_id: contentId,
+          content_status_id: updates.content_status_id || 1, // CONSUMED
+          rating: updates.rating,
+          is_favorite: updates.is_favorite || false,
+          is_consume_later: updates.is_consume_later || false,
+          date: updates.date || new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+
+      if (error) return { data: false, error }
+    } else {
+      // Update existing log
+      const { error } = await supabase
+        .from('user_content_log')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingLog.id)
+
+      if (error) return { data: false, error }
+    }
+
+    // Update content stats
+    await updateContentStats(contentId)
+    
+    return { data: true }
+  } catch (error) {
+    return { data: false, error }
+  }
+}
+
+// Update specific user content log by ID
+export async function updateUserContentLogById(
+  logId: number,
+  updates: {
+    rating?: number | null
+    is_favorite?: boolean
+    is_consume_later?: boolean
+    content_status_id?: number
+    date?: string
+  }
+): Promise<{ data: boolean; error?: any }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userRes.user?.id
+  if (!uid) return { data: false, error: 'not_authenticated' }
+
+  try {
+    // Update specific log by ID, ensuring it belongs to the current user
+    const { error } = await supabase
+      .from('user_content_log')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', logId)
+      .eq('user_id', uid) // Security: ensure user owns this log
+
+    if (error) return { data: false, error }
+
+    // Get content_id to update stats
+    const { data: logData } = await supabase
+      .from('user_content_log')
+      .select('content_id')
+      .eq('id', logId)
+      .single()
+
+    if (logData) {
+      await updateContentStats(logData.content_id)
+    }
+    
+    return { data: true }
+  } catch (error) {
+    return { data: false, error }
+  }
+}
+
+// Delete user's content log
+export async function deleteUserContentLog(contentId: number): Promise<{ data: boolean; error?: any }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userRes.user?.id
+  if (!uid) return { data: false, error: 'not_authenticated' }
+
+  try {
+    const { error } = await supabase
+      .from('user_content_log')
+      .delete()
+      .eq('user_id', uid)
+      .eq('content_id', contentId)
+
+    if (error) return { data: false, error }
+
+    // Update content stats
+    await updateContentStats(contentId)
+    
+    return { data: true }
+  } catch (error) {
+    return { data: false, error }
+  }
+}
+
+// Delete specific user content log by ID
+export async function deleteUserContentLogById(logId: number): Promise<{ data: boolean; error?: any }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userRes.user?.id
+  if (!uid) return { data: false, error: 'not_authenticated' }
+
+  try {
+    // Get content_id before deleting for stats update
+    const { data: logData } = await supabase
+      .from('user_content_log')
+      .select('content_id')
+      .eq('id', logId)
+      .eq('user_id', uid) // Security check
+      .single()
+
+    if (!logData) return { data: false, error: 'log_not_found_or_not_owned' }
+
+    const { error } = await supabase
+      .from('user_content_log')
+      .delete()
+      .eq('id', logId)
+      .eq('user_id', uid) // Security: ensure user owns this log
+
+    if (error) return { data: false, error }
+
+    // Update content stats
+    await updateContentStats(logData.content_id)
+    
+    return { data: true }
+  } catch (error) {
+    return { data: false, error }
+  }
+}
+
+// Get all user logs with pagination
+export async function getUserLogs(page: number = 1, limit: number = 20): Promise<{
+  data: Array<UserContentLog & { content: { id: number; title: string; poster_path: string | null } }>;
+  error?: any;
+}> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userRes.user?.id
+  if (!uid) return { data: [], error: 'not_authenticated' }
+
+  try {
+    const { data, error } = await supabase
+      .from('user_content_log')
+      .select(`
+        *,
+        content:content_id (
+          id,
+          title,
+          poster_path
+        )
+      `)
+      .eq('user_id', uid)
+      .order('date', { ascending: false })
+      .range((page - 1) * limit, page * limit - 1)
+
+    if (error) return { data: [], error }
+    return { data: (data || []) as any }
+  } catch (error) {
+    return { data: [], error }
+  }
+}
+
+// Get user's watched percentage for a person's movies
+export async function getUserPersonWatchedPercentage(personId: number): Promise<{
+  watchedCount: number;
+  totalCount: number;
+  percentage: number;
+}> {
+  const { data: userRes } = await supabase.auth.getUser()
+  if (!userRes.user?.id) return { watchedCount: 0, totalCount: 0, percentage: 0 }
+
+  try {
+    // Get all movies for this person from TMDB
+    const person = await fetch(`https://api.themoviedb.org/3/person/${personId}?append_to_response=movie_credits&api_key=${process.env.NEXT_PUBLIC_TMDB_API_KEY}`)
+      .then(res => res.json())
+    
+    const movieIds = person.movie_credits?.cast?.map((movie: any) => movie.id) || []
+    
+    if (movieIds.length === 0) {
+      return { watchedCount: 0, totalCount: 0, percentage: 0 }
+    }
+
+    // Check how many of these movies the user has watched
+    const { data: watchedMovies } = await supabase
+      .from('user_content_log')
+      .select('content_id')
+      .eq('user_id', userRes.user.id)
+      .eq('content_status_id', 1) // Watched status
+      .in('content_id', movieIds)
+
+    const watchedCount = watchedMovies?.length || 0
+    const totalCount = movieIds.length
+    const percentage = totalCount > 0 ? Math.round((watchedCount / totalCount) * 100) : 0
+
+    return { watchedCount, totalCount, percentage }
+  } catch (error) {
+    console.error('Error getting person watched percentage:', error)
+    return { watchedCount: 0, totalCount: 0, percentage: 0 }
+  }
+}
+
+// Get user's watch status for person's movies
+export async function getUserPersonMoviesWatchStatus(personId: number, movieIds: number[]): Promise<{
+  [movieId: number]: {
+    watched: boolean;
+    rating?: number;
+    favorite: boolean;
+  }
+}> {
+  const { data: userRes } = await supabase.auth.getUser()
+  if (!userRes.user?.id) return {}
+
+  try {
+    const { data: logs } = await supabase
+      .from('user_content_log')
+      .select('content_id, content_status_id, rating, is_favorite')
+      .eq('user_id', userRes.user.id)
+      .in('content_id', movieIds)
+
+    const statusMap: { [movieId: number]: { watched: boolean; rating?: number; favorite: boolean } } = {}
+    
+    logs?.forEach(log => {
+      statusMap[parseInt(log.content_id)] = {
+        watched: log.content_status_id === 1,
+        rating: log.rating || undefined,
+        favorite: log.is_favorite || false
+      }
+    })
+
+    return statusMap
+  } catch (error) {
+    console.error('Error getting person movies watch status:', error)
+    return {}
+  }
+}

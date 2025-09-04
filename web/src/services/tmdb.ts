@@ -89,3 +89,63 @@ export async function getMovieDetails(id: string | number, opts?: { revalidate?:
 export function tmdbImage(path: string, size: 'w185' | 'w342' | 'w500' | 'original' = 'w342') {
   return `https://image.tmdb.org/t/p/${size}${path}`;
 }
+
+export async function searchMovies(query: string, page: number = 1, opts?: { revalidate?: number }) {
+  const key = getAuth();
+  const isV4 = isV4Token(key);
+
+  const url = new URL(`${TMDB_BASE}/search/movie`);
+  if (!isV4) {
+    url.searchParams.set('api_key', key);
+  }
+  url.searchParams.set('query', query);
+  url.searchParams.set('page', String(page));
+
+  const res = await fetch(url.toString(), {
+    method: 'GET',
+    headers: isV4 ? { Authorization: `Bearer ${key}` } : undefined,
+    next: { revalidate: opts?.revalidate ?? 60 },
+  });
+
+  if (res.status === 429) {
+    // simple backoff once
+    await new Promise((r) => setTimeout(r, 500));
+    const retry = await fetch(url.toString(), {
+      method: 'GET',
+      headers: isV4 ? { Authorization: `Bearer ${key}` } : undefined,
+      next: { revalidate: opts?.revalidate ?? 60 },
+    });
+    if (!retry.ok) throw new Error(`TMDB rate limited: ${retry.status}`);
+    return (await retry.json()) as TMDBPaginated<TMDBDiscoverMovie>;
+  }
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`TMDB error ${res.status}: ${text}`);
+  }
+  return (await res.json()) as TMDBPaginated<TMDBDiscoverMovie>;
+}
+
+
+export async function getPersonDetails(id: string | number, opts?: { revalidate?: number }) {
+  const key = getAuth();
+  const isV4 = isV4Token(key);
+
+  const url = new URL(`${TMDB_BASE}/person/${id}`);
+  url.searchParams.set('append_to_response', 'movie_credits');
+  if (!isV4) {
+    url.searchParams.set('api_key', key);
+  }
+
+  const res = await fetch(url.toString(), {
+    method: 'GET',
+    headers: isV4 ? { Authorization: `Bearer ${key}` } : undefined,
+    next: { revalidate: opts?.revalidate ?? 300 },
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`TMDB error: ${res.status} - ${text}`);
+  }
+  return (await res.json()) as any;
+}

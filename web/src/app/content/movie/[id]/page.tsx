@@ -5,7 +5,8 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getMovieDetails, tmdbImage } from '@/services/tmdb';
-import { getContentById, logMovieWatch, toggleFavorite, rateMovie, getUserRating, getUserFavoriteStatus, getContentReviews, saveContentFromTMDB, addReview, toggleReviewLike, addReviewReply, getReviewReplies } from '@/services/movieLogs';
+import { getContentById, logMovieWatch, toggleFavorite, rateMovie, getUserRating, getUserFavoriteStatus, getContentReviews, saveContentFromTMDB, addReview, toggleReviewLike, addReviewReply, getReviewReplies, getUserContentLogs, updateUserContentLogById, deleteUserContentLogById } from '@/services/movieLogs';
+import { supabase } from '@/lib/supabase';
 import { TMDBMovieDetail, TMDBCastMember } from '@/types/tmdb';
 import { Button } from '@/components/ui/button';
 
@@ -68,7 +69,7 @@ const ActionButton = ({ icon, label, active = false, onClick }: {
 
 // Cast Member Component
 const CastMember = ({ member }: { member: TMDBCastMember }) => (
-  <div className="flex flex-col items-center min-w-[120px]">
+  <Link href={`/person/${member.id}`} className="flex flex-col items-center min-w-[120px] hover:scale-105 transition-transform cursor-pointer">
     <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-700 mb-2">
       {member.profile_path ? (
         <Image
@@ -86,9 +87,9 @@ const CastMember = ({ member }: { member: TMDBCastMember }) => (
         </div>
       )}
     </div>
-    <p className="text-sm font-medium text-center">{member.name}</p>
+    <p className="text-sm font-medium text-center hover:text-blue-400 transition-colors">{member.name}</p>
     <p className="text-xs text-gray-400 text-center">{member.character}</p>
-  </div>
+  </Link>
 );
 
 // Comment Component with likes and replies
@@ -337,6 +338,30 @@ export default function MoviePage() {
     is_liked_by_current_user: boolean;
   }>>>({});
   
+  // Edit log modal states
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [userLogs, setUserLogs] = useState<Array<{
+    id: number;
+    user_id: string;
+    content_id: number;
+    content_status_id: number;
+    rating: number | null;
+    is_favorite: boolean;
+    is_consume_later: boolean;
+    review_id: number | null;
+    date: string;
+    updated_at: string;
+  }>>([]);
+  const [selectedLogId, setSelectedLogId] = useState<number | null>(null);
+  const [editLogData, setEditLogData] = useState({
+    rating: 0,
+    isFavorite: false,
+    isConsumeLater: false,
+    watchDate: '',
+    hasWatched: false
+  });
+  const [showLogForm, setShowLogForm] = useState(false);
+  
   // Handler functions
   const handleLikeReview = async (reviewId: number) => {
     try {
@@ -397,6 +422,125 @@ export default function MoviePage() {
     }
     
     setExpandedReplies(newExpanded);
+  };
+
+  // Edit log handlers
+  const handleOpenEditModal = async () => {
+    try {
+      const { data: logs } = await getUserContentLogs(Number(id));
+      setUserLogs(logs);
+      
+      // Always start with log selection view, never auto-open the form
+      setShowLogForm(false);
+      setSelectedLogId(null);
+      setShowEditModal(true);
+    } catch (error) {
+      console.error('Error loading user logs:', error);
+    }
+  };
+
+  const handleSelectLog = (log: any) => {
+    setSelectedLogId(log.id);
+    setEditLogData({
+      rating: log.rating || 0,
+      isFavorite: log.is_favorite || false,
+      isConsumeLater: log.is_consume_later || false,
+      watchDate: log.date ? new Date(log.date).toISOString().split('T')[0] : '',
+      hasWatched: log.content_status_id === 1
+    });
+    setShowLogForm(true);
+  };
+
+  const handleCreateNewLog = () => {
+    setSelectedLogId(null);
+    setEditLogData({
+      rating: 0,
+      isFavorite: false,
+      isConsumeLater: false,
+      watchDate: new Date().toISOString().split('T')[0],
+      hasWatched: false
+    });
+    setShowLogForm(true);
+  };
+
+  const handleSaveEditLog = async () => {
+    try {
+      const updates = {
+        rating: editLogData.rating || null,
+        is_favorite: editLogData.isFavorite,
+        is_consume_later: editLogData.isConsumeLater,
+        content_status_id: editLogData.hasWatched ? 1 : 2, // 1 = CONSUMED, 2 = CONSUME_LATER
+        date: editLogData.watchDate ? new Date(editLogData.watchDate).toISOString() : new Date().toISOString()
+      };
+
+      let result;
+      if (selectedLogId) {
+        // Update existing log
+        result = await updateUserContentLogById(selectedLogId, updates);
+      } else {
+        // Create new log
+        const { data: userRes } = await supabase.auth.getUser();
+        if (userRes.user?.id) {
+          const { error } = await supabase
+            .from('user_content_log')
+            .insert({
+              user_id: userRes.user.id,
+              content_id: Number(id),
+              ...updates
+            });
+          result = { data: !error, error };
+        } else {
+          result = { data: false, error: 'not_authenticated' };
+        }
+      }
+      
+      if (result.data) {
+        setShowEditModal(false);
+        setShowLogForm(false);
+        // Refresh UI state with latest log data
+        const { data: logs } = await getUserContentLogs(Number(id));
+        if (logs.length > 0) {
+          const latestLog = logs[0]; // Most recent log
+          setUserRating(latestLog.rating || 0);
+          setIsFavorited(latestLog.is_favorite || false);
+          setIsWatched(latestLog.content_status_id === 1);
+        }
+        // Refresh database stats
+        loadDatabaseStats();
+      }
+    } catch (error) {
+      console.error('Error saving log:', error);
+    }
+  };
+
+  const handleDeleteLog = async () => {
+    try {
+      if (!selectedLogId) return;
+      
+      const result = await deleteUserContentLogById(selectedLogId);
+      
+      if (result.data) {
+        setShowEditModal(false);
+        setShowLogForm(false);
+        // Refresh UI state - check remaining logs
+        const { data: logs } = await getUserContentLogs(Number(id));
+        if (logs.length > 0) {
+          const latestLog = logs[0];
+          setUserRating(latestLog.rating || 0);
+          setIsFavorited(latestLog.is_favorite || false);
+          setIsWatched(latestLog.content_status_id === 1);
+        } else {
+          // No logs remaining, reset state
+          setUserRating(0);
+          setIsFavorited(false);
+          setIsWatched(false);
+        }
+        // Refresh database stats
+        loadDatabaseStats();
+      }
+    } catch (error) {
+      console.error('Error deleting log:', error);
+    }
   };
   
   // Handler functions
@@ -623,6 +767,12 @@ export default function MoviePage() {
                 active={showReviewForm}
                 onClick={() => setShowReviewForm(!showReviewForm)}
               />
+              <ActionButton
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>}
+                label="Edit Log"
+                active={false}
+                onClick={handleOpenEditModal}
+              />
             </div>
 
             {/* User Rating */}
@@ -826,6 +976,242 @@ export default function MoviePage() {
           </div>
         )}
       </div>
+
+      {/* Edit Log Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-lg mx-4 max-h-screen overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-white">
+                {showLogForm ? 'Edit Log' : 'Select a Log to Edit'}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setShowLogForm(false);
+                }}
+                className="text-gray-400 hover:text-white"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {!showLogForm ? (
+              /* Log Selection View */
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <p className="text-gray-300">You have {userLogs.length} log(s) for this movie:</p>
+                  <button
+                    onClick={handleCreateNewLog}
+                    className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
+                  >
+                    Add New Log
+                  </button>
+                </div>
+                
+                {userLogs.length === 0 ? (
+                  <p className="text-gray-400 text-center py-4">No logs found. Click "Add New Log" to create one.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {userLogs.map((log) => (
+                      <div
+                        key={log.id}
+                        onClick={() => handleSelectLog(log)}
+                        className="p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <span className="text-sm text-gray-400">
+                                {new Date(log.date).toLocaleDateString()}
+                              </span>
+                              {log.content_status_id === 1 ? (
+                                <span className="px-2 py-1 bg-green-600 text-xs rounded">Watched</span>
+                              ) : (
+                                <span className="px-2 py-1 bg-blue-600 text-xs rounded">Want to Watch</span>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center space-x-4 text-sm">
+                              {log.rating && (
+                                <div className="flex items-center space-x-1">
+                                  <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                  </svg>
+                                  <span className="text-gray-300">{log.rating}</span>
+                                </div>
+                              )}
+                              
+                              {log.is_favorite && (
+                                <div className="flex items-center space-x-1">
+                                  <svg className="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/>
+                                  </svg>
+                                  <span className="text-gray-300">Favorite</span>
+                                </div>
+                              )}
+                              
+                              {log.is_consume_later && (
+                                <div className="flex items-center space-x-1">
+                                  <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                  </svg>
+                                  <span className="text-gray-300">Watch Later</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
+                          </svg>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Log Edit Form */
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => setShowLogForm(false)}
+                    className="flex items-center space-x-2 text-gray-400 hover:text-white"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    <span>Back to logs</span>
+                  </button>
+                  
+                  {selectedLogId && (
+                    <span className="text-sm text-gray-400">
+                      Editing log from {userLogs.find(l => l.id === selectedLogId)?.date ? 
+                        new Date(userLogs.find(l => l.id === selectedLogId)!.date).toLocaleDateString() : ''}
+                    </span>
+                  )}
+                </div>
+
+                {/* Watch Status */}
+                <div>
+                  <label className="flex items-center text-white">
+                    <input
+                      type="checkbox"
+                      checked={editLogData.hasWatched}
+                      onChange={(e) => setEditLogData(prev => ({ ...prev, hasWatched: e.target.checked }))}
+                      className="mr-2"
+                    />
+                    Watched this movie
+                  </label>
+                </div>
+
+                {/* Watch Date */}
+                {editLogData.hasWatched && (
+                  <div>
+                    <label className="block text-white mb-2">Watch Date</label>
+                    <input
+                      type="date"
+                      value={editLogData.watchDate}
+                      onChange={(e) => setEditLogData(prev => ({ ...prev, watchDate: e.target.value }))}
+                      className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
+                    />
+                  </div>
+                )}
+
+                {/* Rating */}
+                {editLogData.hasWatched && (
+                  <div>
+                    <label className="block text-white mb-2">Your Rating (1-5 stars)</label>
+                    <div className="flex items-center space-x-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          onClick={() => setEditLogData(prev => ({ ...prev, rating: star }))}
+                          className={`w-8 h-8 ${
+                            star <= editLogData.rating
+                              ? 'text-yellow-400'
+                              : 'text-gray-400 hover:text-yellow-200'
+                          } transition-colors`}
+                        >
+                          <svg className="w-full h-full" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                          </svg>
+                        </button>
+                      ))}
+                      {editLogData.rating > 0 && (
+                        <button
+                          onClick={() => setEditLogData(prev => ({ ...prev, rating: 0 }))}
+                          className="ml-2 text-sm text-gray-400 hover:text-white"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Favorite */}
+                <div>
+                  <label className="flex items-center text-white">
+                    <input
+                      type="checkbox"
+                      checked={editLogData.isFavorite}
+                      onChange={(e) => setEditLogData(prev => ({ ...prev, isFavorite: e.target.checked }))}
+                      className="mr-2"
+                    />
+                    Add to favorites
+                  </label>
+                </div>
+
+                {/* Consume Later */}
+                <div>
+                  <label className="flex items-center text-white">
+                    <input
+                      type="checkbox"
+                      checked={editLogData.isConsumeLater}
+                      onChange={(e) => setEditLogData(prev => ({ ...prev, isConsumeLater: e.target.checked }))}
+                      className="mr-2"
+                    />
+                    Watch later
+                  </label>
+                </div>
+
+                {/* Modal Actions */}
+                <div className="flex justify-between mt-6">
+                  {selectedLogId && (
+                    <button
+                      onClick={handleDeleteLog}
+                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                    >
+                      Delete Log
+                    </button>
+                  )}
+                  <div className="flex space-x-3 ml-auto">
+                    <button
+                      onClick={() => {
+                        setShowEditModal(false);
+                        setShowLogForm(false);
+                      }}
+                      className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveEditLog}
+                      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                    >
+                      {selectedLogId ? 'Save Changes' : 'Create Log'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
