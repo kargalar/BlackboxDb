@@ -365,20 +365,24 @@ export default function MoviePage() {
   
   const handleWatchlistClick = async () => {
     try {
-      // Toggle consume_later status
+      // Optimistic toggle consume_later status
       const { data: currentLog } = await getUserContentLog(Number(id));
-      const newConsumeLaterStatus = currentLog ? !currentLog.is_consume_later : true;
-      
+      const prev = !!currentLog?.is_consume_later;
+      const next = !prev;
+      setIsInList(next);
+
       const result = await updateUserContentLog(Number(id), {
-        is_consume_later: newConsumeLaterStatus,
+        is_consume_later: next,
         content_status_id: 2, // CONSUME_LATER
         date: new Date().toISOString()
       });
       
-      if (result.data) {
-        setIsInList(newConsumeLaterStatus);
-        loadDatabaseStats();
+      if (!result.data) {
+        // rollback
+        setIsInList(prev);
       }
+      // refresh in background
+      loadDatabaseStats();
     } catch (error) {
       console.error('Error toggling watchlist:', error);
     }
@@ -398,10 +402,30 @@ export default function MoviePage() {
 
   const handleLikeReview = async (reviewId: number) => {
     try {
+      // Optimistic like toggle on local reviews state
+      setReviews((prev) => prev.map(r => {
+        if (r.id !== reviewId) return r;
+        const nextLiked = !r.is_liked_by_current_user;
+        return {
+          ...r,
+          is_liked_by_current_user: nextLiked,
+          like_count: Math.max(0, (r.like_count || 0) + (nextLiked ? 1 : -1))
+        };
+      }));
+
       const result = await toggleReviewLike(reviewId);
-      if (result.data) {
-        // Refresh reviews to get updated like counts
-        loadDatabaseStats();
+      if (!result.data) {
+        // rollback
+        setReviews((prev) => prev.map(r => {
+          if (r.id !== reviewId) return r;
+          const prevLiked = r.is_liked_by_current_user;
+          const nextLiked = !prevLiked;
+          return {
+            ...r,
+            is_liked_by_current_user: nextLiked,
+            like_count: Math.max(0, (r.like_count || 0) + (nextLiked ? 1 : -1))
+          };
+        }));
       }
     } catch (error) {
       console.error('Error liking review:', error);
@@ -669,48 +693,52 @@ export default function MoviePage() {
       const { data: userRes } = await supabase.auth.getUser();
       if (!userRes.user?.id) return;
 
-      // Get latest snapshot to preserve existing fields
-      const { data: latest } = await supabase
-        .from('latest_user_content_log')
-        .select('content_status_id, rating, is_favorite, is_consume_later')
-        .eq('user_id', userRes.user.id)
-        .eq('content_id', contentId)
-        .maybeSingle();
+      const prevWatched = isWatched;
+      const prevRating = userRating;
+      const prevConsume = contentStats.consume_count;
+      const prevInList = isInList;
 
-      const currentlyWatched = !!latest && Number((latest as any).content_status_id) === 1;
-
-      if (!currentlyWatched) {
-        // Mark as watched; keep existing rating if any else null, keep fav; clear watchlist
+      if (!prevWatched) {
+        // Optimistic: mark as watched immediately
         setIsWatched(true);
         setIsInList(false);
+        setContentStats((s) => ({ ...s, consume_count: (s.consume_count || 0) + 1 }));
+
         const { error } = await supabase.from('user_content_log').insert({
           user_id: userRes.user.id,
           content_id: contentId,
           content_status_id: 1,
-          rating: (latest as any)?.rating ?? null,
-          is_favorite: !!(latest as any)?.is_favorite,
-          is_consume_later: false,
+          rating: prevRating || null,
+          is_favorite: isFavorited,
+          is_consume_later: false, // marking watched clears watchlist
           date: new Date().toISOString(),
         });
-        if (error) setIsWatched(false);
+        if (error) {
+          // Rollback
+          setIsWatched(prevWatched);
+          setIsInList(prevInList);
+          setContentStats((s) => ({ ...s, consume_count: prevConsume }));
+        }
       } else {
-        // Toggle off watched: set status to CONSUME_LATER (2) and clear rating
-        const prevWatched = isWatched;
-        const prevRating = userRating;
+        // Optimistic: unwatch immediately; keep watchlist as-is and clear rating
         setIsWatched(false);
         setUserRating(0);
+        setContentStats((s) => ({ ...s, consume_count: Math.max(0, (s.consume_count || 0) - 1) }));
+
         const { error } = await supabase.from('user_content_log').insert({
           user_id: userRes.user.id,
           content_id: contentId,
           content_status_id: 2,
           rating: null,
-          is_favorite: !!(latest as any)?.is_favorite,
-          is_consume_later: true,
+          is_favorite: isFavorited,
+          is_consume_later: prevInList, // do not auto-add to watchlist
           date: new Date().toISOString(),
         });
         if (error) {
+          // Rollback
           setIsWatched(prevWatched);
           setUserRating(prevRating);
+          setContentStats((s) => ({ ...s, consume_count: prevConsume }));
         }
       }
 
@@ -732,13 +760,23 @@ export default function MoviePage() {
       favorite_count: Math.max(0, (s.favorite_count || 0) + (nextFav ? 1 : -1)),
     }));
     try {
-      const result = await toggleFavorite(Number(id));
-      if (!result.data) {
-        // rollback
+      const contentId = Number(id);
+      const { data: userRes } = await supabase.auth.getUser();
+      if (!userRes.user?.id) throw new Error('not_authenticated');
+      // Write snapshot using current UI state (no prefetch)
+      const { error } = await supabase.from('user_content_log').insert({
+        user_id: userRes.user.id,
+        content_id: contentId,
+        content_status_id: isWatched ? 1 : 2,
+        rating: isWatched ? (userRating || null) : null,
+        is_favorite: nextFav,
+        is_consume_later: !isWatched ? isInList : false,
+        date: new Date().toISOString(),
+      });
+      if (error) {
         setIsFavorited(prevFav);
         setContentStats((s) => ({ ...s, favorite_count: prevFavCount }));
       }
-      // No need to wait for stats; can refresh in background
       loadDatabaseStats();
     } catch (e) {
       setIsFavorited(prevFav);
@@ -749,29 +787,40 @@ export default function MoviePage() {
   const handleRating = async (rating: number) => {
     // Optimistic update
     const prev = userRating;
+    const wasWatched = isWatched;
+    const prevConsume = contentStats.consume_count;
     setUserRating(rating);
     setIsWatched(true);
     setIsInList(false);
+    if (!wasWatched) {
+      setContentStats((s) => ({ ...s, consume_count: (s.consume_count || 0) + 1 }));
+    }
     try {
       const result = await rateMovie(Number(id), rating);
       if (!result.data) {
         setUserRating(prev);
+        setIsWatched(wasWatched);
+        if (!wasWatched) setContentStats((s) => ({ ...s, consume_count: prevConsume }));
       }
       loadDatabaseStats();
     } catch (e) {
       setUserRating(prev);
+      setIsWatched(wasWatched);
+      if (!wasWatched) setContentStats((s) => ({ ...s, consume_count: prevConsume }));
     }
   };
 
   const handleAddReview = async () => {
     if (!reviewText.trim()) return;
-    
+    const prevCount = contentStats.review_count;
+    setContentStats((s) => ({ ...s, review_count: (s.review_count || 0) + 1 }));
     const result = await addReview(Number(id), reviewText.trim());
     if (result.data) {
       setReviewText('');
       setShowReviewForm(false);
-      // Refresh reviews and stats after adding review
       loadDatabaseStats();
+    } else {
+      setContentStats((s) => ({ ...s, review_count: prevCount }));
     }
   };
 

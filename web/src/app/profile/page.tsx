@@ -81,8 +81,14 @@ export default function ProfilePage() {
         
         // Kullanıcının izlediği filmleri set et
         if (watchedMoviesResult?.data) {
-          setRecentMovies(watchedMoviesResult.data.slice(0, 4)); // Son 4 film
-          setFavoriteMovies(watchedMoviesResult.data.slice(0, 5)); // İlk 5 film (favoriler için)
+          // Ensure we have latest-per-content list already sorted desc by date
+          const latestPerMovie = [...watchedMoviesResult.data].sort((a, b) => {
+            const ta = a.date ? new Date(a.date).getTime() : 0
+            const tb = b.date ? new Date(b.date).getTime() : 0
+            return tb - ta
+          })
+          setRecentMovies(latestPerMovie.slice(0, 4)); // Son 4 film (tek film, son log)
+          setFavoriteMovies(latestPerMovie.filter(m => m.is_favorite).slice(0, 5)); // Öne çıkarılanlar: favoriler
         }
 
         // İstatistikleri set et

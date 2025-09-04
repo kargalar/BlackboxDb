@@ -58,7 +58,8 @@ export async function getUserWatchedMovies(): Promise<{ data: Content[] }> {
 
     if (!rpcError && rpcData) {
       const contents = (rpcData.contents as any[] | undefined) ?? []
-      const mapped: Content[] = contents.map((item: any) => ({
+      // Map raw items
+      const raw: Content[] = contents.map((item: any) => ({
         id: Number(item.content_id),
         poster_path: item.poster_path ?? null,
         title: item.title ?? '',
@@ -67,7 +68,24 @@ export async function getUserWatchedMovies(): Promise<{ data: Content[] }> {
         is_favorite: item.is_favorite ?? false,
         date: item.date
       }))
-      return { data: mapped }
+      // Dedupe by content id keeping the most recent date
+      const byId = new Map<number, Content>()
+      for (const m of raw) {
+        const prev = byId.get(m.id)
+        if (!prev) {
+          byId.set(m.id, m)
+        } else {
+          const prevTime = prev.date ? new Date(prev.date).getTime() : 0
+          const currTime = m.date ? new Date(m.date).getTime() : 0
+          if (currTime > prevTime) byId.set(m.id, m)
+        }
+      }
+      const deduped = Array.from(byId.values()).sort((a, b) => {
+        const ta = a.date ? new Date(a.date).getTime() : 0
+        const tb = b.date ? new Date(b.date).getTime() : 0
+        return tb - ta
+      })
+      return { data: deduped }
     }
   } catch (error) {
     console.log('RPC failed, falling back to direct query:', error)
@@ -109,8 +127,24 @@ export async function getUserWatchedMovies(): Promise<{ data: Content[] }> {
         is_favorite: item.is_favorite ?? false,
         date: item.date
       }))
+    // latest_user_content_log is already latest per user+content, but guard-dedupe and sort anyway
+    const byId = new Map<number, Content>()
+    for (const m of mapped) {
+      const prev = byId.get(m.id)
+      if (!prev) byId.set(m.id, m)
+      else {
+        const prevTime = prev.date ? new Date(prev.date).getTime() : 0
+        const currTime = m.date ? new Date(m.date).getTime() : 0
+        if (currTime > prevTime) byId.set(m.id, m)
+      }
+    }
+    const deduped = Array.from(byId.values()).sort((a, b) => {
+      const ta = a.date ? new Date(a.date).getTime() : 0
+      const tb = b.date ? new Date(b.date).getTime() : 0
+      return tb - ta
+    })
 
-    return { data: mapped }
+    return { data: deduped }
   } catch (error) {
     console.error('Fallback query failed:', error)
     return { data: [] }
