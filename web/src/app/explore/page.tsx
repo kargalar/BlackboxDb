@@ -54,47 +54,93 @@ export default async function ExplorePage({
   };
 
   return (
-    <section className="space-y-6">
-      <h1 className="text-2xl font-bold">Keşfet</h1>
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Keşfet</h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Popüler filmler ve yeni çıkanları keşfet
+        </p>
+      </div>
 
       {/* Filters */}
-      <form className="grid grid-cols-1 gap-3 rounded-lg border p-3 sm:grid-cols-2 md:grid-cols-4">
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="opacity-70">Sırala</span>
-          <select name="sort_by" defaultValue={sort_by} className="rounded-md border p-2">
-            <option value="popularity.desc">Popülarite ↓</option>
-            <option value="vote_average.desc">Puan ↓</option>
-            <option value="primary_release_date.desc">Çıkış Tarihi ↓</option>
-          </select>
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="opacity-70">Dil (ör. en, tr)</span>
-          <input name="with_original_language" defaultValue={with_original_language} className="rounded-md border p-2" placeholder="en" />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="opacity-70">Tür ID’ler (virgülle)</span>
-          <input name="with_genres" defaultValue={with_genres} className="rounded-md border p-2" placeholder="28,12" />
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="opacity-70">Yıl ≥</span>
-            <input name="yearMin" defaultValue={yearMin} className="rounded-md border p-2" placeholder="2015" />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="opacity-70">Yıl ≤</span>
-            <input name="yearMax" defaultValue={yearMax} className="rounded-md border p-2" placeholder="2024" />
-          </label>
-        </div>
-        <div className="sm:col-span-2 md:col-span-4">
-          <button className="rounded-md bg-slate-900 px-4 py-2 text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200">
-            Uygula
-          </button>
-        </div>
-      </form>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+        <form className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Sırala
+            </label>
+            <select 
+              name="sort_by" 
+              defaultValue={sort_by} 
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+            >
+              <option value="popularity.desc">Popülarite ↓</option>
+              <option value="vote_average.desc">Puan ↓</option>
+              <option value="primary_release_date.desc">Çıkış Tarihi ↓</option>
+            </select>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Dil
+            </label>
+            <input 
+              name="with_original_language" 
+              defaultValue={with_original_language} 
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20" 
+              placeholder="en, tr" 
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Tür ID'ler
+            </label>
+            <input 
+              name="with_genres" 
+              defaultValue={with_genres} 
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20" 
+              placeholder="28,12" 
+            />
+          </div>
+          
+          <div className="flex gap-2">
+            <div className="flex-1 space-y-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Yıl ≥
+              </label>
+              <input 
+                name="yearMin" 
+                defaultValue={yearMin} 
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20" 
+                placeholder="2015" 
+              />
+            </div>
+            <div className="flex-1 space-y-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Yıl ≤
+              </label>
+              <input 
+                name="yearMax" 
+                defaultValue={yearMax} 
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20" 
+                placeholder="2024" 
+              />
+            </div>
+          </div>
+          
+          <div className="lg:col-span-4">
+            <button className="rounded-lg bg-purple-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-colors">
+              Filtreleri Uygula
+            </button>
+          </div>
+        </form>
+      </div>
 
       {/* Errors */}
       {error ? (
-        <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
           {error.includes('TMDB_API_KEY') ? (
             <>
               <p>
@@ -109,37 +155,49 @@ export default async function ExplorePage({
       ) : null}
 
       {/* Grid */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
         {results.map((m) => {
           const title = m.title || m.name || '—';
+          const year = m.release_date ? new Date(m.release_date).getFullYear() : null;
+          
           return (
             <article key={m.id} className="group">
               <a href={`/content/movie/${m.id}`} className="block">
-                <div className="relative aspect-[2/3] overflow-hidden rounded-lg border bg-slate-100 dark:bg-slate-900">
+                <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 shadow-sm">
                   {m.poster_path ? (
                     <Image
                       src={tmdbImage(m.poster_path, 'w342')}
                       alt={title}
                       fill
-                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
-                      className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
+                      className="object-cover transition-all duration-300 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="h-full w-full" />
+                    <div className="flex h-full w-full items-center justify-center">
+                      <svg className="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
                   )}
+                  
+                  {/* Overlay with rating */}
+                  <div className="absolute top-2 right-2">
+                    <div className="rounded-full bg-black/70 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                      ⭐ {m.vote_average?.toFixed?.(1) ?? '—'}
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-2 space-y-1">
-                  <h3 className="line-clamp-2 text-sm font-medium">{title}</h3>
-                  <div className="flex items-center gap-2 text-xs opacity-70">
-                    <span>⭐ {m.vote_average?.toFixed?.(1) ?? '—'}</span>
-                    <span>·</span>
-                    <span>🔥 {Math.round(m.popularity)}</span>
-                    {m.original_language ? (
-                      <>
-                        <span>·</span>
-                        <span className="uppercase">{m.original_language}</span>
-                      </>
-                    ) : null}
+                
+                <div className="mt-3 space-y-1">
+                  <h3 className="line-clamp-2 text-sm font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                    {title}
+                  </h3>
+                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                    {year && <span>{year}</span>}
+                    {year && m.original_language && <span>·</span>}
+                    {m.original_language && (
+                      <span className="uppercase">{m.original_language}</span>
+                    )}
                   </div>
                 </div>
               </a>
@@ -149,24 +207,25 @@ export default async function ExplorePage({
       </div>
 
       {/* Pagination */}
-    <div className="flex items-center justify-center gap-3">
+      <div className="flex items-center justify-center gap-4">
         <a
-          className="rounded-md border px-3 py-1 text-sm opacity-80 hover:opacity-100"
-      href={makeQS({ page: String(Math.max(1, (data?.page || 1) - 1)) })}
+          className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+          href={makeQS({ page: String(Math.max(1, (data?.page || 1) - 1)) })}
         >
           ← Önceki
         </a>
-        <span className="text-sm opacity-70">
-      Sayfa {data?.page ?? 1} / {data?.total_pages ?? 1}
+        
+        <span className="text-sm text-gray-600 dark:text-gray-400">
+          Sayfa {data?.page ?? 1} / {data?.total_pages ?? 1}
         </span>
+        
         <a
-          className="rounded-md border px-3 py-1 text-sm opacity-80 hover:opacity-100"
-      href={makeQS({ page: String(Math.min(data?.total_pages || 1, (data?.page || 1) + 1)) })}
+          className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          href={makeQS({ page: String(Math.min(data?.total_pages || 1, (data?.page || 1) + 1)) })}
         >
           Sonraki →
         </a>
       </div>
-    </section>
+    </div>
   );
 }
-
