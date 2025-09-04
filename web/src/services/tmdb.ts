@@ -1,4 +1,4 @@
-import { TMDBDiscoverMovie, TMDBPaginated } from '@/types/tmdb';
+import { TMDBDiscoverMovie, TMDBPaginated, TMDBMovieDetail } from '@/types/tmdb';
 
 const TMDB_BASE = 'https://api.themoviedb.org/3';
 
@@ -60,6 +60,29 @@ export async function discoverMovies(params: DiscoverParams, opts?: { revalidate
     throw new Error(`TMDB error ${res.status}: ${text}`);
   }
   return (await res.json()) as TMDBPaginated<TMDBDiscoverMovie>;
+}
+
+export async function getMovieDetails(id: string | number, opts?: { revalidate?: number }) {
+  const key = getAuth();
+  const isV4 = isV4Token(key);
+
+  const url = new URL(`${TMDB_BASE}/movie/${id}`);
+  url.searchParams.set('append_to_response', 'credits,videos,similar');
+  if (!isV4) {
+    url.searchParams.set('api_key', key);
+  }
+
+  const res = await fetch(url.toString(), {
+    method: 'GET',
+    headers: isV4 ? { Authorization: `Bearer ${key}` } : undefined,
+    next: { revalidate: opts?.revalidate ?? 300 },
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`TMDB error ${res.status}: ${text}`);
+  }
+  return (await res.json()) as TMDBMovieDetail;
 }
 
 export function tmdbImage(path: string, size: 'w185' | 'w342' | 'w500' | 'original' = 'w342') {

@@ -1,0 +1,11 @@
+aktörlerin de profilleri olacak
+
+karanlık tema
+
+oyunlar
+
+supabase google ile login
+
+admin paneli
+
+publish github.io

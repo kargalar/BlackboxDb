@@ -18,3 +18,61 @@ export interface TMDBPaginated<T> {
   total_pages: number;
   total_results: number;
 }
+
+export interface TMDBGenre {
+  id: number;
+  name: string;
+}
+
+export interface TMDBCastMember {
+  id: number;
+  name: string;
+  character: string;
+  profile_path: string | null;
+  order: number;
+}
+
+export interface TMDBCrewMember {
+  id: number;
+  name: string;
+  job: string;
+  profile_path: string | null;
+}
+
+export interface TMDBCredits {
+  cast: TMDBCastMember[];
+  crew: TMDBCrewMember[];
+}
+
+export interface TMDBVideo {
+  id: string;
+  key: string;
+  name: string;
+  site: string;
+  type: string;
+  published_at: string;
+}
+
+export interface TMDBMovieDetail {
+  id: number;
+  title: string;
+  original_title: string;
+  overview: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  release_date: string;
+  runtime: number | null;
+  vote_average: number;
+  vote_count: number;
+  popularity: number;
+  genres: TMDBGenre[];
+  original_language: string;
+  budget: number;
+  revenue: number;
+  tagline: string | null;
+  credits?: TMDBCredits;
+  videos?: {
+    results: TMDBVideo[];
+  };
+  similar?: TMDBPaginated<TMDBDiscoverMovie>;
+}

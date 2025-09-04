@@ -1,39 +1,53 @@
+'use client';
+
 import Image from 'next/image';
 import { discoverMovies, tmdbImage } from '@/services/tmdb';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
 
-type SearchParams = { [key: string]: string | string[] | undefined };
+function ExploreContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [data, setData] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export default async function ExplorePage({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
-  const sp = searchParams || {};
-  const sort_by = (sp.sort_by as string) || 'popularity.desc';
-  const with_original_language = (sp.with_original_language as string) || '';
-  const with_genres = (sp.with_genres as string) || '';
-  const page = (sp.page as string) || '1';
+  const sp = Object.fromEntries(searchParams.entries());
+  const sort_by = sp.sort_by || 'popularity.desc';
+  const with_original_language = sp.with_original_language || '';
+  const with_genres = sp.with_genres || '';
+  const page = sp.page || '1';
+  const yearMin = sp.yearMin || '';
+  const yearMax = sp.yearMax || '';
 
-  // Optional year filters converted to TMDB date range
-  const yearMin = (sp.yearMin as string) || '';
-  const yearMax = (sp.yearMax as string) || '';
-  const gte = yearMin ? `${yearMin}-01-01` : undefined;
-  const lte = yearMax ? `${yearMax}-12-31` : undefined;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const gte = yearMin ? `${yearMin}-01-01` : undefined;
+        const lte = yearMax ? `${yearMax}-12-31` : undefined;
 
-  let data: Awaited<ReturnType<typeof discoverMovies>> | null = null;
-  let error: string | null = null;
-  try {
-    data = await discoverMovies({
-      sort_by,
-      with_original_language,
-      with_genres,
-      page,
-      'primary_release_date.gte': gte,
-      'primary_release_date.lte': lte,
-    });
-  } catch (e: any) {
-    error = e?.message || 'Beklenmeyen hata';
-  }
+        const result = await discoverMovies({
+          sort_by,
+          with_original_language,
+          with_genres,
+          page,
+          'primary_release_date.gte': gte,
+          'primary_release_date.lte': lte,
+        });
+        
+        setData(result);
+      } catch (e: any) {
+        setError(e?.message || 'Beklenmeyen hata');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [sort_by, with_original_language, with_genres, page, yearMin, yearMax]);
 
   const results = data?.results || [];
 
@@ -95,7 +109,7 @@ export default async function ExplorePage({
           
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Tür ID'ler
+              Tür ID&apos;ler
             </label>
             <input 
               name="with_genres" 
@@ -156,7 +170,7 @@ export default async function ExplorePage({
 
       {/* Grid */}
       <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-        {results.map((m) => {
+        {results.map((m: any) => {
           const title = m.title || m.name || '—';
           const year = m.release_date ? new Date(m.release_date).getFullYear() : null;
           
@@ -208,24 +222,43 @@ export default async function ExplorePage({
 
       {/* Pagination */}
       <div className="flex items-center justify-center gap-4">
-        <a
+        <button
+          onClick={() => router.push(('/explore' + makeQS({ page: String(Math.max(1, (data?.page || 1) - 1)) })) as any)}
           className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-          href={makeQS({ page: String(Math.max(1, (data?.page || 1) - 1)) })}
+          disabled={loading || (data?.page || 1) <= 1}
         >
           ← Önceki
-        </a>
+        </button>
         
         <span className="text-sm text-gray-600 dark:text-gray-400">
           Sayfa {data?.page ?? 1} / {data?.total_pages ?? 1}
         </span>
         
-        <a
+        <button
+          onClick={() => router.push(('/explore' + makeQS({ page: String(Math.min(data?.total_pages || 1, (data?.page || 1) + 1)) })) as any)}
           className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          href={makeQS({ page: String(Math.min(data?.total_pages || 1, (data?.page || 1) + 1)) })}
+          disabled={loading || (data?.page || 1) >= (data?.total_pages || 1)}
         >
           Sonraki →
-        </a>
+        </button>
       </div>
     </div>
+  );
+}
+
+export default function ExplorePage() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-8">
+        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <div key={i} className="aspect-[2/3] bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+          ))}
+        </div>
+      </div>
+    }>
+      <ExploreContent />
+    </Suspense>
   );
 }

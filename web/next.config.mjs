@@ -7,7 +7,12 @@ const nextConfig = {
         remotePatterns: [
             { protocol: 'https', hostname: 'image.tmdb.org' },
         ],
+        unoptimized: true,
     },
+    output: 'export',
+    trailingSlash: true,
+    basePath: '/BlackboxDb',
+    assetPrefix: '/BlackboxDb/',
 };
 
 export default nextConfig;

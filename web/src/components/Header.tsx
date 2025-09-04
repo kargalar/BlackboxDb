@@ -1,0 +1,93 @@
+'use client'
+
+import Link from 'next/link'
+import Image from 'next/image'
+import { useAuth } from '@/contexts/AuthContext'
+
+export default function Header() {
+  const { user, loading, signInWithGoogle, signOut } = useAuth()
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle()
+    } catch (error) {
+      console.error('Sign in error:', error)
+    }
+  }
+
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+    } catch (error) {
+      console.error('Sign out error:', error)
+    }
+  }
+
+  return (
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 dark:bg-gray-900/80 dark:border-gray-800">
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="flex h-16 items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600" />
+            <span className="text-xl font-bold text-gray-900 dark:text-white">Blackbox</span>
+          </Link>
+          
+          <nav className="hidden md:flex items-center gap-6">
+            <Link href="/explore" className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
+              Keşfet
+            </Link>
+            {user && (
+              <Link href="/profile" className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
+                Profil
+              </Link>
+            )}
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <button className="hidden md:block rounded-full bg-gray-100 p-2 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors">
+              <svg className="h-5 w-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
+            
+            {loading ? (
+              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+            ) : user ? (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  {user.user_metadata?.avatar_url && (
+                    <Image 
+                      src={user.user_metadata.avatar_url} 
+                      alt={user.user_metadata?.full_name || user.email || 'User'} 
+                      width={32}
+                      height={32}
+                      className="rounded-full"
+                    />
+                  )}
+                  <span className="hidden md:block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {user.user_metadata?.full_name || user.email}
+                  </span>
+                </div>
+                <button 
+                  onClick={handleSignOut}
+                  className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+                >
+                  Çıkış
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link href="/auth/login" className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
+                  Giriş Yap
+                </Link>
+                <Link href="/auth/register" className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-colors">
+                  Üye Ol
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+  )
+}
