@@ -176,7 +176,7 @@ function ExploreContent() {
           
           return (
             <article key={m.id} className="group">
-              <a href={`/content/movie/${m.id}`} className="block">
+              <a href={`/movie?id=${m.id}`} className="block">
                 <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 shadow-sm">
                   {m.poster_path ? (
                     <Image

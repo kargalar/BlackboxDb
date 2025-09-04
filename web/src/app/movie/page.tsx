@@ -2,18 +2,24 @@
 
 import { getMovieDetails, tmdbImage } from '@/services/tmdb';
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
-import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
 
-export default function MovieDetailPage() {
-  const params = useParams();
-  const id = params.id as string;
+function MovieDetailContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
+  
   const [movie, setMovie] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!id) {
+      router.push('/explore');
+      return;
+    }
+
     const fetchMovie = async () => {
       try {
         setLoading(true);
@@ -27,35 +33,20 @@ export default function MovieDetailPage() {
       }
     };
 
-    if (id) {
-      fetchMovie();
-    }
-  }, [id]);
+    fetchMovie();
+  }, [id, router]);
 
   if (loading) {
     return (
       <div className="space-y-8">
-        <div className="relative h-96 md:h-[500px] bg-gray-200 dark:bg-gray-700 rounded-2xl animate-pulse"></div>
+        <div className="h-96 md:h-[500px] bg-gray-200 dark:bg-gray-700 rounded-2xl animate-pulse"></div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
-              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-4 animate-pulse"></div>
-              <div className="space-y-2">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4"></div>
-              </div>
-            </div>
+            <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-2xl animate-pulse"></div>
+            <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-2xl animate-pulse"></div>
           </div>
           <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
-              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-4 animate-pulse"></div>
-              <div className="space-y-3">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-                ))}
-              </div>
-            </div>
+            <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-2xl animate-pulse"></div>
           </div>
         </div>
       </div>
@@ -64,18 +55,23 @@ export default function MovieDetailPage() {
 
   if (error) {
     return (
-      <div className="text-center py-12">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Film Bulunamadı</h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-8">{error}</p>
-        <a href="/explore" className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
-          ← Filmlere Geri Dön
-        </a>
+      <div className="space-y-8">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-8 text-center">
+          <h1 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">Hata</h1>
+          <p className="text-red-600 dark:text-red-400 mb-6">{error}</p>
+          <button 
+            onClick={() => router.push('/explore')}
+            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-colors"
+          >
+            Keşfet Sayfasına Dön
+          </button>
+        </div>
       </div>
     );
   }
 
   if (!movie) {
-    notFound();
+    return null;
   }
 
   const director = movie.credits?.crew.find((person: any) => person.job === 'Director');
@@ -267,7 +263,11 @@ export default function MovieDetailPage() {
               <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Benzer Filmler</h2>
               <div className="space-y-3">
                 {movie.similar.results.slice(0, 5).map((similar: any) => (
-                  <a key={similar.id} href={`/content/movie/${similar.id}`} className="flex gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors">
+                  <button 
+                    key={similar.id} 
+                    onClick={() => router.push(`/movie?id=${similar.id}` as any)}
+                    className="flex gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors w-full text-left"
+                  >
                     <div className="relative w-12 h-18 rounded bg-gray-100 dark:bg-gray-800 overflow-hidden flex-shrink-0">
                       {similar.poster_path && (
                         <Image
@@ -282,7 +282,7 @@ export default function MovieDetailPage() {
                       <h3 className="font-medium text-sm text-gray-900 dark:text-white line-clamp-2">{similar.title || similar.name}</h3>
                       <p className="text-xs text-gray-600 dark:text-gray-400">⭐ {similar.vote_average.toFixed(1)}</p>
                     </div>
-                  </a>
+                  </button>
                 ))}
               </div>
             </section>
@@ -290,5 +290,26 @@ export default function MovieDetailPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function MovieDetailPage() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-8">
+        <div className="h-96 md:h-[500px] bg-gray-200 dark:bg-gray-700 rounded-2xl animate-pulse"></div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+            <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-2xl animate-pulse"></div>
+            <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-2xl animate-pulse"></div>
+          </div>
+          <div className="space-y-6">
+            <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-2xl animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    }>
+      <MovieDetailContent />
+    </Suspense>
   );
 }

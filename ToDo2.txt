@@ -1,7 +1,5 @@
 aktörlerin de profilleri olacak
 
-karanlık tema
-
 oyunlar
 
 supabase google ile login
