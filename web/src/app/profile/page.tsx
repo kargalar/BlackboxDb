@@ -119,7 +119,7 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Profil sayfasını görüntülemek için giriş yapın</h2>
-          <Link href="/auth/login" className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-colors">
+          <Link href="/auth/login" className="bg-gray-700 hover:bg-gray-800 text-white px-6 py-2 rounded-lg transition-colors">
             Giriş Yap
           </Link>
         </div>
@@ -187,7 +187,7 @@ export default function ProfilePage() {
                   onClick={() => setActiveTab(tab)}
                   className={`pb-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === tab
-                      ? 'border-blue-500 text-blue-500'
+                      ? 'border-gray-400 text-gray-300'
                       : 'border-transparent text-gray-400 hover:text-gray-300'
                   }`}
                 >
@@ -211,7 +211,7 @@ export default function ProfilePage() {
               {recentMovies.length === 0 ? (
                 <div className="text-center text-gray-400 py-8">
                   <p>Henüz film izlemediniz.</p>
-                  <Link href="/explore" className="text-blue-500 hover:text-blue-400 mt-2 inline-block">
+                  <Link href="/explore" className="text-gray-400 hover:text-gray-300 mt-2 inline-block">
                     Keşfetmeye başlayın
                   </Link>
                 </div>
@@ -249,7 +249,7 @@ export default function ProfilePage() {
               {recentMovies.length === 0 ? (
                 <div className="text-center text-gray-400 py-8">
                   <p>Henüz film izlemediniz.</p>
-                  <Link href="/explore" className="text-blue-500 hover:text-blue-400 mt-2 inline-block">
+                  <Link href="/explore" className="text-gray-400 hover:text-gray-300 mt-2 inline-block">
                     Keşfetmeye başlayın
                   </Link>
                 </div>
@@ -321,7 +321,7 @@ export default function ProfilePage() {
               {favoriteMovies.length === 0 ? (
                 <div className="text-center text-gray-400 py-8">
                   <p>Henüz film izlemediniz.</p>
-                  <Link href="/explore" className="text-blue-500 hover:text-blue-400 mt-2 inline-block">
+                  <Link href="/explore" className="text-gray-400 hover:text-gray-300 mt-2 inline-block">
                     Keşfetmeye başlayın
                   </Link>
                 </div>

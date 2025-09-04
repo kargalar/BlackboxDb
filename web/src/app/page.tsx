@@ -20,7 +20,7 @@ export default function HomePage() {
         <div className="space-y-4">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white">
             Film ve Oyun <br />
-            <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            <span className="text-gray-700 dark:text-gray-300">
               Deneyimini Kaydet
             </span>
           </h1>

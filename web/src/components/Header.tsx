@@ -97,7 +97,7 @@ export default function Header() {
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600" />
+            <div className="h-8 w-8 rounded-lg bg-gray-700 dark:bg-gray-600" />
             <span className="text-xl font-bold text-gray-900 dark:text-white">Blackbox</span>
           </Link>
           
@@ -119,12 +119,12 @@ export default function Header() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Film ara..."
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                   autoComplete="off"
                 />
                 <button
                   type="submit"
-                  className="rounded-full bg-purple-600 p-2 text-white hover:bg-purple-700 transition-colors"
+                  className="rounded-full bg-gray-700 dark:bg-gray-600 p-2 text-white hover:bg-gray-800 dark:hover:bg-gray-500 transition-colors"
                 >
                   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -160,7 +160,7 @@ export default function Header() {
               <div className="flex items-center gap-3">
                 <button 
                   onClick={handleProfileClick}
-                  className="text-sm font-medium text-gray-700 hover:text-purple-600 dark:text-gray-300 dark:hover:text-purple-400 transition-colors px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 transition-colors px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   {appUser?.username || user?.user_metadata?.username || user.email?.split('@')[0] || 'Profil'}
                 </button>
@@ -176,7 +176,7 @@ export default function Header() {
                 <Link href="/auth/login" className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
                   Giriş Yap
                 </Link>
-                <Link href="/auth/register" className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-colors">
+                <Link href="/auth/register" className="rounded-lg bg-gray-700 dark:bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:hover:bg-gray-500 transition-colors">
                   Üye Ol
                 </Link>
               </>

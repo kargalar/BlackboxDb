@@ -129,7 +129,7 @@ function ExploreContent() {
             <select 
               name="sort_by" 
               defaultValue={sort_by} 
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
             >
               <option value="popularity.desc">Popülarite ↓</option>
               <option value="vote_average.desc">Puan ↓</option>
@@ -144,7 +144,7 @@ function ExploreContent() {
             <input 
               name="with_original_language" 
               defaultValue={with_original_language} 
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20" 
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20" 
               placeholder="en, tr" 
             />
           </div>
@@ -156,7 +156,7 @@ function ExploreContent() {
             <input 
               name="with_genres" 
               defaultValue={with_genres} 
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20" 
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20" 
               placeholder="28,12" 
             />
           </div>
@@ -169,7 +169,7 @@ function ExploreContent() {
               <input 
                 name="yearMin" 
                 defaultValue={yearMin} 
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20" 
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20" 
                 placeholder="2015" 
               />
             </div>
@@ -180,14 +180,14 @@ function ExploreContent() {
               <input 
                 name="yearMax" 
                 defaultValue={yearMax} 
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20" 
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20" 
                 placeholder="2024" 
               />
             </div>
           </div>
           
           <div className="lg:col-span-4">
-            <button className="rounded-lg bg-purple-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-colors">
+            <button className="rounded-lg bg-gray-700 dark:bg-gray-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-gray-800 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20 transition-colors">
               Filtreleri Uygula
             </button>
           </div>
@@ -251,7 +251,7 @@ function ExploreContent() {
                 </div>
                 
                 <div className="mt-3 space-y-1">
-                  <h3 className="line-clamp-2 text-sm font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                  <h3 className="line-clamp-2 text-sm font-medium text-gray-900 dark:text-white group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
                     {title}
                   </h3>
                   <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">

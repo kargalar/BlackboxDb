@@ -4,9 +4,6 @@ supabase google ile login
 
 admin paneli
 
-siyah tema şuanda mavi ile mor arasında. ben gri ile siyah tonlarında olmasını istiyorum. butonlarda falan da olabilriğnce az renk olsun
-
-
 filmin puani ve yorumları tmdb den değil supabaseden gelecek. flutterdaki versiyonunda filmin bilgilerini sadece ilk seferde tmdb den alıyorduk. daha sonra otomatik supabase de content tablosuna kaydediliyor ve sonraki seferlerde veriler oradan çekiliyordu.
 
 sağ üstte mail adresi yerine profil iconnu olsun profile oradan gidlisin. diğerp profil yazısını kaldır. Keşfet butonunu ismini Fimler olrak güncelle.
