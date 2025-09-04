@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getMovieDetails, tmdbImage } from '@/services/tmdb';
-import { getContentById, logMovieWatch, toggleFavorite, rateMovie, getUserRating, getUserFavoriteStatus, getContentReviews, saveContentFromTMDB, addReview } from '@/services/movieLogs';
+import { getContentById, logMovieWatch, toggleFavorite, rateMovie, getUserRating, getUserFavoriteStatus, getContentReviews, saveContentFromTMDB, addReview, toggleReviewLike, addReviewReply, getReviewReplies } from '@/services/movieLogs';
 import { TMDBMovieDetail, TMDBCastMember } from '@/types/tmdb';
 import { Button } from '@/components/ui/button';
 
@@ -91,32 +91,184 @@ const CastMember = ({ member }: { member: TMDBCastMember }) => (
   </div>
 );
 
-// Comment Component
-const Comment = ({ user, rating, comment, date }: {
-  user: string;
-  rating: number;
-  comment: string;
-  date: string;
-}) => (
-  <div className="border-b border-gray-700 pb-4 mb-4 last:border-b-0">
-    <div className="flex items-start space-x-3">
-      <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
-        <span className="text-sm font-medium">{user[0].toUpperCase()}</span>
-      </div>
-      <div className="flex-1">
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="font-medium">{user}</h4>
-          <span className="text-sm text-gray-400">{date}</span>
+// Comment Component with likes and replies
+const Comment = ({ 
+  review, 
+  onLike, 
+  onReply, 
+  onToggleReplies, 
+  showReplies = false,
+  replies = []
+}: {
+  review: {
+    id: number;
+    user_name: string;
+    rating: number | null;
+    review_text: string;
+    created_at: string;
+    like_count: number;
+    reply_count: number;
+    is_liked_by_current_user: boolean;
+  };
+  onLike: (reviewId: number) => void;
+  onReply: (reviewId: number, text: string) => void;
+  onToggleReplies: (reviewId: number) => void;
+  showReplies?: boolean;
+  replies?: Array<{
+    id: number;
+    user_name: string;
+    text: string;
+    created_at: string;
+    like_count: number;
+    is_liked_by_current_user: boolean;
+  }>;
+}) => {
+  const [showReplyForm, setShowReplyForm] = useState(false);
+  const [replyText, setReplyText] = useState('');
+
+  const handleSubmitReply = () => {
+    if (replyText.trim()) {
+      onReply(review.id, replyText.trim());
+      setReplyText('');
+      setShowReplyForm(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return '1 day ago';
+    if (diffDays < 30) return `${diffDays} days ago`;
+    if (diffDays < 365) return `${Math.ceil(diffDays / 30)} months ago`;
+    return `${Math.ceil(diffDays / 365)} years ago`;
+  };
+
+  return (
+    <div className="border-b border-gray-700 pb-4 mb-4 last:border-b-0">
+      <div className="flex items-start space-x-3">
+        <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
+          <span className="text-sm font-medium">{review.user_name[0].toUpperCase()}</span>
         </div>
-        <div className="flex items-center space-x-2 mb-2">
-          <StarRating rating={rating} />
-          <span className="text-sm text-gray-400">{rating.toFixed(1)}</span>
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="font-medium">{review.user_name}</h4>
+            <span className="text-sm text-gray-400">{formatDate(review.created_at)}</span>
+          </div>
+          {review.rating && (
+            <div className="flex items-center space-x-2 mb-2">
+              <StarRating rating={review.rating * 2} />
+              <span className="text-sm text-gray-400">{review.rating.toFixed(1)}</span>
+            </div>
+          )}
+          <p className="text-gray-300 text-sm leading-relaxed mb-3">{review.review_text}</p>
+          
+          {/* Action buttons */}
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => onLike(review.id)}
+              className={`flex items-center space-x-1 text-sm ${
+                review.is_liked_by_current_user 
+                  ? 'text-red-500' 
+                  : 'text-gray-400 hover:text-red-500'
+              } transition-colors`}
+            >
+              <svg className="w-4 h-4" fill={review.is_liked_by_current_user ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              <span>{review.like_count}</span>
+            </button>
+            
+            <button
+              onClick={() => setShowReplyForm(!showReplyForm)}
+              className="flex items-center space-x-1 text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              <span>Reply</span>
+            </button>
+
+            {review.reply_count > 0 && (
+              <button
+                onClick={() => onToggleReplies(review.id)}
+                className="flex items-center space-x-1 text-sm text-gray-400 hover:text-white transition-colors"
+              >
+                <span>{showReplies ? 'Hide' : 'Show'} {review.reply_count} replies</span>
+              </button>
+            )}
+          </div>
+
+          {/* Reply form */}
+          {showReplyForm && (
+            <div className="mt-3">
+              <textarea
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Write a reply..."
+                className="w-full p-2 bg-gray-700 text-white rounded-lg resize-none h-16 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                maxLength={200}
+              />
+              <div className="flex justify-between items-center mt-2">
+                <span className="text-xs text-gray-400">{replyText.length}/200</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setShowReplyForm(false);
+                      setReplyText('');
+                    }}
+                    className="px-3 py-1 text-xs text-gray-400 hover:text-white transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSubmitReply}
+                    disabled={!replyText.trim()}
+                    className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Reply
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Replies */}
+          {showReplies && replies.length > 0 && (
+            <div className="mt-4 pl-4 border-l border-gray-700">
+              {replies.map((reply) => (
+                <div key={reply.id} className="mb-3 last:mb-0">
+                  <div className="flex items-start space-x-2">
+                    <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center">
+                      <span className="text-xs font-medium">{reply.user_name[0].toUpperCase()}</span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-1">
+                        <h5 className="text-sm font-medium">{reply.user_name}</h5>
+                        <span className="text-xs text-gray-400">{formatDate(reply.created_at)}</span>
+                      </div>
+                      <p className="text-gray-300 text-sm">{reply.text}</p>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <button className={`flex items-center space-x-1 text-xs ${reply.is_liked_by_current_user ? 'text-red-500' : 'text-gray-400 hover:text-red-500'} transition-colors`}>
+                          <svg className="w-3 h-3" fill={reply.is_liked_by_current_user ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                          </svg>
+                          <span>{reply.like_count}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-        <p className="text-gray-300 text-sm leading-relaxed">{comment}</p>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Movie Card Component for Similar Movies
 const MovieCard = ({ movie }: { movie: any }) => (
@@ -169,9 +321,85 @@ export default function MoviePage() {
     rating: number | null;
     review_text: string;
     created_at: string;
+    like_count: number;
+    reply_count: number;
+    is_liked_by_current_user: boolean;
   }>>([]);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewText, setReviewText] = useState('');
+  const [expandedReplies, setExpandedReplies] = useState<Set<number>>(new Set());
+  const [reviewReplies, setReviewReplies] = useState<Record<number, Array<{
+    id: number;
+    user_name: string;
+    text: string;
+    created_at: string;
+    like_count: number;
+    is_liked_by_current_user: boolean;
+  }>>>({});
+  
+  // Handler functions
+  const handleLikeReview = async (reviewId: number) => {
+    try {
+      const result = await toggleReviewLike(reviewId);
+      if (result.data) {
+        // Refresh reviews to get updated like counts
+        loadDatabaseStats();
+      }
+    } catch (error) {
+      console.error('Error liking review:', error);
+    }
+  };
+
+  const handleReplyToReview = async (reviewId: number, text: string) => {
+    try {
+      const result = await addReviewReply(reviewId, text);
+      if (result.data) {
+        // Add reply to local state or refresh
+        loadReplies(reviewId);
+      }
+    } catch (error) {
+      console.error('Error adding reply:', error);
+    }
+  };
+
+  const loadReplies = async (reviewId: number) => {
+    try {
+      const { data: replies } = await getReviewReplies(reviewId);
+      const mappedReplies = replies.map(reply => ({
+        id: reply.id,
+        user_name: reply.user_name,
+        text: reply.text,
+        created_at: reply.created_at,
+        like_count: reply.like_count || 0,
+        is_liked_by_current_user: reply.is_liked_by_current_user || false
+      }));
+      setReviewReplies(prev => ({
+        ...prev,
+        [reviewId]: mappedReplies
+      }));
+    } catch (error) {
+      console.error('Error loading replies:', error);
+    }
+  };
+
+  const toggleRepliesVisibility = async (reviewId: number) => {
+    const isExpanded = expandedReplies.has(reviewId);
+    const newExpanded = new Set(expandedReplies);
+    
+    if (isExpanded) {
+      newExpanded.delete(reviewId);
+    } else {
+      newExpanded.add(reviewId);
+      // Load replies if not loaded yet
+      if (!reviewReplies[reviewId]) {
+        await loadReplies(reviewId);
+      }
+    }
+    
+    setExpandedReplies(newExpanded);
+  };
+  
+  // Handler functions
 
   const loadDatabaseStats = useCallback(async () => {
     if (!id) return;
@@ -571,11 +799,13 @@ export default function MoviePage() {
             {reviews.length > 0 ? (
               reviews.map((review) => (
                 <Comment 
-                  key={review.id} 
-                  user={review.user_name}
-                  rating={review.rating || 0}
-                  comment={review.review_text}
-                  date={formatDate(review.created_at)}
+                  key={review.id}
+                  review={review}
+                  onLike={handleLikeReview}
+                  onReply={handleReplyToReview}
+                  onToggleReplies={toggleRepliesVisibility}
+                  showReplies={expandedReplies.has(review.id)}
+                  replies={reviewReplies[review.id] || []}
                 />
               ))
             ) : (
