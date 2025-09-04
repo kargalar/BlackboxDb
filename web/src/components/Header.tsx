@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -9,20 +10,37 @@ import { ThemeToggle } from '@/components/theme-toggle'
 export default function Header() {
   const { user, loading, signInWithGoogle, signOut } = useAuth()
   const router = useRouter()
+  const [isSigningIn, setIsSigningIn] = useState(false)
+  const [isSigningOut, setIsSigningOut] = useState(false)
+
+  // Debug logging
+  console.log('🎯 Header render:', { 
+    hasUser: !!user, 
+    userEmail: user?.email, 
+    loading,
+    isSigningIn,
+    isSigningOut 
+  });
 
   const handleGoogleSignIn = async () => {
     try {
+      setIsSigningIn(true)
       await signInWithGoogle()
     } catch (error) {
       console.error('Sign in error:', error)
+    } finally {
+      setIsSigningIn(false)
     }
   }
 
   const handleSignOut = async () => {
     try {
+      setIsSigningOut(true)
       await signOut()
     } catch (error) {
       console.error('Sign out error:', error)
+    } finally {
+      setIsSigningOut(false)
     }
   }
 

@@ -38,17 +38,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let isMounted = true
+    console.log('🚀 AuthProvider: useEffect başladı');
+
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setSession(session)
-      setUser(session?.user ?? null)
-      // Ensure app_user row exists once we know the session
-      if (session?.user) {
-        await ensureAppUser(session.user)
+      console.log('🔄 AuthProvider: getInitialSession başladı');
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        console.log('📧 AuthProvider: Session result:', { 
+          hasSession: !!session, 
+          userEmail: session?.user?.email, 
+          error 
+        });
+        
+        if (!isMounted) {
+          console.log('⚠️ AuthProvider: Component unmounted, skipping');
+          return;
+        }
+        
+        if (error) {
+          console.error('❌ AuthProvider: Session error:', error)
+        }
+        
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
+        
+        console.log('✅ AuthProvider: State updated - loading: false, user:', session?.user?.email || 'null');
+        
+        // Ensure app_user row exists once we know the session (don't await)
+        if (session?.user) {
+          console.log('👤 AuthProvider: User mevcut, ensureAppUser çağrılıyor');
+          ensureAppUser(session.user).catch(console.error)
+        }
+      } catch (err) {
+        console.error('❌ AuthProvider: Auth initialization error:', err)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
-      setLoading(false)
     }
+
+    // Fallback timeout to prevent infinite loading
+    const fallbackTimeout = setTimeout(() => {
+      if (isMounted && loading) {
+        console.log('⏰ AuthProvider: Fallback timeout - loading takıldı, false yapılıyor');
+        setLoading(false);
+      }
+    }, 3000); // 3 saniye sonra loading'i false yap
 
     getInitialSession()
 
@@ -56,15 +95,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔄 AuthProvider: Auth state change:', { 
+        event, 
+        userEmail: session?.user?.email,
+        hasSession: !!session 
+      })
+      
+      if (!isMounted) {
+        console.log('⚠️ AuthProvider: Component unmounted, skipping auth change');
+        return;
+      }
+      
       setSession(session)
       setUser(session?.user ?? null)
-      if (session?.user) {
-        await ensureAppUser(session.user)
-      }
       setLoading(false)
+      
+      console.log('✅ AuthProvider: Auth change processed - loading: false, user:', session?.user?.email || 'null');
+      
+      // Ensure app_user row exists (don't await)
+      if (session?.user) {
+        console.log('👤 AuthProvider: onAuthStateChange - User mevcut, ensureAppUser çağrılıyor');
+        ensureAppUser(session.user).catch(console.error)
+      }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      isMounted = false
+      clearTimeout(fallbackTimeout)
+      subscription.unsubscribe()
+    }
   }, [])
 
   const signInWithGoogle = async () => {
@@ -92,9 +151,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) {
       throw error
     }
-    // Best-effort ensure profile row exists immediately (trigger should also handle this)
+    // Best-effort ensure profile row exists immediately (don't await)
     if (data.user) {
-      await ensureAppUser(data.user, username)
+      ensureAppUser(data.user, username).catch(console.error)
     }
   }
 
@@ -107,7 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw error
     }
     if (data.user) {
-      await ensureAppUser(data.user)
+      ensureAppUser(data.user).catch(console.error)
     }
   }
 
@@ -141,7 +200,7 @@ async function ensureAppUser(user: User, usernameFallback?: string) {
     console.log('🔄 ensureAppUser called for user:', user.id, user.email);
     
     // Wait briefly to let database triggers complete
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 200));
     
     // Check if app_user row exists (trigger should have created it)
     const { data: existing, error: selectErr } = await supabase
@@ -154,13 +213,12 @@ async function ensureAppUser(user: User, usernameFallback?: string) {
 
     if (selectErr) {
       console.warn('⚠️ Error checking existing user:', selectErr);
-      // If RLS is blocking, that's normal for some edge cases
-      return;
+      // Continue anyway, this might be normal due to RLS
     }
 
     if (existing) {
       console.log('✅ app_user already exists:', existing);
-      return;
+      return existing;
     }
 
     // If no user found, trigger might have failed, try manual creation
@@ -169,7 +227,7 @@ async function ensureAppUser(user: User, usernameFallback?: string) {
     const email = user.email ?? (user.user_metadata?.email as string | undefined) ?? ''
     const username = (user.user_metadata?.username as string | undefined)
       || usernameFallback
-      || (email ? email.split('@')[0] : 'user')
+      || (email ? email.split('@')[0] : `user_${user.id.slice(-8)}`)
 
     console.log('➕ Creating new app_user record:', { 
       auth_user_id: user.id, 
@@ -194,12 +252,15 @@ async function ensureAppUser(user: User, usernameFallback?: string) {
 
     if (upsertError) {
       console.error('❌ Error creating app_user:', upsertError);
+      throw upsertError;
     } else {
       console.log('✅ app_user created successfully:', upsertData);
+      return upsertData?.[0];
     }
     
   } catch (e) {
-    // Swallow errors to avoid breaking auth flow; DB trigger likely created the row
-    console.error('❌ ensureAppUser error:', e);
+    // Don't throw errors to avoid breaking auth flow; DB trigger likely created the row
+    console.error('❌ ensureAppUser error (non-blocking):', e);
+    return null;
   }
 }

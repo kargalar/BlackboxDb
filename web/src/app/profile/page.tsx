@@ -44,59 +44,71 @@ export default function ProfilePage() {
 
   // Gerçek verileri yükle
   useEffect(() => {
+    let isMounted = true
+    
     const loadUserData = async () => {
       if (!user) {
-        setLoading(false);
+        if (isMounted) setLoading(false);
         return;
       }
 
       try {
-        setLoading(true);
+        if (isMounted) setLoading(true);
         
-        // App user bilgilerini getir
-        const { data: userProfile } = await getCurrentUserProfile();
-        setAppUser(userProfile);
+        // Timeout ile veri yükleme (maximum 10 saniye)
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Data loading timeout')), 10000)
+        );
         
-        // Kullanıcının izlediği filmleri getir
-        const { data: watchedMovies } = await getUserWatchedMovies();
-        if (watchedMovies) {
-          setRecentMovies(watchedMovies.slice(0, 4)); // Son 4 film
-          setFavoriteMovies(watchedMovies.slice(0, 5)); // İlk 5 film (favoriler için)
+        // Paralel olarak tüm verileri yükle
+        const dataPromise = Promise.all([
+          getCurrentUserProfile(),
+          getUserWatchedMovies(), 
+          getUserStats()
+        ]);
+
+        const [userProfileResult, watchedMoviesResult, userStats] = await Promise.race([
+          dataPromise,
+          timeoutPromise
+        ]) as any;
+
+        if (!isMounted) return;
+
+        // App user bilgilerini set et
+        if (userProfileResult?.data) {
+          setAppUser(userProfileResult.data);
+        }
+        
+        // Kullanıcının izlediği filmleri set et
+        if (watchedMoviesResult?.data) {
+          setRecentMovies(watchedMoviesResult.data.slice(0, 4)); // Son 4 film
+          setFavoriteMovies(watchedMoviesResult.data.slice(0, 5)); // İlk 5 film (favoriler için)
         }
 
-        // İstatistikleri getir
-        const userStats = await getUserStats();
+        // İstatistikleri set et
         setStats(userStats);
         
       } catch (error) {
         console.error('Profil verileri yüklenemedi:', error);
+        // Fallback user data from auth user
+        if (isMounted && user) {
+          setAppUser({
+            username: user.user_metadata?.username || user.email?.split('@')[0] || 'Kullanıcı',
+            email: user.email || '',
+            picture_path: null,
+            bio: null
+          });
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     loadUserData();
-  }, [user]);
-
-  // Supabase: aktif kullanıcının app_user kaydını çek
-  useEffect(() => {
-    const fetchAppUser = async () => {
-      if (!user) return;
-      const { data, error } = await supabase
-        .from('app_user')
-        .select('username, email, picture_path, bio')
-        .eq('auth_user_id', user.id)
-        .maybeSingle();
-      if (!error && data) {
-        setAppUser({
-          username: data.username,
-          email: data.email,
-          picture_path: data.picture_path,
-          bio: data.bio,
-        });
-      }
+    
+    return () => {
+      isMounted = false;
     };
-    fetchAppUser();
   }, [user]);
 
   const tabs = ['Home', 'Movies', 'Games', 'Books', 'Reviews', 'Lists', 'Network', 'Activity'];

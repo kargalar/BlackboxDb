@@ -6,6 +6,13 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function HomePage() {
   const { user, loading } = useAuth();
 
+  // Debug logging
+  console.log('🏠 HomePage render:', { 
+    hasUser: !!user, 
+    userEmail: user?.email, 
+    loading 
+  });
+
   return (
     <div className="space-y-12">
       {/* Hero Section */}
@@ -29,14 +36,14 @@ export default function HomePage() {
             </Button>
           </a>
           
-          {loading ? (
-            <div className="w-40 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
-          ) : user ? (
+          {user ? (
             <a href="/profile">
               <Button variant="secondary" size="lg" className="min-w-[160px]">
                 Profile Git
               </Button>
             </a>
+          ) : loading ? (
+            <div className="w-40 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
           ) : (
             <a href="/auth/register">
               <Button variant="secondary" size="lg" className="min-w-[160px]">
