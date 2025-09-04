@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="flex min-h-screen flex-col">
               <Header />
               
-              <main className="flex-1">
+              <main className="flex-1 pt-16">
                 <div className="mx-auto max-w-7xl px-4 py-6">
                   {children}
                 </div>
