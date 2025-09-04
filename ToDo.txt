@@ -9,3 +9,15 @@ filmin puani ve yorumları tmdb den değil supabaseden gelecek. flutterdaki vers
 sağ üstte mail adresi yerine profil iconnu olsun profile oradan gidlisin. diğerp profil yazısını kaldır. Keşfet butonunu ismini Fimler olrak güncelle.
 
 username gösterilsin mailin ön kısmı değil
+
+profil sayfasındaki verileri düzel
+
+profil sayfasında giderken url de username olsun. çünkü başkalarının profilinine de gidebilecek
+
+profil sayfası sekmelerini düzelt
+
+watch dan çıkarınca otomatik watchlist eklemesin
+
+recent moviesde öneçıkarılanalrda filmler toglarına göre tek tek gösterilemyecek sadece son log gösterilecek
+
+son log 1 saat içindeyse tek bir log olarak birleştirilsin

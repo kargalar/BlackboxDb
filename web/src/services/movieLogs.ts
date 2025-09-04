@@ -240,16 +240,15 @@ export async function isMovieWatched(contentId: number): Promise<{ isWatched: bo
   const { data: userRes } = await supabase.auth.getUser()
   const uid = userRes.user?.id
   if (!uid) return { isWatched: false }
-
-  const { data, error } = await supabase
-    .from('user_content_log')
-    .select('id')
+  // Use latest log to determine watched status
+  const { data } = await supabase
+    .from('latest_user_content_log')
+    .select('content_status_id')
     .eq('user_id', uid)
     .eq('content_id', contentId)
-    .limit(1)
+    .maybeSingle()
 
-  if (error) return { isWatched: false }
-  return { isWatched: Array.isArray(data) && data.length > 0 }
+  return { isWatched: !!data && (data as any).content_status_id === 1 }
 }
 
 export async function logMovieWatch(contentId: number): Promise<{ data: boolean; error?: any }> {
@@ -262,17 +261,15 @@ export async function logMovieWatch(contentId: number): Promise<{ data: boolean;
   if (!contentRow) {
     return { data: false, error: 'content_not_found' }
   }
-
+  // Always create a new log entry (snapshot)
   const { error } = await supabase.from('user_content_log').insert({
     user_id: uid,
     content_id: contentId,
     content_status_id: 1, // CONSUMED
+  is_consume_later: false, // marking watched clears watchlist
     date: new Date().toISOString(),
   })
   if (error) return { data: false, error }
-  
-  // Update content stats
-  await updateContentStats(contentId)
   
   return { data: true }
 }
@@ -295,42 +292,18 @@ export async function rateMovie(contentId: number, rating: number): Promise<{ da
   }
 
   try {
-    // Check if user already has a log for this content
-    const { data: existingLog } = await supabase
+    // Always create a new log entry with rating
+    const { error } = await supabase
       .from('user_content_log')
-      .select('id')
-      .eq('user_id', uid)
-      .eq('content_id', contentId)
-      .maybeSingle()
-
-    if (existingLog) {
-      // Update existing log with rating
-      const { error } = await supabase
-        .from('user_content_log')
-        .update({ 
-          rating: rating,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', existingLog.id)
-
-      if (error) return { data: false, error }
-    } else {
-      // Create new log with rating
-      const { error } = await supabase
-        .from('user_content_log')
-        .insert({
-          user_id: uid,
-          content_id: contentId,
-          content_status_id: 1, // CONSUMED
-          rating: rating,
-          date: new Date().toISOString(),
-        })
-
-      if (error) return { data: false, error }
-    }
-
-    // Update content stats
-    await updateContentStats(contentId)
+      .insert({
+        user_id: uid,
+        content_id: contentId,
+        content_status_id: 1, // rating implies watched
+        rating: rating,
+  is_consume_later: false, // marking watched clears watchlist
+        date: new Date().toISOString(),
+      })
+    if (error) return { data: false, error }
 
     return { data: true }
   } catch (error) {
@@ -343,16 +316,15 @@ export async function getUserRating(contentId: number): Promise<{ rating: number
   const { data: userRes } = await supabase.auth.getUser()
   const uid = userRes.user?.id
   if (!uid) return { rating: 0 }
-
-  const { data, error } = await supabase
-    .from('user_content_log')
+  // Use latest user log snapshot
+  const { data } = await supabase
+    .from('latest_user_content_log')
     .select('rating')
     .eq('user_id', uid)
     .eq('content_id', contentId)
     .maybeSingle()
 
-  if (error || !data) return { rating: 0 }
-  return { rating: Number(data.rating) || 0 }
+  return { rating: data && (data as any).rating ? Number((data as any).rating) : 0 }
 }
 
 // Get user's favorite status for a specific movie
@@ -360,16 +332,14 @@ export async function getUserFavoriteStatus(contentId: number): Promise<{ isFavo
   const { data: userRes } = await supabase.auth.getUser()
   const uid = userRes.user?.id
   if (!uid) return { isFavorite: false }
-
-  const { data, error } = await supabase
-    .from('user_content_log')
+  const { data } = await supabase
+    .from('latest_user_content_log')
     .select('is_favorite')
     .eq('user_id', uid)
     .eq('content_id', contentId)
     .maybeSingle()
 
-  if (error || !data) return { isFavorite: false }
-  return { isFavorite: data.is_favorite ?? false }
+  return { isFavorite: !!data && !!(data as any).is_favorite }
 }
 
 // Get content statistics from database
@@ -380,35 +350,32 @@ export async function getContentStats(contentId: number): Promise<{
   average_rating: number;
 }> {
   try {
-    // Get consume count (how many users watched)
-    const { count: consumeCount } = await supabase
-      .from('user_content_log')
-      .select('*', { count: 'exact', head: true })
-      .eq('content_id', contentId)
-      .eq('content_status_id', 1) // CONSUMED
-
-    // Get favorite count
-    const { count: favoriteCount } = await supabase
-      .from('user_content_log')
-      .select('*', { count: 'exact', head: true })
-      .eq('content_id', contentId)
-      .eq('is_favorite', true)
-
-    // Get review count
-    const { count: reviewCount } = await supabase
-      .from('review')
-      .select('*', { count: 'exact', head: true })
-      .eq('content_id', contentId)
-
-    // Get average rating
-    const { data: ratingData } = await supabase
-      .from('user_content_log')
-      .select('rating')
-      .eq('content_id', contentId)
-      .not('rating', 'is', null)
+    // Fetch in parallel using latest_user_content_log to avoid double-counting
+    const [consumeRes, favRes, reviewRes, ratingRes] = await Promise.all([
+      supabase
+        .from('latest_user_content_log')
+        .select('*', { count: 'exact', head: true })
+        .eq('content_id', contentId)
+        .eq('content_status_id', 1),
+      supabase
+        .from('latest_user_content_log')
+        .select('*', { count: 'exact', head: true })
+        .eq('content_id', contentId)
+        .eq('is_favorite', true),
+      supabase
+        .from('review')
+        .select('*', { count: 'exact', head: true })
+        .eq('content_id', contentId),
+      supabase
+        .from('latest_user_content_log')
+        .select('rating')
+        .eq('content_id', contentId)
+        .not('rating', 'is', null),
+    ])
 
     let averageRating = 0
-    if (ratingData && ratingData.length > 0) {
+    const ratingData = (ratingRes.data || []) as any[]
+    if (ratingData.length > 0) {
       const ratings = ratingData.map(r => Number(r.rating)).filter(r => r > 0)
       if (ratings.length > 0) {
         averageRating = ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
@@ -416,9 +383,9 @@ export async function getContentStats(contentId: number): Promise<{
     }
 
     return {
-      consume_count: consumeCount || 0,
-      favorite_count: favoriteCount || 0,
-      review_count: reviewCount || 0,
+      consume_count: consumeRes.count || 0,
+      favorite_count: favRes.count || 0,
+      review_count: reviewRes.count || 0,
       average_rating: Math.round(averageRating * 10) / 10 // 1 decimal place
     }
   } catch (error) {
@@ -473,44 +440,32 @@ export async function toggleFavorite(contentId: number): Promise<{ data: boolean
   }
 
   try {
-    // Check if user already has a log for this content
-    const { data: existingLog } = await supabase
-      .from('user_content_log')
-      .select('id, is_favorite')
+    // Read latest favorite state
+    const { data: latest } = await supabase
+      .from('latest_user_content_log')
+      .select('is_favorite, content_status_id, rating')
       .eq('user_id', uid)
       .eq('content_id', contentId)
       .maybeSingle()
 
-    const newFavoriteStatus = existingLog ? !existingLog.is_favorite : true
+    const prevFav = latest ? !!(latest as any).is_favorite : false
+    const prevStatus = latest ? Number((latest as any).content_status_id) : 1
+  const prevRating = latest ? ((latest as any).rating ?? null) : null
+    const newFavoriteStatus = !prevFav
 
-    if (existingLog) {
-      // Update existing log
-      const { error } = await supabase
-        .from('user_content_log')
-        .update({ 
-          is_favorite: newFavoriteStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', existingLog.id)
-
-      if (error) return { data: false, isFavorite: false, error }
-    } else {
-      // Create new log with favorite status
-      const { error } = await supabase
-        .from('user_content_log')
-        .insert({
-          user_id: uid,
-          content_id: contentId,
-          content_status_id: 1, // CONSUMED
-          is_favorite: newFavoriteStatus,
-          date: new Date().toISOString(),
-        })
-
-      if (error) return { data: false, isFavorite: false, error }
-    }
-
-    // Update content stats
-    await updateContentStats(contentId)
+    // Always insert a new snapshot with toggled favorite
+    const { error } = await supabase
+      .from('user_content_log')
+      .insert({
+        user_id: uid,
+        content_id: contentId,
+        content_status_id: prevStatus || 1,
+        rating: prevRating,
+        is_favorite: newFavoriteStatus,
+    is_consume_later: (prevStatus || 1) === 1 ? false : !!(latest as any)?.is_consume_later,
+        date: new Date().toISOString(),
+      })
+    if (error) return { data: false, isFavorite: false, error }
 
     return { data: true, isFavorite: newFavoriteStatus }
   } catch (error) {
@@ -598,7 +553,7 @@ export async function getContentReviews(contentId: number): Promise<{
   error?: any;
 }> {
   try {
-    // First get reviews with user info
+    // Get reviews with user info
     const { data: reviewsData, error: reviewError } = await supabase
       .from('review')
       .select(`
@@ -618,38 +573,64 @@ export async function getContentReviews(contentId: number): Promise<{
       return { data: [], error: reviewError }
     }
 
-    // For each review, get the user's rating from user_content_log and like/reply info
-    const reviewsWithEnhancements = await Promise.all(
-      (reviewsData || []).map(async (review) => {
-        // Get user's rating for this content
-        const { data: ratingData } = await supabase
-          .from('user_content_log')
-          .select('rating')
-          .eq('user_id', review.user_id)
-          .eq('content_id', contentId)
-          .maybeSingle()
+    const reviewIds = (reviewsData || []).map(r => r.id)
+    const userIds = Array.from(new Set((reviewsData || []).map(r => r.user_id)))
 
-        // Get like count and check if current user liked
-        const { count: likeCount } = await getReviewLikeCount(review.id)
-        const { isLiked } = await isReviewLikedByUser(review.id)
-        
-        // Get reply count
-        const { count: replyCount } = await getReviewReplyCount(review.id)
+    // Batch: latest ratings per review's author for this content + likes + replies
+    const [{ data: ratingsData }, { data: likesData }, { data: repliesData }] = await Promise.all([
+      supabase
+        .from('latest_user_content_log')
+        .select('user_id, rating')
+        .eq('content_id', contentId)
+        .in('user_id', userIds),
+      supabase
+        .from('review_likes')
+        .select('review_id, user_id')
+        .in('review_id', reviewIds),
+      supabase
+        .from('review_replies')
+        .select('review_id')
+        .in('review_id', reviewIds),
+    ])
 
-        return {
-          id: review.id,
-          user_name: (review.app_user as any)?.username || 'Anonymous',
-          rating: ratingData?.rating || null,
-          review_text: review.text,
-          created_at: review.created_at,
-          like_count: likeCount,
-          reply_count: replyCount,
-          is_liked_by_current_user: isLiked
-        }
+    // Build maps
+    const ratingMap = new Map<string, number | null>()
+    ;(ratingsData || []).forEach((r: any) => {
+      ratingMap.set(r.user_id, r.rating ?? null)
+    })
+
+    const likeCountMap = new Map<number, number>()
+    const replyCountMap = new Map<number, number>()
+
+    ;(likesData || []).forEach((l: any) => {
+      likeCountMap.set(l.review_id, (likeCountMap.get(l.review_id) || 0) + 1)
+    })
+    ;(repliesData || []).forEach((rp: any) => {
+      replyCountMap.set(rp.review_id, (replyCountMap.get(rp.review_id) || 0) + 1)
+    })
+
+    // Current user's liked set
+    let likedSet = new Set<number>()
+    const { data: userRes } = await supabase.auth.getUser()
+    const uid = userRes.user?.id
+    if (uid) {
+      (likesData || []).forEach((l: any) => {
+        if (l.user_id === uid) likedSet.add(l.review_id)
       })
-    )
+    }
 
-    return { data: reviewsWithEnhancements }
+    const enhanced = (reviewsData || []).map((review) => ({
+      id: review.id,
+      user_name: (review.app_user as any)?.username || 'Anonymous',
+      rating: ratingMap.get(review.user_id) ?? null,
+      review_text: review.text,
+      created_at: review.created_at,
+      like_count: likeCountMap.get(review.id) || 0,
+      reply_count: replyCountMap.get(review.id) || 0,
+      is_liked_by_current_user: likedSet.has(review.id)
+    }))
+
+    return { data: enhanced }
   } catch (error) {
     console.error('Error in getContentReviews:', error)
     return { data: [], error }
@@ -670,7 +651,7 @@ export async function addReview(contentId: number, reviewText: string): Promise<
     }
 
     // Insert review
-    const { error } = await supabase
+    const { data: reviewData, error: reviewError } = await supabase
       .from('review')
       .insert({
         user_id: uid,
@@ -678,11 +659,21 @@ export async function addReview(contentId: number, reviewText: string): Promise<
         text: reviewText,
         created_at: new Date().toISOString()
       })
+      .select('id')
+      .single()
 
-    if (error) return { data: false, error }
+    if (reviewError) return { data: false, error: reviewError }
 
-    // Update content stats
-    await updateContentStats(contentId)
+    // Always create a new log that references this review
+    await supabase
+      .from('user_content_log')
+      .insert({
+        user_id: uid,
+        content_id: contentId,
+        content_status_id: 1, // treat review as after watch
+        review_id: reviewData.id,
+        date: new Date().toISOString(),
+      })
 
     return { data: true }
   } catch (error) {
@@ -732,42 +723,6 @@ export async function toggleReviewLike(reviewId: number): Promise<{ data: boolea
     }
   } catch (error) {
     return { data: false, isLiked: false, error }
-  }
-}
-
-// Get like count for a review
-export async function getReviewLikeCount(reviewId: number): Promise<{ count: number }> {
-  try {
-    const { count } = await supabase
-      .from('review_likes')
-      .select('*', { count: 'exact', head: true })
-      .eq('review_id', reviewId)
-
-    return { count: count || 0 }
-  } catch (error) {
-    console.error('Error getting review like count:', error)
-    return { count: 0 }
-  }
-}
-
-// Check if user liked a review
-export async function isReviewLikedByUser(reviewId: number): Promise<{ isLiked: boolean }> {
-  const { data: userRes } = await supabase.auth.getUser()
-  const uid = userRes.user?.id
-  if (!uid) return { isLiked: false }
-
-  try {
-    const { data } = await supabase
-      .from('review_likes')
-      .select('id')
-      .eq('review_id', reviewId)
-      .eq('user_id', uid)
-      .maybeSingle()
-
-    return { isLiked: data !== null }
-  } catch (error) {
-    console.error('Error checking if review is liked:', error)
-    return { isLiked: false }
   }
 }
 
@@ -1051,37 +1006,20 @@ export async function updateUserContentLog(
   if (!uid) return { data: false, error: 'not_authenticated' }
 
   try {
-    // Get existing log
-    const { data: existingLog } = await getUserContentLog(contentId)
-    
-    if (!existingLog) {
-      // Create new log if doesn't exist
-      const { error } = await supabase
-        .from('user_content_log')
-        .insert({
-          user_id: uid,
-          content_id: contentId,
-          content_status_id: updates.content_status_id || 1, // CONSUMED
-          rating: updates.rating,
-          is_favorite: updates.is_favorite || false,
-          is_consume_later: updates.is_consume_later || false,
-          date: updates.date || new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-
-      if (error) return { data: false, error }
-    } else {
-      // Update existing log
-      const { error } = await supabase
-        .from('user_content_log')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', existingLog.id)
-
-      if (error) return { data: false, error }
-    }
+    // Always create a new snapshot log based on provided updates
+    const { error } = await supabase
+      .from('user_content_log')
+      .insert({
+        user_id: uid,
+        content_id: contentId,
+  content_status_id: updates.content_status_id || 1,
+        rating: updates.rating ?? null,
+        is_favorite: updates.is_favorite ?? false,
+  is_consume_later: (updates.content_status_id || 1) === 1 ? false : (updates.is_consume_later ?? false),
+        date: updates.date || new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+    if (error) return { data: false, error }
 
     // Update content stats
     await updateContentStats(contentId)

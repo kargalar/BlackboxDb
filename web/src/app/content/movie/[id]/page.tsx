@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getMovieDetails, tmdbImage } from '@/services/tmdb';
-import { getContentById, logMovieWatch, toggleFavorite, rateMovie, getUserRating, getUserFavoriteStatus, getContentReviews, saveContentFromTMDB, addReview, toggleReviewLike, addReviewReply, getReviewReplies, getUserContentLogs, updateUserContentLogById, deleteUserContentLogById } from '@/services/movieLogs';
+import { getContentById, logMovieWatch, toggleFavorite, rateMovie, getContentReviews, saveContentFromTMDB, addReview, toggleReviewLike, addReviewReply, getReviewReplies, getUserContentLogs, updateUserContentLogById, deleteUserContentLogById, getUserContentLog, updateUserContentLog } from '@/services/movieLogs';
 import { supabase } from '@/lib/supabase';
 import { TMDBMovieDetail, TMDBCastMember } from '@/types/tmdb';
 import { Button } from '@/components/ui/button';
@@ -361,17 +361,26 @@ export default function MoviePage() {
     hasWatched: false
   });
   const [showLogForm, setShowLogForm] = useState(false);
+  const [newLogReviewText, setNewLogReviewText] = useState('');
   
-  // Handler functions
-  const handleLikeReview = async (reviewId: number) => {
+  const handleWatchlistClick = async () => {
     try {
-      const result = await toggleReviewLike(reviewId);
+      // Toggle consume_later status
+      const { data: currentLog } = await getUserContentLog(Number(id));
+      const newConsumeLaterStatus = currentLog ? !currentLog.is_consume_later : true;
+      
+      const result = await updateUserContentLog(Number(id), {
+        is_consume_later: newConsumeLaterStatus,
+        content_status_id: 2, // CONSUME_LATER
+        date: new Date().toISOString()
+      });
+      
       if (result.data) {
-        // Refresh reviews to get updated like counts
+        setIsInList(newConsumeLaterStatus);
         loadDatabaseStats();
       }
     } catch (error) {
-      console.error('Error liking review:', error);
+      console.error('Error toggling watchlist:', error);
     }
   };
 
@@ -384,6 +393,18 @@ export default function MoviePage() {
       }
     } catch (error) {
       console.error('Error adding reply:', error);
+    }
+  };
+
+  const handleLikeReview = async (reviewId: number) => {
+    try {
+      const result = await toggleReviewLike(reviewId);
+      if (result.data) {
+        // Refresh reviews to get updated like counts
+        loadDatabaseStats();
+      }
+    } catch (error) {
+      console.error('Error liking review:', error);
     }
   };
 
@@ -448,6 +469,7 @@ export default function MoviePage() {
       watchDate: log.date ? new Date(log.date).toISOString().split('T')[0] : '',
       hasWatched: log.content_status_id === 1
     });
+  setNewLogReviewText('');
     setShowLogForm(true);
   };
 
@@ -460,6 +482,7 @@ export default function MoviePage() {
       watchDate: new Date().toISOString().split('T')[0],
       hasWatched: false
     });
+  setNewLogReviewText('');
     setShowLogForm(true);
   };
 
@@ -478,25 +501,52 @@ export default function MoviePage() {
         // Update existing log
         result = await updateUserContentLogById(selectedLogId, updates);
       } else {
-        // Create new log
+        // Create new log (optionally with a review) as a single snapshot
         const { data: userRes } = await supabase.auth.getUser();
         if (userRes.user?.id) {
-          const { error } = await supabase
-            .from('user_content_log')
-            .insert({
-              user_id: userRes.user.id,
-              content_id: Number(id),
-              ...updates
-            });
-          result = { data: !error, error };
+          let reviewId: number | null = null;
+          const reviewTextToSave = newLogReviewText.trim();
+          if (reviewTextToSave) {
+            // Create review first
+            const { data: reviewIns, error: reviewErr } = await supabase
+              .from('review')
+              .insert({
+                user_id: userRes.user.id,
+                content_id: Number(id),
+                text: reviewTextToSave,
+                created_at: new Date().toISOString()
+              })
+              .select('id')
+              .single();
+            if (reviewErr) {
+              result = { data: false, error: reviewErr };
+            } else {
+              reviewId = reviewIns?.id ?? null;
+            }
+          }
+
+          if (result?.data === false && result.error) {
+            // review insert failed; stop here
+          } else {
+            const { error } = await supabase
+              .from('user_content_log')
+              .insert({
+                user_id: userRes.user.id,
+                content_id: Number(id),
+                review_id: reviewId,
+                ...updates
+              });
+            result = { data: !error, error };
+          }
         } else {
           result = { data: false, error: 'not_authenticated' };
         }
       }
       
       if (result.data) {
-        setShowEditModal(false);
-        setShowLogForm(false);
+  setShowEditModal(false);
+  setShowLogForm(false);
+  setNewLogReviewText('');
         // Refresh UI state with latest log data
         const { data: logs } = await getUserContentLogs(Number(id));
         if (logs.length > 0) {
@@ -549,27 +599,35 @@ export default function MoviePage() {
     if (!id) return;
     
     try {
-      // Get content statistics from database
-      const { data: content } = await getContentById(Number(id));
+      const contentId = Number(id);
+      // Fetch content stats, user latest log, and reviews in parallel
+      const [{ data: content }, { data: currentLog }, { data: reviewsData }] = await Promise.all([
+        getContentById(contentId),
+        getUserContentLog(contentId),
+        getContentReviews(contentId),
+      ]);
+
       if (content) {
         setContentStats({
           consume_count: content.consume_count || 0,
           favorite_count: content.favorite_count || 0,
           review_count: content.review_count || 0,
-          average_rating: content.average_rating || 0
+          average_rating: content.average_rating || 0,
         });
       }
 
-      // Get user's rating for this content
-      const { rating } = await getUserRating(Number(id));
-      setUserRating(rating);
+      if (currentLog) {
+        setIsWatched(currentLog.content_status_id === 1);
+        setIsInList(!!currentLog.is_consume_later);
+        setIsFavorited(!!currentLog.is_favorite);
+        setUserRating(currentLog.rating || 0);
+      } else {
+        setIsWatched(false);
+        setIsInList(false);
+        setIsFavorited(false);
+        setUserRating(0);
+      }
 
-      // Get user's favorite status
-      const { isFavorite } = await getUserFavoriteStatus(Number(id));
-      setIsFavorited(isFavorite);
-
-      // Get reviews for this content
-      const { data: reviewsData } = await getContentReviews(Number(id));
       setReviews(reviewsData || []);
     } catch (error) {
       console.error('Error loading database stats:', error);
@@ -577,53 +635,131 @@ export default function MoviePage() {
   }, [id]);
 
   useEffect(() => {
-    if (id) {
-      // Load movie details from TMDB
-      getMovieDetails(id)
-        .then(async (movieData) => {
-          setMovie(movieData)
-          
-          // Save movie to database if it doesn't exist
-          if (movieData) {
-            await saveContentFromTMDB(movieData)
-            // After saving to database, load database stats
-            loadDatabaseStats()
-          }
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false))
-        
-      // Initial load of database stats
-      loadDatabaseStats()
-    }
+    if (!id) return;
+    let canceled = false;
+
+    (async () => {
+      try {
+        setLoading(true);
+        const movieData = await getMovieDetails(id);
+        if (canceled) return;
+        setMovie(movieData);
+        if (movieData) {
+          // Save content, then load DB stats once
+          await saveContentFromTMDB(movieData);
+        }
+        if (!canceled) {
+          await loadDatabaseStats();
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (!canceled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      canceled = true;
+    };
   }, [id, loadDatabaseStats]);
 
   const handleWatchClick = async () => {
-    if (!isWatched) {
-      const result = await logMovieWatch(Number(id));
-      if (result.data) {
+    try {
+      const contentId = Number(id);
+      const { data: userRes } = await supabase.auth.getUser();
+      if (!userRes.user?.id) return;
+
+      // Get latest snapshot to preserve existing fields
+      const { data: latest } = await supabase
+        .from('latest_user_content_log')
+        .select('content_status_id, rating, is_favorite, is_consume_later')
+        .eq('user_id', userRes.user.id)
+        .eq('content_id', contentId)
+        .maybeSingle();
+
+      const currentlyWatched = !!latest && Number((latest as any).content_status_id) === 1;
+
+      if (!currentlyWatched) {
+        // Mark as watched; keep existing rating if any else null, keep fav; clear watchlist
         setIsWatched(true);
-        // Refresh stats after logging watch
-        loadDatabaseStats();
+        setIsInList(false);
+        const { error } = await supabase.from('user_content_log').insert({
+          user_id: userRes.user.id,
+          content_id: contentId,
+          content_status_id: 1,
+          rating: (latest as any)?.rating ?? null,
+          is_favorite: !!(latest as any)?.is_favorite,
+          is_consume_later: false,
+          date: new Date().toISOString(),
+        });
+        if (error) setIsWatched(false);
+      } else {
+        // Toggle off watched: set status to CONSUME_LATER (2) and clear rating
+        const prevWatched = isWatched;
+        const prevRating = userRating;
+        setIsWatched(false);
+        setUserRating(0);
+        const { error } = await supabase.from('user_content_log').insert({
+          user_id: userRes.user.id,
+          content_id: contentId,
+          content_status_id: 2,
+          rating: null,
+          is_favorite: !!(latest as any)?.is_favorite,
+          is_consume_later: true,
+          date: new Date().toISOString(),
+        });
+        if (error) {
+          setIsWatched(prevWatched);
+          setUserRating(prevRating);
+        }
       }
+
+      // Fire and forget refresh
+      loadDatabaseStats();
+    } catch (e) {
+      console.error('Error toggling watch:', e);
     }
   };
 
   const handleFavoriteClick = async () => {
-    const result = await toggleFavorite(Number(id));
-    if (result.data) {
-      setIsFavorited(result.isFavorite);
-      // Refresh stats after toggling favorite
+    // Optimistic update
+    const prevFav = isFavorited;
+    const prevFavCount = contentStats.favorite_count;
+    const nextFav = !prevFav;
+    setIsFavorited(nextFav);
+    setContentStats((s) => ({
+      ...s,
+      favorite_count: Math.max(0, (s.favorite_count || 0) + (nextFav ? 1 : -1)),
+    }));
+    try {
+      const result = await toggleFavorite(Number(id));
+      if (!result.data) {
+        // rollback
+        setIsFavorited(prevFav);
+        setContentStats((s) => ({ ...s, favorite_count: prevFavCount }));
+      }
+      // No need to wait for stats; can refresh in background
       loadDatabaseStats();
+    } catch (e) {
+      setIsFavorited(prevFav);
+      setContentStats((s) => ({ ...s, favorite_count: prevFavCount }));
     }
   };
 
   const handleRating = async (rating: number) => {
-    const result = await rateMovie(Number(id), rating);
-    if (result.data) {
-      setUserRating(rating);
-      // Refresh stats after rating
+    // Optimistic update
+    const prev = userRating;
+    setUserRating(rating);
+    setIsWatched(true);
+    setIsInList(false);
+    try {
+      const result = await rateMovie(Number(id), rating);
+      if (!result.data) {
+        setUserRating(prev);
+      }
       loadDatabaseStats();
+    } catch (e) {
+      setUserRating(prev);
     }
   };
 
@@ -756,10 +892,16 @@ export default function MoviePage() {
                 onClick={handleFavoriteClick}
               />
               <ActionButton
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>}
+                label="Add to Watchlist"
+                active={isInList}
+                onClick={handleWatchlistClick}
+              />
+              <ActionButton
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>}
                 label="Add to List"
-                active={isInList}
-                onClick={() => setIsInList(!isInList)}
+                active={false}
+                onClick={() => {/* Future feature */}}
               />
               <ActionButton
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>}
@@ -1053,12 +1195,21 @@ export default function MoviePage() {
                                 </div>
                               )}
                               
+                              {log.review_id && (
+                                <div className="flex items-center space-x-1">
+                                  <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                                  </svg>
+                                  <span className="text-gray-300">Review</span>
+                                </div>
+                              )}
+                              
                               {log.is_consume_later && (
                                 <div className="flex items-center space-x-1">
                                   <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
                                   </svg>
-                                  <span className="text-gray-300">Watch Later</span>
+                                  <span className="text-gray-300">Watchlist</span>
                                 </div>
                               )}
                             </div>
@@ -1095,13 +1246,13 @@ export default function MoviePage() {
                   )}
                 </div>
 
-                {/* Watch Status */}
+        {/* Watch Status */}
                 <div>
                   <label className="flex items-center text-white">
                     <input
                       type="checkbox"
                       checked={editLogData.hasWatched}
-                      onChange={(e) => setEditLogData(prev => ({ ...prev, hasWatched: e.target.checked }))}
+          onChange={(e) => setEditLogData(prev => ({ ...prev, hasWatched: e.target.checked, rating: e.target.checked ? prev.rating : 0 }))}
                       className="mr-2"
                     />
                     Watched this movie
@@ -1178,6 +1329,21 @@ export default function MoviePage() {
                     Watch later
                   </label>
                 </div>
+
+                {/* Review (only when creating a new log) */}
+                {!selectedLogId && (
+                  <div>
+                    <label className="block text-white mb-2">Review (optional)</label>
+                    <textarea
+                      value={newLogReviewText}
+                      onChange={(e) => setNewLogReviewText(e.target.value)}
+                      placeholder="Share your thoughts..."
+                      className="w-full p-3 bg-gray-700 text-white rounded-lg resize-none h-24 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      maxLength={500}
+                    />
+                    <div className="text-xs text-gray-400 text-right">{newLogReviewText.length}/500</div>
+                  </div>
+                )}
 
                 {/* Modal Actions */}
                 <div className="flex justify-between mt-6">
