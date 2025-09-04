@@ -10,7 +10,7 @@ const nextConfig = {
         ],
         unoptimized: true,
     },
-    output: 'export',
+    // output: 'export', // Temporarily disabled for dynamic routes
     trailingSlash: true,
     // Only use basePath and assetPrefix for production builds
     ...(process.env.NODE_ENV === 'production' && {

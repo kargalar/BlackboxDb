@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getMovieDetails, tmdbImage } from '@/services/tmdb';
+import { getContentById, logMovieWatch, toggleFavorite, rateMovie, getUserRating, getUserFavoriteStatus, getContentReviews, saveContentFromTMDB, addReview } from '@/services/movieLogs';
 import { TMDBMovieDetail, TMDBCastMember } from '@/types/tmdb';
 import { Button } from '@/components/ui/button';
 
@@ -150,19 +151,121 @@ export default function MoviePage() {
   const [activeTab, setActiveTab] = useState<'cast' | 'details' | 'platform'>('cast');
   const [mostPopular, setMostPopular] = useState(true);
 
-  // Mock states for user interactions
+  // Database-driven states
+  const [contentStats, setContentStats] = useState({
+    consume_count: 0,
+    favorite_count: 0,
+    review_count: 0,
+    average_rating: 0
+  });
+  const [userRating, setUserRating] = useState<number>(0);
+  const [isFavorited, setIsFavorited] = useState(false);
   const [isWatched, setIsWatched] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isInList, setIsInList] = useState(false);
+  const [reviews, setReviews] = useState<Array<{
+    id: number;
+    user_name: string;
+    rating: number | null;
+    review_text: string;
+    created_at: string;
+  }>>([]);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewText, setReviewText] = useState('');
+
+  const loadDatabaseStats = useCallback(async () => {
+    if (!id) return;
+    
+    try {
+      // Get content statistics from database
+      const { data: content } = await getContentById(Number(id));
+      if (content) {
+        setContentStats({
+          consume_count: content.consume_count || 0,
+          favorite_count: content.favorite_count || 0,
+          review_count: content.review_count || 0,
+          average_rating: content.average_rating || 0
+        });
+      }
+
+      // Get user's rating for this content
+      const { rating } = await getUserRating(Number(id));
+      setUserRating(rating);
+
+      // Get user's favorite status
+      const { isFavorite } = await getUserFavoriteStatus(Number(id));
+      setIsFavorited(isFavorite);
+
+      // Get reviews for this content
+      const { data: reviewsData } = await getContentReviews(Number(id));
+      setReviews(reviewsData || []);
+    } catch (error) {
+      console.error('Error loading database stats:', error);
+    }
+  }, [id]);
 
   useEffect(() => {
     if (id) {
+      // Load movie details from TMDB
       getMovieDetails(id)
-        .then(setMovie)
+        .then(async (movieData) => {
+          setMovie(movieData)
+          
+          // Save movie to database if it doesn't exist
+          if (movieData) {
+            await saveContentFromTMDB(movieData)
+            // After saving to database, load database stats
+            loadDatabaseStats()
+          }
+        })
         .catch(console.error)
-        .finally(() => setLoading(false));
+        .finally(() => setLoading(false))
+        
+      // Initial load of database stats
+      loadDatabaseStats()
     }
-  }, [id]);
+  }, [id, loadDatabaseStats]);
+
+  const handleWatchClick = async () => {
+    if (!isWatched) {
+      const result = await logMovieWatch(Number(id));
+      if (result.data) {
+        setIsWatched(true);
+        // Refresh stats after logging watch
+        loadDatabaseStats();
+      }
+    }
+  };
+
+  const handleFavoriteClick = async () => {
+    const result = await toggleFavorite(Number(id));
+    if (result.data) {
+      setIsFavorited(result.isFavorite);
+      // Refresh stats after toggling favorite
+      loadDatabaseStats();
+    }
+  };
+
+  const handleRating = async (rating: number) => {
+    const result = await rateMovie(Number(id), rating);
+    if (result.data) {
+      setUserRating(rating);
+      // Refresh stats after rating
+      loadDatabaseStats();
+    }
+  };
+
+  const handleAddReview = async () => {
+    if (!reviewText.trim()) return;
+    
+    const result = await addReview(Number(id), reviewText.trim());
+    if (result.data) {
+      setReviewText('');
+      setShowReviewForm(false);
+      // Refresh reviews and stats after adding review
+      loadDatabaseStats();
+    }
+  };
 
   if (loading) {
     return (
@@ -183,30 +286,21 @@ export default function MoviePage() {
     );
   }
 
-  // Mock data for comments
-  const comments = [
-    {
-      user: "ballamyus",
-      rating: 8.0,
-      comment: "great galaxy road trip. cool movie",
-      date: "3 months ago"
-    },
-    {
-      user: "J",
-      rating: 9.0,
-      comment: "A family road trip movie in which we never quite know where this film is heading and are often led to doubt why. 'Hit the Road' may be set amidst the unfolding desert highways and gorgeous cinematic visions of mountainous Iran, but it both literally and figuratively pushes boundaries like 'Little Miss Sunshine'. Sure, there might not have been a major 'detour' away from our mortal coil at some point along the way. 'Where are we?' The story behind most Kurdish Palestinian exile into the caverns and mountains of their ancestral homeland. While the elder son, well-played, first takes place. 'We're dead, socializes this youngster at her two sons though Royan Ghorishi from his back seat. 'Hi six year-old boy.'",
-      date: "1 year ago"
-    },
-    {
-      user: "metallcad",
-      rating: 6.0,
-      comment: "Four one of my fav films. Layer one of the best songs of all time. This little dry, hits my heart. About the way film weaves the outer films involves. All is good except one think of my parents journey.",
-      date: "2 years ago"
-    }
-  ];
-
   const mainCast = movie.credits?.cast?.slice(0, 8) || [];
   const similarMovies = movie.similar?.results?.slice(0, 10) || [];
+
+  // Format date helper
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return '1 day ago';
+    if (diffDays < 30) return `${diffDays} days ago`;
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+    return `${Math.floor(diffDays / 365)} years ago`;
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -244,8 +338,9 @@ export default function MoviePage() {
 
             {/* Rating */}
             <div className="flex items-center space-x-4 mb-6">
-              <StarRating rating={movie.vote_average} />
-              <span className="text-2xl font-bold">{movie.vote_average.toFixed(1)}</span>
+              <StarRating rating={contentStats.average_rating * 2} />
+              <span className="text-2xl font-bold">{contentStats.average_rating.toFixed(1)}</span>
+              <span className="text-gray-400">({contentStats.review_count} reviews)</span>
             </div>
 
             {/* Description */}
@@ -258,19 +353,19 @@ export default function MoviePage() {
                   <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
                   <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
                 </svg>
-                <span className="text-gray-400">{Math.floor(movie.popularity)}k</span>
+                <span className="text-gray-400">{contentStats.consume_count}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/>
                 </svg>
-                <span className="text-gray-400">{movie.vote_count}</span>
+                <span className="text-gray-400">{contentStats.favorite_count}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd"/>
                 </svg>
-                <span className="text-gray-400">{comments.length}</span>
+                <span className="text-gray-400">{contentStats.review_count}</span>
               </div>
             </div>
 
@@ -278,14 +373,15 @@ export default function MoviePage() {
             <div className="flex flex-wrap gap-3 mb-8">
               <ActionButton
                 icon={<svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/></svg>}
-                label="Add Review"
-                onClick={() => setIsWatched(!isWatched)}
+                label="Watch"
+                active={isWatched}
+                onClick={handleWatchClick}
               />
               <ActionButton
                 icon={<svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/></svg>}
-                label="Edit or Add Log"
-                active={isLiked}
-                onClick={() => setIsLiked(!isLiked)}
+                label="Favorite"
+                active={isFavorited}
+                onClick={handleFavoriteClick}
               />
               <ActionButton
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>}
@@ -293,7 +389,85 @@ export default function MoviePage() {
                 active={isInList}
                 onClick={() => setIsInList(!isInList)}
               />
+              <ActionButton
+                icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>}
+                label="Add Review"
+                active={showReviewForm}
+                onClick={() => setShowReviewForm(!showReviewForm)}
+              />
             </div>
+
+            {/* User Rating */}
+            <div className="mb-8">
+              <h3 className="font-medium mb-3">Your Rating</h3>
+              <div className="flex items-center space-x-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => handleRating(star)}
+                    className="hover:scale-110 transition-transform"
+                  >
+                    <svg 
+                      className={`w-8 h-8 ${
+                        star <= userRating 
+                          ? 'text-yellow-400 fill-current' 
+                          : 'text-gray-400'
+                      }`} 
+                      fill={star <= userRating ? 'currentColor' : 'none'}
+                      stroke="currentColor" 
+                      viewBox="0 0 20 20"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={1} 
+                        d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"
+                      />
+                    </svg>
+                  </button>
+                ))}
+                <span className="ml-4 text-gray-400">
+                  {userRating > 0 ? `${userRating}/5` : 'Not rated yet'}
+                </span>
+              </div>
+            </div>
+
+            {/* Review Form */}
+            {showReviewForm && (
+              <div className="mb-8 p-4 bg-gray-800 rounded-lg">
+                <h3 className="font-medium mb-3">Add Your Review</h3>
+                <textarea
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  placeholder="Share your thoughts about this movie..."
+                  className="w-full p-3 bg-gray-700 text-white rounded-lg resize-none h-24 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  maxLength={500}
+                />
+                <div className="flex justify-between items-center mt-3">
+                  <span className="text-sm text-gray-400">
+                    {reviewText.length}/500 characters
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setShowReviewForm(false);
+                        setReviewText('');
+                      }}
+                      className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleAddReview}
+                      disabled={!reviewText.trim()}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Submit Review
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Tabs */}
             <div className="border-b border-gray-700 mb-6">
@@ -394,9 +568,19 @@ export default function MoviePage() {
           </div>
           
           <div className="space-y-4">
-            {comments.map((comment, index) => (
-              <Comment key={index} {...comment} />
-            ))}
+            {reviews.length > 0 ? (
+              reviews.map((review) => (
+                <Comment 
+                  key={review.id} 
+                  user={review.user_name}
+                  rating={review.rating || 0}
+                  comment={review.review_text}
+                  date={formatDate(review.created_at)}
+                />
+              ))
+            ) : (
+              <p className="text-gray-400 text-center py-8">No reviews yet. Be the first to review this movie!</p>
+            )}
           </div>
         </div>
 

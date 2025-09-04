@@ -9,6 +9,11 @@ export interface Content {
   user_rating?: number // Kullanıcının verdiği puan
   is_favorite?: boolean // Favori durumu
   date?: string // Log tarihi
+  // Supabase istatistikleri
+  consume_count?: number // İzlenme sayısı
+  favorite_count?: number // Favori sayısı  
+  review_count?: number // Yorum sayısı
+  average_rating?: number // Ortalama puan
 }
 
 export interface Review {
@@ -152,13 +157,45 @@ export async function getUserStats(): Promise<{ totalMovies: number; thisYearMov
 // --- Movie detail helpers used by movie page ---
 
 export async function getContentById(id: number): Promise<{ data: Content | null }> {
-  const { data, error } = await supabase
-    .from('content')
-    .select('id, title, poster_path, favorite_count')
-    .eq('id', id)
-    .maybeSingle()
-  if (error || !data) return { data: null }
-  return { data: { id: data.id, title: data.title, poster_path: data.poster_path, fav_count: data.favorite_count ?? 0 } }
+  try {
+    // Get content basic info
+    const { data: contentData, error: contentError } = await supabase
+      .from('content')
+      .select(`
+        id, 
+        title, 
+        poster_path, 
+        consume_count,
+        favorite_count,
+        review_count,
+        rating_distribution
+      `)
+      .eq('id', id)
+      .maybeSingle()
+
+    if (contentError || !contentData) {
+      return { data: null }
+    }
+
+    // Get real-time stats
+    const stats = await getContentStats(id)
+
+    return { 
+      data: { 
+        id: contentData.id, 
+        title: contentData.title, 
+        poster_path: contentData.poster_path, 
+        fav_count: stats.favorite_count,
+        consume_count: stats.consume_count,
+        favorite_count: stats.favorite_count,
+        review_count: stats.review_count,
+        average_rating: stats.average_rating
+      } 
+    }
+  } catch (error) {
+    console.error('Error in getContentById:', error)
+    return { data: null }
+  }
 }
 
 export async function saveContentFromTMDB(movie: TMDBMovieDetail): Promise<{ data: Content | null; error?: any }> {
@@ -218,6 +255,10 @@ export async function logMovieWatch(contentId: number): Promise<{ data: boolean;
     date: new Date().toISOString(),
   })
   if (error) return { data: false, error }
+  
+  // Update content stats
+  await updateContentStats(contentId)
+  
   return { data: true }
 }
 
@@ -273,6 +314,9 @@ export async function rateMovie(contentId: number, rating: number): Promise<{ da
       if (error) return { data: false, error }
     }
 
+    // Update content stats
+    await updateContentStats(contentId)
+
     return { data: true }
   } catch (error) {
     return { data: false, error }
@@ -311,6 +355,94 @@ export async function getUserFavoriteStatus(contentId: number): Promise<{ isFavo
 
   if (error || !data) return { isFavorite: false }
   return { isFavorite: data.is_favorite ?? false }
+}
+
+// Get content statistics from database
+export async function getContentStats(contentId: number): Promise<{
+  consume_count: number;
+  favorite_count: number;
+  review_count: number;
+  average_rating: number;
+}> {
+  try {
+    // Get consume count (how many users watched)
+    const { count: consumeCount } = await supabase
+      .from('user_content_log')
+      .select('*', { count: 'exact', head: true })
+      .eq('content_id', contentId)
+      .eq('content_status_id', 1) // CONSUMED
+
+    // Get favorite count
+    const { count: favoriteCount } = await supabase
+      .from('user_content_log')
+      .select('*', { count: 'exact', head: true })
+      .eq('content_id', contentId)
+      .eq('is_favorite', true)
+
+    // Get review count
+    const { count: reviewCount } = await supabase
+      .from('review')
+      .select('*', { count: 'exact', head: true })
+      .eq('content_id', contentId)
+
+    // Get average rating
+    const { data: ratingData } = await supabase
+      .from('user_content_log')
+      .select('rating')
+      .eq('content_id', contentId)
+      .not('rating', 'is', null)
+
+    let averageRating = 0
+    if (ratingData && ratingData.length > 0) {
+      const ratings = ratingData.map(r => Number(r.rating)).filter(r => r > 0)
+      if (ratings.length > 0) {
+        averageRating = ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+      }
+    }
+
+    return {
+      consume_count: consumeCount || 0,
+      favorite_count: favoriteCount || 0,
+      review_count: reviewCount || 0,
+      average_rating: Math.round(averageRating * 10) / 10 // 1 decimal place
+    }
+  } catch (error) {
+    console.error('Error fetching content stats:', error)
+    return {
+      consume_count: 0,
+      favorite_count: 0,
+      review_count: 0,
+      average_rating: 0
+    }
+  }
+}
+
+// Update content statistics in content table
+export async function updateContentStats(contentId: number): Promise<{ success: boolean }> {
+  try {
+    const stats = await getContentStats(contentId)
+    
+    const { error } = await supabase
+      .from('content')
+      .update({
+        consume_count: stats.consume_count,
+        favorite_count: stats.favorite_count,
+        review_count: stats.review_count,
+        // Store rating as 0-10 scale for compatibility with TMDB
+        rating_distribution: [0, 0, 0, 0, 0] // Could be expanded later for rating distribution
+      })
+      .eq('id', contentId)
+
+    if (error) {
+      console.error('Error updating content stats:', error)
+      return { success: false }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error in updateContentStats:', error)
+    return { success: false }
+  }
 }
 
 // Toggle favorite status for a movie
@@ -361,6 +493,9 @@ export async function toggleFavorite(contentId: number): Promise<{ data: boolean
 
       if (error) return { data: false, isFavorite: false, error }
     }
+
+    // Update content stats
+    await updateContentStats(contentId)
 
     return { data: true, isFavorite: newFavoriteStatus }
   } catch (error) {
@@ -431,4 +566,97 @@ export async function getUserMovieReview(contentId: number): Promise<{ data: Rev
 
   if (error || !data) return { data: null }
   return { data: data as Review }
+}
+
+// Get reviews for a specific content
+export async function getContentReviews(contentId: number): Promise<{
+  data: Array<{
+    id: number;
+    user_name: string;
+    rating: number | null;
+    review_text: string;
+    created_at: string;
+  }>;
+  error?: any;
+}> {
+  try {
+    // First get reviews with user info
+    const { data: reviewsData, error: reviewError } = await supabase
+      .from('review')
+      .select(`
+        id,
+        review_text,
+        created_at,
+        user_id,
+        app_user!inner (
+          username
+        )
+      `)
+      .eq('content_id', contentId)
+      .order('created_at', { ascending: false })
+
+    if (reviewError) {
+      console.error('Error fetching reviews:', reviewError)
+      return { data: [], error: reviewError }
+    }
+
+    // For each review, get the user's rating from user_content_log
+    const reviewsWithRatings = await Promise.all(
+      (reviewsData || []).map(async (review) => {
+        const { data: ratingData } = await supabase
+          .from('user_content_log')
+          .select('rating')
+          .eq('user_id', review.user_id)
+          .eq('content_id', contentId)
+          .maybeSingle()
+
+        return {
+          id: review.id,
+          user_name: (review.app_user as any)?.username || 'Anonymous',
+          rating: ratingData?.rating || null,
+          review_text: review.review_text,
+          created_at: review.created_at
+        }
+      })
+    )
+
+    return { data: reviewsWithRatings }
+  } catch (error) {
+    console.error('Error in getContentReviews:', error)
+    return { data: [], error }
+  }
+}
+
+// Add a review for content
+export async function addReview(contentId: number, reviewText: string): Promise<{ data: boolean; error?: any }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userRes.user?.id
+  if (!uid) return { data: false, error: 'not_authenticated' }
+
+  try {
+    // Ensure content exists
+    const { data: contentRow } = await supabase.from('content').select('id').eq('id', contentId).maybeSingle()
+    if (!contentRow) {
+      return { data: false, error: 'content_not_found' }
+    }
+
+    // Insert review
+    const { error } = await supabase
+      .from('review')
+      .insert({
+        user_id: uid,
+        content_id: contentId,
+        review_text: reviewText,
+        created_at: new Date().toISOString()
+      })
+
+    if (error) return { data: false, error }
+
+    // Update content stats
+    await updateContentStats(contentId)
+
+    return { data: true }
+  } catch (error) {
+    return { data: false, error }
+  }
 }

@@ -206,7 +206,7 @@ export default function ProfilePage() {
               ) : (
                 <div className="grid grid-cols-2 gap-3">
                   {recentMovies.slice(0, 2).map((movie) => (
-                    <Link key={movie.id} href={`/movie?id=${movie.id}`} className="relative group cursor-pointer">
+                    <Link key={movie.id} href={`/content/movie/${movie.id}`} className="relative group cursor-pointer">
                       <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden">
                         {movie.poster_path ? (
                           <Image
@@ -244,7 +244,7 @@ export default function ProfilePage() {
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {recentMovies.map((movie) => (
-                    <Link key={movie.id} href={`/movie?id=${movie.id}`} className="relative group cursor-pointer">
+                    <Link key={movie.id} href={`/content/movie/${movie.id}`} className="relative group cursor-pointer">
                       <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden relative">
                         {movie.poster_path ? (
                           <Image
@@ -316,7 +316,7 @@ export default function ProfilePage() {
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                   {favoriteMovies.map((movie) => (
-                    <Link key={movie.id} href={`/movie?id=${movie.id}`} className="relative group cursor-pointer">
+                    <Link key={movie.id} href={`/content/movie/${movie.id}`} className="relative group cursor-pointer">
                       <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden">
                         {movie.poster_path ? (
                           <Image

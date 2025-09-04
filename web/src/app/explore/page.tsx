@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { discoverMovies, tmdbImage } from '@/services/tmdb';
+import { getContentStats } from '@/services/movieLogs';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 
@@ -38,7 +39,35 @@ function ExploreContent() {
           'primary_release_date.lte': lte,
         });
         
-        setData(result);
+        // Get database ratings for each movie
+        if (result?.results?.length) {
+          const moviesWithDbRatings = await Promise.all(
+            result.results.map(async (movie: any) => {
+              try {
+                const stats = await getContentStats(movie.id);
+                return {
+                  ...movie,
+                  db_rating: stats.average_rating || 0,
+                  db_review_count: stats.review_count || 0
+                };
+              } catch (error) {
+                // If error, fallback to TMDB rating
+                return {
+                  ...movie,
+                  db_rating: movie.vote_average / 2 || 0, // Convert TMDB 10-scale to 5-scale
+                  db_review_count: 0
+                };
+              }
+            })
+          );
+          
+          setData({
+            ...result,
+            results: moviesWithDbRatings
+          });
+        } else {
+          setData(result);
+        }
       } catch (e: any) {
         setError(e?.message || 'Beklenmeyen hata');
       } finally {
@@ -176,7 +205,7 @@ function ExploreContent() {
           
           return (
             <article key={m.id} className="group">
-              <a href={`/movie?id=${m.id}`} className="block">
+              <a href={`/content/movie/${m.id}`} className="block">
                 <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 shadow-sm">
                   {m.poster_path ? (
                     <Image
@@ -197,7 +226,10 @@ function ExploreContent() {
                   {/* Overlay with rating */}
                   <div className="absolute top-2 right-2">
                     <div className="rounded-full bg-black/70 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                      ⭐ {m.vote_average?.toFixed?.(1) ?? '—'}
+                      ⭐ {m.db_rating > 0 ? m.db_rating.toFixed(1) : '—'}
+                      {m.db_review_count > 0 && (
+                        <span className="ml-1 opacity-75">({m.db_review_count})</span>
+                      )}
                     </div>
                   </div>
                 </div>
