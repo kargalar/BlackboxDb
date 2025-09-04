@@ -38,8 +38,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    let isMounted = true
     console.log('🚀 AuthProvider: useEffect başladı');
+    let isMounted = true
+
+    // Fallback timeout to prevent infinite loading
+    const fallbackTimeout = setTimeout(() => {
+      if (loading) {
+        console.log('⏰ AuthProvider: Fallback timeout - loading takıldı, false yapılıyor');
+        setLoading(false);
+      }
+    }, 5000); // 5 saniye sonra loading'i false yap
 
     // Get initial session
     const getInitialSession = async () => {
@@ -81,14 +89,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // Fallback timeout to prevent infinite loading
-    const fallbackTimeout = setTimeout(() => {
-      if (isMounted && loading) {
-        console.log('⏰ AuthProvider: Fallback timeout - loading takıldı, false yapılıyor');
-        setLoading(false);
-      }
-    }, 3000); // 3 saniye sonra loading'i false yap
-
     getInitialSession()
 
     // Listen for auth changes
@@ -120,6 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => {
+      console.log('🧹 AuthProvider: Cleanup');
       isMounted = false
       clearTimeout(fallbackTimeout)
       subscription.unsubscribe()
@@ -200,7 +201,7 @@ async function ensureAppUser(user: User, usernameFallback?: string) {
     console.log('🔄 ensureAppUser called for user:', user.id, user.email);
     
     // Wait briefly to let database triggers complete
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     // Check if app_user row exists (trigger should have created it)
     const { data: existing, error: selectErr } = await supabase
@@ -213,12 +214,13 @@ async function ensureAppUser(user: User, usernameFallback?: string) {
 
     if (selectErr) {
       console.warn('⚠️ Error checking existing user:', selectErr);
-      // Continue anyway, this might be normal due to RLS
+      // If RLS is blocking, that's normal for some edge cases
+      return;
     }
 
     if (existing) {
       console.log('✅ app_user already exists:', existing);
-      return existing;
+      return;
     }
 
     // If no user found, trigger might have failed, try manual creation
@@ -227,7 +229,7 @@ async function ensureAppUser(user: User, usernameFallback?: string) {
     const email = user.email ?? (user.user_metadata?.email as string | undefined) ?? ''
     const username = (user.user_metadata?.username as string | undefined)
       || usernameFallback
-      || (email ? email.split('@')[0] : `user_${user.id.slice(-8)}`)
+      || (email ? email.split('@')[0] : 'user')
 
     console.log('➕ Creating new app_user record:', { 
       auth_user_id: user.id, 
@@ -252,15 +254,12 @@ async function ensureAppUser(user: User, usernameFallback?: string) {
 
     if (upsertError) {
       console.error('❌ Error creating app_user:', upsertError);
-      throw upsertError;
     } else {
       console.log('✅ app_user created successfully:', upsertData);
-      return upsertData?.[0];
     }
     
   } catch (e) {
-    // Don't throw errors to avoid breaking auth flow; DB trigger likely created the row
-    console.error('❌ ensureAppUser error (non-blocking):', e);
-    return null;
+    // Swallow errors to avoid breaking auth flow; DB trigger likely created the row
+    console.error('❌ ensureAppUser error:', e);
   }
 }
