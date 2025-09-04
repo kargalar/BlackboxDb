@@ -17,32 +17,69 @@ export interface Review {
   rating?: number | null
 }
 
-// Fetch current user's watched movies using existing RPC get_user_contents
+// Fetch current user's watched movies using direct table query (fallback for missing RPC)
 export async function getUserWatchedMovies(): Promise<{ data: Content[] }> {
   const { data: userRes } = await supabase.auth.getUser()
   const uid = userRes.user?.id
   if (!uid) return { data: [] }
 
-  const { data, error } = await supabase.rpc('get_user_contents', {
-    user_id_param: uid,
-    log_user_id_param: uid,
-    content_type_param: 1, // 1 = MOVIE
-    page_param: 1,
-    limit_param: 40
-  })
-
-  if (error || !data) return { data: [] }
-
   try {
-    const contents = (data.contents as any[] | undefined) ?? []
-    const mapped: Content[] = contents.map((item: any) => ({
-      id: Number(item.content_id),
-      poster_path: item.poster_path ?? null,
-      title: item.title ?? '',
-      fav_count: item.is_favorite ? 1 : 0,
-    }))
+    // Try RPC first
+    const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_contents', {
+      user_id_param: uid,
+      log_user_id_param: uid,
+      content_type_param: 1, // 1 = MOVIE
+      page_param: 1,
+      limit_param: 40
+    })
+
+    if (!rpcError && rpcData) {
+      const contents = (rpcData.contents as any[] | undefined) ?? []
+      const mapped: Content[] = contents.map((item: any) => ({
+        id: Number(item.content_id),
+        poster_path: item.poster_path ?? null,
+        title: item.title ?? '',
+        fav_count: item.is_favorite ? 1 : 0,
+      }))
+      return { data: mapped }
+    }
+  } catch (error) {
+    console.log('RPC failed, falling back to direct query:', error)
+  }
+
+  // Fallback: Direct table query using latest_user_content_log view
+  try {
+    const { data: logData, error: logError } = await supabase
+      .from('latest_user_content_log')
+      .select(`
+        content_id,
+        content:content_id (
+          id,
+          title,
+          poster_path,
+          favorite_count
+        )
+      `)
+      .eq('user_id', uid)
+      .limit(40)
+
+    if (logError) {
+      console.error('Latest log query failed:', logError)
+      return { data: [] }
+    }
+
+    const mapped: Content[] = (logData || [])
+      .filter(item => item.content)
+      .map((item: any) => ({
+        id: item.content.id,
+        poster_path: item.content.poster_path ?? null,
+        title: item.content.title ?? '',
+        fav_count: item.content.favorite_count ?? 0,
+      }))
+
     return { data: mapped }
-  } catch {
+  } catch (error) {
+    console.error('Fallback query failed:', error)
     return { data: [] }
   }
 }
@@ -53,21 +90,49 @@ export async function getUserStats(): Promise<{ totalMovies: number; thisYearMov
   const uid = userRes.user?.id
   if (!uid) return { totalMovies: 0, thisYearMovies: 0, averageRating: 0, reviewCount: 0 }
 
-  const { data, error } = await supabase.rpc('get_user_info_with_stats', {
-    user_uuid: uid,
-    profile_user_uuid: uid,
-  })
+  try {
+    // Try RPC first
+    const { data, error } = await supabase.rpc('get_user_info_with_stats', {
+      user_uuid: uid,
+      profile_user_uuid: uid,
+    })
 
-  if (error || !data || !Array.isArray(data) || data.length === 0) {
-    return { totalMovies: 0, thisYearMovies: 0, averageRating: 0, reviewCount: 0 }
+    if (!error && data && Array.isArray(data) && data.length > 0) {
+      const row = data[0]
+      return {
+        totalMovies: Number(row.total_watched_movies ?? 0),
+        thisYearMovies: 0, // TODO: add RPC or filter logs for current year
+        averageRating: 0, // TODO: compute from logs or add RPC
+        reviewCount: 0, // TODO: add RPC for review count per user
+      }
+    }
+  } catch (error) {
+    console.log('RPC stats failed, using fallback:', error)
   }
 
-  const row = data[0]
-  return {
-    totalMovies: Number(row.total_watched_movies ?? 0),
-    thisYearMovies: 0, // TODO: add RPC or filter logs for current year
-    averageRating: 0, // TODO: compute from logs or add RPC
-    reviewCount: 0, // TODO: add RPC for review count per user
+  // Fallback: Calculate from available data
+  try {
+    // Count from latest_user_content_log view
+    const { count: totalMovies } = await supabase
+      .from('latest_user_content_log')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', uid)
+
+    // Count reviews
+    const { count: reviewCount } = await supabase
+      .from('review')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', uid)
+
+    return {
+      totalMovies: totalMovies || 0,
+      thisYearMovies: 0, // Would need date filtering
+      averageRating: 0, // Would need rating calculation
+      reviewCount: reviewCount || 0,
+    }
+  } catch (error) {
+    console.error('Fallback stats failed:', error)
+    return { totalMovies: 0, thisYearMovies: 0, averageRating: 0, reviewCount: 0 }
   }
 }
 

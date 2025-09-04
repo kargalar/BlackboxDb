@@ -2,11 +2,13 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function Header() {
   const { user, loading, signInWithGoogle, signOut } = useAuth()
+  const router = useRouter()
 
   const handleGoogleSignIn = async () => {
     try {
@@ -24,6 +26,10 @@ export default function Header() {
     }
   }
 
+  const handleProfileClick = () => {
+    router.push('/profile')
+  }
+
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 dark:bg-gray-900/80 dark:border-gray-800">
       <div className="mx-auto max-w-7xl px-4">
@@ -37,11 +43,6 @@ export default function Header() {
             <Link href="/explore" className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
               Keşfet
             </Link>
-            {user && (
-              <Link href="/profile" className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
-                Profil
-              </Link>
-            )}
           </nav>
 
           <div className="flex items-center gap-3">
@@ -53,26 +54,18 @@ export default function Header() {
             </button>
             
             {loading ? (
-              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+              <div className="w-20 h-8 rounded bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
             ) : user ? (
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  {user.user_metadata?.avatar_url && (
-                    <Image 
-                      src={user.user_metadata.avatar_url} 
-                      alt={user.user_metadata?.full_name || user.email || 'User'} 
-                      width={32}
-                      height={32}
-                      className="rounded-full"
-                    />
-                  )}
-                  <span className="hidden md:block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {user.user_metadata?.full_name || user.email}
-                  </span>
-                </div>
+                <button 
+                  onClick={handleProfileClick}
+                  className="text-sm font-medium text-gray-700 hover:text-purple-600 dark:text-gray-300 dark:hover:text-purple-400 transition-colors px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  {user.user_metadata?.full_name || user.email?.split('@')[0] || 'Profil'}
+                </button>
                 <button 
                   onClick={handleSignOut}
-                  className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+                  className="text-sm font-medium text-gray-700 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400 transition-colors"
                 >
                   Çıkış
                 </button>

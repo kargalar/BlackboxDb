@@ -1,6 +1,11 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function HomePage() {
+  const { user, loading } = useAuth();
+
   return (
     <div className="space-y-12">
       {/* Hero Section */}
@@ -23,11 +28,22 @@ export default function HomePage() {
               Keşfetmeye Başla
             </Button>
           </a>
-          <a href="/auth/login">
-            <Button variant="secondary" size="lg" className="min-w-[160px]">
-              Hesap Oluştur
-            </Button>
-          </a>
+          
+          {loading ? (
+            <div className="w-40 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
+          ) : user ? (
+            <a href="/profile">
+              <Button variant="secondary" size="lg" className="min-w-[160px]">
+                Profile Git
+              </Button>
+            </a>
+          ) : (
+            <a href="/auth/register">
+              <Button variant="secondary" size="lg" className="min-w-[160px]">
+                Hesap Oluştur
+              </Button>
+            </a>
+          )}
         </div>
       </section>
 
