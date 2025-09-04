@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useAuth } from '@/contexts/AuthContext'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function Header() {
   const { user, loading, signInWithGoogle, signOut } = useAuth()
@@ -44,6 +45,7 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <button className="hidden md:block rounded-full bg-gray-100 p-2 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors">
               <svg className="h-5 w-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

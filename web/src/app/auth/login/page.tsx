@@ -8,7 +8,11 @@ import { useAuth } from '@/contexts/AuthContext';
 function LoginContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { signInWithGoogle, user } = useAuth();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const { signInWithGoogle, signInWithEmail, user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -24,6 +28,29 @@ function LoginContent() {
       setError('Giriş yaparken bir hata oluştu. Lütfen tekrar deneyin.');
     }
   }, [user, router, searchParams]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleEmailSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      setIsLoading(true);
+      setError(null);
+      await signInWithEmail(formData.email, formData.password);
+    } catch (error: any) {
+      console.error('Sign in error:', error);
+      setError(error.message || 'Giriş yaparken bir hata oluştu.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     try {
@@ -64,8 +91,69 @@ function LoginContent() {
             </div>
           )}
 
+          {/* Email Sign In Form */}
+          <form onSubmit={handleEmailSignIn} className="space-y-4 mb-6">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                E-posta
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="ornek@email.com"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Şifre
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                value={formData.password}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="Şifreniz"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-4 rounded-xl hover:from-purple-700 hover:to-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Giriş yapılıyor...
+                </div>
+              ) : (
+                'Giriş Yap'
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400">veya</span>
+            </div>
+          </div>
+
           {/* Google Sign In */}
           <button 
+            type="button"
             onClick={handleGoogleSignIn}
             disabled={isLoading}
             className="w-full flex items-center justify-center gap-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white py-3 px-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -82,13 +170,6 @@ function LoginContent() {
             )}
             Google ile giriş yap
           </button>
-
-          {/* Alternative Auth Message */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Güvenli ve hızlı giriş için Google hesabınızı kullanın
-            </p>
-          </div>
 
           {/* Sign Up Link */}
           <div className="mt-6 text-center">
