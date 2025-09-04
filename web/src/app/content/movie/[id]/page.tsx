@@ -1,33 +1,86 @@
+'use client'
+
 import { getMovieDetails, tmdbImage } from '@/services/tmdb';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
-// Generate static params for popular movies
-export async function generateStaticParams() {
-  // For static export, we'll generate a few popular movies
-  // In a real scenario, you might fetch popular movies or have a predefined list
-  const popularMovieIds = [
-    '550', '680', '13', '120', '155', '27205', '49026', '157336', '447332', '299536'
-  ];
-  
-  return popularMovieIds.map((id) => ({
-    id: id,
-  }));
-}
+export default function MovieDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
+  const [movie, setMovie] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export default async function MovieDetailPage({ params }: { params: { id: string } }) {
-  const { id } = params;
-  
-  let movie;
-  try {
-    movie = await getMovieDetails(id);
-  } catch (error) {
+  useEffect(() => {
+    const fetchMovie = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const movieData = await getMovieDetails(id);
+        setMovie(movieData);
+      } catch (err: any) {
+        setError(err.message || 'Film bilgileri yüklenemedi');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchMovie();
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div className="relative h-96 md:h-[500px] bg-gray-200 dark:bg-gray-700 rounded-2xl animate-pulse"></div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-4 animate-pulse"></div>
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4"></div>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-4 animate-pulse"></div>
+              <div className="space-y-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Film Bulunamadı</h1>
+        <p className="text-gray-600 dark:text-gray-400 mb-8">{error}</p>
+        <a href="/explore" className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+          ← Filmlere Geri Dön
+        </a>
+      </div>
+    );
+  }
+
+  if (!movie) {
     notFound();
   }
 
-  const director = movie.credits?.crew.find(person => person.job === 'Director');
+  const director = movie.credits?.crew.find((person: any) => person.job === 'Director');
   const mainCast = movie.credits?.cast.slice(0, 6) || [];
-  const trailer = movie.videos?.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+  const trailer = movie.videos?.results.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube');
   const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}s ${movie.runtime % 60}dk` : '';
   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
 
@@ -88,7 +141,7 @@ export default async function MovieDetailPage({ params }: { params: { id: string
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    {movie.genres.map(genre => (
+                    {movie.genres.map((genre: any) => (
                       <span key={genre.id} className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm">
                         {genre.name}
                       </span>
@@ -140,7 +193,7 @@ export default async function MovieDetailPage({ params }: { params: { id: string
             <section className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
               <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Oyuncular</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {mainCast.map(person => (
+                {mainCast.map((person: any) => (
                   <div key={person.id} className="text-center">
                     <div className="relative aspect-[2/3] mb-3 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
                       {person.profile_path ? (
@@ -213,7 +266,7 @@ export default async function MovieDetailPage({ params }: { params: { id: string
             <section className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
               <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Benzer Filmler</h2>
               <div className="space-y-3">
-                {movie.similar.results.slice(0, 5).map(similar => (
+                {movie.similar.results.slice(0, 5).map((similar: any) => (
                   <a key={similar.id} href={`/content/movie/${similar.id}`} className="flex gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors">
                     <div className="relative w-12 h-18 rounded bg-gray-100 dark:bg-gray-800 overflow-hidden flex-shrink-0">
                       {similar.poster_path && (

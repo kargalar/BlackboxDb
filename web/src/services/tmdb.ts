@@ -8,8 +8,9 @@ function isV4Token(val: string) {
 }
 
 function getAuth() {
-  const key = process.env.TMDB_API_KEY;
-  if (!key) throw new Error('TMDB_API_KEY is not set');
+  // Try both server-side and client-side environment variables
+  const key = process.env.TMDB_API_KEY || process.env.NEXT_PUBLIC_TMDB_API_KEY;
+  if (!key) throw new Error('TMDB_API_KEY ayarlanmadı. Lütfen `web/.env.local` dosyasına TMDB anahtarınızı ekleyin ve sunucuyu yeniden başlatın.\n\nV3 API Key veya V4 Bearer token kullanabilirsiniz.');
   return key;
 }
 

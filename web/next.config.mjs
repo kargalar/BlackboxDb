@@ -11,8 +11,11 @@ const nextConfig = {
     },
     output: 'export',
     trailingSlash: true,
-    basePath: '/BlackboxDb',
-    assetPrefix: '/BlackboxDb/',
+    // Only use basePath and assetPrefix for production builds
+    ...(process.env.NODE_ENV === 'production' && {
+        basePath: '/BlackboxDb',
+        assetPrefix: '/BlackboxDb/',
+    }),
 };
 
 export default nextConfig;
