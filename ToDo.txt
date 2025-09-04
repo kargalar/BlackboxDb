@@ -12,5 +12,3 @@ filmin puani ve yorumları tmdb den değil supabaseden gelecek. flutterdaki vers
 sağ üstte mail adresi yerine profil iconnu olsun profile oradan gidlisin. diğerp profil yazısını kaldır. Keşfet butonunu ismini Fimler olrak güncelle.
 
 username gösterilsin mailin ön kısmı değil
-
-puanı olmayanların üzerinde puan işaretini gösterme

@@ -237,15 +237,17 @@ function ExploreContent() {
                     </div>
                   )}
                   
-                  {/* Overlay with rating */}
-                  <div className="absolute top-2 right-2">
-                    <div className="rounded-full bg-black/70 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                      ⭐ {m.db_rating > 0 ? m.db_rating.toFixed(1) : '—'}
-                      {m.db_review_count > 0 && (
-                        <span className="ml-1 opacity-75">({m.db_review_count})</span>
-                      )}
+                  {/* Overlay with rating - only show if rating exists */}
+                  {m.db_rating > 0 && (
+                    <div className="absolute top-2 right-2">
+                      <div className="rounded-full bg-black/70 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                        ⭐ {m.db_rating.toFixed(1)}
+                        {m.db_review_count > 0 && (
+                          <span className="ml-1 opacity-75">({m.db_review_count})</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
                 
                 <div className="mt-3 space-y-1">
