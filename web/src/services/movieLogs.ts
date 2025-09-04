@@ -6,6 +6,9 @@ export interface Content {
   poster_path: string | null
   title: string
   fav_count: number
+  user_rating?: number // Kullanıcının verdiği puan
+  is_favorite?: boolean // Favori durumu
+  date?: string // Log tarihi
 }
 
 export interface Review {
@@ -40,6 +43,9 @@ export async function getUserWatchedMovies(): Promise<{ data: Content[] }> {
         poster_path: item.poster_path ?? null,
         title: item.title ?? '',
         fav_count: item.is_favorite ? 1 : 0,
+        user_rating: item.rating ? Number(item.rating) : 0,
+        is_favorite: item.is_favorite ?? false,
+        date: item.date
       }))
       return { data: mapped }
     }
@@ -53,6 +59,9 @@ export async function getUserWatchedMovies(): Promise<{ data: Content[] }> {
       .from('latest_user_content_log')
       .select(`
         content_id,
+        rating,
+        is_favorite,
+        date,
         content:content_id (
           id,
           title,
@@ -61,6 +70,7 @@ export async function getUserWatchedMovies(): Promise<{ data: Content[] }> {
         )
       `)
       .eq('user_id', uid)
+      .order('date', { ascending: false })
       .limit(40)
 
     if (logError) {
@@ -75,6 +85,9 @@ export async function getUserWatchedMovies(): Promise<{ data: Content[] }> {
         poster_path: item.content.poster_path ?? null,
         title: item.content.title ?? '',
         fav_count: item.content.favorite_count ?? 0,
+        user_rating: item.rating ? Number(item.rating) : 0,
+        is_favorite: item.is_favorite ?? false,
+        date: item.date
       }))
 
     return { data: mapped }
@@ -206,6 +219,153 @@ export async function logMovieWatch(contentId: number): Promise<{ data: boolean;
   })
   if (error) return { data: false, error }
   return { data: true }
+}
+
+// Rate a movie (1-5 stars)
+export async function rateMovie(contentId: number, rating: number): Promise<{ data: boolean; error?: any }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userRes.user?.id
+  if (!uid) return { data: false, error: 'not_authenticated' }
+
+  // Validate rating
+  if (rating < 1 || rating > 5) {
+    return { data: false, error: 'invalid_rating' }
+  }
+
+  // Ensure content exists
+  const { data: contentRow } = await supabase.from('content').select('id').eq('id', contentId).maybeSingle()
+  if (!contentRow) {
+    return { data: false, error: 'content_not_found' }
+  }
+
+  try {
+    // Check if user already has a log for this content
+    const { data: existingLog } = await supabase
+      .from('user_content_log')
+      .select('id')
+      .eq('user_id', uid)
+      .eq('content_id', contentId)
+      .maybeSingle()
+
+    if (existingLog) {
+      // Update existing log with rating
+      const { error } = await supabase
+        .from('user_content_log')
+        .update({ 
+          rating: rating,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingLog.id)
+
+      if (error) return { data: false, error }
+    } else {
+      // Create new log with rating
+      const { error } = await supabase
+        .from('user_content_log')
+        .insert({
+          user_id: uid,
+          content_id: contentId,
+          content_status_id: 1, // CONSUMED
+          rating: rating,
+          date: new Date().toISOString(),
+        })
+
+      if (error) return { data: false, error }
+    }
+
+    return { data: true }
+  } catch (error) {
+    return { data: false, error }
+  }
+}
+
+// Get user's rating for a specific movie
+export async function getUserRating(contentId: number): Promise<{ rating: number }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userRes.user?.id
+  if (!uid) return { rating: 0 }
+
+  const { data, error } = await supabase
+    .from('user_content_log')
+    .select('rating')
+    .eq('user_id', uid)
+    .eq('content_id', contentId)
+    .maybeSingle()
+
+  if (error || !data) return { rating: 0 }
+  return { rating: Number(data.rating) || 0 }
+}
+
+// Get user's favorite status for a specific movie
+export async function getUserFavoriteStatus(contentId: number): Promise<{ isFavorite: boolean }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userRes.user?.id
+  if (!uid) return { isFavorite: false }
+
+  const { data, error } = await supabase
+    .from('user_content_log')
+    .select('is_favorite')
+    .eq('user_id', uid)
+    .eq('content_id', contentId)
+    .maybeSingle()
+
+  if (error || !data) return { isFavorite: false }
+  return { isFavorite: data.is_favorite ?? false }
+}
+
+// Toggle favorite status for a movie
+export async function toggleFavorite(contentId: number): Promise<{ data: boolean; isFavorite: boolean; error?: any }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userRes.user?.id
+  if (!uid) return { data: false, isFavorite: false, error: 'not_authenticated' }
+
+  // Ensure content exists
+  const { data: contentRow } = await supabase.from('content').select('id').eq('id', contentId).maybeSingle()
+  if (!contentRow) {
+    return { data: false, isFavorite: false, error: 'content_not_found' }
+  }
+
+  try {
+    // Check if user already has a log for this content
+    const { data: existingLog } = await supabase
+      .from('user_content_log')
+      .select('id, is_favorite')
+      .eq('user_id', uid)
+      .eq('content_id', contentId)
+      .maybeSingle()
+
+    const newFavoriteStatus = existingLog ? !existingLog.is_favorite : true
+
+    if (existingLog) {
+      // Update existing log
+      const { error } = await supabase
+        .from('user_content_log')
+        .update({ 
+          is_favorite: newFavoriteStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingLog.id)
+
+      if (error) return { data: false, isFavorite: false, error }
+    } else {
+      // Create new log with favorite status
+      const { error } = await supabase
+        .from('user_content_log')
+        .insert({
+          user_id: uid,
+          content_id: contentId,
+          content_status_id: 1, // CONSUMED
+          is_favorite: newFavoriteStatus,
+          date: new Date().toISOString(),
+        })
+
+      if (error) return { data: false, isFavorite: false, error }
+    }
+
+    return { data: true, isFavorite: newFavoriteStatus }
+  } catch (error) {
+    return { data: false, isFavorite: false, error }
+  }
 }
 
 export async function removeMovieWatch(contentId: number): Promise<{ success: boolean; error?: any }> {

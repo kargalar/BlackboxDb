@@ -15,12 +15,16 @@ import {
   addMovieReview,
   getMovieReviews,
   getUserMovieReview,
+  rateMovie,
+  getUserRating,
+  getUserFavoriteStatus,
+  toggleFavorite,
   Content,
   Review
 } from '@/services/movieLogs';
 import { useAuth } from '@/contexts/AuthContext';
 
-// Star Rating Component
+// Star Rating Component (Display Only)
 const StarRating = ({ rating }: { rating: number }) => {
   const stars = [];
   const fullStars = Math.floor(rating / 2);
@@ -55,6 +59,58 @@ const StarRating = ({ rating }: { rating: number }) => {
   }
   
   return <div className="flex items-center space-x-1">{stars}</div>;
+};
+
+// Interactive Star Rating Component for User Input
+const StarRatingInput = ({ 
+  rating, 
+  onRatingChange, 
+  size = "w-6 h-6" 
+}: { 
+  rating: number; 
+  onRatingChange: (rating: number) => void;
+  size?: string;
+}) => {
+  const [hoverRating, setHoverRating] = useState(0);
+  
+  const handleStarClick = (starValue: number) => {
+    onRatingChange(starValue);
+  };
+  
+  const handleStarHover = (starValue: number) => {
+    setHoverRating(starValue);
+  };
+  
+  const handleMouseLeave = () => {
+    setHoverRating(0);
+  };
+  
+  const displayRating = hoverRating || rating;
+  
+  return (
+    <div className="flex items-center space-x-1" onMouseLeave={handleMouseLeave}>
+      {[1, 2, 3, 4, 5].map((starValue) => (
+        <button
+          key={starValue}
+          type="button"
+          onClick={() => handleStarClick(starValue)}
+          onMouseEnter={() => handleStarHover(starValue)}
+          className="focus:outline-none transition-colors"
+        >
+          <svg 
+            className={`${size} cursor-pointer transition-colors ${
+              starValue <= displayRating 
+                ? 'text-yellow-400 fill-current' 
+                : 'text-gray-400 hover:text-yellow-300'
+            }`} 
+            viewBox="0 0 20 20"
+          >
+            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+          </svg>
+        </button>
+      ))}
+    </div>
+  );
 };
 
 // Action Button Component
@@ -168,9 +224,14 @@ function MovieDetailContent() {
 
   // User interaction states
   const [isWatched, setIsWatched] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   const [isInList, setIsInList] = useState(false);
   const [watchLoading, setWatchLoading] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+  
+  // Rating states
+  const [userRating, setUserRating] = useState(0);
+  const [ratingLoading, setRatingLoading] = useState(false);
   
   // Review states
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -179,19 +240,30 @@ function MovieDetailContent() {
   // Check if movie is watched when component mounts
   useEffect(() => {
     if (user && id) {
-      const checkWatchStatus = async () => {
-        const { isWatched: watched } = await isMovieWatched(Number(id));
+      const checkUserData = async () => {
+        const movieId = Number(id);
+        
+        // Check watch status
+        const { isWatched: watched } = await isMovieWatched(movieId);
         setIsWatched(watched);
         
-        // Kullanıcının bu filme verdiği puanı al
-        const { data: review } = await getUserMovieReview(Number(id));
+        // Get user review
+        const { data: review } = await getUserMovieReview(movieId);
         setUserReview(review);
         
-        // Tüm reviews'ları al
-        const { data: allReviews } = await getMovieReviews(Number(id));
+        // Get user rating
+        const { rating } = await getUserRating(movieId);
+        setUserRating(rating);
+        
+        // Get favorite status
+        const { isFavorite } = await getUserFavoriteStatus(movieId);
+        setIsFavorite(isFavorite);
+        
+        // Get all reviews
+        const { data: allReviews } = await getMovieReviews(movieId);
         setReviews(allReviews || []);
       };
-      checkWatchStatus();
+      checkUserData();
     }
   }, [user, id]);
 
@@ -260,6 +332,50 @@ function MovieDetailContent() {
       console.error('Watch status update failed:', error);
     } finally {
       setWatchLoading(false);
+    }
+  };
+
+  // Handle rating change
+  const handleRatingChange = async (newRating: number) => {
+    if (!user) {
+      router.push('/auth/login');
+      return;
+    }
+
+    if (!id) return;
+
+    setRatingLoading(true);
+    try {
+      const { data, error } = await rateMovie(Number(id), newRating);
+      if (data && !error) {
+        setUserRating(newRating);
+      }
+    } catch (error) {
+      console.error('Rating error:', error);
+    } finally {
+      setRatingLoading(false);
+    }
+  };
+
+  // Handle favorite toggle
+  const handleToggleFavorite = async () => {
+    if (!user) {
+      router.push('/auth/login');
+      return;
+    }
+
+    if (!id) return;
+
+    setFavoriteLoading(true);
+    try {
+      const { data, isFavorite: newFavoriteStatus, error } = await toggleFavorite(Number(id));
+      if (data && !error) {
+        setIsFavorite(newFavoriteStatus);
+      }
+    } catch (error) {
+      console.error('Favorite toggle error:', error);
+    } finally {
+      setFavoriteLoading(false);
     }
   };
 
@@ -342,10 +458,44 @@ function MovieDetailContent() {
             </div>
 
             {/* Rating */}
-            <div className="flex items-center space-x-4 mb-6">
-              <StarRating rating={movie.vote_average} />
-              <span className="text-2xl font-bold">{movie.vote_average.toFixed(1)}</span>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-4">
+                <StarRating rating={movie.vote_average} />
+                <span className="text-2xl font-bold">{movie.vote_average.toFixed(1)}</span>
+                <span className="text-gray-400">TMDB</span>
+              </div>
             </div>
+
+            {/* User Rating */}
+            {user && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-3">Puanın</h3>
+                <div className="flex items-center space-x-3">
+                  {ratingLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-6 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-gray-400">Kaydediliyor...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <StarRatingInput 
+                        rating={userRating} 
+                        onRatingChange={handleRatingChange}
+                        size="w-8 h-8"
+                      />
+                      {userRating > 0 && (
+                        <span className="text-yellow-400 font-semibold">
+                          {userRating}/5
+                        </span>
+                      )}
+                      <span className="text-gray-400 text-sm">
+                        {userRating > 0 ? 'Puanın kaydedildi' : 'Puan vermek için yıldızlara tıkla'}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Description */}
             <p className="text-gray-300 mb-6 leading-relaxed">{movie.overview}</p>
@@ -389,10 +539,16 @@ function MovieDetailContent() {
                 onClick={toggleWatchStatus}
               />
               <ActionButton
-                icon={<svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/></svg>}
-                label="Beğen"
-                active={isLiked}
-                onClick={() => setIsLiked(!isLiked)}
+                icon={favoriteLoading ? (
+                  <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <svg className="w-5 h-5" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 20 20">
+                    <path strokeWidth={isFavorite ? 0 : 2} fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/>
+                  </svg>
+                )}
+                label={isFavorite ? "Favorilerden Çıkar" : "Favoriye Ekle"}
+                active={isFavorite}
+                onClick={handleToggleFavorite}
               />
               <ActionButton
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>}
