@@ -1,0 +1,347 @@
+Debugger listening on ws://127.0.0.1:3946/a6c90112-6719-43fa-8c80-35d2ba5761ee
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+(node:22648) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/KARGALAR/Projeler/Web/BlackboxDb/web/tests/comprehensive-schema.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\KARGALAR\Projeler\Web\BlackboxDb\web\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+≡ƒöì Comprehensive database schema extraction...
+Γ£à Signed in for comprehensive extraction
+≡ƒôï Testing 38 potential tables...
+
+≡ƒöì Testing table: app_user
+  Γ£à app_user: 1 rows, 8 columns
+
+≡ƒöì Testing table: content
+  Γ£à content: 31 rows, 14 columns
+
+≡ƒöì Testing table: user_content_log
+  Γ£à user_content_log: 0 rows, 0 columns
+
+≡ƒöì Testing table: review
+  Γ£à review: 7 rows, 6 columns
+
+≡ƒöì Testing table: review_reply
+  Γ¥î review_reply: Table does not exist
+
+≡ƒöì Testing table: content_type
+  Γ¥î content_type: Table does not exist
+
+≡ƒöì Testing table: content_status
+  Γ¥î content_status: Table does not exist
+
+≡ƒöì Testing table: showcase_content
+  Γ¥î showcase_content: Table does not exist
+
+≡ƒöì Testing table: g_genre
+  Γ£à g_genre: 0 rows, 0 columns
+
+≡ƒöì Testing table: g_platform
+  Γ£à g_platform: 0 rows, 0 columns
+
+≡ƒöì Testing table: genre
+  Γ¥î genre: Table does not exist
+
+≡ƒöì Testing table: platform
+  Γ¥î platform: Table does not exist
+
+≡ƒöì Testing table: x_game_platform
+  Γ£à x_game_platform: 0 rows, 0 columns
+
+≡ƒöì Testing table: x_content_genre
+  Γ¥î x_content_genre: Table does not exist
+
+≡ƒöì Testing table: x_user_genre
+  Γ¥î x_user_genre: Table does not exist
+
+≡ƒöì Testing table: user_follow
+  Γ£à user_follow: 0 rows, 0 columns
+
+≡ƒöì Testing table: user_review
+  Γ¥î user_review: Table does not exist
+
+≡ƒöì Testing table: user_preference
+  Γ¥î user_preference: Table does not exist
+
+≡ƒöì Testing table: user_notification
+  Γ¥î user_notification: Table does not exist
+
+≡ƒöì Testing table: user_session
+  Γ¥î user_session: Table does not exist
+
+≡ƒöì Testing table: user_activity
+  Γ¥î user_activity: Table does not exist
+
+≡ƒöì Testing table: latest_user_content_log
+  Γ£à latest_user_content_log: 21 rows, 10 columns
+
+≡ƒöì Testing table: friend_activity
+  Γ¥î friend_activity: Table does not exist
+
+≡ƒöì Testing table: user_stats
+  Γ¥î user_stats: Table does not exist
+
+≡ƒöì Testing table: content_stats
+  Γ¥î content_stats: Table does not exist
+
+≡ƒöì Testing table: trending_content
+  Γ¥î trending_content: Table does not exist
+
+≡ƒöì Testing table: language
+  Γ¥î language: Table does not exist
+
+≡ƒöì Testing table: country
+  Γ¥î country: Table does not exist
+
+≡ƒöì Testing table: rating_system
+  Γ¥î rating_system: Table does not exist
+
+≡ƒöì Testing table: migration
+  Γ¥î migration: Table does not exist
+
+≡ƒöì Testing table: system_config
+  Γ¥î system_config: Table does not exist
+
+≡ƒöì Testing table: api_keys
+  Γ¥î api_keys: Table does not exist
+
+≡ƒöì Testing table: users
+  Γ¥î users: Table does not exist
+
+≡ƒöì Testing table: sessions
+  Γ¥î sessions: Table does not exist
+
+≡ƒöì Testing table: refresh_tokens
+  Γ¥î refresh_tokens: Table does not exist
+
+≡ƒöì Testing table: tmdb_cache
+  Γ¥î tmdb_cache: Table does not exist
+
+≡ƒöì Testing table: igdb_cache
+  Γ¥î igdb_cache: Table does not exist
+
+≡ƒöì Testing table: external_content_mapping
+  Γ¥î external_content_mapping: Table does not exist
+
+≡ƒôï Testing RPC functions comprehensively...
+
+≡ƒöº Testing RPC: get_user_contents
+  Γ£à get_user_contents: Working perfectly
+
+≡ƒöº Testing RPC: get_content_detail
+  Γ£à get_content_detail: Working perfectly
+
+≡ƒöº Testing RPC: search_content
+  ≡ƒôè search_content: exists_with_error - column "c.created_at" must appear in the GROUP BY clause or be used in an aggregate function
+
+≡ƒöº Testing RPC: get_trend_contents
+  Γ£à get_trend_contents: Working perfectly
+
+≡ƒöº Testing RPC: get_recommended_contents
+  ≡ƒôè get_recommended_contents: exists_with_error - column "c.favorite_count" must appear in the GROUP BY clause or be used in an aggregate function
+
+≡ƒöº Testing RPC: get_friend_activities
+  Γ£à get_friend_activities: Working perfectly
+
+≡ƒöº Testing RPC: get_user_info_with_stats
+  Γ£à get_user_info_with_stats: Working perfectly
+
+≡ƒöº Testing RPC: recompute_content_stats
+  Γ£à recompute_content_stats: Working perfectly
+
+≡ƒöº Testing RPC: create_user_content_log
+  ≡ƒôè create_user_content_log: exists_wrong_params - Function exists but with different parameters
+
+≡ƒöº Testing RPC: get_user_statistics
+  ≡ƒôè get_user_statistics: exists_wrong_params - Function exists but with different parameters
+
+≡ƒöº Testing RPC: search_users
+  ≡ƒôè search_users: exists_wrong_params - Function exists but with different parameters
+
+≡ƒöº Testing RPC: get_content_recommendations
+  ≡ƒôè get_content_recommendations: exists_wrong_params - Function exists but with different parameters
+Schema extraction: 34.626s
+
+≡ƒô¥ Generating comprehensive documentation...
+# BlackboxDb Veritaban─▒ ┼₧emas─▒ (Kapsaml─▒ Analiz)
+
+*Son G├╝ncelleme: 04.09.2025 15:45:42*  
+*Kaynak: Canl─▒ Supabase Veritaban─▒ - Kapsaml─▒ Analiz*
+
+## ≡ƒôè Veritaban─▒ ├ûzeti
+
+- **Toplam Mevcut Tablo**: 9
+- **Tam Eri┼ƒilebilir Tablo**: 9
+- **K─▒s─▒tl─▒ Eri┼ƒim Tablosu**: 0
+- **RPC Fonksiyonu**: 12
+
+## ≡ƒôï Tablo Listesi
+
+### Γ£à Tam Eri┼ƒilebilir Tablolar
+
+| Tablo Ad─▒ | Sat─▒r Say─▒s─▒ | Kolon Say─▒s─▒ | A├º─▒klama |
+|-----------|--------------|--------------|----------|
+| `app_user` | 1 | 8 | Uygulama kullan─▒c─▒ profilleri (Supabase auth ile entegre) |
+| `content` | 31 | 14 | Film ve oyun i├ºerik ana tablosu (TMDB/IGDB verileri) |
+| `user_content_log` | 0 | 0 | Kullan─▒c─▒-i├ºerik etkile┼ƒim loglar─▒ (izleme, rating, favori) |
+| `review` | 7 | 6 | Kullan─▒c─▒ yorumlar─▒ ve de─ƒerlendirmeleri |
+| `g_genre` | 0 | 0 | Oyun t├╝rleri master tablosu |
+| `g_platform` | 0 | 0 | Oyun platformlar─▒ master tablosu |
+| `x_game_platform` | 0 | 0 | Oyun-platform ili┼ƒki tablosu |
+| `user_follow` | 0 | 0 | Kullan─▒c─▒ takip ili┼ƒkileri |
+| `latest_user_content_log` | 21 | 10 | Kullan─▒c─▒lar─▒n son i├ºerik aktiviteleri (view) |
+
+## ≡ƒôè Tablo Detaylar─▒
+
+### app_user
+
+**A├º─▒klama**: Uygulama kullan─▒c─▒ profilleri (Supabase auth ile entegre)  
+**Sat─▒r Say─▒s─▒**: 1  
+**Kolon Say─▒s─▒**: 8
+
+| Kolon | Tip | ├ûrnek De─ƒer | A├º─▒klama |
+|-------|-----|-------------|----------|
+| `auth_user_id` | uuid | "283d293a-1802-49bf-a4dc-be80043a6337" | Supabase auth user referans─▒ |
+| `picture_path` | nullable | NULL |  |
+| `username` | varchar | "webuser1756989305476" |  |
+| `email` | email (text) | "webtest_1756989305476@example.com" |  |
+| `bio` | nullable | NULL |  |
+| `personality_analyze` | nullable | NULL |  |
+| `created_at` | timestamp with time zone | "2025-09-04T12:35:07.199611+00:00" | Olu┼ƒturulma zaman─▒ |
+| `updated_at` | timestamp with time zone | "2025-09-04T12:35:07.199611+00:00" | Son g├╝ncellenme zaman─▒ |
+
+### content
+
+**A├º─▒klama**: Film ve oyun i├ºerik ana tablosu (TMDB/IGDB verileri)  
+**Sat─▒r Say─▒s─▒**: 31  
+**Kolon Say─▒s─▒**: 14
+
+| Kolon | Tip | ├ûrnek De─ƒer | A├º─▒klama |
+|-------|-----|-------------|----------|
+| `id` | integer | 757019 | Primary key |
+| `title` | varchar | "Fight" |  |
+| `content_type_id` | integer | 1 |  |
+| `release_date` | date | "1973-01-01" |  |
+| `description` | varchar | "An improvised hour-long fight between Brigid Be..." |  |
+| `length` | integer | 50 |  |
+| `poster_path` | url/path (text) | "/sKLsn8KckO0uP1jaQR7jsmGdkNj.jpg" |  |
+| `consume_count` | integer | 0 |  |
+| `favorite_count` | integer | 0 |  |
+| `list_count` | integer | 0 |  |
+| `review_count` | integer | 0 |  |
+| `rating_distribution` | integer[] | [5 items] |  |
+| `created_at` | timestamp with time zone | "2025-08-08T08:30:25.302451+00:00" | Olu┼ƒturulma zaman─▒ |
+| `updated_at` | timestamp with time zone | "2025-08-08T08:30:25.302451+00:00" | Son g├╝ncellenme zaman─▒ |
+
+### user_content_log
+
+**A├º─▒klama**: Kullan─▒c─▒-i├ºerik etkile┼ƒim loglar─▒ (izleme, rating, favori)  
+**Sat─▒r Say─▒s─▒**: 0  
+**Kolon Say─▒s─▒**: 0
+
+### review
+
+**A├º─▒klama**: Kullan─▒c─▒ yorumlar─▒ ve de─ƒerlendirmeleri  
+**Sat─▒r Say─▒s─▒**: 7  
+**Kolon Say─▒s─▒**: 6
+
+| Kolon | Tip | ├ûrnek De─ƒer | A├º─▒klama |
+|-------|-----|-------------|----------|
+| `id` | integer | 1 | Primary key |
+| `user_id` | uuid | "425e4c7c-51cc-4675-b741-597219c3f35e" | Kullan─▒c─▒ referans─▒ |
+| `content_id` | integer | 980477 | ─░├ºerik referans─▒ |
+| `text` | varchar | "dawd" |  |
+| `created_at` | timestamp with time zone | "2025-09-02T05:02:06.919775+00:00" | Olu┼ƒturulma zaman─▒ |
+| `updated_at` | timestamp with time zone | "2025-09-02T05:02:06.919775+00:00" | Son g├╝ncellenme zaman─▒ |
+
+### g_genre
+
+**A├º─▒klama**: Oyun t├╝rleri master tablosu  
+**Sat─▒r Say─▒s─▒**: 0  
+**Kolon Say─▒s─▒**: 0
+
+### g_platform
+
+**A├º─▒klama**: Oyun platformlar─▒ master tablosu  
+**Sat─▒r Say─▒s─▒**: 0  
+**Kolon Say─▒s─▒**: 0
+
+### x_game_platform
+
+**A├º─▒klama**: Oyun-platform ili┼ƒki tablosu  
+**Sat─▒r Say─▒s─▒**: 0  
+**Kolon Say─▒s─▒**: 0
+
+### user_follow
+
+**A├º─▒klama**: Kullan─▒c─▒ takip ili┼ƒkileri  
+**Sat─▒r Say─▒s─▒**: 0  
+**Kolon Say─▒s─▒**: 0
+
+### latest_user_content_log
+
+**A├º─▒klama**: Kullan─▒c─▒lar─▒n son i├ºerik aktiviteleri (view)  
+**Sat─▒r Say─▒s─▒**: 21  
+**Kolon Say─▒s─▒**: 10
+
+| Kolon | Tip | ├ûrnek De─ƒer | A├º─▒klama |
+|-------|-----|-------------|----------|
+| `id` | integer | 101 | Primary key |
+| `user_id` | uuid | "425e4c7c-51cc-4675-b741-597219c3f35e" | Kullan─▒c─▒ referans─▒ |
+| `content_id` | integer | 11631 | ─░├ºerik referans─▒ |
+| `content_status_id` | integer | 1 |  |
+| `rating` | numeric/decimal | 4.5 |  |
+| `is_favorite` | boolean | false |  |
+| `is_consume_later` | boolean | false |  |
+| `review_id` | nullable | NULL |  |
+| `date` | timestamp with time zone | "2025-09-02T19:31:23.355224+00:00" |  |
+| `updated_at` | timestamp with time zone | "2025-09-02T19:31:23.355224+00:00" | Son g├╝ncellenme zaman─▒ |
+
+## ≡ƒöº RPC Fonksiyonlar─▒
+
+### Γ£à ├çal─▒┼ƒan Fonksiyonlar (6)
+
+| Fonksiyon | A├º─▒klama | Test Sonucu |
+|-----------|----------|-------------|
+| `get_user_contents` | Kullan─▒c─▒n─▒n i├ºerik listesini getirir (sayfalama ile) | object |
+| `get_content_detail` | Belirli bir i├ºeri─ƒin detay bilgilerini getirir | null |
+| `get_trend_contents` | Pop├╝ler/trend i├ºerikleri listeler | Array(20) |
+| `get_friend_activities` | Takip edilen kullan─▒c─▒lar─▒n aktivitelerini listeler | Array(0) |
+| `get_user_info_with_stats` | Kullan─▒c─▒ profili ve istatistiklerini getirir | Array(0) |
+| `recompute_content_stats` | ─░├ºerik istatistiklerini yeniden hesaplar | null |
+
+### ΓÜá∩╕Å Mevcut Ancak Sorunlu Fonksiyonlar (6)
+
+| Fonksiyon | Durum | Hata Detay─▒ | A├º─▒klama |
+|-----------|-------|-------------|----------|
+| `search_content` | exists_with_error | column "c.created_at" must appear in the GROUP BY clause or be used in an aggregate function | ─░├ºerik arama i┼ƒlemi yapar |
+| `get_recommended_contents` | exists_with_error | column "c.favorite_count" must appear in the GROUP BY clause or be used in an aggregate function | Kullan─▒c─▒ya ├╢nerilen i├ºerikleri getirir |
+| `create_user_content_log` | exists_wrong_params | Could not find the function public.create_user_content_log(content_id, status, user_id) in the schema cache | Yeni kullan─▒c─▒-i├ºerik log kayd─▒ olu┼ƒturur |
+| `get_user_statistics` | exists_wrong_params | Could not find the function public.get_user_statistics(user_id) in the schema cache | Kullan─▒c─▒ istatistiklerini getirir |
+| `search_users` | exists_wrong_params | Could not find the function public.search_users(limit_param, query) in the schema cache | Kullan─▒c─▒ arama i┼ƒlemi yapar |
+| `get_content_recommendations` | exists_wrong_params | Could not find the function public.get_content_recommendations(limit_param, user_id) in the schema cache | ─░├ºerik ├╢nerilerini getirir |
+
+## ≡ƒô¥ Teknik Notlar
+
+### Eri┼ƒim Kontrolleri
+- RLS (Row Level Security) politikalar─▒ aktif
+- Authenticated kullan─▒c─▒lar kendi verilerine eri┼ƒebiliyor
+- Anonymous eri┼ƒim ├ºo─ƒu tablo i├ºin k─▒s─▒tl─▒
+
+### Veri Tipleri
+- UUID'ler Supabase auth ile uyumlu
+- Timestamp'ler timezone bilgisiyle saklan─▒yor
+- JSON/JSONB alanlar kompleks veri i├ºin kullan─▒l─▒yor
+
+### ─░li┼ƒkiler
+- `app_user.auth_user_id` ΓåÆ Supabase auth.users
+- `content.id` ΓåÆ TMDB/IGDB external IDs
+- `user_content_log` ΓåÆ Many-to-many user-content relations
+
+---
+
+*Bu dok├╝mantasyon otomatik olarak generate edilmi┼ƒtir.*
+
+
+≡ƒöº Raw schema data saved to schema-data.json
+Waiting for the debugger to disconnect...

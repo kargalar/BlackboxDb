@@ -138,33 +138,68 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 // Ensure a row exists in public.app_user for the authenticated user
 async function ensureAppUser(user: User, usernameFallback?: string) {
   try {
-    // Check if app_user row exists
+    console.log('🔄 ensureAppUser called for user:', user.id, user.email);
+    
+    // Wait briefly to let database triggers complete
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Check if app_user row exists (trigger should have created it)
     const { data: existing, error: selectErr } = await supabase
       .from('app_user')
-      .select('auth_user_id')
+      .select('auth_user_id, username, email')
       .eq('auth_user_id', user.id)
       .maybeSingle()
 
+    console.log('🔍 Existing user check:', { existing, selectErr });
+
     if (selectErr) {
-      // If select is blocked due to RLS, try an upsert directly
-      // proceed to upsert
+      console.warn('⚠️ Error checking existing user:', selectErr);
+      // If RLS is blocking, that's normal for some edge cases
+      return;
     }
 
-    if (!existing) {
-      const email = user.email ?? (user.user_metadata?.email as string | undefined) ?? ''
-      const username = (user.user_metadata?.username as string | undefined)
-        || usernameFallback
-        || (email ? email.split('@')[0] : 'user')
-
-      await supabase
-        .from('app_user')
-        .upsert(
-          { auth_user_id: user.id, email, username },
-          { onConflict: 'auth_user_id' }
-        )
+    if (existing) {
+      console.log('✅ app_user already exists:', existing);
+      return;
     }
+
+    // If no user found, trigger might have failed, try manual creation
+    console.log('⚠️ No app_user found, attempting manual creation...');
+    
+    const email = user.email ?? (user.user_metadata?.email as string | undefined) ?? ''
+    const username = (user.user_metadata?.username as string | undefined)
+      || usernameFallback
+      || (email ? email.split('@')[0] : 'user')
+
+    console.log('➕ Creating new app_user record:', { 
+      auth_user_id: user.id, 
+      email, 
+      username,
+      userMetadata: user.user_metadata 
+    });
+
+    const { data: upsertData, error: upsertError } = await supabase
+      .from('app_user')
+      .upsert(
+        { 
+          auth_user_id: user.id, 
+          email, 
+          username,
+          bio: '',
+          picture_path: null
+        },
+        { onConflict: 'auth_user_id' }
+      )
+      .select('*')
+
+    if (upsertError) {
+      console.error('❌ Error creating app_user:', upsertError);
+    } else {
+      console.log('✅ app_user created successfully:', upsertData);
+    }
+    
   } catch (e) {
     // Swallow errors to avoid breaking auth flow; DB trigger likely created the row
-    console.warn('ensureAppUser warning:', e)
+    console.error('❌ ensureAppUser error:', e);
   }
 }

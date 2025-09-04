@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getUserWatchedMovies, getUserStats, Content } from '@/services/movieLogs';
 import { tmdbImage } from '@/services/tmdb';
+import { getCurrentUserProfile } from '@/services/userService';
 import { supabase } from '@/lib/supabase';
 
 export default function ProfilePage() {
@@ -32,6 +33,10 @@ export default function ProfilePage() {
 
       try {
         setLoading(true);
+        
+        // App user bilgilerini getir
+        const { data: userProfile } = await getCurrentUserProfile();
+        setAppUser(userProfile);
         
         // Kullanıcının izlediği filmleri getir
         const { data: watchedMovies } = await getUserWatchedMovies();

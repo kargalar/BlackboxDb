@@ -1,0 +1,530 @@
+Debugger listening on ws://127.0.0.1:3838/e14af07d-9a8e-42dc-b13f-e919e72f7e68
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+(node:20660) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/KARGALAR/Projeler/Web/BlackboxDb/web/tests/extract-schema.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\KARGALAR\Projeler\Web\BlackboxDb\web\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+≡ƒöì Extracting complete database schema...
+Γ£à Signed in for schema extraction
+≡ƒôï Analyzing tables...
+
+≡ƒöì Analyzing table: app_user
+  Γ£à app_user: 1 rows, 8 columns
+
+≡ƒöì Analyzing table: content
+  Γ£à content: 31 rows, 14 columns
+
+≡ƒöì Analyzing table: user_content_log
+  Γ£à user_content_log: 0 rows, 0 columns
+
+≡ƒöì Analyzing table: review
+  Γ£à review: 7 rows, 6 columns
+
+≡ƒöì Analyzing table: content_type
+  Γ¥î Cannot access content_type: relation "public.content_type" does not exist
+
+≡ƒöì Analyzing table: content_status
+  Γ¥î Cannot access content_status: relation "public.content_status" does not exist
+
+≡ƒöì Analyzing table: g_genre
+  Γ£à g_genre: 0 rows, 0 columns
+
+≡ƒöì Analyzing table: g_platform
+  Γ£à g_platform: 0 rows, 0 columns
+
+≡ƒöì Analyzing table: x_game_platform
+  Γ£à x_game_platform: 0 rows, 0 columns
+
+≡ƒöì Analyzing table: x_content_genre
+  Γ¥î Cannot access x_content_genre: relation "public.x_content_genre" does not exist
+
+≡ƒöì Analyzing table: user_follow
+  Γ£à user_follow: 0 rows, 0 columns
+
+≡ƒöì Analyzing table: latest_user_content_log
+  Γ£à latest_user_content_log: 21 rows, 10 columns
+
+≡ƒöì Analyzing table: friend_activity
+  Γ¥î Cannot access friend_activity: relation "public.friend_activity" does not exist
+
+≡ƒôï Testing known RPC functions...
+  Γ£à get_user_contents: Function exists (Could not find the function public.get_user_contents(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache)
+  Γ£à get_content_detail: Function exists (Could not find the function public.get_content_detail(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache)
+  Γ£à search_content: Function exists (Could not find the function public.search_content(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache)
+  Γ£à get_trend_contents: Function exists (Could not find the function public.get_trend_contents(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache)
+  Γ£à get_recommended_contents: Function exists (Could not find the function public.get_recommended_contents(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache)
+  Γ£à get_friend_activities: Function exists (Could not find the function public.get_friend_activities(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache)
+  Γ£à get_user_info_with_stats: Function exists (Could not find the function public.get_user_info_with_stats(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache)
+  Γ£à recompute_content_stats: Function exists (Could not find the function public.recompute_content_stats(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache)
+
+≡ƒô¥ Generating documentation...
+
+≡ƒôä Database Schema Documentation:
+=====================================
+# BlackboxDb Database Schema
+
+*Generated on: 2025-09-04T12:39:16.127Z*
+
+## Tables
+
+### app_user
+
+- **Row Count**: 1
+- **Columns**: 8
+
+| Column Name | Data Type | Sample Value |
+|-------------|-----------|---------------|
+| auth_user_id | uuid | "283d293a-1802-49bf-a4dc-be80043a6337" |
+| picture_path | nullable | NULL |
+| username | text/varchar | "webuser1756989305476" |
+| email | text/varchar | "webtest_1756989305476@example.com" |
+| bio | nullable | NULL |
+| personality_analyze | nullable | NULL |
+| created_at | timestamp with time zone | "2025-09-04T12:35:07.199611+00:00" |
+| updated_at | timestamp with time zone | "2025-09-04T12:35:07.199611+00:00" |
+
+### content
+
+- **Row Count**: 31
+- **Columns**: 14
+
+| Column Name | Data Type | Sample Value |
+|-------------|-----------|---------------|
+| id | integer | 757019 |
+| title | text/varchar | "Fight" |
+| content_type_id | integer | 1 |
+| release_date | text/varchar | "1973-01-01" |
+| description | text/varchar | "An improvised hour-long fight between Brigid Berlin & Charles Rydell. Produced by Andy Warhol." |
+| length | integer | 50 |
+| poster_path | text/varchar | "/sKLsn8KckO0uP1jaQR7jsmGdkNj.jpg" |
+| consume_count | integer | 0 |
+| favorite_count | integer | 0 |
+| list_count | integer | 0 |
+| review_count | integer | 0 |
+| rating_distribution | array | [0,0,0,0,0] |
+| created_at | timestamp with time zone | "2025-08-08T08:30:25.302451+00:00" |
+| updated_at | timestamp with time zone | "2025-08-08T08:30:25.302451+00:00" |
+
+### user_content_log
+
+- **Row Count**: 0
+- **Columns**: 0
+
+### review
+
+- **Row Count**: 7
+- **Columns**: 6
+
+| Column Name | Data Type | Sample Value |
+|-------------|-----------|---------------|
+| id | integer | 1 |
+| user_id | uuid | "425e4c7c-51cc-4675-b741-597219c3f35e" |
+| content_id | integer | 980477 |
+| text | text/varchar | "dawd" |
+| created_at | timestamp with time zone | "2025-09-02T05:02:06.919775+00:00" |
+| updated_at | timestamp with time zone | "2025-09-02T05:02:06.919775+00:00" |
+
+### g_genre
+
+- **Row Count**: 0
+- **Columns**: 0
+
+### g_platform
+
+- **Row Count**: 0
+- **Columns**: 0
+
+### x_game_platform
+
+- **Row Count**: 0
+- **Columns**: 0
+
+### user_follow
+
+- **Row Count**: 0
+- **Columns**: 0
+
+### latest_user_content_log
+
+- **Row Count**: 21
+- **Columns**: 10
+
+| Column Name | Data Type | Sample Value |
+|-------------|-----------|---------------|
+| id | integer | 101 |
+| user_id | uuid | "425e4c7c-51cc-4675-b741-597219c3f35e" |
+| content_id | integer | 11631 |
+| content_status_id | integer | 1 |
+| rating | numeric | 4.5 |
+| is_favorite | boolean | false |
+| is_consume_later | boolean | false |
+| review_id | nullable | NULL |
+| date | timestamp with time zone | "2025-09-02T19:31:23.355224+00:00" |
+| updated_at | timestamp with time zone | "2025-09-02T19:31:23.355224+00:00" |
+
+## RPC Functions
+
+- **get_user_contents**: exists (Could not find the function public.get_user_contents(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache)
+- **get_content_detail**: exists (Could not find the function public.get_content_detail(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache)
+- **search_content**: exists (Could not find the function public.search_content(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache)
+- **get_trend_contents**: exists (Could not find the function public.get_trend_contents(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache)
+- **get_recommended_contents**: exists (Could not find the function public.get_recommended_contents(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache)
+- **get_friend_activities**: exists (Could not find the function public.get_friend_activities(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache)
+- **get_user_info_with_stats**: exists (Could not find the function public.get_user_info_with_stats(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache)
+- **recompute_content_stats**: exists (Could not find the function public.recompute_content_stats(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache)
+
+
+
+≡ƒöº JSON Schema (for reference):
+{
+  "tables": [
+    {
+      "name": "app_user",
+      "row_count": 1,
+      "columns": [
+        {
+          "name": "auth_user_id",
+          "type": "uuid",
+          "sample_value": "283d293a-1802-49bf-a4dc-be80043a6337"
+        },
+        {
+          "name": "picture_path",
+          "type": "nullable",
+          "sample_value": null
+        },
+        {
+          "name": "username",
+          "type": "text/varchar",
+          "sample_value": "webuser1756989305476"
+        },
+        {
+          "name": "email",
+          "type": "text/varchar",
+          "sample_value": "webtest_1756989305476@example.com"
+        },
+        {
+          "name": "bio",
+          "type": "nullable",
+          "sample_value": null
+        },
+        {
+          "name": "personality_analyze",
+          "type": "nullable",
+          "sample_value": null
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "sample_value": "2025-09-04T12:35:07.199611+00:00"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "sample_value": "2025-09-04T12:35:07.199611+00:00"
+        }
+      ],
+      "sample_record": {
+        "auth_user_id": "283d293a-1802-49bf-a4dc-be80043a6337",
+        "picture_path": null,
+        "username": "webuser1756989305476",
+        "email": "webtest_1756989305476@example.com",
+        "bio": null,
+        "personality_analyze": null,
+        "created_at": "2025-09-04T12:35:07.199611+00:00",
+        "updated_at": "2025-09-04T12:35:07.199611+00:00"
+      }
+    },
+    {
+      "name": "content",
+      "row_count": 31,
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "sample_value": 757019
+        },
+        {
+          "name": "title",
+          "type": "text/varchar",
+          "sample_value": "Fight"
+        },
+        {
+          "name": "content_type_id",
+          "type": "integer",
+          "sample_value": 1
+        },
+        {
+          "name": "release_date",
+          "type": "text/varchar",
+          "sample_value": "1973-01-01"
+        },
+        {
+          "name": "description",
+          "type": "text/varchar",
+          "sample_value": "An improvised hour-long fight between Brigid Berlin & Charles Rydell. Produced by Andy Warhol."
+        },
+        {
+          "name": "length",
+          "type": "integer",
+          "sample_value": 50
+        },
+        {
+          "name": "poster_path",
+          "type": "text/varchar",
+          "sample_value": "/sKLsn8KckO0uP1jaQR7jsmGdkNj.jpg"
+        },
+        {
+          "name": "consume_count",
+          "type": "integer",
+          "sample_value": 0
+        },
+        {
+          "name": "favorite_count",
+          "type": "integer",
+          "sample_value": 0
+        },
+        {
+          "name": "list_count",
+          "type": "integer",
+          "sample_value": 0
+        },
+        {
+          "name": "review_count",
+          "type": "integer",
+          "sample_value": 0
+        },
+        {
+          "name": "rating_distribution",
+          "type": "array",
+          "sample_value": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "sample_value": "2025-08-08T08:30:25.302451+00:00"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "sample_value": "2025-08-08T08:30:25.302451+00:00"
+        }
+      ],
+      "sample_record": {
+        "id": 757019,
+        "title": "Fight",
+        "content_type_id": 1,
+        "release_date": "1973-01-01",
+        "description": "An improvised hour-long fight between Brigid Berlin & Charles Rydell. Produced by Andy Warhol.",
+        "length": 50,
+        "poster_path": "/sKLsn8KckO0uP1jaQR7jsmGdkNj.jpg",
+        "consume_count": 0,
+        "favorite_count": 0,
+        "list_count": 0,
+        "review_count": 0,
+        "rating_distribution": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "created_at": "2025-08-08T08:30:25.302451+00:00",
+        "updated_at": "2025-08-08T08:30:25.302451+00:00"
+      }
+    },
+    {
+      "name": "user_content_log",
+      "row_count": 0,
+      "columns": [],
+      "sample_record": null
+    },
+    {
+      "name": "review",
+      "row_count": 7,
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "sample_value": 1
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "sample_value": "425e4c7c-51cc-4675-b741-597219c3f35e"
+        },
+        {
+          "name": "content_id",
+          "type": "integer",
+          "sample_value": 980477
+        },
+        {
+          "name": "text",
+          "type": "text/varchar",
+          "sample_value": "dawd"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "sample_value": "2025-09-02T05:02:06.919775+00:00"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "sample_value": "2025-09-02T05:02:06.919775+00:00"
+        }
+      ],
+      "sample_record": {
+        "id": 1,
+        "user_id": "425e4c7c-51cc-4675-b741-597219c3f35e",
+        "content_id": 980477,
+        "text": "dawd",
+        "created_at": "2025-09-02T05:02:06.919775+00:00",
+        "updated_at": "2025-09-02T05:02:06.919775+00:00"
+      }
+    },
+    {
+      "name": "g_genre",
+      "row_count": 0,
+      "columns": [],
+      "sample_record": null
+    },
+    {
+      "name": "g_platform",
+      "row_count": 0,
+      "columns": [],
+      "sample_record": null
+    },
+    {
+      "name": "x_game_platform",
+      "row_count": 0,
+      "columns": [],
+      "sample_record": null
+    },
+    {
+      "name": "user_follow",
+      "row_count": 0,
+      "columns": [],
+      "sample_record": null
+    },
+    {
+      "name": "latest_user_content_log",
+      "row_count": 21,
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "sample_value": 101
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "sample_value": "425e4c7c-51cc-4675-b741-597219c3f35e"
+        },
+        {
+          "name": "content_id",
+          "type": "integer",
+          "sample_value": 11631
+        },
+        {
+          "name": "content_status_id",
+          "type": "integer",
+          "sample_value": 1
+        },
+        {
+          "name": "rating",
+          "type": "numeric",
+          "sample_value": 4.5
+        },
+        {
+          "name": "is_favorite",
+          "type": "boolean",
+          "sample_value": false
+        },
+        {
+          "name": "is_consume_later",
+          "type": "boolean",
+          "sample_value": false
+        },
+        {
+          "name": "review_id",
+          "type": "nullable",
+          "sample_value": null
+        },
+        {
+          "name": "date",
+          "type": "timestamp with time zone",
+          "sample_value": "2025-09-02T19:31:23.355224+00:00"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "sample_value": "2025-09-02T19:31:23.355224+00:00"
+        }
+      ],
+      "sample_record": {
+        "id": 101,
+        "user_id": "425e4c7c-51cc-4675-b741-597219c3f35e",
+        "content_id": 11631,
+        "content_status_id": 1,
+        "rating": 4.5,
+        "is_favorite": false,
+        "is_consume_later": false,
+        "review_id": null,
+        "date": "2025-09-02T19:31:23.355224+00:00",
+        "updated_at": "2025-09-02T19:31:23.355224+00:00"
+      }
+    }
+  ],
+  "functions": [
+    {
+      "name": "get_user_contents",
+      "status": "exists",
+      "error_hint": "Could not find the function public.get_user_contents(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache"
+    },
+    {
+      "name": "get_content_detail",
+      "status": "exists",
+      "error_hint": "Could not find the function public.get_content_detail(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache"
+    },
+    {
+      "name": "search_content",
+      "status": "exists",
+      "error_hint": "Could not find the function public.search_content(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache"
+    },
+    {
+      "name": "get_trend_contents",
+      "status": "exists",
+      "error_hint": "Could not find the function public.get_trend_contents(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache"
+    },
+    {
+      "name": "get_recommended_contents",
+      "status": "exists",
+      "error_hint": "Could not find the function public.get_recommended_contents(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache"
+    },
+    {
+      "name": "get_friend_activities",
+      "status": "exists",
+      "error_hint": "Could not find the function public.get_friend_activities(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache"
+    },
+    {
+      "name": "get_user_info_with_stats",
+      "status": "exists",
+      "error_hint": "Could not find the function public.get_user_info_with_stats(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache"
+    },
+    {
+      "name": "recompute_content_stats",
+      "status": "exists",
+      "error_hint": "Could not find the function public.recompute_content_stats(content_id_param, content_type_param, limit_param, log_user_id_param, page_param, profile_user_uuid, search_query, user_id_param, user_uuid) in the schema cache"
+    }
+  ],
+  "views": [],
+  "enums": []
+}
+Waiting for the debugger to disconnect...
