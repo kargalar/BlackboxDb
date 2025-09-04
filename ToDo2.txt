@@ -1,9 +1,0 @@
-aktörlerin de profilleri olacak
-
-oyunlar
-
-supabase google ile login
-
-admin paneli
-
-siyah tema şuanda mavi ile mor arasında. ben gri ile siyah tonlarında olmasını istiyorum. butonlarda falan da olabilriğnce az renk olsun

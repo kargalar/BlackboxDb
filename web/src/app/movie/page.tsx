@@ -6,6 +6,19 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getMovieDetails, tmdbImage } from '@/services/tmdb';
 import { TMDBMovieDetail, TMDBCastMember } from '@/types/tmdb';
+import { 
+  saveContentFromTMDB, 
+  getContentById, 
+  logMovieWatch, 
+  removeMovieWatch, 
+  isMovieWatched,
+  addMovieReview,
+  getMovieReviews,
+  getUserMovieReview,
+  Content,
+  Review
+} from '@/services/movieLogs';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Star Rating Component
 const StarRating = ({ rating }: { rating: number }) => {
@@ -145,16 +158,42 @@ function MovieDetailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
+  const { user } = useAuth();
   
   const [movie, setMovie] = useState<TMDBMovieDetail | null>(null);
+  const [content, setContent] = useState<Content | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'cast' | 'details' | 'platform'>('cast');
   const [mostPopular, setMostPopular] = useState(true);
 
-  // Mock states for user interactions
+  // User interaction states
   const [isWatched, setIsWatched] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isInList, setIsInList] = useState(false);
+  const [watchLoading, setWatchLoading] = useState(false);
+  
+  // Review states
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [userReview, setUserReview] = useState<Review | null>(null);
+
+  // Check if movie is watched when component mounts
+  useEffect(() => {
+    if (user && id) {
+      const checkWatchStatus = async () => {
+        const { isWatched: watched } = await isMovieWatched(Number(id));
+        setIsWatched(watched);
+        
+        // Kullanıcının bu filme verdiği puanı al
+        const { data: review } = await getUserMovieReview(Number(id));
+        setUserReview(review);
+        
+        // Tüm reviews'ları al
+        const { data: allReviews } = await getMovieReviews(Number(id));
+        setReviews(allReviews || []);
+      };
+      checkWatchStatus();
+    }
+  }, [user, id]);
 
   useEffect(() => {
     if (!id) {
@@ -165,8 +204,25 @@ function MovieDetailContent() {
     const fetchMovie = async () => {
       try {
         setLoading(true);
-        const movieData = await getMovieDetails(id);
-        setMovie(movieData);
+        
+        // Önce Supabase'den kontrol et
+        const { data: existingContent } = await getContentById(Number(id));
+        
+        if (existingContent) {
+          // Supabase'de mevcut, direkt kullan
+          setContent(existingContent);
+          // TMDB'den cast ve ek bilgileri al
+          const movieData = await getMovieDetails(id);
+          setMovie(movieData);
+        } else {
+          // TMDB'den al ve Supabase'e kaydet
+          const movieData = await getMovieDetails(id);
+          setMovie(movieData);
+          
+          // Supabase'e kaydet
+          const { data: savedContent } = await saveContentFromTMDB(movieData);
+          setContent(savedContent);
+        }
       } catch (error) {
         console.error('Film yüklenemedi:', error);
         router.push('/explore');
@@ -177,6 +233,35 @@ function MovieDetailContent() {
 
     fetchMovie();
   }, [id, router]);
+
+  // Toggle watch status
+  const toggleWatchStatus = async () => {
+    if (!user) {
+      router.push('/auth/login');
+      return;
+    }
+
+    if (!id) return;
+
+    setWatchLoading(true);
+    try {
+      if (isWatched) {
+        const { success } = await removeMovieWatch(Number(id));
+        if (success) {
+          setIsWatched(false);
+        }
+      } else {
+        const { data, error } = await logMovieWatch(Number(id));
+        if (data && !error) {
+          setIsWatched(true);
+        }
+      }
+    } catch (error) {
+      console.error('Watch status update failed:', error);
+    } finally {
+      setWatchLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -291,19 +376,27 @@ function MovieDetailContent() {
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 mb-8">
               <ActionButton
-                icon={<svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/></svg>}
-                label="Add Review"
-                onClick={() => setIsWatched(!isWatched)}
+                icon={watchLoading ? (
+                  <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                    <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
+                  </svg>
+                )}
+                label={isWatched ? "İzlendi ✓" : "İzlendi olarak işaretle"}
+                active={isWatched}
+                onClick={toggleWatchStatus}
               />
               <ActionButton
                 icon={<svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/></svg>}
-                label="Edit or Add Log"
+                label="Beğen"
                 active={isLiked}
                 onClick={() => setIsLiked(!isLiked)}
               />
               <ActionButton
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>}
-                label="Add to List"
+                label="Listeye Ekle"
                 active={isInList}
                 onClick={() => setIsInList(!isInList)}
               />

@@ -3,40 +3,102 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
-
-interface Movie {
-  id: number;
-  title: string;
-  poster_path: string;
-  vote_average: number;
-  release_date: string;
-}
+import Link from 'next/link';
+import { getUserWatchedMovies, getUserStats, Content } from '@/services/movieLogs';
+import { tmdbImage } from '@/services/tmdb';
+import { supabase } from '@/lib/supabase';
 
 export default function ProfilePage() {
   const { user } = useAuth();
-  const [recentMovies, setRecentMovies] = useState<Movie[]>([]);
-  const [favoriteMovies, setFavoriteMovies] = useState<Movie[]>([]);
+  const [recentMovies, setRecentMovies] = useState<Content[]>([]);
+  const [favoriteMovies, setFavoriteMovies] = useState<Content[]>([]);
   const [activeTab, setActiveTab] = useState('Son Aktiviteler');
+  const [stats, setStats] = useState({
+    totalMovies: 0,
+    thisYearMovies: 0,
+    averageRating: 0,
+    reviewCount: 0
+  });
+  const [loading, setLoading] = useState(true);
+  const [appUser, setAppUser] = useState<{ username: string; email: string; picture_path: string | null; bio: string | null } | null>(null);
 
-  // Mock data for demonstration
+  // Gerçek verileri yükle
   useEffect(() => {
-    // Bu veriler normalde API'den gelir
-    setRecentMovies([
-      { id: 1, title: 'Into The Wild', poster_path: '/sample1.jpg', vote_average: 8.2, release_date: '2023-01-01' },
-      { id: 2, title: 'The Lighthouse', poster_path: '/sample2.jpg', vote_average: 7.8, release_date: '2023-02-01' },
-      { id: 3, title: 'Okuz Atav', poster_path: '/sample3.jpg', vote_average: 7.5, release_date: '2023-03-01' },
-    ]);
+    const loadUserData = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-    setFavoriteMovies([
-      { id: 4, title: 'Into The Wild', poster_path: '/sample4.jpg', vote_average: 8.2, release_date: '2023-01-01' },
-      { id: 5, title: 'The Lighthouse', poster_path: '/sample5.jpg', vote_average: 7.8, release_date: '2023-02-01' },
-      { id: 6, title: 'Sound of Metal', poster_path: '/sample6.jpg', vote_average: 7.9, release_date: '2023-03-01' },
-      { id: 7, title: 'Midsommar', poster_path: '/sample7.jpg', vote_average: 7.0, release_date: '2023-04-01' },
-      { id: 8, title: 'Hit the Road', poster_path: '/sample8.jpg', vote_average: 7.3, release_date: '2023-05-01' },
-    ]);
-  }, []);
+      try {
+        setLoading(true);
+        
+        // Kullanıcının izlediği filmleri getir
+        const { data: watchedMovies } = await getUserWatchedMovies();
+        if (watchedMovies) {
+          setRecentMovies(watchedMovies.slice(0, 4)); // Son 4 film
+          setFavoriteMovies(watchedMovies.slice(0, 5)); // İlk 5 film (favoriler için)
+        }
+
+        // İstatistikleri getir
+        const userStats = await getUserStats();
+        setStats(userStats);
+        
+      } catch (error) {
+        console.error('Profil verileri yüklenemedi:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, [user]);
+
+  // Supabase: aktif kullanıcının app_user kaydını çek
+  useEffect(() => {
+    const fetchAppUser = async () => {
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('app_user')
+        .select('username, email, picture_path, bio')
+        .eq('auth_user_id', user.id)
+        .maybeSingle();
+      if (!error && data) {
+        setAppUser({
+          username: data.username,
+          email: data.email,
+          picture_path: data.picture_path,
+          bio: data.bio,
+        });
+      }
+    };
+    fetchAppUser();
+  }, [user]);
 
   const tabs = ['Home', 'Movies', 'Games', 'Books', 'Reviews', 'Lists', 'Network', 'Activity'];
+
+  // Giriş yapmamış kullanıcı kontrolü
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Profil sayfasını görüntülemek için giriş yapın</h2>
+          <Link href="/auth/login" className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-colors">
+            Giriş Yap
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading durumu
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -46,9 +108,17 @@ export default function ProfilePage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
-                {user?.user_metadata?.avatar_url ? (
+                {appUser?.picture_path ? (
                   <Image 
-                    src={user.user_metadata.avatar_url} 
+                    src={appUser.picture_path}
+                    alt="Profile" 
+                    width={48} 
+                    height={48}
+                    className="w-full h-full object-cover"
+                  />
+                ) : user?.user_metadata?.avatar_url ? (
+                  <Image 
+                    src={user.user_metadata.avatar_url}
                     alt="Profile" 
                     width={48} 
                     height={48}
@@ -56,13 +126,13 @@ export default function ProfilePage() {
                   />
                 ) : (
                   <span className="text-white font-semibold">
-                    {user?.email?.charAt(0).toUpperCase() || 'K'}
+                    {(appUser?.username?.charAt(0) || user?.email?.charAt(0) || 'K').toUpperCase()}
                   </span>
                 )}
               </div>
               <div>
-                <h2 className="text-xl font-bold">{user?.user_metadata?.username || user?.email?.split('@')[0] || 'kargalar'}</h2>
-                <p className="text-gray-400 text-sm">Very useful info</p>
+                <h2 className="text-xl font-bold">{appUser?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'kargalar'}</h2>
+                <p className="text-gray-400 text-sm">{appUser?.bio || ' '}</p>
               </div>
               <button className="ml-2">
                 <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
@@ -102,17 +172,36 @@ export default function ProfilePage() {
             {/* Recent Movies */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Recent Movies</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {recentMovies.slice(0, 2).map((movie) => (
-                  <div key={movie.id} className="relative group cursor-pointer">
-                    <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden">
-                      <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
-                        <span className="text-xs text-center px-2">{movie.title}</span>
+              {recentMovies.length === 0 ? (
+                <div className="text-center text-gray-400 py-8">
+                  <p>Henüz film izlemediniz.</p>
+                  <Link href="/explore" className="text-blue-500 hover:text-blue-400 mt-2 inline-block">
+                    Keşfetmeye başlayın
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {recentMovies.slice(0, 2).map((movie) => (
+                    <Link key={movie.id} href={`/movie?id=${movie.id}`} className="relative group cursor-pointer">
+                      <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden">
+                        {movie.poster_path ? (
+                          <Image
+                            src={tmdbImage(movie.poster_path, 'w342')}
+                            alt={movie.title}
+                            width={150}
+                            height={225}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
+                            <span className="text-xs text-center px-2">{movie.title}</span>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -121,41 +210,79 @@ export default function ProfilePage() {
             {/* Son Aktiviteler Section */}
             <div>
               <h3 className="text-xl font-bold mb-6">Son Aktiviteler</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {recentMovies.map((movie) => (
-                  <div key={movie.id} className="relative group cursor-pointer">
-                    <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden">
-                      <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
-                        <span className="text-xs text-center px-2">{movie.title}</span>
+              {recentMovies.length === 0 ? (
+                <div className="text-center text-gray-400 py-8">
+                  <p>Henüz film izlemediniz.</p>
+                  <Link href="/explore" className="text-blue-500 hover:text-blue-400 mt-2 inline-block">
+                    Keşfetmeye başlayın
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {recentMovies.map((movie) => (
+                    <Link key={movie.id} href={`/movie?id=${movie.id}`} className="relative group cursor-pointer">
+                      <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden">
+                        {movie.poster_path ? (
+                          <Image
+                            src={tmdbImage(movie.poster_path, 'w342')}
+                            alt={movie.title}
+                            width={150}
+                            height={225}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
+                            <span className="text-xs text-center px-2">{movie.title}</span>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    {/* Rating and Date */}
-                    <div className="mt-2 flex items-center justify-between text-xs text-gray-400">
-                      <div className="flex items-center space-x-1">
-                        <span>★</span>
-                        <span>{movie.vote_average}</span>
+                      {/* Rating and Date */}
+                      <div className="mt-2 flex items-center justify-between text-xs text-gray-400">
+                        <div className="flex items-center space-x-1">
+                          <span>★</span>
+                          <span>{movie.fav_count > 0 ? '5.0' : '—'}</span>
+                        </div>
+                        <span>{new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}</span>
                       </div>
-                      <span>17 Oct</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Öne Çıkarılan Filmler Section */}
             <div>
               <h3 className="text-xl font-bold mb-6">Öne Çıkarılan Filmler</h3>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {favoriteMovies.map((movie) => (
-                  <div key={movie.id} className="relative group cursor-pointer">
-                    <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden">
-                      <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
-                        <span className="text-xs text-center px-2">{movie.title}</span>
+              {favoriteMovies.length === 0 ? (
+                <div className="text-center text-gray-400 py-8">
+                  <p>Henüz film izlemediniz.</p>
+                  <Link href="/explore" className="text-blue-500 hover:text-blue-400 mt-2 inline-block">
+                    Keşfetmeye başlayın
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  {favoriteMovies.map((movie) => (
+                    <Link key={movie.id} href={`/movie?id=${movie.id}`} className="relative group cursor-pointer">
+                      <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden">
+                        {movie.poster_path ? (
+                          <Image
+                            src={tmdbImage(movie.poster_path, 'w342')}
+                            alt={movie.title}
+                            width={150}
+                            height={225}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
+                            <span className="text-xs text-center px-2">{movie.title}</span>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* İncelemeler Section */}
@@ -165,19 +292,19 @@ export default function ProfilePage() {
               {/* Stats */}
               <div className="grid grid-cols-4 gap-6 mb-8">
                 <div className="text-center">
-                  <div className="text-2xl font-bold">★ 3.8</div>
-                  <div className="text-sm text-gray-400">Average Rating</div>
+                  <div className="text-2xl font-bold">★ {stats.averageRating}</div>
+                  <div className="text-sm text-gray-400">Ortalama Puan</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">156</div>
-                  <div className="text-sm text-gray-400">Reviews</div>
+                  <div className="text-2xl font-bold">{stats.reviewCount}</div>
+                  <div className="text-sm text-gray-400">İnceleme</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">This Year<br />625 Movie</div>
+                  <div className="text-2xl font-bold">Bu Yıl<br />{stats.thisYearMovies} Film</div>
                   <div className="text-sm text-gray-400"></div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">All Time<br />897 Movie</div>
+                  <div className="text-2xl font-bold">Toplam<br />{stats.totalMovies} Film</div>
                   <div className="text-sm text-gray-400"></div>
                 </div>
               </div>
