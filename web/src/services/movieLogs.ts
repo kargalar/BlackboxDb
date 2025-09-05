@@ -608,7 +608,7 @@ export async function toggleFavorite(contentId: number): Promise<{ data: boolean
       content_status_id: prevStatus || 1,
       rating: prevRating,
       is_favorite: newFavoriteStatus,
-      is_consume_later: (prevStatus || 1) === 1 ? false : !!(latest as any)?.is_consume_later,
+      // Keep watchlist status unchanged
       date: new Date().toISOString(),
     })
 

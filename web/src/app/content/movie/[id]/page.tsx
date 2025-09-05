@@ -884,7 +884,8 @@ export default function MoviePage() {
         content_status_id: isWatched ? 1 : 2,
         rating: isWatched ? (userRating || null) : null,
         is_favorite: nextFav,
-        is_consume_later: !isWatched ? isInList : false,
+        // Keep watchlist status unchanged when toggling favorite
+        is_consume_later: isInList,
         date: new Date().toISOString(),
       });
 

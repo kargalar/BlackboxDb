@@ -78,7 +78,11 @@ function ExploreContent() {
       // Optimistic update
       setMovieStates(prev => ({
         ...prev,
-        [movieId]: { ...prev[movieId], isWatched: true }
+        [movieId]: { 
+          ...prev[movieId], 
+          isWatched: true
+          // Keep watchlist status unchanged
+        }
       }));
 
       // Update database
