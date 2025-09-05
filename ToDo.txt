@@ -18,6 +18,5 @@ profil sayfası sekmelerini düzelt
 
 son log 1 saat içindeyse tek bir log olarak birleştirilsin
 
-favori ve izlendi butonlaarı anında tepki versinler.
 
 

@@ -42,6 +42,7 @@ export interface Content {
   favorite_count?: number // Favori sayısı  
   review_count?: number // Yorum sayısı
   average_rating?: number // Ortalama puan
+  rating_count?: number // Puan veren kişi sayısı
 }
 
 export interface Review {
@@ -316,7 +317,8 @@ export async function getContentById(id: number): Promise<{ data: Content | null
         consume_count: stats.consume_count,
         favorite_count: stats.favorite_count,
         review_count: stats.review_count,
-        average_rating: stats.average_rating
+        average_rating: stats.average_rating,
+        rating_count: stats.rating_count
       } 
     }
   } catch (error) {
@@ -457,6 +459,7 @@ export async function getContentStats(contentId: number): Promise<{
   favorite_count: number;
   review_count: number;
   average_rating: number;
+  rating_count: number;
 }> {
   try {
     // Fetch in parallel using latest_user_content_log to avoid double-counting
@@ -484,6 +487,7 @@ export async function getContentStats(contentId: number): Promise<{
 
     let averageRating = 0
     const ratingData = (ratingRes.data || []) as any[]
+    const ratingCount = ratingData.length
     if (ratingData.length > 0) {
       const ratings = ratingData.map(r => Number(r.rating)).filter(r => r > 0)
       if (ratings.length > 0) {
@@ -495,7 +499,8 @@ export async function getContentStats(contentId: number): Promise<{
       consume_count: consumeRes.count || 0,
       favorite_count: favRes.count || 0,
       review_count: reviewRes.count || 0,
-      average_rating: Math.round(averageRating * 10) / 10 // 1 decimal place
+      average_rating: Math.round(averageRating * 10) / 10, // 1 decimal place
+      rating_count: ratingCount
     }
   } catch (error) {
     console.error('Error fetching content stats:', error)
@@ -503,7 +508,8 @@ export async function getContentStats(contentId: number): Promise<{
       consume_count: 0,
       favorite_count: 0,
       review_count: 0,
-      average_rating: 0
+      average_rating: 0,
+      rating_count: 0
     }
   }
 }

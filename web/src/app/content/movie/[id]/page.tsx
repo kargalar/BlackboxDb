@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getMovieDetails, tmdbImage } from '@/services/tmdb';
 import { getContentById, logMovieWatch, toggleFavorite, rateMovie, getContentReviews, saveContentFromTMDB, addReview, toggleReviewLike, addReviewReply, getReviewReplies, getUserContentLogs, updateUserContentLogById, deleteUserContentLogById, getUserContentLog, updateUserContentLog, createUserContentLog } from '@/services/movieLogs';
+import { getCurrentUserProfile } from '@/services/userService';
 import { supabase } from '@/lib/supabase';
 import { TMDBMovieDetail, TMDBCastMember } from '@/types/tmdb';
 import { Button } from '@/components/ui/button';
@@ -56,14 +57,33 @@ const ActionButton = ({ icon, label, active = false, onClick }: {
 }) => (
   <button 
     onClick={onClick}
-    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+    className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200 ${
       active 
-        ? 'bg-blue-600 text-white' 
-        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+        ? 'bg-blue-600 text-white shadow-lg transform scale-105' 
+        : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:scale-105'
     }`}
   >
     {icon}
-    <span className="text-sm">{label}</span>
+  </button>
+);
+
+// Icon Only Action Button Component (for Watch, Favorite, Watchlist)
+const IconOnlyActionButton = ({ icon, title, active = false, onClick }: { 
+  icon: React.ReactNode; 
+  title: string; 
+  active?: boolean;
+  onClick?: () => void;
+}) => (
+  <button 
+    onClick={onClick}
+    title={title}
+    className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200 ${
+      active 
+        ? 'bg-blue-600 text-white shadow-lg transform scale-105' 
+        : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:scale-105'
+    }`}
+  >
+    {icon}
   </button>
 );
 
@@ -309,7 +329,8 @@ export default function MoviePage() {
     consume_count: 0,
     favorite_count: 0,
     review_count: 0,
-    average_rating: 0
+    average_rating: 0,
+    rating_count: 0
   });
   const [userRating, setUserRating] = useState<number>(0);
   const [isFavorited, setIsFavorited] = useState(false);
@@ -365,13 +386,13 @@ export default function MoviePage() {
   
   const handleWatchlistClick = async () => {
     try {
-      // Optimistic toggle consume_later status
-      const { data: currentLog } = await getUserContentLog(Number(id));
-      const prev = !!currentLog?.is_consume_later;
+      // Optimistic toggle consume_later status immediately
+      const prev = isInList;
       const next = !prev;
       setIsInList(next);
 
-      // Preserve existing watched/favorite status when adding to watchlist
+      // Get current log and preserve existing status
+      const { data: currentLog } = await getUserContentLog(Number(id));
       const result = await updateUserContentLog(Number(id), {
         is_consume_later: next,
         // Only set content_status_id to CONSUME_LATER if not already watched
@@ -386,10 +407,10 @@ export default function MoviePage() {
         // rollback
         setIsInList(prev);
       }
-      // refresh in background
-      loadDatabaseStats();
     } catch (error) {
       console.error('Error toggling watchlist:', error);
+      // rollback on error
+      setIsInList(!isInList);
     }
   };
 
@@ -642,6 +663,7 @@ export default function MoviePage() {
           favorite_count: content.favorite_count || 0,
           review_count: content.review_count || 0,
           average_rating: content.average_rating || 0,
+          rating_count: content.rating_count || 0
         });
       }
 
@@ -747,9 +769,6 @@ export default function MoviePage() {
           setContentStats((s) => ({ ...s, consume_count: prevConsume }));
         }
       }
-
-      // Fire and forget refresh
-      loadDatabaseStats();
     } catch (e) {
       console.error('Error toggling watch:', e);
     }
@@ -781,7 +800,6 @@ export default function MoviePage() {
         setIsFavorited(prevFav);
         setContentStats((s) => ({ ...s, favorite_count: prevFavCount }));
       }
-      loadDatabaseStats();
     } catch (e) {
       setIsFavorited(prevFav);
       setContentStats((s) => ({ ...s, favorite_count: prevFavCount }));
@@ -793,38 +811,142 @@ export default function MoviePage() {
     const prev = userRating;
     const wasWatched = isWatched;
     const prevConsume = contentStats.consume_count;
+    const prevAverage = contentStats.average_rating;
+    
     setUserRating(rating);
     setIsWatched(true);
     setIsInList(false);
+    
     if (!wasWatched) {
       setContentStats((s) => ({ ...s, consume_count: (s.consume_count || 0) + 1 }));
     }
+    
+    // Calculate new average rating instantly
+    let newAverage = prevAverage;
+    let newRatingCount = contentStats.rating_count || 0;
+    const currentRatingCount = contentStats.rating_count || 1;
+    
+    if (prev === 0 && rating > 0) {
+      // User is adding a new rating
+      newAverage = (prevAverage * currentRatingCount + rating) / (currentRatingCount + 1);
+      newRatingCount = currentRatingCount + 1;
+    } else if (prev > 0 && rating > 0) {
+      // User is updating existing rating
+      newAverage = prevAverage + (rating - prev) / currentRatingCount;
+      newRatingCount = currentRatingCount; // Count stays the same
+    } else if (prev > 0 && rating === 0) {
+      // User is removing their rating
+      newAverage = currentRatingCount > 1 ? (prevAverage * currentRatingCount - prev) / (currentRatingCount - 1) : 0;
+      newRatingCount = Math.max(0, currentRatingCount - 1);
+    }
+    
+    // Update average and rating count immediately with calculated values
+    setContentStats((s) => ({ 
+      ...s, 
+      average_rating: Math.round(newAverage * 10) / 10,
+      rating_count: newRatingCount
+    }));
+    
     try {
       const result = await rateMovie(Number(id), rating);
       if (!result.data) {
         setUserRating(prev);
         setIsWatched(wasWatched);
+        setContentStats((s) => ({ 
+          ...s, 
+          consume_count: prevConsume, 
+          average_rating: prevAverage,
+          rating_count: contentStats.rating_count
+        }));
         if (!wasWatched) setContentStats((s) => ({ ...s, consume_count: prevConsume }));
+      } else {
+        // Update the average rating with server data for accuracy
+        try {
+          const { data: content } = await getContentById(Number(id));
+          if (content) {
+            setContentStats((s) => ({ 
+              ...s, 
+              average_rating: content.average_rating || 0,
+              rating_count: content.rating_count || 0
+            }));
+          }
+        } catch (error) {
+          console.error('Error updating average rating:', error);
+        }
       }
-      loadDatabaseStats();
     } catch (e) {
       setUserRating(prev);
       setIsWatched(wasWatched);
+      setContentStats((s) => ({ 
+        ...s, 
+        consume_count: prevConsume, 
+        average_rating: prevAverage,
+        rating_count: contentStats.rating_count
+      }));
       if (!wasWatched) setContentStats((s) => ({ ...s, consume_count: prevConsume }));
     }
   };
 
   const handleAddReview = async () => {
     if (!reviewText.trim()) return;
+    
+    // Close form immediately for instant feedback
+    setShowReviewForm(false);
+    
+    // Get current user profile for optimistic update
+    const { data: userProfile } = await supabase.auth.getUser();
+    if (!userProfile.user) {
+      setShowReviewForm(true); // Re-open form if auth fails
+      return;
+    }
+    
+    const { data: appUser } = await getCurrentUserProfile();
+    if (!appUser) {
+      setShowReviewForm(true); // Re-open form if profile fails
+      return;
+    }
+    
     const prevCount = contentStats.review_count;
+    const tempReviewId = Date.now(); // Temporary ID for optimistic update
+    
+    // Create temporary review object
+    const tempReview = {
+      id: tempReviewId,
+      user_name: appUser.username,
+      rating: userRating > 0 ? userRating : null,
+      review_text: reviewText.trim(),
+      created_at: new Date().toISOString(),
+      like_count: 0,
+      reply_count: 0,
+      is_liked_by_current_user: false
+    };
+    
+    // Optimistic updates
+    setReviews(prev => [tempReview, ...prev]);
     setContentStats((s) => ({ ...s, review_count: (s.review_count || 0) + 1 }));
-    const result = await addReview(Number(id), reviewText.trim());
-    if (result.data) {
-      setReviewText('');
-      setShowReviewForm(false);
-      loadDatabaseStats();
-    } else {
+    setReviewText('');
+    
+    try {
+      const result = await addReview(Number(id), reviewText.trim());
+      if (result.data) {
+        // Replace temp review with real data
+        const { data: updatedReviews } = await getContentReviews(Number(id));
+        if (updatedReviews) {
+          setReviews(updatedReviews);
+        }
+      } else {
+        // Revert optimistic updates
+        setReviews(prev => prev.filter(r => r.id !== tempReviewId));
+        setContentStats((s) => ({ ...s, review_count: prevCount }));
+        setReviewText(reviewText.trim());
+        setShowReviewForm(true);
+      }
+    } catch (error) {
+      // Revert optimistic updates on error
+      setReviews(prev => prev.filter(r => r.id !== tempReviewId));
       setContentStats((s) => ({ ...s, review_count: prevCount }));
+      setReviewText(reviewText.trim());
+      setShowReviewForm(true);
     }
   };
 
@@ -932,21 +1054,21 @@ export default function MoviePage() {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 mb-8">
-              <ActionButton
+              <IconOnlyActionButton
                 icon={<svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/></svg>}
-                label="Watch"
+                title="Watch"
                 active={isWatched}
                 onClick={handleWatchClick}
               />
-              <ActionButton
+              <IconOnlyActionButton
                 icon={<svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/></svg>}
-                label="Favorite"
+                title="Favorite"
                 active={isFavorited}
                 onClick={handleFavoriteClick}
               />
-              <ActionButton
+              <IconOnlyActionButton
                 icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>}
-                label="Add to Watchlist"
+                title="Add to Watchlist"
                 active={isInList}
                 onClick={handleWatchlistClick}
               />
