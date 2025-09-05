@@ -22,5 +22,3 @@ favori ve izlendi butonlaarı anında tepki versinler.
 
 giriş yapmamış kullanıcı için şuanki ana sayfayı gösterebilirsin ancak giriş yapan kullanıcı ana sayfa olarak trend fimlerin, trent yorumların olduğu bir sayfa görmeli. yakında çıkacak çok bekelnen filmler ve geri sayımlrı da dolabilir
 
-
-filmlerin yorum kısmıda kullanıcılar sadece kendi yorumlarını görebiliyorlar.
