@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfileCache } from '@/contexts/ProfileCacheContext';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getUserWatchedMovies, getUserStats, Content, Review } from '@/services/movieLogs';
@@ -26,6 +27,7 @@ import ActivityTab from '@/components/profile/ActivityTab';
 
 export default function UserProfilePage() {
   const { user } = useAuth();
+  const { getProfileData, setProfileData, isDataFresh } = useProfileCache();
   const params = useParams();
   const username = params.username as string;
   
@@ -52,9 +54,93 @@ export default function UserProfilePage() {
   const [isOwnProfile, setIsOwnProfile] = useState(false);
   const [profileNotFound, setProfileNotFound] = useState(false);
 
+  const loadFromCache = useCallback((cachedData: any) => {
+    setAppUser(cachedData.appUser);
+    setRecentMovies(cachedData.recentMovies);
+    setAllWatchedMovies(cachedData.allWatchedMovies);
+    setFavoriteMovies(cachedData.favoriteMovies);
+    setReviews(cachedData.reviews);
+    setFollowers(cachedData.followers);
+    setFollowing(cachedData.following);
+    setActivityFeed(cachedData.activityFeed);
+    setStats(cachedData.stats);
+    setFollowersCount(cachedData.followersCount);
+    setFollowingCount(cachedData.followingCount);
+    setIsFollowing(cachedData.isFollowing);
+    setLoading(false);
+  }, []);
+
+  const loadFreshData = useCallback(async (profileUser: AppUser) => {
+    try {
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Data loading timeout')), 10000)
+      );
+      
+      const dataPromise = Promise.all([
+        getUserWatchedMovies(profileUser.auth_user_id), 
+        getUserStats(profileUser.auth_user_id),
+        user ? getFollowData(profileUser.auth_user_id) : Promise.resolve({ followersCount: 0, followingCount: 0, isFollowing: false }),
+        getReviewsByUserId(profileUser.auth_user_id),
+        getFollowers(profileUser.auth_user_id),
+        getFollowing(profileUser.auth_user_id),
+        getActivityFeed(profileUser.auth_user_id)
+      ]);
+
+      const [
+        watchedMoviesResult, 
+        userStats,
+        followData,
+        reviewsResult,
+        followersResult,
+        followingResult,
+        activityFeedResult
+      ] = await Promise.race([dataPromise, timeoutPromise]) as any;
+
+      let processedMovies: Content[] = [];
+      let recentMoviesData: Content[] = [];
+      let favoriteMoviesData: Content[] = [];
+
+      if (watchedMoviesResult?.data) {
+        const latestPerMovie = [...watchedMoviesResult.data].sort((a, b) => {
+          const ta = a.date ? new Date(a.date).getTime() : 0
+          const tb = b.date ? new Date(b.date).getTime() : 0
+          return tb - ta
+        })
+        processedMovies = latestPerMovie;
+        recentMoviesData = latestPerMovie.slice(0, 4);
+        favoriteMoviesData = latestPerMovie.filter(m => m.is_favorite).slice(0, 5);
+      }
+
+      const profileData = {
+        appUser: profileUser,
+        recentMovies: recentMoviesData,
+        allWatchedMovies: processedMovies,
+        favoriteMovies: favoriteMoviesData,
+        reviews: reviewsResult.data || [],
+        followers: followersResult.data || [],
+        following: followingResult.data || [],
+        activityFeed: activityFeedResult.data || [],
+        stats: userStats,
+        followersCount: followData.followersCount,
+        followingCount: followData.followingCount,
+        isFollowing: followData.isFollowing,
+        lastUpdated: Date.now()
+      };
+
+      // Cache'e kaydet
+      setProfileData(username, profileData);
+      
+      // State'i güncelle
+      loadFromCache(profileData);
+
+    } catch (error) {
+      console.error('Profil verileri yüklenemedi:', error);
+      setLoading(false);
+    }
+  }, [user, username, setProfileData, loadFromCache]);
+
   useEffect(() => {
     let isMounted = true;
-    
     const loadUserData = async () => {
       if (!username) {
         if (isMounted) setLoading(false);
@@ -62,22 +148,36 @@ export default function UserProfilePage() {
       }
 
       try {
-        if (isMounted) setLoading(true);
-        setProfileNotFound(false);
+        // Önce cache'i kontrol et
+        const cachedData = getProfileData(username);
+        if (cachedData && isDataFresh(username)) {
+          console.log('Cache\'den profil verisi yüklendi:', username);
+          if (isMounted) {
+            loadFromCache(cachedData);
+          }
+          return;
+        }
+
+        if (isMounted) {
+          setLoading(true);
+          setProfileNotFound(false);
+        }
         
-        // Get the profile user by username
+        // Profil kullanıcısını al
         const userProfileResult = await getUserByUsername(username);
         
         if (!userProfileResult.data) {
-          setProfileNotFound(true);
-          if (isMounted) setLoading(false);
+          if (isMounted) {
+            setProfileNotFound(true);
+            setLoading(false);
+          }
           return;
         }
 
         const profileUser = userProfileResult.data;
         setAppUser(profileUser);
         
-        // Get current user's profile if logged in
+        // Mevcut kullanıcının profilini al (giriş yapmışsa)
         let currentProfile = null;
         if (user) {
           const currentUserResult = await getCurrentUserProfile();
@@ -88,55 +188,13 @@ export default function UserProfilePage() {
           }
         }
 
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Data loading timeout')), 10000)
-        );
-        
-        const dataPromise = Promise.all([
-          getUserWatchedMovies(profileUser.auth_user_id), 
-          getUserStats(profileUser.auth_user_id),
-          user ? getFollowData(profileUser.auth_user_id) : Promise.resolve({ followersCount: 0, followingCount: 0, isFollowing: false }),
-          getReviewsByUserId(profileUser.auth_user_id),
-          getFollowers(profileUser.auth_user_id),
-          getFollowing(profileUser.auth_user_id),
-          getActivityFeed(profileUser.auth_user_id)
-        ]);
-
-        const [
-          watchedMoviesResult, 
-          userStats,
-          followData,
-          reviewsResult,
-          followersResult,
-          followingResult,
-          activityFeedResult
-        ] = await Promise.race([dataPromise, timeoutPromise]) as any;
-
-        if (!isMounted) return;
-        
-        if (watchedMoviesResult?.data) {
-          const latestPerMovie = [...watchedMoviesResult.data].sort((a, b) => {
-            const ta = a.date ? new Date(a.date).getTime() : 0
-            const tb = b.date ? new Date(b.date).getTime() : 0
-            return tb - ta
-          })
-          setAllWatchedMovies(latestPerMovie);
-          setRecentMovies(latestPerMovie.slice(0, 4));
-          setFavoriteMovies(latestPerMovie.filter(m => m.is_favorite).slice(0, 5));
+        // Fresh data yükle ve cache'e kaydet
+        if (isMounted) {
+          await loadFreshData(profileUser);
         }
-
-        setStats(userStats);
-        setFollowersCount(followData.followersCount);
-        setFollowingCount(followData.followingCount);
-        setIsFollowing(followData.isFollowing);
-        setReviews(reviewsResult.data || []);
-        setFollowers(followersResult.data || []);
-        setFollowing(followingResult.data || []);
-        setActivityFeed(activityFeedResult.data || []);
         
       } catch (error) {
         console.error('Profil verileri yüklenemedi:', error);
-      } finally {
         if (isMounted) setLoading(false);
       }
     };
@@ -146,7 +204,7 @@ export default function UserProfilePage() {
     return () => {
       isMounted = false;
     };
-  }, [user, username]);
+  }, [user, username, getProfileData, isDataFresh, loadFromCache, loadFreshData]);
 
   const handleFollow = async () => {
     if (!appUser) return;
@@ -154,6 +212,17 @@ export default function UserProfilePage() {
     if (success) {
       setIsFollowing(true);
       setFollowersCount(followersCount + 1);
+      
+      // Cache'i güncelle
+      const cachedData = getProfileData(username);
+      if (cachedData) {
+        setProfileData(username, {
+          ...cachedData,
+          isFollowing: true,
+          followersCount: followersCount + 1,
+          lastUpdated: Date.now()
+        });
+      }
     }
   };
 
@@ -163,6 +232,17 @@ export default function UserProfilePage() {
     if (success) {
       setIsFollowing(false);
       setFollowersCount(followersCount - 1);
+      
+      // Cache'i güncelle
+      const cachedData = getProfileData(username);
+      if (cachedData) {
+        setProfileData(username, {
+          ...cachedData,
+          isFollowing: false,
+          followersCount: followersCount - 1,
+          lastUpdated: Date.now()
+        });
+      }
     }
   };
 
