@@ -49,7 +49,7 @@ const Countdown: React.FC<CountdownProps> = ({ date }) => {
 
   return (
     <div>
-      {timerComponents.length ? timerComponents : <span>Time's up!</span>}
+      {timerComponents.length ? timerComponents : <span>Time&apos;s up!</span>}
     </div>
   );
 };

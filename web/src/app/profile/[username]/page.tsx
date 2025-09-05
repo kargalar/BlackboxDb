@@ -269,9 +269,9 @@ export default function UserProfilePage() {
       <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Kullanıcı bulunamadı</h2>
-          <p className="text-gray-400 mb-6">"{username}" kullanıcı adına sahip bir profil bulunamadı.</p>
+          <p className="text-gray-400 mb-6">&ldquo;{username}&rdquo; kullanıcı adına sahip bir profil bulunamadı.</p>
           <Link href="/explore" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
-            Keşfet'e Dön
+            Keşfet&apos;e Dön
           </Link>
         </div>
       </div>

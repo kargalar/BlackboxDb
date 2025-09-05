@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { discoverMovies } from '@/services/api/tmdb';
 import { TMDBDiscoverMovie } from '@/types/tmdb';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function ExploreMoviesPage() {
   const searchParams = useSearchParams();
@@ -56,9 +57,11 @@ export default function ExploreMoviesPage() {
           {movies.map((movie) => (
             <Link key={movie.id} href={`/content/movie/${movie.id}`}>
               <div className="cursor-pointer">
-                <img
+                <Image
                   src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
-                  alt={movie.title}
+                  alt={movie.title || 'Movie poster'}
+                  width={200}
+                  height={300}
                   className="rounded-lg"
                 />
                 <h3 className="font-semibold mt-2">{movie.title}</h3>
