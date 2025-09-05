@@ -48,6 +48,14 @@ export default function UserProfilePage() {
   const [loading, setLoading] = useState(true);
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [currentUserProfile, setCurrentUserProfile] = useState<AppUser | null>(null);
+
+  const handleReviewUpdate = (reviewId: number, newText: string) => {
+    setReviews(prevReviews =>
+      prevReviews.map(review =>
+        review.id === reviewId ? { ...review, text: newText } : review
+      )
+    );
+  };
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -290,7 +298,7 @@ export default function UserProfilePage() {
       case 'Movies':
         return <MoviesTab movies={allWatchedMovies} />;
       case 'Reviews':
-        return <ReviewsTab reviews={reviews} />;
+        return <ReviewsTab reviews={reviews} onReviewUpdate={handleReviewUpdate} />;
       case 'Network':
         return <NetworkTab followers={followers} following={following} />;
       case 'Activity':

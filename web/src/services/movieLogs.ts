@@ -56,6 +56,11 @@ export interface Review {
   like_count?: number
   reply_count?: number
   is_liked_by_current_user?: boolean
+  content?: {
+    id: number
+    title: string
+    poster_path: string | null
+  }
 }
 
 export interface ReviewReply {
@@ -209,6 +214,32 @@ export async function getReviewsByUserId(userId: string): Promise<{ data: Review
   } catch (error) {
     console.error('Error in getReviewsByUserId:', error);
     return { data: [] };
+  }
+}
+
+// Update a review
+export async function updateReview(reviewId: number, text: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { data: userRes } = await supabase.auth.getUser();
+    if (!userRes.user?.id) {
+      return { success: false, error: 'not_authenticated' };
+    }
+
+    const { error } = await supabase
+      .from('review')
+      .update({ text })
+      .eq('id', reviewId)
+      .eq('user_id', userRes.user.id);
+
+    if (error) {
+      console.error('Error updating review:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error in updateReview:', error);
+    return { success: false, error: 'update_failed' };
   }
 }
 
