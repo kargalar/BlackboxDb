@@ -16,6 +16,4 @@ watchliste eklenme sayısı da gösterilsin film sayfasında
 
 aktörün sayfasında her zmaan izlenen film 0 olarak gösterilyior
 
-follow çalışmıyor
-
 profilde reviewin reviewi gösterilsin
