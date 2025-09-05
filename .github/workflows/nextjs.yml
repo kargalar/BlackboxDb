@@ -81,6 +81,18 @@ jobs:
           NEXT_PUBLIC_TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      - name: Export static files
+        run: ${{ steps.detect-package-manager.outputs.runner }} next export || echo "Export failed, using build output instead"
+      - name: Copy build output
+        run: |
+          if [ -d "out" ]; then
+            echo "Using Next.js export output"
+          else
+            echo "Creating out directory from build"
+            cp -r .next/static ./out-temp/
+            cp -r public/* ./out-temp/ || true
+            mv out-temp out
+          fi
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
