@@ -9,7 +9,7 @@ interface NetworkTabProps {
 }
 
 const UserCard = ({ user }: { user: AppUser }) => (
-  <Link href={`/profile/${user.auth_user_id}`}>
+  <Link href={`/profile/${user.username}`}>
     <div className="bg-gray-900 rounded-lg p-4 flex items-center space-x-4 hover:bg-gray-800 transition-colors">
       <div className="w-12 h-12 bg-gray-700 rounded-full flex-shrink-0 overflow-hidden">
         {user.picture_path ? (

@@ -97,7 +97,11 @@ export default function Header() {
   }
 
   const handleProfileClick = () => {
-    router.push('/profile')
+    if (appUser?.username) {
+      router.push(`/profile/${appUser.username}`)
+    } else {
+      router.push('/profile')
+    }
   }
 
   const handleSearch = (e: React.FormEvent) => {

@@ -3,7 +3,7 @@ import { AppUser } from '@/services/userService';
 import { User } from '@supabase/supabase-js';
 
 interface ProfileHeaderProps {
-  user: User;
+  user?: User | null;
   appUser: AppUser | null;
   followersCount: number;
   followingCount: number;

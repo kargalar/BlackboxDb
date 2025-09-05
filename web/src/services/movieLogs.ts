@@ -41,9 +41,9 @@ export interface ReviewReply {
 }
 
 // Fetch current user's watched movies using direct table query (fallback for missing RPC)
-export async function getUserWatchedMovies(): Promise<{ data: Content[] }> {
+export async function getUserWatchedMovies(userId?: string): Promise<{ data: Content[] }> {
   const { data: userRes } = await supabase.auth.getUser()
-  const uid = userRes.user?.id
+  const uid = userId || userRes.user?.id
   if (!uid) return { data: [] }
 
   try {
@@ -180,9 +180,9 @@ export async function getReviewsByUserId(userId: string): Promise<{ data: Review
 }
 
 // Basic stats using get_user_info_with_stats; map to UI shape
-export async function getUserStats(): Promise<{ totalMovies: number; thisYearMovies: number; averageRating: number; reviewCount: number }> {
+export async function getUserStats(userId?: string): Promise<{ totalMovies: number; thisYearMovies: number; averageRating: number; reviewCount: number }> {
   const { data: userRes } = await supabase.auth.getUser()
-  const uid = userRes.user?.id
+  const uid = userId || userRes.user?.id
   if (!uid) return { totalMovies: 0, thisYearMovies: 0, averageRating: 0, reviewCount: 0 }
 
   try {

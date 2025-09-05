@@ -36,6 +36,25 @@ export async function getCurrentUserProfile(): Promise<{ data: AppUser | null; e
   }
 }
 
+// Get user by username
+export async function getUserByUsername(username: string): Promise<{ data: AppUser | null; error?: any }> {
+  try {
+    const { data, error } = await supabase
+      .from('app_user')
+      .select('*')
+      .eq('username', username)
+      .maybeSingle();
+
+    if (error) {
+      return { data: null, error };
+    }
+
+    return { data };
+  } catch (e) {
+    return { data: null, error: e };
+  }
+}
+
 // Get all app users (for admin purposes)
 export async function getAllAppUsers(): Promise<{ data: AppUser[]; error?: any }> {
   try {
