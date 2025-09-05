@@ -2,17 +2,10 @@
 
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import DashboardPage from './dashboard/page';
 
-export default function HomePage() {
+function LandingPage() {
   const { user, loading } = useAuth();
-
-  // Debug logging
-  console.log('🏠 HomePage render:', { 
-    hasUser: !!user, 
-    userEmail: user?.email, 
-    loading 
-  });
-
   return (
     <div className="space-y-12">
       {/* Hero Section */}
@@ -94,4 +87,18 @@ export default function HomePage() {
       </section>
     </div>
   );
+}
+
+export default function HomePage() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (user) {
+    return <DashboardPage />;
+  }
+
+  return <LandingPage />;
 }

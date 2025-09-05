@@ -1328,3 +1328,30 @@ export async function getUserPersonMoviesWatchStatus(personId: number, movieIds:
     return {}
   }
 }
+
+export async function getTrendingReviews(limit: number = 10): Promise<{ data: Review[] }> {
+  try {
+    const { data, error } = await supabase
+      .from('review')
+      .select(`
+        *,
+        content:content_id (
+          id,
+          title,
+          poster_path
+        )
+      `)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching trending reviews:', error);
+      return { data: [] };
+    }
+
+    return { data: data as any[] };
+  } catch (error) {
+    console.error('Error in getTrendingReviews:', error);
+    return { data: [] };
+  }
+}
