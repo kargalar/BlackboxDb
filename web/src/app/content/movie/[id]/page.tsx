@@ -877,21 +877,37 @@ export default function MoviePage() {
     // Calculate new average rating instantly
     let newAverage = prevAverage;
     let newRatingCount = contentStats.rating_count || 0;
-    const currentRatingCount = contentStats.rating_count || 1;
+    const currentRatingCount = Math.max(0, contentStats.rating_count || 0);
+    
+    console.log('Rating calculation:', {
+      prev,
+      rating,
+      prevAverage,
+      currentRatingCount,
+      userRating
+    });
     
     if (prev === 0 && rating > 0) {
       // User is adding a new rating
-      newAverage = (prevAverage * currentRatingCount + rating) / (currentRatingCount + 1);
+      newAverage = currentRatingCount === 0 
+        ? rating 
+        : (prevAverage * currentRatingCount + rating) / (currentRatingCount + 1);
       newRatingCount = currentRatingCount + 1;
-    } else if (prev > 0 && rating > 0) {
+    } else if (prev > 0 && rating > 0 && currentRatingCount > 0) {
       // User is updating existing rating
       newAverage = prevAverage + (rating - prev) / currentRatingCount;
       newRatingCount = currentRatingCount; // Count stays the same
-    } else if (prev > 0 && rating === 0) {
+    } else if (prev > 0 && rating > 0 && currentRatingCount === 0) {
+      // Edge case: User had rating but count shows 0, treat as new rating
+      newAverage = rating;
+      newRatingCount = 1;
+    } else if (prev > 0 && rating === 0 && currentRatingCount > 0) {
       // User is removing their rating
       newAverage = currentRatingCount > 1 ? (prevAverage * currentRatingCount - prev) / (currentRatingCount - 1) : 0;
       newRatingCount = Math.max(0, currentRatingCount - 1);
     }
+    
+    console.log('New calculation:', { newAverage, newRatingCount });
     
     // Update average and rating count immediately with calculated values
     setContentStats((s) => ({ 

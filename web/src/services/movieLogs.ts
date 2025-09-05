@@ -36,6 +36,7 @@ export interface Content {
   fav_count: number
   user_rating?: number // Kullanıcının verdiği puan
   is_favorite?: boolean // Favori durumu
+  is_consume_later?: boolean // Watchlist durumu
   date?: string // Log tarihi
   // Supabase istatistikleri
   consume_count?: number // İzlenme sayısı
@@ -95,6 +96,7 @@ export async function getUserWatchedMovies(userId?: string): Promise<{ data: Con
         fav_count: item.is_favorite ? 1 : 0,
         user_rating: item.rating ? Number(item.rating) : 0,
         is_favorite: item.is_favorite ?? false,
+        is_consume_later: item.is_consume_later ?? false,
         date: item.date
       }))
       // Dedupe by content id keeping the most recent date
@@ -128,6 +130,7 @@ export async function getUserWatchedMovies(userId?: string): Promise<{ data: Con
         content_id,
         rating,
         is_favorite,
+        is_consume_later,
         date,
         content:content_id (
           id,
@@ -154,6 +157,7 @@ export async function getUserWatchedMovies(userId?: string): Promise<{ data: Con
         fav_count: item.content.favorite_count ?? 0,
         user_rating: item.rating ? Number(item.rating) : 0,
         is_favorite: item.is_favorite ?? false,
+        is_consume_later: item.is_consume_later ?? false,
         date: item.date
       }))
     // latest_user_content_log is already latest per user+content, but guard-dedupe and sort anyway
