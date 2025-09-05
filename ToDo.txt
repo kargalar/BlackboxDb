@@ -4,8 +4,6 @@ supabase google ile login
 
 admin paneli
 
-filmin puani ve yorumları tmdb den değil supabaseden gelecek. flutterdaki versiyonunda filmin bilgilerini sadece ilk seferde tmdb den alıyorduk. daha sonra otomatik supabase de content tablosuna kaydediliyor ve sonraki seferlerde veriler oradan çekiliyordu.
-
 profil sayfasındaki verileri düzel
 
 profil sayfasında giderken url de username olsun. çünkü başkalarının profilinine de gidebilecek

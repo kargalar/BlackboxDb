@@ -106,8 +106,8 @@ export async function followUser(followingId: string): Promise<{ success: boolea
     }
 
     const { error } = await supabase.from('user_follow').insert({
-      follower_id: user.id,
-      following_id: followingId,
+      user_id: user.id,
+      following_user_id: followingId,
     });
 
     if (error) {
@@ -131,8 +131,8 @@ export async function unfollowUser(followingId: string): Promise<{ success: bool
     const { error } = await supabase
       .from('user_follow')
       .delete()
-      .eq('follower_id', user.id)
-      .eq('following_id', followingId);
+      .eq('user_id', user.id)
+      .eq('following_user_id', followingId);
 
     if (error) {
       return { success: false, error };
@@ -157,14 +157,14 @@ export async function getFollowData(profileUserId: string): Promise<{
     const { count: followersCount, error: followersError } = await supabase
       .from('user_follow')
       .select('*', { count: 'exact', head: true })
-      .eq('following_id', profileUserId);
+      .eq('following_user_id', profileUserId);
 
     if (followersError) throw followersError;
 
     const { count: followingCount, error: followingError } = await supabase
       .from('user_follow')
       .select('*', { count: 'exact', head: true })
-      .eq('follower_id', profileUserId);
+      .eq('user_id', profileUserId);
 
     if (followingError) throw followingError;
 
@@ -173,8 +173,8 @@ export async function getFollowData(profileUserId: string): Promise<{
       const { data: followCheck, error: followCheckError } = await supabase
         .from('user_follow')
         .select('*')
-        .eq('follower_id', user.id)
-        .eq('following_id', profileUserId)
+        .eq('user_id', user.id)
+        .eq('following_user_id', profileUserId)
         .maybeSingle();
       
       if (followCheckError) throw followCheckError;
@@ -202,8 +202,8 @@ export async function getFollowers(userId: string): Promise<{ data: AppUser[]; e
     // First get the follower IDs
     const { data: followData, error: followError } = await supabase
       .from('user_follow')
-      .select('follower_id')
-      .eq('following_id', userId);
+      .select('user_id')
+      .eq('following_user_id', userId);
 
     if (followError) {
       return { data: [], error: followError };
@@ -214,7 +214,7 @@ export async function getFollowers(userId: string): Promise<{ data: AppUser[]; e
     }
 
     // Then get the user data for those IDs
-    const followerIds = followData.map(item => item.follower_id);
+    const followerIds = followData.map(item => item.user_id);
     const { data: userData, error: userError } = await supabase
       .from('app_user')
       .select('*')
@@ -236,8 +236,8 @@ export async function getFollowing(userId: string): Promise<{ data: AppUser[]; e
     // First get the following IDs
     const { data: followData, error: followError } = await supabase
       .from('user_follow')
-      .select('following_id')
-      .eq('follower_id', userId);
+      .select('following_user_id')
+      .eq('user_id', userId);
 
     if (followError) {
       return { data: [], error: followError };
@@ -248,7 +248,7 @@ export async function getFollowing(userId: string): Promise<{ data: AppUser[]; e
     }
 
     // Then get the user data for those IDs
-    const followingIds = followData.map(item => item.following_id);
+    const followingIds = followData.map(item => item.following_user_id);
     const { data: userData, error: userError } = await supabase
       .from('app_user')
       .select('*')
