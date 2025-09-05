@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { discoverMovies } from '@/services/tmdb';
+import { discoverMovies } from '@/services/api/tmdb';
 import { TMDBDiscoverMovie } from '@/types/tmdb';
 import Link from 'next/link';
 

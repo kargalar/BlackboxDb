@@ -6,7 +6,8 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { getCurrentUserProfile } from '@/services/userService'
+import { getCurrentUserProfile } from '@/services/database/userService'
+import { SearchIcon } from '@/components/icons/SearchIcon'
 
 export default function Header() {
   const { user, loading, signInWithGoogle, signOut } = useAuth()
@@ -66,13 +67,13 @@ export default function Header() {
   }, [lastScrollY])
 
   // Debug logging
-  console.log('🎯 Header render:', { 
-    hasUser: !!user, 
-    userEmail: user?.email, 
-    loading,
-    isSigningIn,
-    isSigningOut 
-  });
+  // console.log('🎯 Header render:', { 
+  //   hasUser: !!user, 
+  //   userEmail: user?.email, 
+  //   loading,
+  //   isSigningIn,
+  //   isSigningOut 
+  // });
 
   const handleGoogleSignIn = async () => {
     try {
@@ -160,9 +161,7 @@ export default function Header() {
                   type="submit"
                   className="rounded-full bg-gray-700 dark:bg-gray-600 p-2 text-white hover:bg-gray-800 dark:hover:bg-gray-500 transition-colors"
                 >
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+                  <SearchIcon className="h-5 w-5" />
                 </button>
                 <button
                   type="button"
@@ -182,9 +181,7 @@ export default function Header() {
                 onClick={handleSearchToggle}
                 className="hidden md:block rounded-full bg-gray-100 p-2 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
               >
-                <svg className="h-5 w-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                <SearchIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </button>
             )}
             

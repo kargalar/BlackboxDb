@@ -1,6 +1,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { tmdbImage } from '@/services/tmdb';
+import { tmdbImage } from '@/services/api/tmdb';
+import { EyeIconSolid } from '@/components/icons/EyeIcon';
+import { HeartIcon } from '@/components/icons/HeartIcon';
+import { BookmarkIcon } from '@/components/icons/BookmarkIcon';
+import { CheckIcon } from '@/components/icons/CheckIcon';
 
 interface MovieCardProps {
   movie: {
@@ -122,24 +126,17 @@ export default function MovieCard({
           <div className="absolute top-2 right-2 flex flex-col space-y-1">
             {isWatched && (
               <div className="bg-green-600 rounded-full p-1">
-                <svg className={`${sizeClass.actionIcons} text-white`} fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                  <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
-                </svg>
+                <EyeIconSolid className={`${sizeClass.actionIcons} text-white`} />
               </div>
             )}
             {isFavorite && (
               <div className="bg-red-600 rounded-full p-1">
-                <svg className={`${sizeClass.actionIcons} text-white`} fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/>
-                </svg>
+                <HeartIcon className={`${sizeClass.actionIcons} text-white`} />
               </div>
             )}
             {isInList && !isFavorite && (
               <div className="bg-blue-600 rounded-full p-1">
-                <svg className={`${sizeClass.actionIcons} text-white`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-                </svg>
+                <BookmarkIcon className={`${sizeClass.actionIcons} text-white`} />
               </div>
             )}
           </div>
@@ -159,14 +156,9 @@ export default function MovieCard({
                 title={isWatched ? "İzlendi" : "İzle"}
               >
                 {isWatched ? (
-                  <svg className={`${sizeClass.actionIcons}`} fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                  </svg>
+                  <CheckIcon className={`${sizeClass.actionIcons}`} />
                 ) : (
-                  <svg className={`${sizeClass.actionIcons}`} fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                    <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
-                  </svg>
+                  <EyeIconSolid className={`${sizeClass.actionIcons}`} />
                 )}
               </button>
               <button
@@ -178,9 +170,7 @@ export default function MovieCard({
                 } transition-colors`}
                 title={isFavorite ? "Favoriden Çıkar" : "Favori"}
               >
-                <svg className={`${sizeClass.actionIcons}`} fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/>
-                </svg>
+                <HeartIcon className={`${sizeClass.actionIcons}`} />
               </button>
               <button
                 onClick={handleToggleWatchlist}
@@ -191,9 +181,7 @@ export default function MovieCard({
                 } transition-colors`}
                 title={isInList ? "Listeden Çıkar" : "İzleme Listesi"}
               >
-                <svg className={`${sizeClass.actionIcons}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-                </svg>
+                <BookmarkIcon className={`${sizeClass.actionIcons}`} />
               </button>
             </div>
           </div>

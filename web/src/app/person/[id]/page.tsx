@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getPersonDetails, tmdbImage } from '@/services/tmdb';
-import { getUserPersonWatchedPercentage, getUserPersonMoviesWatchStatus } from '@/services/movieLogs';
+import { getPersonDetails, tmdbImage } from '@/services/api/tmdb';
+import { getUserPersonWatchedPercentage, getUserPersonMoviesWatchStatus } from '@/services/database/movieLogs';
 import MovieCard from '@/components/MovieCard';
 import { supabase } from '@/lib/supabase';
 

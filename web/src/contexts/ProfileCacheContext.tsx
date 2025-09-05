@@ -1,8 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { Content, Review } from '@/services/movieLogs';
-import { AppUser } from '@/services/userService';
+import { Content, Review } from '@/services/database/movieLogs';
+import { AppUser } from '@/services/database/userService';
 
 interface UserProfileData {
   appUser: AppUser;

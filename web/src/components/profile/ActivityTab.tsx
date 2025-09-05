@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { tmdbImage } from '@/services/tmdb';
+import { tmdbImage } from '@/services/api/tmdb';
 
 interface ActivityTabProps {
   activities: any[];

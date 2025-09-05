@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
-import { Content } from '@/services/movieLogs';
-import { tmdbImage } from '@/services/tmdb';
+import { Content } from '@/services/database/movieLogs';
+import { tmdbImage } from '@/services/api/tmdb';
 import MovieCard from '@/components/MovieCard';
 import { supabase } from '@/lib/supabase';
 

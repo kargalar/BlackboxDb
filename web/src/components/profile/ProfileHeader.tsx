@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { AppUser } from '@/services/userService';
+import { AppUser } from '@/services/database/userService';
 import { User } from '@supabase/supabase-js';
 
 interface ProfileHeaderProps {

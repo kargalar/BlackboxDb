@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { discoverMovies } from '@/services/tmdb';
-import { getTrendingReviews } from '@/services/movieLogs';
+import { discoverMovies } from '@/services/api/tmdb';
+import { getTrendingReviews } from '@/services/database/movieLogs';
 import { TMDBDiscoverMovie } from '@/types/tmdb';
-import { Review } from '@/services/movieLogs';
+import { Review } from '@/services/database/movieLogs';
 import Link from 'next/link';
 import Countdown from '@/components/Countdown';
 import { Button } from '@/components/ui/button';

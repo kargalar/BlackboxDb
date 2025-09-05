@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfileCache } from '@/contexts/ProfileCacheContext';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { getUserWatchedMovies, getUserStats, Content, Review } from '@/services/movieLogs';
+import { getUserWatchedMovies, getUserStats, Content, Review } from '@/services/database/movieLogs';
 import { 
   getCurrentUserProfile, 
   getUserByUsername,
@@ -15,8 +15,8 @@ import {
   unfollowUser,
   getFollowers,
   getFollowing,
-} from '@/services/userService';
-import { getReviewsByUserId, getActivityFeed } from '@/services/movieLogs';
+} from '@/services/database/userService';
+import { getReviewsByUserId, getActivityFeed } from '@/services/database/movieLogs';
 import ProfileHeader from '@/components/profile/ProfileHeader';
 import ProfileTabs from '@/components/profile/ProfileTabs';
 import HomeTab from '@/components/profile/HomeTab';

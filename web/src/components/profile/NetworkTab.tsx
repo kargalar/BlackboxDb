@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { AppUser } from '@/services/userService';
+import { AppUser } from '@/services/database/userService';
 
 interface NetworkTabProps {
   followers: AppUser[];

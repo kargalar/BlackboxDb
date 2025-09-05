@@ -924,63 +924,6 @@ export async function addReviewReply(reviewId: number, text: string, parentReply
   }
 }
 
-// Get replies for a review
-export async function getReviewReplies(reviewId: number): Promise<{ data: ReviewReply[]; error?: any }> {
-  try {
-    const { data: userRes } = await supabase.auth.getUser()
-    const uid = userRes.user?.id
-
-    const { data: repliesData, error } = await supabase
-      .from('review_replies')
-      .select(`
-        id,
-        review_id,
-        user_id,
-        text,
-        created_at,
-        parent_reply_id,
-        app_user!inner (
-          username
-        )
-      `)
-      .eq('review_id', reviewId)
-      .order('created_at', { ascending: true })
-
-    if (error) return { data: [], error }
-
-    // Enhance each reply with like info
-    const replies: ReviewReply[] = await Promise.all(
-      (repliesData || []).map(async (reply) => {
-        // Get like count
-        const { count } = await getReviewReplyLikeCount(reply.id)
-        
-        // Check if current user liked this reply
-        let isLiked = false
-        if (uid) {
-          const { isLiked: liked } = await isReviewReplyLikedByUser(reply.id)
-          isLiked = liked
-        }
-
-        return {
-          id: reply.id,
-          review_id: reply.review_id,
-          user_id: reply.user_id,
-          user_name: (reply.app_user as any)?.username || 'Anonymous',
-          text: reply.text,
-          created_at: reply.created_at,
-          parent_reply_id: reply.parent_reply_id,
-          like_count: count,
-          is_liked_by_current_user: isLiked
-        }
-      })
-    )
-
-    return { data: replies }
-  } catch (error) {
-    return { data: [], error }
-  }
-}
-
 // Get reply count for a review
 export async function getReviewReplyCount(reviewId: number): Promise<{ count: number }> {
   try {

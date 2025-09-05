@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getCurrentUserProfile } from '@/services/userService';
+import { getCurrentUserProfile } from '@/services/database/userService';
 
 export default function ProfilePage() {
   const { user } = useAuth();

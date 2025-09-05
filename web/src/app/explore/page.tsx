@@ -1,8 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { discoverMovies, tmdbImage, searchMovies, getMovieDetails } from '@/services/tmdb';
-import { getContentStats, toggleFavorite, updateUserContentLog, saveContentFromTMDB } from '@/services/movieLogs';
+import { discoverMovies, tmdbImage, searchMovies, getMovieDetails } from '@/services/api/tmdb';
+import { getContentStats, toggleFavorite, updateUserContentLog, saveContentFromTMDB } from '@/services/database/movieLogs';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
