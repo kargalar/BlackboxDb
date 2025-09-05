@@ -151,6 +151,34 @@ export async function getUserWatchedMovies(): Promise<{ data: Content[] }> {
   }
 }
 
+// Get reviews by user ID
+export async function getReviewsByUserId(userId: string): Promise<{ data: Review[] }> {
+  try {
+    const { data, error } = await supabase
+      .from('review')
+      .select(`
+        *,
+        content:content_id (
+          id,
+          title,
+          poster_path
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching reviews by user id:', error);
+      return { data: [] };
+    }
+
+    return { data: data as any[] };
+  } catch (error) {
+    console.error('Error in getReviewsByUserId:', error);
+    return { data: [] };
+  }
+}
+
 // Basic stats using get_user_info_with_stats; map to UI shape
 export async function getUserStats(): Promise<{ totalMovies: number; thisYearMovies: number; averageRating: number; reviewCount: number }> {
   const { data: userRes } = await supabase.auth.getUser()
@@ -1166,6 +1194,35 @@ export async function deleteUserContentLogById(logId: number): Promise<{ data: b
     return { data: false, error }
   }
 }
+
+// Get user activity feed
+export async function getActivityFeed(userId: string): Promise<{ data: any[] }> {
+    try {
+      const { data, error } = await supabase
+        .from('latest_user_content_log')
+        .select(`
+          *,
+          content:content_id (
+            id,
+            title,
+            poster_path
+          )
+        `)
+        .eq('user_id', userId)
+        .order('date', { ascending: false })
+        .limit(50);
+  
+      if (error) {
+        console.error('Error fetching activity feed:', error);
+        return { data: [] };
+      }
+  
+      return { data: data || [] };
+    } catch (error) {
+      console.error('Error in getActivityFeed:', error);
+      return { data: [] };
+    }
+  }
 
 // Get all user logs with pagination
 export async function getUserLogs(page: number = 1, limit: number = 20): Promise<{
