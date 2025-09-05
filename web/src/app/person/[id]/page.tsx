@@ -6,6 +6,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getPersonDetails, tmdbImage } from '@/services/tmdb';
 import { getUserPersonWatchedPercentage, getUserPersonMoviesWatchStatus } from '@/services/movieLogs';
+import MovieCard from '@/components/MovieCard';
+import { supabase } from '@/lib/supabase';
 
 // Progress Ring Component
 const ProgressRing = ({ percentage, size = 120 }: { percentage: number; size?: number }) => {
@@ -46,65 +48,6 @@ const ProgressRing = ({ percentage, size = 120 }: { percentage: number; size?: n
   );
 };
 
-// Movie Card Component
-const MovieCard = ({ movie, watchStatus }: { 
-  movie: any; 
-  watchStatus?: { watched: boolean; rating?: number; favorite: boolean } 
-}) => (
-  <Link href={`/content/movie/${movie.id}`} className="group relative">
-    <div className="aspect-[2/3] rounded-lg overflow-hidden mb-2 group-hover:scale-105 transition-transform">
-      {movie.poster_path ? (
-        <Image
-          src={tmdbImage(movie.poster_path, 'w342')}
-          alt={movie.title}
-          width={150}
-          height={225}
-          className="w-full h-full object-cover"
-        />
-      ) : (
-        <div className="w-full h-full bg-gray-700 flex items-center justify-center">
-          <svg className="w-12 h-12 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-          </svg>
-        </div>
-      )}
-      
-      {/* Watch Status Indicators */}
-      {watchStatus && (
-        <div className="absolute top-2 right-2 flex flex-col space-y-1">
-          {watchStatus.watched && (
-            <div className="bg-green-600 rounded-full p-1">
-              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
-              </svg>
-            </div>
-          )}
-          {watchStatus.favorite && (
-            <div className="bg-red-600 rounded-full p-1">
-              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/>
-              </svg>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-    <h3 className="text-sm font-medium truncate">{movie.title}</h3>
-    <div className="flex items-center justify-between">
-      <p className="text-xs text-gray-400">{movie.release_date?.split('-')[0]}</p>
-      {watchStatus?.rating && (
-        <div className="flex items-center space-x-1">
-          <svg className="w-3 h-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-          </svg>
-          <span className="text-xs text-gray-300">{watchStatus.rating}</span>
-        </div>
-      )}
-    </div>
-  </Link>
-);
-
 export default function PersonPage() {
   const params = useParams();
   const id = params.id as string;
@@ -112,6 +55,70 @@ export default function PersonPage() {
   const [loading, setLoading] = useState(true);
   const [watchedPercentage, setWatchedPercentage] = useState({ watchedCount: 0, totalCount: 0, percentage: 0 });
   const [movieWatchStatus, setMovieWatchStatus] = useState<{ [movieId: number]: { watched: boolean; rating?: number; favorite: boolean } }>({});
+
+  const handleToggleFavorite = async (movieId: number) => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      const currentStatus = movieWatchStatus[movieId] || { watched: false, favorite: false };
+      const newFavoriteStatus = !currentStatus.favorite;
+
+      // Update in database
+      const { error } = await supabase
+        .from('user_content_log')
+        .update({ is_favorite: newFavoriteStatus })
+        .eq('user_id', user.user.id)
+        .eq('content_id', movieId);
+
+      if (error) throw error;
+
+      // Update local state
+      setMovieWatchStatus(prev => ({
+        ...prev,
+        [movieId]: {
+          ...currentStatus,
+          favorite: newFavoriteStatus
+        }
+      }));
+
+      console.log(`Movie ${movieId} favorite status updated to ${newFavoriteStatus}`);
+    } catch (error) {
+      console.error('Error updating favorite status:', error);
+    }
+  };
+
+  const handleToggleWatchlist = async (movieId: number) => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      const currentStatus = movieWatchStatus[movieId] || { watched: false, favorite: false };
+      const newWatchlistStatus = !currentStatus.watched; // Using watched as watchlist for simplicity
+
+      // Update in database
+      const { error } = await supabase
+        .from('user_content_log')
+        .update({ is_consume_later: newWatchlistStatus })
+        .eq('user_id', user.user.id)
+        .eq('content_id', movieId);
+
+      if (error) throw error;
+
+      // Update local state
+      setMovieWatchStatus(prev => ({
+        ...prev,
+        [movieId]: {
+          ...currentStatus,
+          watched: newWatchlistStatus
+        }
+      }));
+
+      console.log(`Movie ${movieId} watchlist status updated to ${newWatchlistStatus}`);
+    } catch (error) {
+      console.error('Error updating watchlist status:', error);
+    }
+  };
 
   useEffect(() => {
     const fetchPersonData = async () => {
@@ -251,7 +258,14 @@ export default function PersonPage() {
                     <MovieCard
                       key={movie.id}
                       movie={movie}
-                      watchStatus={movieWatchStatus[movie.id]}
+                      isWatched={movieWatchStatus[movie.id]?.watched || false}
+                      isFavorite={movieWatchStatus[movie.id]?.favorite || false}
+                      rating={movieWatchStatus[movie.id]?.rating}
+                      showActions={true}
+                      size="large"
+                      showRating={true}
+                      onToggleFavorite={handleToggleFavorite}
+                      onToggleWatchlist={handleToggleWatchlist}
                     />
                   ))}
                 </div>

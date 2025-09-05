@@ -7,6 +7,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
+import MovieCard from '@/components/MovieCard';
 
 function ExploreContent() {
   const searchParams = useSearchParams();
@@ -389,117 +390,22 @@ function ExploreContent() {
 
       {/* Grid */}
       <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-        {results.map((m: any) => {
-          const title = m.title || m.name || '—';
-          const year = m.release_date ? new Date(m.release_date).getFullYear() : null;
-          
-          return (
-            <article key={m.id} className="group relative">
-              <a href={`/content/movie/${m.id}`} className="block">
-                <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 shadow-sm">
-                  {m.poster_path ? (
-                    <Image
-                      src={tmdbImage(m.poster_path, 'w342')}
-                      alt={title}
-                      fill
-                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
-                      className="object-cover transition-all duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center">
-                      <svg className="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                  )}
-                  
-                  {/* Overlay with rating - only show if rating exists */}
-                  {m.db_rating > 0 && (
-                    <div className="absolute top-2 right-2">
-                      <div className="rounded-full bg-black/70 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                        ⭐ {m.db_rating.toFixed(1)}
-                        {m.db_review_count > 0 && (
-                          <span className="ml-1 opacity-75">({m.db_review_count})</span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Hover Overlay with Action Buttons */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleWatchMovie(m.id, m);
-                        }}
-                        className={`flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-sm text-white transition-colors ${
-                          movieStates[m.id]?.isWatched 
-                            ? 'bg-blue-600' 
-                            : 'bg-white/20 hover:bg-white/30'
-                        }`}
-                        title="İzle"
-                      >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
-                        </svg>
-                      </button>
-                      <button 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleToggleFavorite(m.id, m);
-                        }}
-                        className={`flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-sm text-white transition-colors ${
-                          movieStates[m.id]?.isFavorite 
-                            ? 'bg-red-600' 
-                            : 'bg-white/20 hover:bg-white/30'
-                        }`}
-                        title="Favori"
-                      >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/>
-                        </svg>
-                      </button>
-                      <button 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleToggleWatchlist(m.id, m);
-                        }}
-                        className={`flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-sm text-white transition-colors ${
-                          movieStates[m.id]?.isInList 
-                            ? 'bg-green-600' 
-                            : 'bg-white/20 hover:bg-white/30'
-                        }`}
-                        title="İzleme Listesi"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-3 space-y-1">
-                  <h3 className="line-clamp-2 text-sm font-medium text-gray-900 dark:text-white group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors">
-                    {title}
-                  </h3>
-                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                    {year && <span>{year}</span>}
-                    {year && m.original_language && <span>·</span>}
-                    {m.original_language && (
-                      <span className="uppercase">{m.original_language}</span>
-                    )}
-                  </div>
-                </div>
-              </a>
-            </article>
-          );
-        })}
+        {results.map((m: any) => (
+          <MovieCard
+            key={m.id}
+            movie={m}
+            size="large"
+            showRating={m.db_rating > 0}
+            rating={m.db_rating}
+            reviewCount={m.db_review_count}
+            isWatched={movieStates[m.id]?.isWatched}
+            isFavorite={movieStates[m.id]?.isFavorite}
+            isInList={movieStates[m.id]?.isInList}
+            onWatch={(movieId) => handleWatchMovie(movieId, m)}
+            onToggleFavorite={(movieId) => handleToggleFavorite(movieId, m)}
+            onToggleWatchlist={(movieId) => handleToggleWatchlist(movieId, m)}
+          />
+        ))}
       </div>
 
       {/* Pagination */}

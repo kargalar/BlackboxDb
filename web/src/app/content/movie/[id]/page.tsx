@@ -8,6 +8,7 @@ import { getMovieDetails, tmdbImage } from '@/services/tmdb';
 import { getContentById, logMovieWatch, toggleFavorite, rateMovie, getContentReviews, saveContentFromTMDB, addReview, toggleReviewLike, addReviewReply, getReviewReplies, getUserContentLogs, updateUserContentLogById, deleteUserContentLogById, getUserContentLog, updateUserContentLog, createUserContentLog } from '@/services/movieLogs';
 import { getCurrentUserProfile } from '@/services/userService';
 import { supabase } from '@/lib/supabase';
+import MovieCard from '@/components/MovieCard';
 import { TMDBMovieDetail, TMDBCastMember } from '@/types/tmdb';
 import { Button } from '@/components/ui/button';
 
@@ -327,31 +328,6 @@ const Comment = ({
     </div>
   );
 };
-
-// Movie Card Component for Similar Movies
-const MovieCard = ({ movie }: { movie: any }) => (
-  <Link href={`/content/movie/${movie.id}`} className="min-w-[150px] cursor-pointer group">
-    <div className="aspect-[2/3] rounded-lg overflow-hidden mb-2 group-hover:scale-105 transition-transform">
-      {movie.poster_path ? (
-        <Image
-          src={tmdbImage(movie.poster_path, 'w342')}
-          alt={movie.title}
-          width={150}
-          height={225}
-          className="w-full h-full object-cover"
-        />
-      ) : (
-        <div className="w-full h-full bg-gray-700 flex items-center justify-center">
-          <svg className="w-12 h-12 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-          </svg>
-        </div>
-      )}
-    </div>
-    <h3 className="text-sm font-medium truncate">{movie.title}</h3>
-    <p className="text-xs text-gray-400">{movie.release_date?.split('-')[0]}</p>
-  </Link>
-);
 
 export default function MoviePage() {
   const params = useParams();

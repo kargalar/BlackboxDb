@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { Content } from '@/services/movieLogs';
 import { tmdbImage } from '@/services/tmdb';
+import MovieCard from '@/components/MovieCard';
+import { supabase } from '@/lib/supabase';
 
 // Star Rating Component
 const StarRating = ({ rating, size = "w-4 h-4" }: { rating: number; size?: string }) => {
@@ -47,6 +49,88 @@ export default function HomeTab({ recentMovies, favoriteMovies, stats, isOwnProf
     setAllMovies(uniqueMovies);
   }, [recentMovies, favoriteMovies]);
 
+  const handleToggleWatch = async (movieId: number) => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      const allMoviesList = [...recentMovies, ...favoriteMovies];
+      const movie = allMoviesList.find(m => m.id === movieId);
+      if (!movie) return;
+
+      // For profile pages, toggle watch status
+      const newWatchedStatus = false; // Mark as unwatched since these are recent/favorite movies
+
+      // Update in database
+      const { error } = await supabase
+        .from('user_content_log')
+        .update({ 
+          is_watched: newWatchedStatus,
+          date: newWatchedStatus ? new Date().toISOString() : null 
+        })
+        .eq('user_id', user.user.id)
+        .eq('content_id', movieId);
+
+      if (error) throw error;
+
+      console.log(`Movie ${movieId} watch status updated to ${newWatchedStatus}`);
+    } catch (error) {
+      console.error('Error updating watch status:', error);
+    }
+  };
+
+  const handleToggleFavorite = async (movieId: number) => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      const allMoviesList = [...recentMovies, ...favoriteMovies];
+      const movie = allMoviesList.find(m => m.id === movieId);
+      if (!movie) return;
+
+      const newFavoriteStatus = !movie.is_favorite;
+
+      // Update in database
+      const { error } = await supabase
+        .from('user_content_log')
+        .update({ is_favorite: newFavoriteStatus })
+        .eq('user_id', user.user.id)
+        .eq('content_id', movieId);
+
+      if (error) throw error;
+
+      console.log(`Movie ${movieId} favorite status updated to ${newFavoriteStatus}`);
+    } catch (error) {
+      console.error('Error updating favorite status:', error);
+    }
+  };
+
+  const handleToggleWatchlist = async (movieId: number) => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      const allMoviesList = [...recentMovies, ...favoriteMovies];
+      const movie = allMoviesList.find(m => m.id === movieId);
+      if (!movie) return;
+
+      const newWatchlistStatus = !movie.is_consume_later;
+
+      // Update in database
+      const { error } = await supabase
+        .from('user_content_log')
+        .update({ is_consume_later: newWatchlistStatus })
+        .eq('user_id', user.user.id)
+        .eq('content_id', movieId);
+
+      if (error) throw error;
+
+      console.log(`Movie ${movieId} watchlist status updated to ${newWatchlistStatus}`);
+    } catch (error) {
+      console.error('Error updating watchlist status:', error);
+    }
+  };
+
   // Filter movies based on search query
   const filteredMovies = allMovies.filter(movie =>
     movie.title?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -71,7 +155,7 @@ export default function HomeTab({ recentMovies, favoriteMovies, stats, isOwnProf
               <div className="grid grid-cols-2 gap-3">
                 {recentMovies.slice(0, 2).map((movie) => (
                   <Link key={movie.id} href={`/content/movie/${movie.id}`} className="relative group cursor-pointer">
-                    <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden">
+                    <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden relative">
                       {movie.poster_path ? (
                         <Image
                           src={tmdbImage(movie.poster_path, 'w342')}
@@ -85,6 +169,52 @@ export default function HomeTab({ recentMovies, favoriteMovies, stats, isOwnProf
                           <span className="text-xs text-center px-2">{movie.title}</span>
                         </div>
                       )}
+
+                      {/* Hover Overlay with Action Buttons */}
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              // Handle watch action
+                            }}
+                            className="flex items-center justify-center w-8 h-8 rounded-full backdrop-blur-sm text-white bg-white/20 hover:bg-white/30 transition-colors"
+                            title="İzle"
+                          >
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                              <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
+                            </svg>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              // Handle favorite action
+                            }}
+                            className="flex items-center justify-center w-8 h-8 rounded-full backdrop-blur-sm text-white bg-white/20 hover:bg-white/30 transition-colors"
+                            title="Favori"
+                          >
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/>
+                            </svg>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              // Handle watchlist action
+                            }}
+                            className="flex items-center justify-center w-8 h-8 rounded-full backdrop-blur-sm text-white bg-white/20 hover:bg-white/30 transition-colors"
+                            title="İzleme Listesi"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </Link>
                 ))}
@@ -109,60 +239,19 @@ export default function HomeTab({ recentMovies, favoriteMovies, stats, isOwnProf
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {recentMovies.map((movie) => (
-                <Link key={movie.id} href={`/content/movie/${movie.id}`} className="relative group cursor-pointer">
-                  <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden relative">
-                    {movie.poster_path ? (
-                      <Image
-                        src={tmdbImage(movie.poster_path, 'w342')}
-                        alt={movie.title}
-                        width={150}
-                        height={225}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
-                        <span className="text-xs text-center px-2">{movie.title}</span>
-                      </div>
-                    )}
-                    
-                    {/* Favorite Badge */}
-                    {movie.is_favorite && (
-                      <div className="absolute top-2 right-2 bg-red-600 rounded-full p-1">
-                        <svg className="w-3 h-3 text-white fill-current" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/>
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Rating and Date */}
-                  <div className="mt-2 space-y-1">
-                    {/* User Rating */}
-                    {movie.user_rating && movie.user_rating > 0 ? (
-                      <div className="flex items-center justify-between">
-                        <StarRating rating={movie.user_rating} size="w-3 h-3" />
-                        <span className="text-xs text-yellow-400">{movie.user_rating}/5</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">Puanlanmamış</span>
-                        <span className="text-xs text-gray-500">—</span>
-                      </div>
-                    )}
-                    
-                    {/* Date */}
-                    <div className="text-xs text-gray-400">
-                      {movie.date 
-                        ? new Date(movie.date).toLocaleDateString('tr-TR', { 
-                            day: 'numeric', 
-                            month: 'short',
-                            year: 'numeric'
-                          })
-                        : 'Yakın zamanda'
-                      }
-                    </div>
-                  </div>
-                </Link>
+                <MovieCard
+                  key={movie.id}
+                  movie={movie}
+                  isWatched={true}
+                  isFavorite={movie.is_favorite || false}
+                  rating={movie.user_rating}
+                  showActions={true}
+                  size="large"
+                  showRating={true}
+                  onWatch={handleToggleWatch}
+                  onToggleFavorite={handleToggleFavorite}
+                  onToggleWatchlist={handleToggleWatchlist}
+                />
               ))}
             </div>
           )}
@@ -197,23 +286,19 @@ export default function HomeTab({ recentMovies, favoriteMovies, stats, isOwnProf
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {favoriteMovies.map((movie) => (
-                <Link key={movie.id} href={`/content/movie/${movie.id}`} className="relative group cursor-pointer">
-                  <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden">
-                    {movie.poster_path ? (
-                      <Image
-                        src={tmdbImage(movie.poster_path, 'w342')}
-                        alt={movie.title}
-                        width={150}
-                        height={225}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
-                        <span className="text-xs text-center px-2">{movie.title}</span>
-                      </div>
-                    )}
-                  </div>
-                </Link>
+                <MovieCard
+                  key={movie.id}
+                  movie={movie}
+                  isWatched={true}
+                  isFavorite={movie.is_favorite || false}
+                  rating={movie.user_rating}
+                  showActions={true}
+                  size="large"
+                  showRating={true}
+                  onWatch={handleToggleWatch}
+                  onToggleFavorite={handleToggleFavorite}
+                  onToggleWatchlist={handleToggleWatchlist}
+                />
               ))}
             </div>
           )}

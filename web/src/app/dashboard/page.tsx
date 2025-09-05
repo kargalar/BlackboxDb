@@ -8,6 +8,8 @@ import { Review } from '@/services/movieLogs';
 import Link from 'next/link';
 import Countdown from '@/components/Countdown';
 import { Button } from '@/components/ui/button';
+import MovieCard from '@/components/MovieCard';
+import { supabase } from '@/lib/supabase';
 
 export default function DashboardPage() {
   const [trendingMovies, setTrendingMovies] = useState<TMDBDiscoverMovie[]>([]);
@@ -43,6 +45,97 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
+  const handleWatchMovie = async (movieId: number, movie: any) => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      // Mark as watched
+      const { error } = await supabase
+        .from('user_content_log')
+        .upsert({
+          user_id: user.user.id,
+          content_id: movieId,
+          is_watched: true,
+          date: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,content_id'
+        });
+
+      if (error) throw error;
+
+      console.log(`Movie ${movieId} marked as watched`);
+    } catch (error) {
+      console.error('Error updating watch status:', error);
+    }
+  };
+
+  const handleToggleFavorite = async (movieId: number, movie: any) => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      // First check if movie is already in user's log
+      const { data: existingLog } = await supabase
+        .from('user_content_log')
+        .select('is_favorite')
+        .eq('user_id', user.user.id)
+        .eq('content_id', movieId)
+        .single();
+
+      const newFavoriteStatus = !existingLog?.is_favorite;
+
+      const { error } = await supabase
+        .from('user_content_log')
+        .upsert({
+          user_id: user.user.id,
+          content_id: movieId,
+          is_favorite: newFavoriteStatus
+        }, {
+          onConflict: 'user_id,content_id'
+        });
+
+      if (error) throw error;
+
+      console.log(`Movie ${movieId} favorite status updated to ${newFavoriteStatus}`);
+    } catch (error) {
+      console.error('Error updating favorite status:', error);
+    }
+  };
+
+  const handleToggleWatchlist = async (movieId: number, movie: any) => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      // First check if movie is already in user's log
+      const { data: existingLog } = await supabase
+        .from('user_content_log')
+        .select('is_consume_later')
+        .eq('user_id', user.user.id)
+        .eq('content_id', movieId)
+        .single();
+
+      const newWatchlistStatus = !existingLog?.is_consume_later;
+
+      const { error } = await supabase
+        .from('user_content_log')
+        .upsert({
+          user_id: user.user.id,
+          content_id: movieId,
+          is_consume_later: newWatchlistStatus
+        }, {
+          onConflict: 'user_id,content_id'
+        });
+
+      if (error) throw error;
+
+      console.log(`Movie ${movieId} watchlist status updated to ${newWatchlistStatus}`);
+    } catch (error) {
+      console.error('Error updating watchlist status:', error);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 space-y-12">
       {loading ? (
@@ -60,16 +153,16 @@ export default function DashboardPage() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {trendingMovies.slice(0, 5).map((movie) => (
-                <Link key={movie.id} href={`/content/movie/${movie.id}`}>
-                  <div className="cursor-pointer">
-                    <img
-                      src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
-                      alt={movie.title}
-                      className="rounded-lg"
-                    />
-                    <h3 className="font-semibold mt-2">{movie.title}</h3>
-                  </div>
-                </Link>
+                <MovieCard
+                  key={movie.id}
+                  movie={movie}
+                  size="large"
+                  showRating={false}
+                  showActions={true}
+                  onWatch={(movieId) => handleWatchMovie(movieId, movie)}
+                  onToggleFavorite={(movieId) => handleToggleFavorite(movieId, movie)}
+                  onToggleWatchlist={(movieId) => handleToggleWatchlist(movieId, movie)}
+                />
               ))}
             </div>
           </section>
@@ -99,18 +192,18 @@ export default function DashboardPage() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {upcomingMovies.slice(0, 5).map((movie) => (
-                <Link key={movie.id} href={`/content/movie/${movie.id}`}>
-                  <div className="cursor-pointer">
-                    <img
-                      src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
-                      alt={movie.title}
-                      className="rounded-lg"
-                    />
-                    <h3 className="font-semibold mt-2">{movie.title}</h3>
-                    <p className="text-sm text-gray-500">{movie.release_date}</p>
-                    {movie.release_date && <Countdown date={movie.release_date} />}
-                  </div>
-                </Link>
+                <div key={movie.id} className="space-y-2">
+                  <MovieCard
+                    movie={movie}
+                    size="large"
+                    showRating={false}
+                    showActions={true}
+                    onWatch={(movieId) => handleWatchMovie(movieId, movie)}
+                    onToggleFavorite={(movieId) => handleToggleFavorite(movieId, movie)}
+                    onToggleWatchlist={(movieId) => handleToggleWatchlist(movieId, movie)}
+                  />
+                  {movie.release_date && <Countdown date={movie.release_date} />}
+                </div>
               ))}
             </div>
           </section>
