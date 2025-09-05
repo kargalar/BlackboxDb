@@ -10,7 +10,7 @@ const nextConfig = {
         ],
         unoptimized: true,
     },
-    output: 'export', // Enable static export for GitHub Pages
+    // output: 'export', // Enable static export for GitHub Pages
     trailingSlash: true,
     // Only use basePath and assetPrefix for production builds
     ...(process.env.NODE_ENV === 'production' && {

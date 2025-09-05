@@ -125,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       clearTimeout(fallbackTimeout)
       subscription.unsubscribe()
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({

@@ -1203,7 +1203,7 @@ export default function MoviePage() {
                 </div>
                 
                 {userLogs.length === 0 ? (
-                  <p className="text-gray-400 text-center py-4">No logs found. Click "Add New Log" to create one.</p>
+                  <p className="text-gray-400 text-center py-4">No logs found. Click &quot;Add New Log&quot; to create one.</p>
                 ) : (
                   <div className="space-y-2">
                     {userLogs.map((log) => (
