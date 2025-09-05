@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Fallback timeout to prevent infinite loading
     const fallbackTimeout = setTimeout(() => {
-      if (loading) {
+      if (isMounted) {
         console.log('⏰ AuthProvider: Fallback timeout - loading takıldı, false yapılıyor');
         setLoading(false);
       }
