@@ -415,13 +415,66 @@ export default function MoviePage() {
   };
 
   const handleReplyToReview = async (reviewId: number, text: string) => {
+    // Get current user profile for optimistic update
+    const { data: userProfile } = await supabase.auth.getUser();
+    if (!userProfile.user) return;
+
+    const { data: appUser } = await getCurrentUserProfile();
+    if (!appUser) return;
+
+    const tempReplyId = Date.now(); // Temporary ID for optimistic update
+
+    // Create temporary reply object
+    const tempReply = {
+      id: tempReplyId,
+      user_name: appUser.username,
+      text: text.trim(),
+      created_at: new Date().toISOString(),
+      like_count: 0,
+      is_liked_by_current_user: false
+    };
+
+    // Optimistic updates
+    setReviewReplies(prev => ({
+      ...prev,
+      [reviewId]: [...(prev[reviewId] || []), tempReply]
+    }));
+
+    // Update reply count in reviews
+    setReviews(prev => prev.map(review =>
+      review.id === reviewId
+        ? { ...review, reply_count: (review.reply_count || 0) + 1 }
+        : review
+    ));
+
     try {
       const result = await addReviewReply(reviewId, text);
       if (result.data) {
-        // Add reply to local state or refresh
+        // Replace temp reply with real data
         loadReplies(reviewId);
+      } else {
+        // Revert optimistic updates
+        setReviewReplies(prev => ({
+          ...prev,
+          [reviewId]: (prev[reviewId] || []).filter(reply => reply.id !== tempReplyId)
+        }));
+        setReviews(prev => prev.map(review =>
+          review.id === reviewId
+            ? { ...review, reply_count: Math.max(0, (review.reply_count || 0) - 1) }
+            : review
+        ));
       }
     } catch (error) {
+      // Revert optimistic updates on error
+      setReviewReplies(prev => ({
+        ...prev,
+        [reviewId]: (prev[reviewId] || []).filter(reply => reply.id !== tempReplyId)
+      }));
+      setReviews(prev => prev.map(review =>
+        review.id === reviewId
+          ? { ...review, reply_count: Math.max(0, (review.reply_count || 0) - 1) }
+          : review
+      ));
       console.error('Error adding reply:', error);
     }
   };
