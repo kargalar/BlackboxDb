@@ -1,10 +1,12 @@
 'use client';
 
 import Image from 'next/image';
-import { discoverMovies, tmdbImage, searchMovies } from '@/services/tmdb';
-import { getContentStats } from '@/services/movieLogs';
+import { discoverMovies, tmdbImage, searchMovies, getMovieDetails } from '@/services/tmdb';
+import { getContentStats, toggleFavorite, updateUserContentLog, saveContentFromTMDB } from '@/services/movieLogs';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/lib/supabase';
 
 function ExploreContent() {
   const searchParams = useSearchParams();
@@ -12,6 +14,171 @@ function ExploreContent() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [movieStates, setMovieStates] = useState<Record<number, { isWatched: boolean; isFavorite: boolean; isInList: boolean }>>({});
+
+  // Load user states for movies
+  const loadUserStatesForMovies = async (movies: any[]) => {
+    try {
+      const { data: userRes } = await supabase.auth.getUser();
+      if (!userRes.user?.id) return;
+
+      const movieIds = movies.map(m => m.id);
+      
+      // Get user content logs for all movies
+      const { data: logs, error } = await supabase
+        .from('user_content_log')
+        .select('*')
+        .eq('user_id', userRes.user.id)
+        .in('content_id', movieIds);
+
+      if (error) return;
+
+      // Group logs by content_id and get the latest for each
+      const latestLogs: Record<number, any> = {};
+      logs?.forEach(log => {
+        if (!latestLogs[log.content_id] || new Date(log.date) > new Date(latestLogs[log.content_id].date)) {
+          latestLogs[log.content_id] = log;
+        }
+      });
+
+      // Update movie states
+      const newStates: Record<number, { isWatched: boolean; isFavorite: boolean; isInList: boolean }> = {};
+      movieIds.forEach(movieId => {
+        const log = latestLogs[movieId];
+        if (log) {
+          newStates[movieId] = {
+            isWatched: log.content_status_id === 1,
+            isFavorite: log.is_favorite || false,
+            isInList: log.is_consume_later || false
+          };
+        } else {
+          newStates[movieId] = {
+            isWatched: false,
+            isFavorite: false,
+            isInList: false
+          };
+        }
+      });
+
+      setMovieStates(newStates);
+    } catch (error) {
+      console.error('Error loading user states for movies:', error);
+    }
+  };
+
+  // Action handlers
+  const handleWatchMovie = async (movieId: number, movieData: any) => {
+    try {
+      // First ensure movie is saved to content table
+      const movieDetails = await getMovieDetails(movieId);
+      if (movieDetails) {
+        await saveContentFromTMDB(movieDetails);
+      }
+      
+      // Optimistic update
+      setMovieStates(prev => ({
+        ...prev,
+        [movieId]: { ...prev[movieId], isWatched: true }
+      }));
+
+      // Update database
+      const result = await updateUserContentLog(movieId, {
+        content_status_id: 1, // CONSUMED
+        date: new Date().toISOString()
+      });
+
+      if (!result.data) {
+        // Revert on error
+        setMovieStates(prev => ({
+          ...prev,
+          [movieId]: { ...prev[movieId], isWatched: false }
+        }));
+      }
+    } catch (error) {
+      console.error('Error marking movie as watched:', error);
+      setMovieStates(prev => ({
+        ...prev,
+        [movieId]: { ...prev[movieId], isWatched: false }
+      }));
+    }
+  };
+
+  const handleToggleFavorite = async (movieId: number, movieData: any) => {
+    try {
+      // First ensure movie is saved to content table
+      const movieDetails = await getMovieDetails(movieId);
+      if (movieDetails) {
+        await saveContentFromTMDB(movieDetails);
+      }
+      
+      const currentState = movieStates[movieId]?.isFavorite || false;
+      const nextState = !currentState;
+
+      // Optimistic update
+      setMovieStates(prev => ({
+        ...prev,
+        [movieId]: { ...prev[movieId], isFavorite: nextState }
+      }));
+
+      // Update database
+      const result = await toggleFavorite(movieId);
+      if (!result.data) {
+        // Revert on error
+        setMovieStates(prev => ({
+          ...prev,
+          [movieId]: { ...prev[movieId], isFavorite: currentState }
+        }));
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      const currentState = movieStates[movieId]?.isFavorite || false;
+      setMovieStates(prev => ({
+        ...prev,
+        [movieId]: { ...prev[movieId], isFavorite: currentState }
+      }));
+    }
+  };
+
+  const handleToggleWatchlist = async (movieId: number, movieData: any) => {
+    try {
+      // First ensure movie is saved to content table
+      const movieDetails = await getMovieDetails(movieId);
+      if (movieDetails) {
+        await saveContentFromTMDB(movieDetails);
+      }
+      
+      const currentState = movieStates[movieId]?.isInList || false;
+      const nextState = !currentState;
+
+      // Optimistic update
+      setMovieStates(prev => ({
+        ...prev,
+        [movieId]: { ...prev[movieId], isInList: nextState }
+      }));
+
+      // Update database
+      const result = await updateUserContentLog(movieId, {
+        is_consume_later: nextState,
+        content_status_id: nextState ? 2 : undefined, // CONSUME_LATER or undefined
+        date: new Date().toISOString()
+      });
+
+      if (!result.data) {
+        // Revert on error
+        setMovieStates(prev => ({
+          ...prev,
+          [movieId]: { ...prev[movieId], isInList: currentState }
+        }));
+      }
+    } catch (error) {
+      console.error('Error toggling watchlist:', error);
+      const currentState = movieStates[movieId]?.isInList || false;
+      setMovieStates(prev => ({
+        ...prev,
+        [movieId]: { ...prev[movieId], isInList: currentState }
+      }));
+    }
+  };
 
   const sp = Object.fromEntries(searchParams.entries());
   const sort_by = sp.sort_by || 'popularity.desc';
@@ -46,6 +213,11 @@ function ExploreContent() {
             'primary_release_date.gte': gte,
             'primary_release_date.lte': lte,
           });
+        }
+        
+        if (result && result.results) {
+          // Load user states for all movies
+          await loadUserStatesForMovies(result.results);
         }
         
         // Get database ratings for each movie
@@ -218,7 +390,7 @@ function ExploreContent() {
           const year = m.release_date ? new Date(m.release_date).getFullYear() : null;
           
           return (
-            <article key={m.id} className="group">
+            <article key={m.id} className="group relative">
               <a href={`/content/movie/${m.id}`} className="block">
                 <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 shadow-sm">
                   {m.poster_path ? (
@@ -248,6 +420,64 @@ function ExploreContent() {
                       </div>
                     </div>
                   )}
+
+                  {/* Hover Overlay with Action Buttons */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleWatchMovie(m.id, m);
+                        }}
+                        className={`flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-sm text-white transition-colors ${
+                          movieStates[m.id]?.isWatched 
+                            ? 'bg-blue-600' 
+                            : 'bg-white/20 hover:bg-white/30'
+                        }`}
+                        title="İzle"
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
+                        </svg>
+                      </button>
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleToggleFavorite(m.id, m);
+                        }}
+                        className={`flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-sm text-white transition-colors ${
+                          movieStates[m.id]?.isFavorite 
+                            ? 'bg-red-600' 
+                            : 'bg-white/20 hover:bg-white/30'
+                        }`}
+                        title="Favori"
+                      >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/>
+                        </svg>
+                      </button>
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleToggleWatchlist(m.id, m);
+                        }}
+                        className={`flex items-center justify-center w-10 h-10 rounded-full backdrop-blur-sm text-white transition-colors ${
+                          movieStates[m.id]?.isInList 
+                            ? 'bg-green-600' 
+                            : 'bg-white/20 hover:bg-white/30'
+                        }`}
+                        title="İzleme Listesi"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="mt-3 space-y-1">

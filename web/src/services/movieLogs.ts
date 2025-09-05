@@ -44,6 +44,7 @@ export interface Content {
   review_count?: number // Yorum sayısı
   average_rating?: number // Ortalama puan
   rating_count?: number // Puan veren kişi sayısı
+  rating_distribution?: number[] // Rating dağılımı [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
 }
 
 export interface Review {

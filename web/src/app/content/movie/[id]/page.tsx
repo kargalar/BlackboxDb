@@ -48,6 +48,39 @@ const StarRating = ({ rating }: { rating: number }) => {
   return <div className="flex items-center space-x-1">{stars}</div>;
 };
 
+// Rating Gradient Bars Component
+const RatingGradientBars = ({ ratingDistribution }: { ratingDistribution?: number[] }) => {
+  if (!ratingDistribution || ratingDistribution.length === 0) {
+    return null;
+  }
+
+  const bars = [];
+  const maxCount = Math.max(...ratingDistribution);
+  const ratings = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
+  
+  for (let i = 0; i < ratingDistribution.length && i < ratings.length; i++) {
+    const count = ratingDistribution[i];
+    const height = maxCount > 0 ? (count / maxCount) * 80 : 0; // Maximum height 80px
+    
+    bars.push(
+      <div key={i} className="flex flex-col items-center space-y-1">
+        <div 
+          className="w-4 bg-yellow-400 rounded-t transition-all duration-300"
+          style={{ height: `${height}px` }}
+        ></div>
+        <span className="text-xs text-gray-400">{ratings[i]}</span>
+        <span className="text-xs text-gray-500">{count}</span>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="flex items-end justify-center space-x-2 mt-4">
+      {bars}
+    </div>
+  );
+};
+
 // Action Button Component
 const ActionButton = ({ icon, label, active = false, onClick }: { 
   icon: React.ReactNode; 
@@ -175,7 +208,9 @@ const Comment = ({
         </div>
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="font-medium">{review.user_name}</h4>
+            <Link href={`/profile/${review.user_name}`} className="font-medium hover:text-blue-400 transition-colors">
+              {review.user_name}
+            </Link>
             <span className="text-sm text-gray-400">{formatDate(review.created_at)}</span>
           </div>
           {review.rating && (
@@ -267,7 +302,9 @@ const Comment = ({
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
-                        <h5 className="text-sm font-medium">{reply.user_name}</h5>
+                        <Link href={`/profile/${reply.user_name}`} className="text-sm font-medium hover:text-blue-400 transition-colors">
+                          {reply.user_name}
+                        </Link>
                         <span className="text-xs text-gray-400">{formatDate(reply.created_at)}</span>
                       </div>
                       <p className="text-gray-300 text-sm">{reply.text}</p>
@@ -330,7 +367,8 @@ export default function MoviePage() {
     favorite_count: 0,
     review_count: 0,
     average_rating: 0,
-    rating_count: 0
+    rating_count: 0,
+    rating_distribution: [] as number[]
   });
   const [userRating, setUserRating] = useState<number>(0);
   const [isFavorited, setIsFavorited] = useState(false);
@@ -716,7 +754,8 @@ export default function MoviePage() {
           favorite_count: content.favorite_count || 0,
           review_count: content.review_count || 0,
           average_rating: content.average_rating || 0,
-          rating_count: content.rating_count || 0
+          rating_count: content.rating_count || 0,
+          rating_distribution: content.rating_distribution || []
         });
       }
 
@@ -1078,6 +1117,8 @@ export default function MoviePage() {
                 </div>
               )}
             </div>
+            {/* Rating Gradient Bars */}
+            <RatingGradientBars ratingDistribution={contentStats.rating_distribution} />
           </div>
 
           {/* Right Column - Movie Details */}
@@ -1085,7 +1126,15 @@ export default function MoviePage() {
             {/* Title and Year */}
             <div className="mb-4">
               <h1 className="text-3xl font-bold mb-2">{movie.title}</h1>
-              <p className="text-gray-400 text-lg">{movie.release_date?.split('-')[0]}</p>
+              <div className="flex items-center space-x-4 text-gray-400 text-lg mb-2">
+                <span>{movie.release_date?.split('-')[0]}</span>
+                {movie.credits?.crew && (
+                  <>
+                    <span>•</span>
+                    <span>Yönetmen: {movie.credits.crew.find(person => person.job === 'Director')?.name || 'Bilinmiyor'}</span>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Rating */}

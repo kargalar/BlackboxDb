@@ -9,7 +9,8 @@
   --muted-foreground: 100 116 139; /* gray-500 */
   --border: 229 231 235; /* gray-200 */
   --input: 229 231 235; /* gray-200 */
-  --primary: 147 51 234; /* purple-600 */
+  --primary: 71 85 105; /* slate-600 - dark gray for primary */
+  --primary-foreground: 241 245 249; /* slate-50 - very light */
   --primary-foreground: 255 255 255;
   --secondary: 248 250 252; /* gray-50 */
   --secondary-foreground: 15 23 42; /* gray-900 */
@@ -17,25 +18,25 @@
   --accent-foreground: 15 23 42; /* gray-900 */
   --destructive: 239 68 68; /* red-500 */
   --destructive-foreground: 255 255 255;
-  --ring: 147 51 234; /* purple-600 */
+  --ring: 71 85 105; /* slate-500 - medium gray */
 }
 
 .dark {
-  --background: 0 0 0; /* black */
-  --foreground: 229 231 235; /* gray-200 */
-  --muted: 17 24 39; /* gray-900 */
-  --muted-foreground: 156 163 175; /* gray-400 */
-  --border: 55 65 81; /* gray-700 */
-  --input: 55 65 81; /* gray-700 */
-  --primary: 75 85 99; /* gray-600 */
-  --primary-foreground: 255 255 255;
-  --secondary: 31 41 55; /* gray-800 */
-  --secondary-foreground: 229 231 235; /* gray-200 */
-  --accent: 31 41 55; /* gray-800 */
-  --accent-foreground: 229 231 235; /* gray-200 */
-  --destructive: 239 68 68; /* red-500 */
+  --background: 0 0 0; /* pure black */
+  --foreground: 203 213 225; /* slate-300 - lighter for better readability */
+  --muted: 15 23 42; /* slate-900 - very dark */
+  --muted-foreground: 148 163 184; /* slate-400 - medium gray */
+  --border: 30 41 59; /* slate-700 - darker border */
+  --input: 30 41 59; /* slate-700 - darker input */
+  --primary: 51 65 85; /* slate-600 - dark gray for primary */
+  --primary-foreground: 241 245 249; /* slate-50 - very light */
+  --secondary: 15 23 42; /* slate-900 - very dark */
+  --secondary-foreground: 203 213 225; /* slate-300 - lighter */
+  --accent: 15 23 42; /* slate-900 - very dark */
+  --accent-foreground: 203 213 225; /* slate-300 - lighter */
+  --destructive: 239 68 68; /* red-500 - keep red for errors */
   --destructive-foreground: 255 255 255;
-  --ring: 107 114 128; /* gray-500 */
+  --ring: 71 85 105; /* slate-500 - medium gray */
 }
 
 * {
@@ -50,6 +51,111 @@ body {
   background-color: rgb(var(--background));
   color: rgb(var(--foreground));
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark theme enhancements */
+.dark body {
+  background-color: #000000; /* Pure black background */
+}
+
+.dark .bg-gray-900 {
+  background-color: #0f172a; /* slate-900 */
+}
+
+.dark .bg-gray-800 {
+  background-color: #1e293b; /* slate-800 */
+}
+
+.dark .bg-gray-700 {
+  background-color: #334155; /* slate-700 */
+}
+
+.dark .text-gray-200 {
+  color: #cbd5e1; /* slate-300 */
+}
+
+.dark .text-gray-300 {
+  color: #cbd5e1; /* slate-300 */
+}
+
+.dark .text-gray-400 {
+  color: #94a3b8; /* slate-400 */
+}
+
+.dark .border-gray-700 {
+  border-color: #334155; /* slate-700 */
+}
+
+.dark .border-gray-600 {
+  border-color: #475569; /* slate-600 */
+}
+
+/* Enhanced dark theme - pure black and gray tones */
+.dark {
+  --tw-shadow-color: rgb(15 23 42 / 0.1);
+}
+
+.dark .shadow-sm {
+  --tw-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.1);
+}
+
+.dark .shadow {
+  --tw-shadow: 0 1px 3px 0 rgb(15 23 42 / 0.1), 0 1px 2px -1px rgb(15 23 42 / 0.1);
+}
+
+.dark .shadow-md {
+  --tw-shadow: 0 4px 6px -1px rgb(15 23 42 / 0.1), 0 2px 4px -2px rgb(15 23 42 / 0.1);
+}
+
+.dark .shadow-lg {
+  --tw-shadow: 0 10px 15px -3px rgb(15 23 42 / 0.1), 0 4px 6px -4px rgb(15 23 42 / 0.1);
+}
+
+/* Card backgrounds in dark mode */
+.dark .bg-white {
+  background-color: #0f172a; /* slate-900 */
+}
+
+.dark .bg-gray-50 {
+  background-color: #020617; /* slate-950 */
+}
+
+.dark .bg-gray-100 {
+  background-color: #0f172a; /* slate-900 */
+}
+
+/* Input and form elements in dark mode */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #1e293b; /* slate-800 */
+  border-color: #334155; /* slate-700 */
+  color: #cbd5e1; /* slate-300 */
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  background-color: #1e293b; /* slate-800 */
+  border-color: #475569; /* slate-600 */
+  color: #f1f5f9; /* slate-50 */
+}
+
+/* Button variants in dark mode */
+.dark .bg-gray-700 {
+  background-color: #334155; /* slate-700 */
+}
+
+.dark .bg-gray-600 {
+  background-color: #475569; /* slate-600 */
+}
+
+.dark .hover\:bg-gray-600:hover {
+  background-color: #475569; /* slate-600 */
+}
+
+.dark .hover\:bg-gray-700:hover {
+  background-color: #334155; /* slate-700 */
 }
 
 /* Smooth transitions for theme changes */

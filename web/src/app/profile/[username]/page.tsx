@@ -294,11 +294,11 @@ export default function UserProfilePage() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'Home':
-        return <HomeTab recentMovies={recentMovies} favoriteMovies={favoriteMovies} stats={stats} />;
+        return <HomeTab recentMovies={recentMovies} favoriteMovies={favoriteMovies} stats={stats} isOwnProfile={isOwnProfile} />;
       case 'Movies':
         return <MoviesTab movies={allWatchedMovies} />;
       case 'Reviews':
-        return <ReviewsTab reviews={reviews} onReviewUpdate={handleReviewUpdate} />;
+        return <ReviewsTab reviews={reviews} onReviewUpdate={handleReviewUpdate} isOwnProfile={isOwnProfile} />;
       case 'Network':
         return <NetworkTab followers={followers} following={following} />;
       case 'Activity':

@@ -30,9 +30,10 @@ interface HomeTabProps {
     averageRating: number;
     reviewCount: number;
   };
+  isOwnProfile?: boolean;
 }
 
-export default function HomeTab({ recentMovies, favoriteMovies, stats }: HomeTabProps) {
+export default function HomeTab({ recentMovies, favoriteMovies, stats, isOwnProfile = false }: HomeTabProps) {
   const [showFeaturedDialog, setShowFeaturedDialog] = useState(false);
   const [selectedFeaturedMovies, setSelectedFeaturedMovies] = useState<number[]>([]);
   const [allMovies, setAllMovies] = useState<Content[]>([]);
@@ -171,18 +172,20 @@ export default function HomeTab({ recentMovies, favoriteMovies, stats }: HomeTab
         <div>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold">Öne Çıkarılan Filmler</h3>
-            <button
-              onClick={() => {
-                setShowFeaturedDialog(true);
-                setSearchQuery('');
-              }}
-              className="p-2 text-gray-400 hover:text-white transition-colors"
-              title="Öne çıkarılan filmleri düzenle"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </button>
+            {isOwnProfile && (
+              <button
+                onClick={() => {
+                  setShowFeaturedDialog(true);
+                  setSearchQuery('');
+                }}
+                className="p-2 text-gray-400 hover:text-white transition-colors"
+                title="Öne çıkarılan filmleri düzenle"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+            )}
           </div>
           {favoriteMovies.length === 0 ? (
             <div className="text-center text-gray-400 py-8">

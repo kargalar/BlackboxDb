@@ -1,17 +1,21 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Review, updateReview } from '@/services/movieLogs';
+import type { ReviewReply } from '@/services/movieLogs';
 import { tmdbImage } from '@/services/tmdb';
+import { getReviewReplies, testReviewReplyTable } from '@/services/reviewReplies';
 
 interface ReviewsTabProps {
   reviews: Review[];
   onReviewUpdate?: (reviewId: number, newText: string) => void;
+  isOwnProfile?: boolean;
 }
 
-export default function ReviewsTab({ reviews, onReviewUpdate }: ReviewsTabProps) {
+export default function ReviewsTab({ reviews, onReviewUpdate, isOwnProfile = false }: ReviewsTabProps) {
   const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [editText, setEditText] = useState('');
+  const [replies, setReplies] = useState<{ [key: number]: ReviewReply[] }>({});
 
   const handleEdit = (review: Review) => {
     setEditingReview(review);
@@ -44,6 +48,26 @@ export default function ReviewsTab({ reviews, onReviewUpdate }: ReviewsTabProps)
     setEditingReview(null);
     setEditText('');
   };
+
+  useEffect(() => {
+    // Test if review_reply table exists
+    testReviewReplyTable();
+
+    // Fetch replies for all reviews
+    async function fetchReplies() {
+      const replyMap: { [key: number]: ReviewReply[] } = {};
+      for (const review of reviews) {
+        console.log('Fetching replies for review:', review.id);
+        const res = await getReviewReplies(review.id);
+        console.log('Replies for review', review.id, ':', res.data);
+        replyMap[review.id] = res.data;
+      }
+      console.log('All replies:', replyMap);
+      setReplies(replyMap);
+    }
+    if (reviews.length > 0) fetchReplies();
+  }, [reviews]);
+
   if (reviews.length === 0) {
     return (
       <div className="text-center text-gray-400 py-8">
@@ -82,15 +106,17 @@ export default function ReviewsTab({ reviews, onReviewUpdate }: ReviewsTabProps)
                   {review.content?.title || 'Film'}
                 </Link>
               </h3>
-              <button
-                onClick={() => handleEdit(review)}
-                className="text-gray-400 hover:text-white transition-colors"
-                title="İncelemeyi düzenle"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-              </button>
+              {isOwnProfile && (
+                <button
+                  onClick={() => handleEdit(review)}
+                  className="text-gray-400 hover:text-white transition-colors"
+                  title="İncelemeyi düzenle"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+              )}
             </div>
             <p className="text-sm text-gray-400 mt-1">
               {new Date(review.created_at).toLocaleDateString('tr-TR', {
@@ -100,6 +126,21 @@ export default function ReviewsTab({ reviews, onReviewUpdate }: ReviewsTabProps)
               })}
             </p>
             <p className="mt-4 text-gray-300">{review.text}</p>
+
+            {/* Review Replies */}
+            {replies[review.id] && replies[review.id].length > 0 && (
+              <div className="mt-4 border-t border-gray-700 pt-4">
+                <h4 className="text-sm font-semibold text-gray-300 mb-2">Yorumlar ({replies[review.id].length})</h4>
+                <div className="space-y-2">
+                  {replies[review.id].map(reply => (
+                    <div key={reply.id} className="bg-gray-800 rounded px-3 py-2 text-sm text-gray-200">
+                      <span className="font-bold text-blue-400">{reply.user_name}:</span> {reply.text}
+                      <span className="ml-2 text-xs text-gray-400">{new Date(reply.created_at).toLocaleDateString('tr-TR')}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       ))}

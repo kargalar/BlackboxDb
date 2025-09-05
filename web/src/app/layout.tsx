@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="tr" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen bg-gray-50 antialiased dark:bg-gray-950`}>
+      <body className={`${inter.className} min-h-screen bg-gray-50 antialiased dark:bg-black`}>
         <ThemeProvider>
           <AuthProvider>
             <ProfileCacheProvider>
@@ -30,11 +30,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </div>
                 </main>
                 
-                <footer className="border-t bg-white dark:bg-gray-900 mt-auto">
+                <footer className="border-t bg-white dark:bg-gray-900/50 mt-auto">
                   <div className="mx-auto max-w-7xl px-4 py-8">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                       <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded bg-gradient-to-br from-purple-600 to-blue-600" />
+                        <div className="h-6 w-6 rounded bg-gradient-to-br from-gray-600 to-gray-800" />
                         <span className="font-semibold text-gray-900 dark:text-white">Blackbox</span>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400">

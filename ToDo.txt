@@ -18,5 +18,12 @@ profil sayfası sekmelerini düzelt
 
 son log 1 saat içindeyse tek bir log olarak birleştirilsin
 
+hover
 
+watchliste eklenme sayısı da gösterilsin film sayfasında
 
+aktörün sayfasında her zmaan izlenen film 0 olarak gösterilyior
+
+follow çalışmıyor
+
+profilde reviewin reviewi gösterilsin
