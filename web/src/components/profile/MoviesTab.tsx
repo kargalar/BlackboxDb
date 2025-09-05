@@ -3,6 +3,23 @@ import Image from 'next/image';
 import { Content } from '@/services/movieLogs';
 import { tmdbImage } from '@/services/tmdb';
 
+// Star Rating Component
+const StarRating = ({ rating, size = "w-4 h-4" }: { rating: number; size?: string }) => {
+  const stars = [];
+  for (let i = 1; i <= 5; i++) {
+    stars.push(
+      <svg
+        key={i}
+        className={`${size} ${i <= rating ? 'text-yellow-400 fill-current' : 'text-gray-600'}`}
+        viewBox="0 0 20 20"
+      >
+        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+      </svg>
+    );
+  }
+  return <div className="flex items-center space-x-0.5">{stars}</div>;
+};
+
 interface MoviesTabProps {
   movies: Content[];
 }
@@ -23,7 +40,7 @@ export default function MoviesTab({ movies }: MoviesTabProps) {
     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
       {movies.map((movie) => (
         <Link key={movie.id} href={`/content/movie/${movie.id}`} className="relative group cursor-pointer">
-          <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden">
+          <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden relative">
             {movie.poster_path ? (
               <Image
                 src={tmdbImage(movie.poster_path, 'w342')}
@@ -37,6 +54,46 @@ export default function MoviesTab({ movies }: MoviesTabProps) {
                 <span className="text-xs text-center px-2">{movie.title}</span>
               </div>
             )}
+            
+            {/* Favorite Badge */}
+            {movie.is_favorite && (
+              <div className="absolute top-2 right-2 bg-red-600 rounded-full p-1">
+                <svg className="w-3 h-3 text-white fill-current" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/>
+                </svg>
+              </div>
+            )}
+          </div>
+          
+          {/* Rating and Title */}
+          <div className="mt-2 space-y-1">
+            {/* Movie Title */}
+            <h4 className="text-xs font-medium line-clamp-2 text-white">{movie.title}</h4>
+            
+            {/* User Rating */}
+            {movie.user_rating && movie.user_rating > 0 ? (
+              <div className="flex items-center justify-between">
+                <StarRating rating={movie.user_rating} size="w-3 h-3" />
+                <span className="text-xs text-yellow-400">{movie.user_rating}/5</span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">Puanlanmamış</span>
+                <span className="text-xs text-gray-500">—</span>
+              </div>
+            )}
+            
+            {/* Date */}
+            <div className="text-xs text-gray-400">
+              {movie.date 
+                ? new Date(movie.date).toLocaleDateString('tr-TR', { 
+                    day: 'numeric', 
+                    month: 'short',
+                    year: 'numeric'
+                  })
+                : 'Yakın zamanda'
+              }
+            </div>
           </div>
         </Link>
       ))}

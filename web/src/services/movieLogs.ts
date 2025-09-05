@@ -207,11 +207,33 @@ export async function getUserStats(userId?: string): Promise<{ totalMovies: numb
 
   // Fallback: Calculate from available data
   try {
-    // Count from latest_user_content_log view
-    const { count: totalMovies } = await supabase
+    // Get unique movies from latest_user_content_log
+    const { data: uniqueMovies, error: moviesError } = await supabase
       .from('latest_user_content_log')
-      .select('*', { count: 'exact', head: true })
+      .select('content_id, rating, date')
       .eq('user_id', uid)
+
+    if (moviesError) {
+      console.error('Error getting unique movies:', moviesError)
+      return { totalMovies: 0, thisYearMovies: 0, averageRating: 0, reviewCount: 0 }
+    }
+
+    // Calculate stats from unique movies
+    const totalMovies = uniqueMovies?.length || 0
+    
+    // Calculate this year's movies
+    const currentYear = new Date().getFullYear()
+    const thisYearMovies = uniqueMovies?.filter(movie => {
+      if (!movie.date) return false
+      const movieYear = new Date(movie.date).getFullYear()
+      return movieYear === currentYear
+    }).length || 0
+
+    // Calculate average rating (only from rated movies)
+    const ratedMovies = uniqueMovies?.filter(movie => movie.rating && movie.rating > 0) || []
+    const averageRating = ratedMovies.length > 0 
+      ? Math.round((ratedMovies.reduce((sum, movie) => sum + Number(movie.rating), 0) / ratedMovies.length) * 10) / 10
+      : 0
 
     // Count reviews
     const { count: reviewCount } = await supabase
@@ -220,9 +242,9 @@ export async function getUserStats(userId?: string): Promise<{ totalMovies: numb
       .eq('user_id', uid)
 
     return {
-      totalMovies: totalMovies || 0,
-      thisYearMovies: 0, // Would need date filtering
-      averageRating: 0, // Would need rating calculation
+      totalMovies,
+      thisYearMovies,
+      averageRating,
       reviewCount: reviewCount || 0,
     }
   } catch (error) {

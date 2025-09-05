@@ -188,7 +188,7 @@ export default function HomeTab({ recentMovies, favoriteMovies, stats }: HomeTab
           {/* Stats */}
           <div className="grid grid-cols-4 gap-6 mb-8">
             <div className="text-center">
-              <div className="text-2xl font-bold">★ {stats.averageRating}</div>
+              <div className="text-2xl font-bold">★ {stats.averageRating.toFixed(1)}</div>
               <div className="text-sm text-gray-400">Ortalama Puan</div>
             </div>
             <div className="text-center">
