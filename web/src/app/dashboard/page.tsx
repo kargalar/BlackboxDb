@@ -6,6 +6,8 @@ import { getTrendingReviews } from '@/services/movieLogs';
 import { TMDBDiscoverMovie } from '@/types/tmdb';
 import { Review } from '@/services/movieLogs';
 import Link from 'next/link';
+import Countdown from '@/components/Countdown';
+import { Button } from '@/components/ui/button';
 
 export default function DashboardPage() {
   const [trendingMovies, setTrendingMovies] = useState<TMDBDiscoverMovie[]>([]);
@@ -50,9 +52,14 @@ export default function DashboardPage() {
       ) : (
         <>
           <section>
-            <h1 className="text-3xl font-bold mb-6">Trending Movies</h1>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-3xl font-bold">Trending Movies</h1>
+              <Link href="/explore/movies?type=trending">
+                <Button variant="secondary">More</Button>
+              </Link>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {trendingMovies.map((movie) => (
+              {trendingMovies.slice(0, 5).map((movie) => (
                 <Link key={movie.id} href={`/content/movie/${movie.id}`}>
                   <div className="cursor-pointer">
                     <img
@@ -84,9 +91,14 @@ export default function DashboardPage() {
           </section>
 
           <section>
-            <h1 className="text-3xl font-bold mb-6">Upcoming Movies</h1>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-3xl font-bold">Upcoming Movies</h1>
+              <Link href="/explore/movies?type=upcoming">
+                <Button variant="secondary">More</Button>
+              </Link>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {upcomingMovies.map((movie) => (
+              {upcomingMovies.slice(0, 5).map((movie) => (
                 <Link key={movie.id} href={`/content/movie/${movie.id}`}>
                   <div className="cursor-pointer">
                     <img
@@ -96,6 +108,7 @@ export default function DashboardPage() {
                     />
                     <h3 className="font-semibold mt-2">{movie.title}</h3>
                     <p className="text-sm text-gray-500">{movie.release_date}</p>
+                    {movie.release_date && <Countdown date={movie.release_date} />}
                   </div>
                 </Link>
               ))}
