@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getMovieDetails, tmdbImage } from '@/services/tmdb';
-import { getContentById, logMovieWatch, toggleFavorite, rateMovie, getContentReviews, saveContentFromTMDB, addReview, toggleReviewLike, addReviewReply, getReviewReplies, getUserContentLogs, updateUserContentLogById, deleteUserContentLogById, getUserContentLog, updateUserContentLog } from '@/services/movieLogs';
+import { getContentById, logMovieWatch, toggleFavorite, rateMovie, getContentReviews, saveContentFromTMDB, addReview, toggleReviewLike, addReviewReply, getReviewReplies, getUserContentLogs, updateUserContentLogById, deleteUserContentLogById, getUserContentLog, updateUserContentLog, createUserContentLog } from '@/services/movieLogs';
 import { supabase } from '@/lib/supabase';
 import { TMDBMovieDetail, TMDBCastMember } from '@/types/tmdb';
 import { Button } from '@/components/ui/button';
@@ -371,9 +371,14 @@ export default function MoviePage() {
       const next = !prev;
       setIsInList(next);
 
+      // Preserve existing watched/favorite status when adding to watchlist
       const result = await updateUserContentLog(Number(id), {
         is_consume_later: next,
-        content_status_id: 2, // CONSUME_LATER
+        // Only set content_status_id to CONSUME_LATER if not already watched
+        content_status_id: currentLog?.content_status_id === 1 ? 1 : (next ? 2 : currentLog?.content_status_id || 2),
+        // Preserve existing favorite and rating status
+        is_favorite: currentLog?.is_favorite,
+        rating: currentLog?.rating,
         date: new Date().toISOString()
       });
       
@@ -690,51 +695,52 @@ export default function MoviePage() {
   const handleWatchClick = async () => {
     try {
       const contentId = Number(id);
-      const { data: userRes } = await supabase.auth.getUser();
-      if (!userRes.user?.id) return;
 
-      const prevWatched = isWatched;
-      const prevRating = userRating;
-      const prevConsume = contentStats.consume_count;
-      const prevInList = isInList;
-
-      if (!prevWatched) {
+      if (!isWatched) {
+        // Always create a new log when watching (each view is a separate log)
+        const prevWatched = isWatched;
+        const prevConsume = contentStats.consume_count;
+        const prevInList = isInList;
+        
         // Optimistic: mark as watched immediately
         setIsWatched(true);
         setIsInList(false);
         setContentStats((s) => ({ ...s, consume_count: (s.consume_count || 0) + 1 }));
 
-        const { error } = await supabase.from('user_content_log').insert({
-          user_id: userRes.user.id,
-          content_id: contentId,
+        const result = await createUserContentLog(contentId, {
           content_status_id: 1,
-          rating: prevRating || null,
+          rating: userRating || null,
           is_favorite: isFavorited,
-          is_consume_later: false, // marking watched clears watchlist
+          is_consume_later: false,
           date: new Date().toISOString(),
         });
-        if (error) {
+
+        if (!result.data) {
           // Rollback
           setIsWatched(prevWatched);
           setIsInList(prevInList);
           setContentStats((s) => ({ ...s, consume_count: prevConsume }));
         }
       } else {
-        // Optimistic: unwatch immediately; keep watchlist as-is and clear rating
+        // Unwatch - modify latest log status
+        const prevWatched = isWatched;
+        const prevRating = userRating;
+        const prevConsume = contentStats.consume_count;
+        const prevInList = isInList;
+
         setIsWatched(false);
         setUserRating(0);
         setContentStats((s) => ({ ...s, consume_count: Math.max(0, (s.consume_count || 0) - 1) }));
 
-        const { error } = await supabase.from('user_content_log').insert({
-          user_id: userRes.user.id,
-          content_id: contentId,
+        const result = await updateUserContentLog(contentId, {
           content_status_id: 2,
           rating: null,
           is_favorite: isFavorited,
-          is_consume_later: prevInList, // do not auto-add to watchlist
+          is_consume_later: prevInList,
           date: new Date().toISOString(),
         });
-        if (error) {
+
+        if (!result.data) {
           // Rollback
           setIsWatched(prevWatched);
           setUserRating(prevRating);
@@ -761,19 +767,17 @@ export default function MoviePage() {
     }));
     try {
       const contentId = Number(id);
-      const { data: userRes } = await supabase.auth.getUser();
-      if (!userRes.user?.id) throw new Error('not_authenticated');
-      // Write snapshot using current UI state (no prefetch)
-      const { error } = await supabase.from('user_content_log').insert({
-        user_id: userRes.user.id,
-        content_id: contentId,
+      
+      // Use updateUserContentLog instead of direct insert
+      const result = await updateUserContentLog(contentId, {
         content_status_id: isWatched ? 1 : 2,
         rating: isWatched ? (userRating || null) : null,
         is_favorite: nextFav,
         is_consume_later: !isWatched ? isInList : false,
         date: new Date().toISOString(),
       });
-      if (error) {
+
+      if (!result.data) {
         setIsFavorited(prevFav);
         setContentStats((s) => ({ ...s, favorite_count: prevFavCount }));
       }

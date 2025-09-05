@@ -1,6 +1,34 @@
 import { supabase } from '@/lib/supabase'
 import type { TMDBMovieDetail } from '@/types/tmdb'
 
+// Helper function to validate authentication and check if user exists
+async function validateAuth(): Promise<{ uid: string | null; error?: string }> {
+  try {
+    const { data: userRes, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !userRes.user?.id) {
+      return { uid: null, error: 'not_authenticated' }
+    }
+
+    // Check if user still exists in app_user table (prevents deleted users from making actions)
+    const { data: appUser, error: userError } = await supabase
+      .from('app_user')
+      .select('auth_user_id')
+      .eq('auth_user_id', userRes.user.id)
+      .maybeSingle()
+
+    if (userError || !appUser) {
+      // User has been deleted but session still exists - sign them out
+      await supabase.auth.signOut()
+      return { uid: null, error: 'user_not_found' }
+    }
+
+    return { uid: userRes.user.id }
+  } catch (error) {
+    return { uid: null, error: 'auth_validation_failed' }
+  }
+}
+
 export interface Content {
   id: number
   poster_path: string | null
@@ -336,33 +364,34 @@ export async function isMovieWatched(contentId: number): Promise<{ isWatched: bo
 }
 
 export async function logMovieWatch(contentId: number): Promise<{ data: boolean; error?: any }> {
-  const { data: userRes } = await supabase.auth.getUser()
-  const uid = userRes.user?.id
-  if (!uid) return { data: false, error: 'not_authenticated' }
+  const { uid, error: authError } = await validateAuth()
+  if (authError || !uid) return { data: false, error: authError || 'not_authenticated' }
 
   // Ensure content exists minimally
   const { data: contentRow } = await supabase.from('content').select('id').eq('id', contentId).maybeSingle()
   if (!contentRow) {
     return { data: false, error: 'content_not_found' }
   }
-  // Always create a new log entry (snapshot)
-  const { error } = await supabase.from('user_content_log').insert({
-    user_id: uid,
-    content_id: contentId,
-    content_status_id: 1, // CONSUMED
-  is_consume_later: false, // marking watched clears watchlist
-    date: new Date().toISOString(),
-  })
-  if (error) return { data: false, error }
-  
-  return { data: true }
+
+  try {
+    // Create a new log entry for each watch (allows multiple views)
+    const result = await createUserContentLog(contentId, {
+      content_status_id: 1, // CONSUMED
+      is_consume_later: false, // marking watched clears watchlist
+      date: new Date().toISOString(),
+    })
+
+    if (!result.data) return { data: false, error: result.error }
+    return { data: true }
+  } catch (error) {
+    return { data: false, error }
+  }
 }
 
 // Rate a movie (1-5 stars)
 export async function rateMovie(contentId: number, rating: number): Promise<{ data: boolean; error?: any }> {
-  const { data: userRes } = await supabase.auth.getUser()
-  const uid = userRes.user?.id
-  if (!uid) return { data: false, error: 'not_authenticated' }
+  const { uid, error: authError } = await validateAuth()
+  if (authError || !uid) return { data: false, error: authError || 'not_authenticated' }
 
   // Validate rating
   if (rating < 1 || rating > 5) {
@@ -376,19 +405,15 @@ export async function rateMovie(contentId: number, rating: number): Promise<{ da
   }
 
   try {
-    // Always create a new log entry with rating
-    const { error } = await supabase
-      .from('user_content_log')
-      .insert({
-        user_id: uid,
-        content_id: contentId,
-        content_status_id: 1, // rating implies watched
-        rating: rating,
-  is_consume_later: false, // marking watched clears watchlist
-        date: new Date().toISOString(),
-      })
-    if (error) return { data: false, error }
+    // Create a new log for rating (each rating is a separate viewing experience)
+    const result = await createUserContentLog(contentId, {
+      content_status_id: 1, // rating implies watched
+      rating: rating,
+      is_consume_later: false, // marking watched clears watchlist
+      date: new Date().toISOString(),
+    })
 
+    if (!result.data) return { data: false, error: result.error }
     return { data: true }
   } catch (error) {
     return { data: false, error }
@@ -513,9 +538,8 @@ export async function updateContentStats(contentId: number): Promise<{ success: 
 
 // Toggle favorite status for a movie
 export async function toggleFavorite(contentId: number): Promise<{ data: boolean; isFavorite: boolean; error?: any }> {
-  const { data: userRes } = await supabase.auth.getUser()
-  const uid = userRes.user?.id
-  if (!uid) return { data: false, isFavorite: false, error: 'not_authenticated' }
+  const { uid, error: authError } = await validateAuth()
+  if (authError || !uid) return { data: false, isFavorite: false, error: authError || 'not_authenticated' }
 
   // Ensure content exists
   const { data: contentRow } = await supabase.from('content').select('id').eq('id', contentId).maybeSingle()
@@ -534,23 +558,19 @@ export async function toggleFavorite(contentId: number): Promise<{ data: boolean
 
     const prevFav = latest ? !!(latest as any).is_favorite : false
     const prevStatus = latest ? Number((latest as any).content_status_id) : 1
-  const prevRating = latest ? ((latest as any).rating ?? null) : null
+    const prevRating = latest ? ((latest as any).rating ?? null) : null
     const newFavoriteStatus = !prevFav
 
-    // Always insert a new snapshot with toggled favorite
-    const { error } = await supabase
-      .from('user_content_log')
-      .insert({
-        user_id: uid,
-        content_id: contentId,
-        content_status_id: prevStatus || 1,
-        rating: prevRating,
-        is_favorite: newFavoriteStatus,
-    is_consume_later: (prevStatus || 1) === 1 ? false : !!(latest as any)?.is_consume_later,
-        date: new Date().toISOString(),
-      })
-    if (error) return { data: false, isFavorite: false, error }
+    // Use updateUserContentLog to prevent duplicates
+    const result = await updateUserContentLog(contentId, {
+      content_status_id: prevStatus || 1,
+      rating: prevRating,
+      is_favorite: newFavoriteStatus,
+      is_consume_later: (prevStatus || 1) === 1 ? false : !!(latest as any)?.is_consume_later,
+      date: new Date().toISOString(),
+    })
 
+    if (!result.data) return { data: false, isFavorite: false, error: result.error }
     return { data: true, isFavorite: newFavoriteStatus }
   } catch (error) {
     return { data: false, isFavorite: false, error }
@@ -1074,7 +1094,47 @@ export async function getUserContentLogs(contentId: number): Promise<{ data: Use
   }
 }
 
-// Update user's content log
+// Create a new user content log (allows multiple logs per content)
+export async function createUserContentLog(
+  contentId: number,
+  logData: {
+    rating?: number | null
+    is_favorite?: boolean
+    is_consume_later?: boolean
+    content_status_id?: number
+    date?: string
+  }
+): Promise<{ data: boolean; error?: any }> {
+  const { uid, error: authError } = await validateAuth()
+  if (authError || !uid) return { data: false, error: authError || 'not_authenticated' }
+
+  try {
+    // Always create a new log entry (allows multiple views/logs per content)
+    const { error } = await supabase
+      .from('user_content_log')
+      .insert({
+        user_id: uid,
+        content_id: contentId,
+        content_status_id: logData.content_status_id || 1,
+        rating: logData.rating ?? null,
+        is_favorite: logData.is_favorite ?? false,
+        is_consume_later: logData.is_consume_later ?? false,
+        date: logData.date || new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+    
+    if (error) return { data: false, error }
+
+    // Update content stats
+    await updateContentStats(contentId)
+    
+    return { data: true }
+  } catch (error) {
+    return { data: false, error }
+  }
+}
+
+// Update user's content log (updates latest log or creates new one)
 export async function updateUserContentLog(
   contentId: number,
   updates: {
@@ -1085,25 +1145,63 @@ export async function updateUserContentLog(
     date?: string
   }
 ): Promise<{ data: boolean; error?: any }> {
-  const { data: userRes } = await supabase.auth.getUser()
-  const uid = userRes.user?.id
-  if (!uid) return { data: false, error: 'not_authenticated' }
+  const { uid, error: authError } = await validateAuth()
+  if (authError || !uid) return { data: false, error: authError || 'not_authenticated' }
 
   try {
-    // Always create a new snapshot log based on provided updates
-    const { error } = await supabase
+    // Get the latest log for this content
+    const { data: existingLog } = await supabase
       .from('user_content_log')
-      .insert({
-        user_id: uid,
-        content_id: contentId,
-  content_status_id: updates.content_status_id || 1,
-        rating: updates.rating ?? null,
-        is_favorite: updates.is_favorite ?? false,
-  is_consume_later: (updates.content_status_id || 1) === 1 ? false : (updates.is_consume_later ?? false),
-        date: updates.date || new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-    if (error) return { data: false, error }
+      .select('*')
+      .eq('user_id', uid)
+      .eq('content_id', contentId)
+      .order('date', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    // Check if this is a significant change that warrants a new log
+    const isSignificantChange = existingLog && (
+      // Rating changed significantly
+      (updates.rating !== undefined && updates.rating !== existingLog.rating) ||
+      // Status changed (watched vs not watched)
+      (updates.content_status_id !== undefined && updates.content_status_id !== existingLog.content_status_id) ||
+      // More than 1 hour since last log
+      (existingLog.date && new Date().getTime() - new Date(existingLog.date).getTime() > 60 * 60 * 1000)
+    )
+
+    if (existingLog && !isSignificantChange) {
+      // Update existing log for minor changes
+      const { error } = await supabase
+        .from('user_content_log')
+        .update({
+          content_status_id: updates.content_status_id ?? existingLog.content_status_id,
+          rating: updates.rating !== undefined ? updates.rating : existingLog.rating,
+          is_favorite: updates.is_favorite !== undefined ? updates.is_favorite : existingLog.is_favorite,
+          is_consume_later: updates.is_consume_later !== undefined ? updates.is_consume_later : existingLog.is_consume_later,
+          date: updates.date || new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingLog.id)
+        .eq('user_id', uid)
+      
+      if (error) return { data: false, error }
+    } else {
+      // Create new log for significant changes or if no log exists
+      const { error } = await supabase
+        .from('user_content_log')
+        .insert({
+          user_id: uid,
+          content_id: contentId,
+          content_status_id: updates.content_status_id || (existingLog?.content_status_id ?? 1),
+          rating: updates.rating !== undefined ? updates.rating : (existingLog?.rating ?? null),
+          is_favorite: updates.is_favorite !== undefined ? updates.is_favorite : (existingLog?.is_favorite ?? false),
+          is_consume_later: updates.is_consume_later !== undefined ? updates.is_consume_later : (existingLog?.is_consume_later ?? false),
+          date: updates.date || new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+      
+      if (error) return { data: false, error }
+    }
 
     // Update content stats
     await updateContentStats(contentId)
