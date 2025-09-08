@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import type { TMDBMovieDetail } from '@/types/tmdb'
+import type { TMDBMovieDetail, TMDBTvDetail } from '@/types/tmdb'
 import type { IgdbGame } from '@/types/igdb'
 import { igdbImageUrl } from '@/services/api/igdb'
 
@@ -188,6 +188,117 @@ export async function getUserWatchedMovies(userId?: string): Promise<{ data: Con
     return { data: deduped }
   } catch (error) {
     console.error('Fallback query failed:', error)
+    return { data: [] }
+  }
+}
+
+// Fetch user's watched TV shows (content_type 3 assumed)
+export async function getUserWatchedTV(userId?: string): Promise<{ data: Content[] }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userId || userRes.user?.id
+  if (!uid) return { data: [] }
+
+  try {
+    const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_contents', {
+      user_id_param: uid,
+      log_user_id_param: uid,
+      content_type_param: 3, // 3 = TV
+      page_param: 1,
+      limit_param: 40,
+    })
+
+    if (!rpcError && rpcData) {
+      const contents = (rpcData.contents as any[] | undefined) ?? []
+      const raw: Content[] = contents.map((item: any) => ({
+        id: Number(item.content_id),
+        poster_path: item.poster_path ?? null,
+        title: item.title ?? '',
+        fav_count: item.is_favorite ? 1 : 0,
+        user_rating: item.rating ? Number(item.rating) : 0,
+        is_favorite: item.is_favorite ?? false,
+        is_consume_later: item.is_consume_later ?? false,
+        date: item.date,
+      }))
+
+      const byId = new Map<number, Content>()
+      for (const m of raw) {
+        const prev = byId.get(m.id)
+        if (!prev) byId.set(m.id, m)
+        else {
+          const prevTime = prev.date ? new Date(prev.date).getTime() : 0
+          const currTime = m.date ? new Date(m.date).getTime() : 0
+          if (currTime > prevTime) byId.set(m.id, m)
+        }
+      }
+      const deduped = Array.from(byId.values()).sort((a, b) => {
+        const ta = a.date ? new Date(a.date).getTime() : 0
+        const tb = b.date ? new Date(b.date).getTime() : 0
+        return tb - ta
+      })
+      return { data: deduped }
+    }
+  } catch (error) {
+    console.log('RPC failed, falling back to direct query (TV):', error)
+  }
+
+  try {
+    const { data: logData, error: logError } = await supabase
+      .from('latest_user_content_log')
+      .select(`
+        content_id,
+        rating,
+        is_favorite,
+        is_consume_later,
+        date,
+        content:content_id (
+          id,
+          title,
+          poster_path,
+          favorite_count,
+          content_type_id
+        )
+      `)
+      .eq('user_id', uid)
+      .order('date', { ascending: false })
+      .limit(60)
+
+    if (logError) {
+      console.error('Latest log query failed (TV):', logError)
+      return { data: [] }
+    }
+
+    const mapped: Content[] = (logData || [])
+      .filter((item: any) => item.content && (item as any).content.content_type_id === 3)
+      .map((item: any) => ({
+        id: item.content.id,
+        poster_path: item.content.poster_path ?? null,
+        title: item.content.title ?? '',
+        fav_count: item.content.favorite_count ?? 0,
+        user_rating: item.rating ? Number(item.rating) : 0,
+        is_favorite: item.is_favorite ?? false,
+        is_consume_later: item.is_consume_later ?? false,
+        date: item.date,
+      }))
+
+    const byId = new Map<number, Content>()
+    for (const m of mapped) {
+      const prev = byId.get(m.id)
+      if (!prev) byId.set(m.id, m)
+      else {
+        const prevTime = prev.date ? new Date(prev.date).getTime() : 0
+        const currTime = m.date ? new Date(m.date).getTime() : 0
+        if (currTime > prevTime) byId.set(m.id, m)
+      }
+    }
+    const deduped = Array.from(byId.values()).sort((a, b) => {
+      const ta = a.date ? new Date(a.date).getTime() : 0
+      const tb = b.date ? new Date(b.date).getTime() : 0
+      return tb - ta
+    })
+
+    return { data: deduped }
+  } catch (error) {
+    console.error('Fallback query failed (TV):', error)
     return { data: [] }
   }
 }
@@ -386,6 +497,28 @@ export async function saveContentFromTMDB(movie: TMDBMovieDetail): Promise<{ dat
   if (error) return { data: null, error }
   if (!data) return { data: null }
   return { data: { id: data.id, title: data.title, poster_path: data.poster_path, fav_count: data.favorite_count ?? 0 } }
+}
+
+export async function saveContentFromTMDBTv(tv: TMDBTvDetail): Promise<{ data: Content | null; error?: any }> {
+  const payload = {
+    id: tv.id,
+    title: tv.name,
+    content_type_id: 3, // TV
+    release_date: tv.first_air_date ? new Date(tv.first_air_date) : null,
+    description: tv.overview,
+    length: Array.isArray(tv.episode_run_time) && tv.episode_run_time.length > 0 ? tv.episode_run_time[0] : null,
+    poster_path: tv.poster_path ?? null,
+  }
+
+  const { data, error } = await supabase
+    .from('content')
+    .upsert(payload, { onConflict: 'id' })
+    .select('id, title, poster_path, favorite_count')
+    .maybeSingle()
+
+  if (error) return { data: null, error }
+  if (!data) return { data: null }
+  return { data: { id: data.id, title: data.title, poster_path: data.poster_path, fav_count: (data as any).favorite_count ?? 0 } }
 }
 
 export async function saveContentFromIGDB(game: IgdbGame): Promise<{ data: Content | null; error?: any }> {

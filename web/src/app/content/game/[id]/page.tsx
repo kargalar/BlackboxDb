@@ -12,6 +12,8 @@ import {
   toggleFavorite,
   rateMovie,
   saveContentFromIGDB,
+  getContentReviews,
+  addReview,
 } from '@/services/database/movieLogs';
 
 // Minimal star component (0-5)
@@ -46,6 +48,8 @@ export default function GameContentPage() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isPlayed, setIsPlayed] = useState(false);
   const [isLater, setIsLater] = useState(false);
+  const [reviews, setReviews] = useState<Array<{ id: number; user_name: string; rating: number | null; review_text: string; created_at: string; like_count: number; reply_count: number; is_liked_by_current_user: boolean }>>([]);
+  const [reviewText, setReviewText] = useState('');
 
   const year = useMemo(() => (game?.first_release_date ? new Date(game.first_release_date * 1000).getFullYear() : undefined), [game]);
   const companies = useMemo(() => {
@@ -88,8 +92,10 @@ export default function GameContentPage() {
         if (!cancelled) setGame(g);
 
         // Ensure content exists in DB for logging/stats
-        await saveContentFromIGDB(g);
-        await Promise.all([refreshStats(), refreshUserLog()]);
+  await saveContentFromIGDB(g);
+  await Promise.all([refreshStats(), refreshUserLog()]);
+  const res = await getContentReviews(id);
+  if (!cancelled) setReviews(res.data ?? []);
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'Oyun bulunamadı');
       } finally {
@@ -134,6 +140,18 @@ export default function GameContentPage() {
     await rateMovie(id, val);
     await refreshStats();
     await refreshUserLog();
+  };
+
+  const handleAddReview = async () => {
+    const text = reviewText.trim();
+    if (!text) return;
+    const ok = await addReview(id, text);
+    if (ok.data) {
+      setReviewText('');
+      const res = await getContentReviews(id);
+      setReviews(res.data ?? []);
+      await refreshStats();
+    }
   };
 
   if (loading) return <div className="p-6">Yükleniyor…</div>;
@@ -213,6 +231,29 @@ export default function GameContentPage() {
           </div>
         </div>
       )}
+
+      {/* Reviews */}
+      <div className="mt-10 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 space-y-4">
+        <h2 className="text-2xl font-bold">Yorumlar ({stats.review_count ?? 0})</h2>
+        <div className="flex gap-2">
+          <input value={reviewText} onChange={(e) => setReviewText(e.target.value)} placeholder="Yorum yaz..." className="flex-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-2 text-sm" />
+          <button onClick={handleAddReview} className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm">Paylaş</button>
+        </div>
+        <div className="divide-y divide-gray-800">
+          {reviews.map((r) => (
+            <div key={r.id} className="py-3">
+              <div className="text-sm text-gray-400">@{r.user_name} • {new Date(r.created_at).toLocaleDateString()}</div>
+              {r.rating ? (
+                <div className="mt-1 text-yellow-400 text-sm">Puan: {r.rating.toFixed(1)}</div>
+              ) : null}
+              <div className="mt-1 text-gray-200 text-sm whitespace-pre-line">{r.review_text}</div>
+            </div>
+          ))}
+          {reviews.length === 0 && (
+            <div className="text-sm text-gray-400">Henüz yorum yok.</div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

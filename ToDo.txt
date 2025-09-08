@@ -1,4 +1,3 @@
-diziler
 kitaplar
 
 supabase google ile login
@@ -15,6 +14,8 @@ son log 1 saat içindeyse tek bir log olarak birleştirilsin
 
 watchliste eklenme sayısı da gösterilsin film sayfasında
 
-aktörün sayfasında her zmaan izlenen film 0 olarak gösterilyior
-
 profilde reviewin reviewi gösterilsin
+
+aktrönü sayfasında sadece film değil diziler de ayrı bir sekmee gösterilsin
+
+profil icon değil username olsun appbar

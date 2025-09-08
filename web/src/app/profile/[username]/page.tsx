@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfileCache } from '@/contexts/ProfileCacheContext';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { getUserWatchedMovies, getUserStats, Content, Review } from '@/services/database/movieLogs';
+import { getUserWatchedMovies, getUserWatchedTV, getUserStats, Content, Review } from '@/services/database/movieLogs';
 import { 
   getCurrentUserProfile, 
   getUserByUsername,
@@ -24,6 +24,7 @@ import MoviesTab from '@/components/profile/MoviesTab';
 import ReviewsTab from '@/components/profile/ReviewsTab';
 import NetworkTab from '@/components/profile/NetworkTab';
 import ActivityTab from '@/components/profile/ActivityTab';
+import TvTab from '@/components/profile/TvTab';
 
 export default function UserProfilePage() {
   const { user } = useAuth();
@@ -32,8 +33,10 @@ export default function UserProfilePage() {
   const username = params.username as string;
   
   const [recentMovies, setRecentMovies] = useState<Content[]>([]);
+  const [recentTV, setRecentTV] = useState<Content[]>([]);
   const [recentGames, setRecentGames] = useState<Content[]>([]);
   const [allWatchedMovies, setAllWatchedMovies] = useState<Content[]>([]);
+  const [allWatchedTV, setAllWatchedTV] = useState<Content[]>([]);
   const [favoriteMovies, setFavoriteMovies] = useState<Content[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [followers, setFollowers] = useState<AppUser[]>([]);
@@ -66,7 +69,9 @@ export default function UserProfilePage() {
   const loadFromCache = useCallback((cachedData: any) => {
     setAppUser(cachedData.appUser);
     setRecentMovies(cachedData.recentMovies);
+    setRecentTV(cachedData.recentTV || []);
     setAllWatchedMovies(cachedData.allWatchedMovies);
+    setAllWatchedTV(cachedData.allWatchedTV || []);
     setFavoriteMovies(cachedData.favoriteMovies);
     setReviews(cachedData.reviews);
     setFollowers(cachedData.followers);
@@ -87,6 +92,7 @@ export default function UserProfilePage() {
       
       const dataPromise = Promise.all([
         getUserWatchedMovies(profileUser.auth_user_id), 
+        getUserWatchedTV(profileUser.auth_user_id),
         getUserStats(profileUser.auth_user_id),
         user ? getFollowData(profileUser.auth_user_id) : Promise.resolve({ followersCount: 0, followingCount: 0, isFollowing: false }),
         getReviewsByUserId(profileUser.auth_user_id),
@@ -97,6 +103,7 @@ export default function UserProfilePage() {
 
       const [
         watchedMoviesResult, 
+        watchedTVResult,
         userStats,
         followData,
         reviewsResult,
@@ -105,8 +112,10 @@ export default function UserProfilePage() {
         activityFeedResult
       ] = await Promise.race([dataPromise, timeoutPromise]) as any;
 
-      let processedMovies: Content[] = [];
-      let recentMoviesData: Content[] = [];
+  let processedMovies: Content[] = [];
+  let processedTV: Content[] = [];
+  let recentMoviesData: Content[] = [];
+  let recentTVData: Content[] = [];
       let favoriteMoviesData: Content[] = [];
 
       if (watchedMoviesResult?.data) {
@@ -120,10 +129,22 @@ export default function UserProfilePage() {
         favoriteMoviesData = latestPerMovie.filter(m => m.is_favorite).slice(0, 5);
       }
 
+      if (watchedTVResult?.data) {
+        const latestPer = [...watchedTVResult.data].sort((a, b) => {
+          const ta = a.date ? new Date(a.date).getTime() : 0
+          const tb = b.date ? new Date(b.date).getTime() : 0
+          return tb - ta
+        })
+        processedTV = latestPer
+        recentTVData = latestPer.slice(0, 4)
+      }
+
       const profileData = {
         appUser: profileUser,
         recentMovies: recentMoviesData,
+        recentTV: recentTVData,
         allWatchedMovies: processedMovies,
+        allWatchedTV: processedTV,
         favoriteMovies: favoriteMoviesData,
         reviews: reviewsResult.data || [],
         followers: followersResult.data || [],
@@ -255,7 +276,7 @@ export default function UserProfilePage() {
     }
   };
 
-  const tabs = ['Home', 'Movies', 'Games', 'Books', 'Reviews', 'Lists', 'Network', 'Activity'];
+  const tabs = ['Home', 'Movies', 'TV', 'Games', 'Books', 'Reviews', 'Lists', 'Network', 'Activity'];
 
   if (loading) {
     return (
@@ -298,6 +319,8 @@ export default function UserProfilePage() {
   return <HomeTab recentMovies={recentMovies} recentGames={recentGames} favoriteMovies={favoriteMovies} stats={stats} isOwnProfile={isOwnProfile} />;
       case 'Movies':
         return <MoviesTab movies={allWatchedMovies} />;
+      case 'TV':
+        return <TvTab tvs={allWatchedTV} />;
       case 'Reviews':
         return <ReviewsTab reviews={reviews} onReviewUpdate={handleReviewUpdate} isOwnProfile={isOwnProfile} />;
       case 'Network':
