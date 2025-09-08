@@ -17,5 +17,3 @@ watchliste eklenme sayısı da gösterilsin film sayfasında
 profilde reviewin reviewi gösterilsin
 
 aktrönü sayfasında sadece film değil diziler de ayrı bir sekmee gösterilsin
-
-profil icon değil username olsun appbar

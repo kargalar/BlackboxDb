@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -97,13 +96,8 @@ export default function Header() {
     }
   }
 
-  const handleProfileClick = () => {
-    if (appUser?.username) {
-      router.push(`/profile/${appUser.username}`)
-    } else {
-      router.push('/profile')
-    }
-  }
+  // Profil linki runtime'da kesin yola çevrilir (App Router dynamic href hatasını önler)
+  const hasUsername = Boolean(appUser?.username)
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -208,24 +202,12 @@ export default function Header() {
               <div className="w-20 h-8 rounded bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
             ) : user ? (
               <div className="flex items-center gap-3">
-                <button 
-                  onClick={handleProfileClick}
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
+                <Link 
+                  href={hasUsername ? (`/profile/${appUser!.username}` as const) : '/profile'}
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
                 >
-                  {appUser?.picture_path ? (
-                    <Image 
-                      src={appUser.picture_path} 
-                      alt="Profile" 
-                      width={32} 
-                      height={32} 
-                      className="rounded-full" 
-                    />
-                  ) : (
-                    <svg className="h-6 w-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  )}
-                </button>
+                  {appUser?.username ?? 'Profil'}
+                </Link>
                 <button 
                   onClick={handleSignOut}
                   className="text-sm font-medium text-gray-700 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400 transition-colors"
