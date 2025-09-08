@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type { TMDBMovieDetail } from '@/types/tmdb'
+import type { IgdbGame } from '@/types/igdb'
+import { igdbImageUrl } from '@/services/api/igdb'
 
 // Helper function to validate authentication and check if user exists
 async function validateAuth(): Promise<{ uid: string | null; error?: string }> {
@@ -384,6 +386,29 @@ export async function saveContentFromTMDB(movie: TMDBMovieDetail): Promise<{ dat
   if (error) return { data: null, error }
   if (!data) return { data: null }
   return { data: { id: data.id, title: data.title, poster_path: data.poster_path, fav_count: data.favorite_count ?? 0 } }
+}
+
+export async function saveContentFromIGDB(game: IgdbGame): Promise<{ data: Content | null; error?: any }> {
+  // Insert or update content row using IGDB id as primary key
+  const payload = {
+    id: game.id,
+    title: game.name,
+    content_type_id: 2, // GAME
+    release_date: game.first_release_date ? new Date(game.first_release_date * 1000) : null,
+    description: game.summary ?? null,
+    length: null as number | null, // could be filled later from HLTB
+    poster_path: game.cover?.image_id ? igdbImageUrl(game.cover.image_id, 'cover_big') : null,
+  }
+
+  const { data, error } = await supabase
+    .from('content')
+    .upsert(payload, { onConflict: 'id' })
+    .select('id, title, poster_path, favorite_count')
+    .maybeSingle()
+
+  if (error) return { data: null, error }
+  if (!data) return { data: null }
+  return { data: { id: data.id, title: data.title, poster_path: data.poster_path, fav_count: (data as any).favorite_count ?? 0 } }
 }
 
 export async function isMovieWatched(contentId: number): Promise<{ isWatched: boolean }> {

@@ -88,7 +88,7 @@ function GamesExploreInner() {
               <div key={i} className="aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-pulse" />
             ))
           : games.map((g) => (
-              <div key={g.id} className="group">
+              <a key={g.id} href={`/content/game/${g.id}`} className="group">
                 <div className="relative aspect-[2/3] overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-800">
                   {g.cover?.image_id ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -111,7 +111,7 @@ function GamesExploreInner() {
                     </div>
                   ) : null}
                 </div>
-              </div>
+              </a>
             ))}
       </div>
     </div>

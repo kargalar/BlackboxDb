@@ -122,6 +122,9 @@ export type IgdbGame = {
   genres?: { id: number; name: string }[];
   platforms?: { id: number; name: string }[];
   cover?: { id: number; image_id: string; url?: string };
+  involved_companies?: Array<{ developer?: boolean; publisher?: boolean; company?: { name?: string } }>;
+  time_to_beat?: { hastily?: number; normally?: number; completely?: number };
+  similar_games?: Array<{ id: number; name: string; first_release_date?: number; cover?: { image_id: string } }>;
 };
 
 export function igdbImageUrl(imageId: string, size: 'cover_small' | 'cover_big' | 'screenshot_med' | '720p' | '1080p' = 'cover_big') {
@@ -143,10 +146,59 @@ export async function searchGames(q: string, limit = 20) {
 
 export async function getGameById(id: number) {
   const body = [
-    'fields id,name,slug,summary,first_release_date,rating,total_rating,genres.name,platforms.name,cover.image_id;'
-    , `where id = ${id};`,
+    'fields id,name,slug,summary,first_release_date,rating,total_rating,genres.name,platforms.name,cover.image_id,' +
+      ' involved_companies.company.name,involved_companies.developer,involved_companies.publisher,' +
+      ' similar_games.id,similar_games.name,similar_games.first_release_date,similar_games.cover.image_id;',
+    `where id = ${id};`,
     'limit 1;',
   ].join('\n');
   const res = await igdbRequest<IgdbGame[]>('games', body, { revalidate: 300 });
-  return res[0] ?? null;
+  const game = res[0] ?? null;
+  if (!game) return null;
+
+  // Fetch time-to-beat from the dedicated endpoint and merge
+  try {
+    const ttbBody = [
+      'fields hastily,normally,completely,count,game_id;',
+      `where game_id = ${id};`,
+      'limit 1;',
+    ].join('\n');
+    const ttb = await igdbRequest<Array<{ hastily?: number; normally?: number; completely?: number }>>(
+      'game_time_to_beats',
+      ttbBody,
+      { revalidate: 3600 }
+    );
+    if (ttb && ttb[0]) {
+      game.time_to_beat = {
+        hastily: ttb[0].hastily,
+        normally: ttb[0].normally,
+        completely: ttb[0].completely,
+      };
+    }
+  } catch {
+    // Best-effort; ignore if not available
+  }
+
+  return game;
+}
+
+export async function trendingGames(limit = 20) {
+  const body = [
+    'fields id,name,slug,summary,first_release_date,total_rating,genres.name,platforms.name,cover.image_id;',
+    'where total_rating != null & version_parent = null;',
+    'sort total_rating desc;',
+    `limit ${Math.max(1, Math.min(limit, 50))};`,
+  ].join('\n');
+  return igdbRequest<IgdbGame[]>('games', body, { revalidate: 60 });
+}
+
+export async function upcomingGames(limit = 20) {
+  const nowSec = Math.floor(Date.now() / 1000);
+  const body = [
+    'fields id,name,slug,summary,first_release_date,genres.name,platforms.name,cover.image_id;',
+    `where first_release_date != null & first_release_date > ${nowSec} & version_parent = null;`,
+    'sort first_release_date asc;',
+    `limit ${Math.max(1, Math.min(limit, 50))};`,
+  ].join('\n');
+  return igdbRequest<IgdbGame[]>('games', body, { revalidate: 120 });
 }

@@ -32,6 +32,7 @@ export default function UserProfilePage() {
   const username = params.username as string;
   
   const [recentMovies, setRecentMovies] = useState<Content[]>([]);
+  const [recentGames, setRecentGames] = useState<Content[]>([]);
   const [allWatchedMovies, setAllWatchedMovies] = useState<Content[]>([]);
   const [favoriteMovies, setFavoriteMovies] = useState<Content[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -294,7 +295,7 @@ export default function UserProfilePage() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'Home':
-        return <HomeTab recentMovies={recentMovies} favoriteMovies={favoriteMovies} stats={stats} isOwnProfile={isOwnProfile} />;
+  return <HomeTab recentMovies={recentMovies} recentGames={recentGames} favoriteMovies={favoriteMovies} stats={stats} isOwnProfile={isOwnProfile} />;
       case 'Movies':
         return <MoviesTab movies={allWatchedMovies} />;
       case 'Reviews':

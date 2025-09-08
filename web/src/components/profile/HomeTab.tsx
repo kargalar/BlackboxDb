@@ -25,6 +25,7 @@ const StarRating = ({ rating, size = "w-4 h-4" }: { rating: number; size?: strin
 
 interface HomeTabProps {
   recentMovies: Content[];
+  recentGames?: Content[];
   favoriteMovies: Content[];
   stats: {
     totalMovies: number;
@@ -35,7 +36,7 @@ interface HomeTabProps {
   isOwnProfile?: boolean;
 }
 
-export default function HomeTab({ recentMovies, favoriteMovies, stats, isOwnProfile = false }: HomeTabProps) {
+export default function HomeTab({ recentMovies, recentGames = [], favoriteMovies, stats, isOwnProfile = false }: HomeTabProps) {
   const [showFeaturedDialog, setShowFeaturedDialog] = useState(false);
   const [selectedFeaturedMovies, setSelectedFeaturedMovies] = useState<number[]>([]);
   const [allMovies, setAllMovies] = useState<Content[]>([]);
@@ -226,9 +227,9 @@ export default function HomeTab({ recentMovies, favoriteMovies, stats, isOwnProf
 
       {/* Main Content */}
       <div className="lg:col-span-3 space-y-8">
-        {/* Son Aktiviteler Section */}
+        {/* Son Aktiviteler - Film Aktiviteleri */}
         <div>
-          <h3 className="text-xl font-bold mb-6">Son Aktiviteler</h3>
+          <h3 className="text-xl font-bold mb-6">Film Aktiviteleri</h3>
           {recentMovies.length === 0 ? (
             <div className="text-center text-gray-400 py-8">
               <p>Henüz film izlemediniz.</p>
@@ -257,7 +258,28 @@ export default function HomeTab({ recentMovies, favoriteMovies, stats, isOwnProf
           )}
         </div>
 
-        {/* Öne Çıkarılan Filmler Section */}
+        {/* Oyun Aktiviteleri */}
+        <div>
+          <h3 className="text-xl font-bold mb-6">Oyun Aktiviteleri</h3>
+          {recentGames.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">
+              <p>Henüz oyun aktivitesi yok.</p>
+              <Link href="/explore/games" className="text-gray-400 hover:text-gray-300 mt-2 inline-block">
+                Oyun keşfet
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {recentGames.map((game) => (
+                <div key={game.id} className="rounded-lg bg-gray-900 p-3 border border-gray-800">
+                  <div className="text-sm font-medium line-clamp-2">{game.title}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+  {/* Öne Çıkarılan Filmler Section */}
         <div>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold">Öne Çıkarılan Filmler</h3>

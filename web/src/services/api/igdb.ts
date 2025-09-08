@@ -46,3 +46,43 @@ export async function igdbGetGame(id: number) {
   const json = (await res.json()) as { data: IgdbGame };
   return json.data;
 }
+
+export async function igdbTrending() {
+  const url = new URL('/api/igdb/trending', typeof window === 'undefined' ? 'http://localhost' : window.location.origin);
+  const res = await fetch(url.toString(), { method: 'GET', cache: 'no-store' });
+  if (!res.ok) {
+    let msg = `IGDB trending failed: ${res.status}`;
+    try {
+      const j = await res.json();
+      if (j?.error) msg += ` - ${j.error}`;
+    } catch (_) {
+      try {
+        const t = await res.text();
+        if (t) msg += ` - ${t}`;
+      } catch {}
+    }
+    throw new Error(msg);
+  }
+  const json = (await res.json()) as { data: IgdbGame[] };
+  return json.data;
+}
+
+export async function igdbUpcoming() {
+  const url = new URL('/api/igdb/upcoming', typeof window === 'undefined' ? 'http://localhost' : window.location.origin);
+  const res = await fetch(url.toString(), { method: 'GET', cache: 'no-store' });
+  if (!res.ok) {
+    let msg = `IGDB upcoming failed: ${res.status}`;
+    try {
+      const j = await res.json();
+      if (j?.error) msg += ` - ${j.error}`;
+    } catch (_) {
+      try {
+        const t = await res.text();
+        if (t) msg += ` - ${t}`;
+      } catch {}
+    }
+    throw new Error(msg);
+  }
+  const json = (await res.json()) as { data: IgdbGame[] };
+  return json.data;
+}

@@ -1,4 +1,5 @@
-oyunlar
+diziler
+kitaplar
 
 supabase google ile login
 

@@ -108,7 +108,9 @@ export default function Header() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
-      router.push(`/explore?search=${encodeURIComponent(searchQuery.trim())}`)
+      const type = (document.getElementById('search-type') as HTMLSelectElement | null)?.value || 'movie'
+      const path = type === 'game' ? '/explore/games' : '/explore'
+      router.push(`${path}?search=${encodeURIComponent(searchQuery.trim())}` as any)
       setShowSearchInput(false)
       setSearchQuery('')
     }
@@ -151,12 +153,20 @@ export default function Header() {
             {/* Search functionality */}
             {showSearchInput ? (
               <form onSubmit={handleSearch} className="flex items-center gap-2">
+                <select
+                  id="search-type"
+                  className="px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  defaultValue="movie"
+                >
+                  <option value="movie">Film</option>
+                  <option value="game">Oyun</option>
+                </select>
                 <input
                   id="search-input"
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Film ara..."
+                  placeholder="Ara..."
                   className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                   autoComplete="off"
                 />

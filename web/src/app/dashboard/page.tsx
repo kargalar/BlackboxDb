@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { discoverMovies } from '@/services/api/tmdb';
+import { igdbTrending, igdbUpcoming } from '@/services/api/igdb';
 import { getTrendingReviews } from '@/services/database/movieLogs';
 import { TMDBDiscoverMovie } from '@/types/tmdb';
 import { Review } from '@/services/database/movieLogs';
@@ -9,11 +10,14 @@ import Link from 'next/link';
 import Countdown from '@/components/Countdown';
 import { Button } from '@/components/ui/button';
 import MovieCard from '@/components/MovieCard';
+import GameCard from '@/components/GameCard';
 import { supabase } from '@/lib/supabase';
 
 export default function DashboardPage() {
   const [trendingMovies, setTrendingMovies] = useState<TMDBDiscoverMovie[]>([]);
   const [upcomingMovies, setUpcomingMovies] = useState<TMDBDiscoverMovie[]>([]);
+  const [trendingIgdb, setTrendingIgdb] = useState<any[]>([]);
+  const [upcomingIgdb, setUpcomingIgdb] = useState<any[]>([]);
   const [trendingReviews, setTrendingReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,15 +28,19 @@ export default function DashboardPage() {
         setLoading(true);
         const today = new Date().toISOString().split('T')[0];
 
-        const [trending, upcoming, reviews] = await Promise.all([
+        const [trending, upcoming, reviews, tGames, uGames] = await Promise.all([
           discoverMovies({ sort_by: 'popularity.desc' }),
           discoverMovies({ 'primary_release_date.gte': today, sort_by: 'popularity.desc' }),
-          getTrendingReviews(5)
+          getTrendingReviews(5),
+          igdbTrending(),
+          igdbUpcoming(),
         ]);
 
         setTrendingMovies(trending.results);
         setUpcomingMovies(upcoming.results);
         setTrendingReviews(reviews.data);
+        setTrendingIgdb(tGames);
+        setUpcomingIgdb(uGames);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred.');
@@ -144,6 +152,21 @@ export default function DashboardPage() {
         <p className="text-red-500">{error}</p>
       ) : (
         <>
+          {/* Trending Games */}
+          <section>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-3xl font-bold">Trending Games</h1>
+              <Link href="/explore/games">
+                <Button variant="secondary">More</Button>
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {trendingIgdb.slice(0, 5).map((g) => (
+                <GameCard key={g.id} game={g} />
+              ))}
+            </div>
+          </section>
+
           <section>
             <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold">Trending Movies</h1>
@@ -179,6 +202,20 @@ export default function DashboardPage() {
                     </p>
                   </Link>
                 </div>
+              ))}
+            </div>
+          </section>
+
+          <section>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-3xl font-bold">Upcoming Games</h1>
+              <Link href="/explore/games">
+                <Button variant="secondary">More</Button>
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {upcomingIgdb.slice(0, 5).map((g) => (
+                <GameCard key={g.id} game={g} />
               ))}
             </div>
           </section>
