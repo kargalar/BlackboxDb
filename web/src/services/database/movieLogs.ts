@@ -2,6 +2,8 @@ import { supabase } from '@/lib/supabase'
 import type { TMDBMovieDetail, TMDBTvDetail } from '@/types/tmdb'
 import type { IgdbGame } from '@/types/igdb'
 import { igdbImageUrl } from '@/services/api/igdb'
+import type { GoogleBook } from '@/services/api/books'
+import { CONTENT_TYPE } from '@/lib/constants'
 
 // Helper function to validate authentication and check if user exists
 async function validateAuth(): Promise<{ uid: string | null; error?: string }> {
@@ -481,7 +483,7 @@ export async function saveContentFromTMDB(movie: TMDBMovieDetail): Promise<{ dat
   const payload = {
     id: movie.id, // Use TMDB id to align with routing
     title: movie.title,
-    content_type_id: 1,
+  content_type_id: CONTENT_TYPE.MOVIE,
     release_date: movie.release_date ? new Date(movie.release_date) : null,
     description: movie.overview,
     length: movie.runtime ?? null,
@@ -503,7 +505,7 @@ export async function saveContentFromTMDBTv(tv: TMDBTvDetail): Promise<{ data: C
   const payload = {
     id: tv.id,
     title: tv.name,
-    content_type_id: 3, // TV
+  content_type_id: CONTENT_TYPE.TV, // TV
     release_date: tv.first_air_date ? new Date(tv.first_air_date) : null,
     description: tv.overview,
     length: Array.isArray(tv.episode_run_time) && tv.episode_run_time.length > 0 ? tv.episode_run_time[0] : null,
@@ -526,7 +528,7 @@ export async function saveContentFromIGDB(game: IgdbGame): Promise<{ data: Conte
   const payload = {
     id: game.id,
     title: game.name,
-    content_type_id: 2, // GAME
+  content_type_id: CONTENT_TYPE.GAME, // GAME
     release_date: game.first_release_date ? new Date(game.first_release_date * 1000) : null,
     description: game.summary ?? null,
     length: null as number | null, // could be filled later from HLTB
@@ -542,6 +544,41 @@ export async function saveContentFromIGDB(game: IgdbGame): Promise<{ data: Conte
   if (error) return { data: null, error }
   if (!data) return { data: null }
   return { data: { id: data.id, title: data.title, poster_path: data.poster_path, fav_count: (data as any).favorite_count ?? 0 } }
+}
+
+// Deterministic numeric ID for books: prefix 4e9 range + hash of volume id to avoid collisions with TMDB/IGDB numeric IDs
+function bookNumericId(volumeId: string): number {
+  let hash = 0;
+  for (let i = 0; i < volumeId.length; i++) {
+    hash = (hash * 31 + volumeId.charCodeAt(i)) | 0; // 32-bit signed
+  }
+  // Map to positive and into a safe range offset for books (e.g., 4_000_000_000+)
+  const POS = Math.abs(hash);
+  const OFFSET = 4_000_000_000; // outside TMDB/IGDB typical ranges
+  return OFFSET + (POS % 1_000_000_000);
+}
+
+export async function saveContentFromBook(volumeId: string, book: { title: string; description?: string | null; publishedDate?: string | null; pageCount?: number | null; thumbnail?: string | null; }): Promise<{ data: Content | null; error?: any }> {
+  const id = bookNumericId(volumeId);
+  const payload = {
+    id,
+    title: book.title,
+  content_type_id: CONTENT_TYPE.BOOK, // 4 = BOOK
+    release_date: book.publishedDate ? new Date(book.publishedDate) : null,
+    description: book.description ?? null,
+    length: book.pageCount ?? null,
+    poster_path: book.thumbnail ?? null,
+  };
+
+  const { data, error } = await supabase
+    .from('content')
+    .upsert(payload, { onConflict: 'id' })
+    .select('id, title, poster_path, favorite_count')
+    .maybeSingle();
+
+  if (error) return { data: null, error };
+  if (!data) return { data: null };
+  return { data: { id: data.id, title: data.title, poster_path: data.poster_path, fav_count: (data as any).favorite_count ?? 0 } };
 }
 
 export async function isMovieWatched(contentId: number): Promise<{ isWatched: boolean }> {

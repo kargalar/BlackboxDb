@@ -17,3 +17,11 @@ watchliste eklenme sayısı da gösterilsin film sayfasında
 profilde reviewin reviewi gösterilsin
 
 aktrönü sayfasında sadece film değil diziler de ayrı bir sekmee gösterilsin
+
+kullanıcılar bulamadıkları içerikleri manuel olarak ekleyebilecekler. içerik bilgilerini girdikten sonra adminin onayına gönderecekler. admin onaylayınca bildirm gidecek kullanıcıya ve kütüphaneye eklenmiş olacak.
+
+admin
+
+bildirimler paneli ekle. gelecekte kullanıcıya bildirimler gidebilecek
+
+kitaplara yorum gönderilmiyor
