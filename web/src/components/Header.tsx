@@ -140,6 +140,9 @@ export default function Header() {
             <Link href="/explore" className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
               Filmler
             </Link>
+            <Link href="/explore/games" className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
+              Oyunlar
+            </Link>
           </nav>
 
           <div className="flex items-center gap-3">

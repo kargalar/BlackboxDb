@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getPersonDetails, tmdbImage } from '@/services/api/tmdb';
-import { getUserPersonWatchedPercentage, getUserPersonMoviesWatchStatus } from '@/services/database/movieLogs';
+import { getUserPersonMoviesWatchStatus } from '@/services/database/movieLogs';
 import MovieCard from '@/components/MovieCard';
 import { supabase } from '@/lib/supabase';
 
@@ -129,15 +129,17 @@ export default function PersonPage() {
         const personData = await getPersonDetails(id);
         setPerson(personData);
         
-        // Get user's watched percentage for this person
-        const percentage = await getUserPersonWatchedPercentage(parseInt(id));
-        setWatchedPercentage(percentage);
-        
         // Get watch status for all person's movies
         if (personData.movie_credits?.cast) {
           const movieIds = personData.movie_credits.cast.map((movie: any) => movie.id);
           const status = await getUserPersonMoviesWatchStatus(parseInt(id), movieIds);
           setMovieWatchStatus(status);
+          
+          // Calculate watched percentage from movieWatchStatus
+          const watchedCount = Object.values(status).filter(s => s.watched).length;
+          const totalCount = movieIds.length;
+          const percentage = totalCount > 0 ? Math.round((watchedCount / totalCount) * 100) : 0;
+          setWatchedPercentage({ watchedCount, totalCount, percentage });
         }
         
       } catch (error) {
