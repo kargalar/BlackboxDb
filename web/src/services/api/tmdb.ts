@@ -1,4 +1,4 @@
-import { TMDBDiscoverMovie, TMDBPaginated, TMDBMovieDetail } from '@/types/tmdb';
+import { TMDBDiscoverMovie, TMDBPaginated, TMDBMovieDetail, TMDBTvDetail } from '@/types/tmdb';
 
 const TMDB_BASE = 'https://api.themoviedb.org/3';
 
@@ -20,6 +20,9 @@ export type DiscoverParams = Partial<{
   with_original_language: string; // e.g. 'en','tr'
   'primary_release_date.gte': string; // YYYY-MM-DD
   'primary_release_date.lte': string; // YYYY-MM-DD
+  // TV
+  'first_air_date.gte': string; // YYYY-MM-DD
+  'first_air_date.lte': string; // YYYY-MM-DD
   page: string | number;
 }>;
 
@@ -148,4 +151,102 @@ export async function getPersonDetails(id: string | number, opts?: { revalidate?
     throw new Error(`TMDB error: ${res.status} - ${text}`);
   }
   return (await res.json()) as any;
+}
+
+// ---- TV Endpoints ----
+
+export async function discoverTV(params: DiscoverParams, opts?: { revalidate?: number }) {
+  const key = getAuth();
+  const isV4 = isV4Token(key);
+
+  const url = new URL(`${TMDB_BASE}/discover/tv`);
+  if (!isV4) {
+    url.searchParams.set('api_key', key);
+  }
+  const defaults: DiscoverParams = { sort_by: 'popularity.desc', page: '1' };
+  const finalParams = { ...defaults, ...params };
+  Object.entries(finalParams).forEach(([k, v]) => {
+    if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
+  });
+
+  const res = await fetch(url.toString(), {
+    method: 'GET',
+    headers: isV4 ? { Authorization: `Bearer ${key}` } : undefined,
+    next: { revalidate: opts?.revalidate ?? 60 },
+  });
+
+  if (res.status === 429) {
+    await new Promise((r) => setTimeout(r, 500));
+    const retry = await fetch(url.toString(), {
+      method: 'GET',
+      headers: isV4 ? { Authorization: `Bearer ${key}` } : undefined,
+      next: { revalidate: opts?.revalidate ?? 60 },
+    });
+    if (!retry.ok) throw new Error(`TMDB rate limited: ${retry.status}`);
+    return (await retry.json()) as TMDBPaginated<TMDBDiscoverMovie>;
+  }
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`TMDB error ${res.status}: ${text}`);
+  }
+  return (await res.json()) as TMDBPaginated<TMDBDiscoverMovie>;
+}
+
+export async function getTvDetails(id: string | number, opts?: { revalidate?: number }) {
+  const key = getAuth();
+  const isV4 = isV4Token(key);
+
+  const url = new URL(`${TMDB_BASE}/tv/${id}`);
+  url.searchParams.set('append_to_response', 'credits,videos,similar');
+  if (!isV4) {
+    url.searchParams.set('api_key', key);
+  }
+
+  const res = await fetch(url.toString(), {
+    method: 'GET',
+    headers: isV4 ? { Authorization: `Bearer ${key}` } : undefined,
+    next: { revalidate: opts?.revalidate ?? 300 },
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`TMDB error ${res.status}: ${text}`);
+  }
+  return (await res.json()) as TMDBTvDetail;
+}
+
+export async function searchTV(query: string, page: number = 1, opts?: { revalidate?: number }) {
+  const key = getAuth();
+  const isV4 = isV4Token(key);
+
+  const url = new URL(`${TMDB_BASE}/search/tv`);
+  if (!isV4) {
+    url.searchParams.set('api_key', key);
+  }
+  url.searchParams.set('query', query);
+  url.searchParams.set('page', String(page));
+
+  const res = await fetch(url.toString(), {
+    method: 'GET',
+    headers: isV4 ? { Authorization: `Bearer ${key}` } : undefined,
+    next: { revalidate: opts?.revalidate ?? 60 },
+  });
+
+  if (res.status === 429) {
+    await new Promise((r) => setTimeout(r, 500));
+    const retry = await fetch(url.toString(), {
+      method: 'GET',
+      headers: isV4 ? { Authorization: `Bearer ${key}` } : undefined,
+      next: { revalidate: opts?.revalidate ?? 60 },
+    });
+    if (!retry.ok) throw new Error(`TMDB rate limited: ${retry.status}`);
+    return (await retry.json()) as TMDBPaginated<TMDBDiscoverMovie>;
+  }
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`TMDB error ${res.status}: ${text}`);
+  }
+  return (await res.json()) as TMDBPaginated<TMDBDiscoverMovie>;
 }

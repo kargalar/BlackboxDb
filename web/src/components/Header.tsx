@@ -109,7 +109,9 @@ export default function Header() {
     e.preventDefault()
     if (searchQuery.trim()) {
       const type = (document.getElementById('search-type') as HTMLSelectElement | null)?.value || 'movie'
-      const path = type === 'game' ? '/explore/games' : '/explore'
+      let path = '/explore'
+      if (type === 'game') path = '/explore/games'
+      else if (type === 'tv') path = '/explore/tv'
       router.push(`${path}?search=${encodeURIComponent(searchQuery.trim())}` as any)
       setShowSearchInput(false)
       setSearchQuery('')
@@ -142,6 +144,9 @@ export default function Header() {
             <Link href="/explore" className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
               Filmler
             </Link>
+            <Link href="/explore/tv" className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
+              Diziler
+            </Link>
             <Link href="/explore/games" className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
               Oyunlar
             </Link>
@@ -159,6 +164,7 @@ export default function Header() {
                   defaultValue="movie"
                 >
                   <option value="movie">Film</option>
+                  <option value="tv">Dizi</option>
                   <option value="game">Oyun</option>
                 </select>
                 <input
