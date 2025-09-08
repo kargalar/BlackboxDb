@@ -22,6 +22,8 @@ kullanıcılar bulamadıkları içerikleri manuel olarak ekleyebilecekler. içer
 
 admin
 
-bildirimler paneli ekle. gelecekte kullanıcıya bildirimler gidebilecek
+bildirimler paneli ekle. gelecekte kullanıcıya bildirimler gidebilecek. bildirimler için datbase i de güncelle. bildirimler basit olacak mesela kullanıcının yorumu beğenilirse. biri takip ederse gibi. ona göre ayarla
 
 kitaplara yorum gönderilmiyor
+
+explore de filmlerin gelmesi için explore/movies yap. şuan "https://blackbox-db.vercel.app/explore/" bu adreste geliyorlar "https://blackbox-db.vercel.app/explore/movies/" de ise loading de kalıyor

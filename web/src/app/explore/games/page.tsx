@@ -79,6 +79,11 @@ function GamesExploreInner() {
               <pre className="mt-2 rounded bg-black/10 p-2">IGDB_TWITCH_CLIENT_ID=...{"\n"}IGDB_TWITCH_CLIENT_SECRET=...</pre>
             </div>
           )}
+          {error.includes('Failed to fetch IGDB token: 403') && (
+            <div className="text-xs opacity-80">
+              403 invalid client secret: Twitch uygulamanızın kimlik bilgileri hatalı. `IGDB_TWITCH_CLIENT_ID` ve `IGDB_TWITCH_CLIENT_SECRET` değerlerini kontrol edin.
+            </div>
+          )}
         </div>
       ) : null}
 

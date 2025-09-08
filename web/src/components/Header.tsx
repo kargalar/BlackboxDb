@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { getCurrentUserProfile } from '@/services/database/userService'
 import { SearchIcon } from '@/components/icons/SearchIcon'
+import NotificationsMenu from '@/components/NotificationsMenu'
 
 export default function Header() {
   const { user, loading, signInWithGoogle, signOut } = useAuth()
@@ -103,7 +104,7 @@ export default function Header() {
     e.preventDefault()
     if (searchQuery.trim()) {
       const type = (document.getElementById('search-type') as HTMLSelectElement | null)?.value || 'movie'
-      let path = '/explore'
+  let path = '/explore/movies'
   if (type === 'game') path = '/explore/games'
   else if (type === 'tv') path = '/explore/tv'
   else if (type === 'book') path = '/explore/books'
@@ -136,7 +137,7 @@ export default function Header() {
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="/explore" className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
+            <Link href="/explore/movies" className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
               Filmler
             </Link>
             <Link href="/explore/tv" className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors">
@@ -152,6 +153,7 @@ export default function Header() {
 
           <div className="flex items-center gap-3">
             <ThemeToggle />
+            {user && <NotificationsMenu />}
             
             {/* Search functionality */}
             {showSearchInput ? (
