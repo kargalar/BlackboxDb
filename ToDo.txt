@@ -308,24 +308,106 @@ EK: İZLEME/TEST
 — Her kritik değişimde ilgili test dosyasını güncelle/ekle (tests/ altı).
 — SQL migration sonrası yerel ortamda temel duman testleri çalıştır.
 
+====================================
+21) UI TUTARLILIĞI — Poster/Card Hover ve Atomic Refactor
+Öncelik: P1
+Açıklama: Film posterlerinde hover var, diğer türlerde yok. Aynı işi yapan kodlar tekrarlanıyor. Atomic design ile ortak bileşenlere taşı.
+Adımlar:
+- Poster/Card için tek bir Atom/Molecule oluştur (örn. PosterCard + ContentCard).
+- Movie/Game/TV/Book kartları bu bileşeni kullansın; hover state ve a11y tutarlı olsun.
+- Ortak utility/hook’ları çıkar (useHover, cn, image ratio vb.).
+- Eski kartlarda tekrar eden stilleri kaldır.
+DoD:
+- Tüm içerik türlerinde aynı hover davranışı ve odak/tıklama deneyimi.
+- Kart bileşenleri tek yerden özelleştirilebilir (props ile varyant).
+- Tekrarlayan kodlar kaldırıldı; dosya boyutları ve diff azaldı.
+Önerilen Dosyalar:
+- web/src/components/ui/PosterCard.tsx, ContentCard.tsx
+- web/src/components/MovieCard.tsx, GameCard.tsx, TvCard.tsx, BookCard.tsx
+- web/src/lib/utils.ts, web/src/hooks/*
 
+====================================
+22) CONTENT REQUEST — Red Nedenleri ve Akıllı Seçimler
+Öncelik: P1
+Açıklama: Reddedilen taleplerde gerekçe görünsün. Oyuncu, yönetmen, tür, ülke alanları için yazarken öneri (autocomplete) sun; tür/ülke zorunlu. Öneriden seçilmezse manuel eklemeye izin ver. Oyuncu/yönetmen eklenince detay alt formu açılsın. Çoklu ilişki eklemeyi destekle.
+Adımlar:
+- Kullanıcı tarafında reddedilme sebebini göster (content_request.rejection_reason).
+- Autocomplete input’ları ekle (genre/country zorunlu; actor/director opsiyonel ama önerili).
+- Öneri listesi: mevcut tablolardan arama; yoksa “yeni ekle” akışı ile geçici kayıt oluştur.
+- Actor/Director seçilince detay alanlarını aç ve doğrula.
+- Admin red akışında reason zorunlu alanı uygula.
+DoD:
+- Talep detayında/red listesinde gerekçe görünüyor.
+- Autocomplete stabil; zorunlu seçim kuralları çalışıyor.
+- Actor/Director detay alt formu kaydediliyor.
+Önerilen Dosyalar:
+- web/src/app/content-requests/new/page.tsx
+- web/src/app/admin/content-requests/page.tsx
+- web/src/services/database/contentRequests.ts, lookups.ts
 
+====================================
+23) BİLDİRİMLER — “Tümünü Göster” Sayfası ve Silme/Navigate
+Öncelik: P1
+Açıklama: Header’daki “Yeni” yerine “Tümünü Göster” butonu; /notifications sayfasına yönlendir. Bildirimler silinebilsin; bildirime tıklayınca ilgili sayfaya götür ve okundu işaretle.
+Adımlar:
+- Header’da buton metnini ve linki değiştir (/notifications).
+- /notifications sayfası: listeleme, okundu/okunmadı filtresi, silme.
+- Bildirim item’ında navigate hedefleri (review, reply, profile, content) için router push.
+- Silme ve okundu işaretleme servisleri.
+DoD:
+- Header’dan “Tümünü Göster” tıklanınca sayfa açılır.
+- Sayfada silme ve okundu işaretleme çalışır; tıklama hedefe götürür.
+Önerilen Dosyalar:
+- web/src/components/Header.tsx, NotificationsMenu.tsx
+- web/src/app/notifications/page.tsx
+- web/src/services/database/notifications.ts
 
+====================================
+24) PROFİL — Tüm Türler İçin İçerik Grid’i + BOOK Kayıt Düzeltmesi
+Öncelik: P0
+Açıklama: Profilde Movies/TV görünüyor; Games/Books görünmüyor. Tek bir içerik grid bileşeni ile hepsini göster. Ayrıca BOOK içerikleri Supabase content tablosuna doğru kaydedilsin.
+Adımlar:
+- Unified ContentGrid bileşeni (contentType parametreli) oluştur ve tüm sekmelerde kullan.
+- Games/Books kaynak sorgularını ekle; boş/loader durumları tutarlı.
+- BOOK insert akışını düzelt (content_type_lookup: 4 BOOK; servis katmanında create/update).
+DoD:
+- Profilde tüm türler listeleniyor (Movies/TV/Games/Books).
+- Yeni Book eklemeleri content tablosunda oluşuyor ve UI’da görünüyor.
+Önerilen Dosyalar:
+- web/src/components/profile/ContentGrid.tsx
+- web/src/app/profile/[username]/page.tsx
+- web/src/services/database/content.ts (create/update)
 
- ##################################################
-düzenlenecek todos
+====================================
+25) PROFİL — Reviews Sekmesinde Düzenleme ve İstatistikler
+Öncelik: P1
+Açıklama: Reviews sekmesinde “Düzenle” butonu ile yorum düzenlenebilsin. Cevap (reply) sayısı ve beğeni (like) sayısı gösterilsin.
+Adımlar:
+- ReviewCard’da Edit action; modal/form ile text güncelleme, optimistic UI.
+- review_replies ve review_likes sayıları UI’da rozet olarak gösterilsin.
+- Güncelleme sonrası updated_at tetiklensin; liste revalidate.
+DoD:
+- Kullanıcı kendi review’unu düzenleyebiliyor.
+- Reply ve like sayıları doğru görünüyor.
+Önerilen Dosyalar:
+- web/src/components/profile/ReviewList.tsx
+- web/src/services/database/reviews.ts
 
-yine aynı componentleri kullanmadığımız için ortaya çıkan bir sorun. film türündeki içeriklerin posterinde hover varken diğer içerik türlerinde hover gelmiyor. artık şu atomic design mıdın component midir düzgünce uygula ve aynı işe yarayan kod 3 5 kere tekrar tekrar yazılmmasın.
-
-content request sayfasında reddedilen isteklerin rerddedilme sebebi de gösterilsin. oyuncular yönetmen, türler, ülkeler gibi kısımlarda ilk önce listeden seçtirmeyeçalışmak için kullanıcı yazarken önerilerden seçebilsin. eğer önerilerden sçmemiş ise o zaman kendi eklesin. ülkelerde ve türlerde seçmek zorunlu olsun. oyuncu ve yönetmeni ekleyince oyuncu ve yönetmen için de detaylar kısmı açılsın orayı da dodrusun. sonra tolu istek atmış olsun. gibi bir şey düşündüm.
-
-headerdeki bildirimler kısmında yeni butonu yerine tümünü göster olsun. orada yeni bir sayfaya gitsin. bildirimler silinebilsinler veya bildirime tıklayınca ilgili yere de yönlendiremye çalış
-
-movie ve tv profildeki kısımlarında gösteriliyor ancak oyun ve kitap gösterilmiyor. bu yine aynı kodu tekrar tekrar yazıp farklı yazmak ile alakl. tek bir özelleştirilmiş kod çağırarak göster. ayrıca zaten kitaplar content tablosunda supabase de kaydedilmiyorlar da bunun da düzelt.
-
-profildeki reviews kımında düzenle butonu ekle. review orada düzenlenebilsin. ve yine orada reviewe verilen cevaplar ve beğeni sayıalrı fala  da gösterilsin
-
-şuan liste özelliği pasiti onu da etkinleştrlem. kulalnıcı liste oluşturabilecek ve listeye içerikleri ekleyebilecek.
+====================================
+26) LİSTELER — Özelliği Etkinleştir (Oluştur/Ekle/Çıkar)
+Öncelik: P0
+Açıklama: Liste özelliği pasif. Kullanıcı liste oluşturabilsin, içeriği listeye ekleyip çıkarabilsin.
+Adımlar:
+- “Listelerim” sayfası: liste oluşturma, ad değiştirme, silme.
+- İçerik sayfalarında “Listeye ekle” menüsü; çoklu liste seçimi.
+- Backend: list_movie için CRUD servisleri; gelecekte generic liste desteği için tasarım notu.
+DoD:
+- En az bir liste oluşturulup içerik eklenip çıkarılabiliyor.
+- RLS politikaları ile sadece sahibi yönetebiliyor.
+Önerilen Dosyalar:
+- web/src/app/lists/page.tsx
+- web/src/services/database/lists.ts
+- web/src/app/content/*/[id]/page.tsx (entegrasyon)
 
 
 
