@@ -18,9 +18,10 @@ interface TvCardProps {
   showActions?: boolean;
   isWatched?: boolean;
   onWatch?: (tvId: number) => void;
+  subtitleOverride?: string | null;
 }
 
-export default function TvCard({ tv, size = 'medium', className = '', showActions = false, isWatched = false, onWatch }: TvCardProps) {
+export default function TvCard({ tv, size = 'medium', className = '', showActions = false, isWatched = false, onWatch, subtitleOverride = null }: TvCardProps) {
   const title = tv.name || tv.title || 'Bilinmeyen Dizi';
   const href = (`/content/tv/${tv.id}`) as Route;
   const overlay = showActions ? (
@@ -38,7 +39,7 @@ export default function TvCard({ tv, size = 'medium', className = '', showAction
     <ContentCard
       href={href}
       title={title}
-      subtitle={tv.first_air_date ? String(new Date(tv.first_air_date).getFullYear()) : undefined}
+  subtitle={subtitleOverride ?? (tv.first_air_date ? String(new Date(tv.first_air_date).getFullYear()) : undefined)}
       posterSrc={tv.poster_path ? tmdbImage(tv.poster_path, 'w342') : null}
       size={size}
       className={className}

@@ -15,6 +15,7 @@ interface MovieCardProps {
     release_date?: string;
   };
   size?: 'small' | 'medium' | 'large';
+  subtitleOverride?: string | null;
   showRating?: boolean;
   rating?: number;
   reviewCount?: number;
@@ -37,6 +38,7 @@ const sizeClasses = {
 export default function MovieCard({
   movie,
   size = 'medium',
+  subtitleOverride = null,
   showRating = false,
   rating,
   reviewCount,
@@ -109,7 +111,7 @@ export default function MovieCard({
     <ContentCard
       href={href}
       title={movieTitle}
-      subtitle={movie.release_date ? String(new Date(movie.release_date).getFullYear()) : undefined}
+  subtitle={subtitleOverride ?? (movie.release_date ? String(new Date(movie.release_date).getFullYear()) : undefined)}
       posterSrc={movie.poster_path ? tmdbImage(movie.poster_path, 'w342') : null}
       size={size}
       className={className}

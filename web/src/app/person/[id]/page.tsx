@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getPersonDetails, tmdbImage } from '@/services/api/tmdb';
 import { getUserPersonMoviesWatchStatus } from '@/services/database/movieLogs';
 import MovieCard from '@/components/MovieCard';
+import TvCard from '@/components/TvCard';
 import { supabase } from '@/lib/supabase';
 
 // Progress Ring Component
@@ -55,6 +56,10 @@ export default function PersonPage() {
   const [loading, setLoading] = useState(true);
   const [watchedPercentage, setWatchedPercentage] = useState({ watchedCount: 0, totalCount: 0, percentage: 0 });
   const [movieWatchStatus, setMovieWatchStatus] = useState<{ [movieId: number]: { watched: boolean; rating?: number; favorite: boolean } }>({});
+  const [activeTab, setActiveTab] = useState<'movies' | 'tv'>('movies');
+  const [roleFilter, setRoleFilter] = useState<'cast' | 'crew' | 'all'>('cast');
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
 
   const handleToggleFavorite = async (movieId: number) => {
     try {
@@ -152,6 +157,73 @@ export default function PersonPage() {
     fetchPersonData();
   }, [id]);
 
+  // Reset pagination when switching tab or role
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, roleFilter]);
+
+  // Prepare sorted lists for Movies/TV (must be declared before any early return to keep hooks order stable)
+  const { sortedMovies, sortedTv } = useMemo(() => {
+    type MovieCredit = { id: number; poster_path?: string | null; release_date?: string; title?: string; name?: string; character?: string };
+    type TvCredit = { id: number; poster_path?: string | null; first_air_date?: string; name?: string; character?: string };
+
+    const moviesCast = (person?.movie_credits?.cast ?? []) as MovieCredit[];
+    const moviesCrewRaw = (person?.movie_credits?.crew ?? []) as (MovieCredit & { job?: string })[];
+    const tvCast = (person?.tv_credits?.cast ?? []) as TvCredit[];
+    const tvCrewRaw = (person?.tv_credits?.crew ?? []) as (TvCredit & { job?: string })[];
+
+    // Map crew to include a display role
+    const moviesCrew = moviesCrewRaw.map(m => ({ ...m, roleLabel: m.job || 'Crew' }));
+    const tvCrew = tvCrewRaw.map(t => ({ ...t, roleLabel: t.job || 'Crew' }));
+
+    const filterByRole = <T extends any>(cast: T[], crew: T[]) => {
+      if (roleFilter === 'cast') return cast;
+      if (roleFilter === 'crew') return crew;
+      return [...cast, ...crew];
+    };
+
+    // Dedupe by id, prefer cast entry; if both exist, merge role labels like "Actor as X; Director"
+    const dedupeWithRole = <T extends any>(items: any[], type: 'movie' | 'tv') => {
+      const map = new Map<number, any>();
+      for (const it of items) {
+        if (!it.poster_path) continue;
+        const prev = map.get(it.id);
+        const castRole = it.character ? (type === 'movie' ? `Oyuncu: ${it.character}` : `Oyuncu: ${it.character}`) : null;
+        const crewRole = (it as any).roleLabel ? (type === 'movie' ? `${(it as any).roleLabel}` : `${(it as any).roleLabel}`) : null;
+        const roleText = castRole || crewRole;
+        if (!prev) {
+          map.set(it.id, { ...it, roleText });
+        } else {
+          // merge roles
+          const merged = new Set<string>();
+          if (prev.roleText) prev.roleText.split(' | ').forEach((r: string) => merged.add(r));
+          if (roleText) merged.add(roleText);
+          map.set(it.id, { ...prev, ...it, roleText: Array.from(merged).join(' | ') });
+        }
+      }
+      return Array.from(map.values());
+    };
+
+    const moviesFiltered = filterByRole(moviesCast, moviesCrew);
+    const tvFiltered = filterByRole(tvCast, tvCrew);
+
+    const movies = dedupeWithRole(moviesFiltered, 'movie') as (MovieCredit & { roleText?: string })[];
+    const tv = dedupeWithRole(tvFiltered, 'tv') as (TvCredit & { roleText?: string })[];
+
+    const sortedMovies = movies.sort((a, b) => new Date(a?.release_date || '1970-01-01') < new Date(b?.release_date || '1970-01-01') ? 1 : -1);
+    const sortedTv = tv.sort((a, b) => new Date(a?.first_air_date || '1970-01-01') < new Date(b?.first_air_date || '1970-01-01') ? 1 : -1);
+
+    return { sortedMovies, sortedTv };
+  }, [person, roleFilter]);
+
+  const paginatedItems = useMemo(() => {
+    const list = activeTab === 'movies' ? sortedMovies : sortedTv;
+    const total = list.length;
+    const start = (page - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+    return { items: list.slice(start, end), total, totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)) };
+  }, [sortedMovies, sortedTv, activeTab, page]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
@@ -170,14 +242,6 @@ export default function PersonPage() {
       </div>
     );
   }
-
-  const movies = person.movie_credits?.cast || [];
-  const sortedMovies = movies
-    .filter((movie: any) => movie.poster_path) // Only show movies with posters
-    .sort((a: any, b: any) => {
-      // Sort by release date, newest first
-      return new Date(b.release_date || '1970-01-01').getTime() - new Date(a.release_date || '1970-01-01').getTime();
-    });
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -245,34 +309,102 @@ export default function PersonPage() {
               )}
             </div>
 
-            {/* Movies Section */}
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">Filmler ({sortedMovies.length})</h2>
-                <div className="text-sm text-gray-400">
-                  İzlenen: {watchedPercentage.watchedCount} | Kalan: {watchedPercentage.totalCount - watchedPercentage.watchedCount}
+            {/* Tabs and Filters */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between">
+                <div className="flex gap-4">
+                  <button
+                    className={`pb-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'movies' ? 'border-gray-400 text-gray-200' : 'border-transparent text-gray-400 hover:text-gray-300'}`}
+                    onClick={() => setActiveTab('movies')}
+                  >
+                    Movies
+                  </button>
+                  <button
+                    className={`pb-2 px-1 border-b-2 font-medium text-sm ${activeTab === 'tv' ? 'border-gray-400 text-gray-200' : 'border-transparent text-gray-400 hover:text-gray-300'}`}
+                    onClick={() => setActiveTab('tv')}
+                  >
+                    TV
+                  </button>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <span>Rol:</span>
+                  <div className="flex rounded-md overflow-hidden border border-gray-700">
+                    {(['cast','crew','all'] as const).map((r) => (
+                      <button
+                        key={r}
+                        className={`px-3 py-1 ${roleFilter === r ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-800'}`}
+                        onClick={() => setRoleFilter(r)}
+                        aria-pressed={roleFilter === r}
+                      >
+                        {r === 'cast' ? 'Cast' : r === 'crew' ? 'Crew' : 'Hepsi'}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
+            </div>
 
-              {sortedMovies.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                  {sortedMovies.map((movie: any) => (
-                    <MovieCard
-                      key={movie.id}
-                      movie={movie}
-                      isWatched={movieWatchStatus[movie.id]?.watched || false}
-                      isFavorite={movieWatchStatus[movie.id]?.favorite || false}
-                      rating={movieWatchStatus[movie.id]?.rating}
-                      showActions={true}
-                      size="large"
-                      showRating={true}
-                      onToggleFavorite={handleToggleFavorite}
-                      onToggleWatchlist={handleToggleWatchlist}
-                    />
-                  ))}
-                </div>
+            {/* List + Pagination */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold">
+                  {activeTab === 'movies' ? `Filmler (${sortedMovies.length})` : `Diziler (${sortedTv.length})`}
+                </h2>
+                {activeTab === 'movies' ? (
+                  <div className="text-sm text-gray-400">
+                    İzlenen: {watchedPercentage.watchedCount} | Kalan: {watchedPercentage.totalCount - watchedPercentage.watchedCount}
+                  </div>
+                ) : null}
+              </div>
+
+              {paginatedItems.items.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {activeTab === 'movies'
+          ? paginatedItems.items.map((movie: any) => (
+                          <MovieCard
+                            key={movie.id}
+                            movie={movie}
+            subtitleOverride={movie.roleText ?? null}
+                            isWatched={movieWatchStatus[movie.id]?.watched || false}
+                            isFavorite={movieWatchStatus[movie.id]?.favorite || false}
+                            rating={movieWatchStatus[movie.id]?.rating}
+                            showActions={true}
+                            size="large"
+                            showRating={true}
+                            onToggleFavorite={handleToggleFavorite}
+                            onToggleWatchlist={handleToggleWatchlist}
+                          />
+                        ))
+          : paginatedItems.items.map((tv: any) => (
+          <TvCard key={tv.id} tv={tv} size="large" subtitleOverride={tv.roleText ?? null} />
+                        ))}
+                  </div>
+
+                  {paginatedItems.totalPages > 1 ? (
+                    <div className="mt-6 flex items-center justify-center gap-3">
+                      <button
+                        className="px-3 py-1 rounded bg-gray-800 text-gray-200 disabled:opacity-40"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                      >
+                        Önceki
+                      </button>
+                      <span className="text-sm text-gray-400">{page} / {paginatedItems.totalPages}</span>
+                      <button
+                        className="px-3 py-1 rounded bg-gray-800 text-gray-200 disabled:opacity-40"
+                        onClick={() => setPage((p) => Math.min(paginatedItems.totalPages, p + 1))}
+                        disabled={page >= paginatedItems.totalPages}
+                      >
+                        Sonraki
+                      </button>
+                    </div>
+                  ) : null}
+                </>
               ) : (
-                <p className="text-gray-400 text-center py-8">Bu aktör için film bulunamadı.</p>
+                <div className="text-gray-400 text-center py-12">
+                  {activeTab === 'movies' ? 'Bu kişi için film bulunamadı.' : 'Bu kişi için dizi bulunamadı.'}
+                </div>
               )}
             </div>
           </div>

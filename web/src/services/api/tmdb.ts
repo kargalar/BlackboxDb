@@ -135,7 +135,8 @@ export async function getPersonDetails(id: string | number, opts?: { revalidate?
   const isV4 = isV4Token(key);
 
   const url = new URL(`${TMDB_BASE}/person/${id}`);
-  url.searchParams.set('append_to_response', 'movie_credits');
+  // Include both movie and TV credits for tabbed person page
+  url.searchParams.set('append_to_response', 'movie_credits,tv_credits');
   if (!isV4) {
     url.searchParams.set('api_key', key);
   }
