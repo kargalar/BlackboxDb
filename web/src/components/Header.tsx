@@ -8,6 +8,7 @@ import { ThemeToggle } from '@/components/theme-toggle'
 import { getCurrentUserProfile } from '@/services/database/userService'
 import { SearchIcon } from '@/components/icons/SearchIcon'
 import NotificationsMenu from '@/components/NotificationsMenu'
+import { supabase } from '@/lib/supabase'
 
 export default function Header() {
   const { user, loading, signInWithGoogle, signOut } = useAuth()
@@ -16,9 +17,10 @@ export default function Header() {
   const [isSigningOut, setIsSigningOut] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearchInput, setShowSearchInput] = useState(false)
-  const [appUser, setAppUser] = useState<{ username: string; email: string; picture_path: string | null; bio: string | null } | null>(null)
+  const [appUser, setAppUser] = useState<{ username: string; email: string; picture_path: string | null; bio: string | null; is_admin?: boolean; is_moderator?: boolean } | null>(null)
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const [isPrivileged, setIsPrivileged] = useState(false)
 
   // User profile bilgisini al
   useEffect(() => {
@@ -26,8 +28,12 @@ export default function Header() {
       if (user) {
         try {
           const result = await getCurrentUserProfile()
-          if (result?.data) {
-            setAppUser(result.data)
+          setAppUser(result?.data || null)
+          try {
+            const { data: isPriv } = await supabase.rpc('is_privileged', { p_user_id: user.id })
+            setIsPrivileged(Boolean(isPriv))
+          } catch {
+            setIsPrivileged(Boolean(result?.data?.is_admin) || Boolean(result?.data?.is_moderator))
           }
         } catch (error) {
           console.error('User profile yüklenemedi:', error)
@@ -209,6 +215,14 @@ export default function Header() {
               <div className="w-20 h-8 rounded bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
             ) : user ? (
               <div className="flex items-center gap-3">
+                {(isPrivileged || Boolean(appUser?.is_admin) || Boolean(appUser?.is_moderator)) && (
+                  <Link 
+                    href="/admin/content-requests"
+                    className="rounded-lg px-3 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                  >
+                    Admin
+                  </Link>
+                )}
                 <Link 
                   href={hasUsername ? (`/profile/${appUser!.username}` as const) : '/profile'}
                   className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"

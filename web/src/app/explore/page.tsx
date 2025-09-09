@@ -290,9 +290,14 @@ function ExploreContent() {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
           {searchQuery ? `"${searchQuery}" için arama sonuçları` : 'Keşfet'}
         </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          {searchQuery ? `${data?.total_results || 0} sonuç bulundu` : 'Popüler filmler ve yeni çıkanları keşfet'}
-        </p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-gray-600 dark:text-gray-400">
+            {searchQuery ? `${data?.total_results || 0} sonuç bulundu` : 'Popüler filmler ve yeni çıkanları keşfet'}
+          </p>
+          <a href="/dashboard/content-requests" className="shrink-0 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">
+            İçerik iste
+          </a>
+        </div>
       </div>
 
       {/* Filters - Hide when searching */}

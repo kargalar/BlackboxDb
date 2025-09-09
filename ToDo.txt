@@ -2,8 +2,6 @@ kitaplar
 
 supabase google ile login
 
-admin paneli
-
 profil sayfasındaki verileri düzel
 
 profil sayfasında giderken url de username olsun. çünkü başkalarının profilinine de gidebilecek
@@ -16,14 +14,30 @@ watchliste eklenme sayısı da gösterilsin film sayfasında
 
 profilde reviewin reviewi gösterilsin
 
-aktrönü sayfasında sadece film değil diziler de ayrı bir sekmee gösterilsin
+aktrönü sayfasında sadece film değil diziler de ayrı bir sekme olarak gösterilsin
 
-kullanıcılar bulamadıkları içerikleri manuel olarak ekleyebilecekler. içerik bilgilerini girdikten sonra adminin onayına gönderecekler. admin onaylayınca bildirm gidecek kullanıcıya ve kütüphaneye eklenmiş olacak.
+kullanıcılar bulamadıkları içerikleri manuel olarak ekleyebilecekler. içerik bilgilerini girdikten sonra adminin onayına gönderecekler. admin onaylayınca bildirim gidecek kullanıcıya ve kütüphaneye eklenmiş olacak.
 
-admin
-
-bildirimler paneli ekle. gelecekte kullanıcıya bildirimler gidebilecek. bildirimler için datbase i de güncelle. bildirimler basit olacak mesela kullanıcının yorumu beğenilirse. biri takip ederse gibi. ona göre ayarla
+admin paneli
 
 kitaplara yorum gönderilmiyor
 
 explore de filmlerin gelmesi için explore/movies yap. şuan "https://blackbox-db.vercel.app/explore/" bu adreste geliyorlar "https://blackbox-db.vercel.app/explore/movies/" de ise loading de kalıyor
+
+fotoğraflar yakınlaştırılabilecek
+
+kullanıcının kendi profilinde takip et butonu var
+
+tv için ayrıca bölümlere de puan verilebilecek ve bölüm bölüm izlendi olarak işaretlenebilecek ve yorum yazılabilecek?
+
+admin veya mod olarak direkt içeriğin bilgilerini düzenleyebilmeliyim. veya yorumu silebilmeliyim, kullancıyı silebilmeliyim. bunların hiçbirini şuan yapamıyorum. ayrıca admin panleinin apparda göster eğer admin ise.son olarak içerik istedkerlnii onaylayabileceğim bir sayfayı da göremedim.
+
+show replies diyince yorumun cevapları gösterilmyor.
+
+dizi sayfasında sezonların ve bölümleri ayrı ayrı gösteirlebielcek netflix gibi. bir bölümün ortalam süresi de yazsın
+
+içeriklerin sayfalarının tasarımı şuan farklı farklı oldu. aynı şekilde explore sayfaları da. tamma bazen zorunlu değişiklikler olabilir mesela oyunda platform varken kitapta yok yani o kısım gösterilemyecek. veya dizilerin sezonları ve bölünlerini ayrı ayrı görebileceğimz için onu ayrı bir kısmı da oalcak diğeerlerine olamyan ama buna benzer farklar hariç genel tasarım aynı olmalı. flutterda ne güzel widgetı çağrıarark her yerde aynı tasarımı kolayca kullanabiliyordum. reactte öyle bir şey yok mu.
+
+tüm içerikler kaydediliyor mu kontrol et supabase için
+
+geri sayımda sanieyei saymasın

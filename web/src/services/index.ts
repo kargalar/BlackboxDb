@@ -6,3 +6,4 @@ export * from './api/igdb';
 export * from './database/movieLogs';
 export * from './database/reviewReplies';
 export * from './database/userService';
+export * from './database/contentRequests';

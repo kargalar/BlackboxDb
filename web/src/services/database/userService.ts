@@ -7,6 +7,8 @@ export interface AppUser {
   bio: string | null;
   picture_path: string | null;
   personality_analyze: string | null;
+  is_admin?: boolean;
+  is_moderator?: boolean;
   created_at: string;
   updated_at: string;
 }

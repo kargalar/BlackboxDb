@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 
-export type NotificationType = 'REVIEW_LIKED' | 'FOLLOWED_YOU'
+export type NotificationType = 'REVIEW_LIKED' | 'FOLLOWED_YOU' | 'CONTENT_APPROVED' | 'CONTENT_REJECTED' | 'COMMENT_REMOVED'
 
 export interface Notification {
   id: number
@@ -16,7 +16,10 @@ export interface Notification {
 
 const TYPE_MAP: Record<number, NotificationType> = {
   1: 'REVIEW_LIKED',
-  2: 'FOLLOWED_YOU'
+  2: 'FOLLOWED_YOU',
+  3: 'CONTENT_APPROVED',
+  4: 'CONTENT_REJECTED',
+  5: 'COMMENT_REMOVED',
 }
 
 export async function fetchNotifications(limit = 20): Promise<{ data: Notification[]; error?: any }> {
@@ -73,6 +76,12 @@ export function renderNotificationText(n: Notification): string {
       return `${actorName} yorumunu beğendi`
     case 'FOLLOWED_YOU':
       return `${actorName} seni takip etti`
+    case 'CONTENT_APPROVED':
+      return `${actorName} içerik isteğini onayladı`
+    case 'CONTENT_REJECTED':
+      return `${actorName} içerik isteğini reddetti`
+    case 'COMMENT_REMOVED':
+      return `Yorumun moderatör tarafından kaldırıldı`
     default:
       return 'Yeni bildirimin var'
   }

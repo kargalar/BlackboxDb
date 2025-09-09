@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Route } from 'next';
 import BookCard from '@/components/BookCard';
+import ExploreLayout from '@/components/layouts/ExploreLayout'
 import { booksSearch, type GoogleBook } from '@/services/api/books';
 
 function BooksExploreInner() {
@@ -42,12 +43,7 @@ function BooksExploreInner() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Kitapları Keşfet</h1>
-        <p className="text-gray-600 dark:text-gray-400">Google Books üzerinden popüler ve aradığınız kitapları bulun</p>
-      </div>
-
+    <ExploreLayout title="Kitapları Keşfet" subtitle="Google Books üzerinden popüler ve aradığınız kitapları bulun">
       <form onSubmit={onSubmit} className="flex gap-2">
         <input
           name="search"
@@ -73,7 +69,7 @@ function BooksExploreInner() {
             ))
           : books.map((b) => <BookCard key={b.id} book={b} />)}
       </div>
-    </div>
+    </ExploreLayout>
   );
 }
 

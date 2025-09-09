@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import type { Route } from 'next';
 import Image from 'next/image';
 import { igdbSearch, igdbImageUrl } from '@/services/api/igdb';
+import ExploreLayout from '@/components/layouts/ExploreLayout'
 
 type Game = {
   id: number;
@@ -52,12 +53,7 @@ function GamesExploreInner() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Oyunları Keşfet</h1>
-        <p className="text-gray-600 dark:text-gray-400">IGDB üzerinden popüler ve aradığınız oyunları bulun</p>
-      </div>
-
+    <ExploreLayout title="Oyunları Keşfet" subtitle="IGDB üzerinden popüler ve aradığınız oyunları bulun">
       <form onSubmit={onSubmit} className="flex gap-2">
         <input
           name="search"
@@ -119,7 +115,7 @@ function GamesExploreInner() {
               </a>
             ))}
       </div>
-    </div>
+    </ExploreLayout>
   );
 }
 

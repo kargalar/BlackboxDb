@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { discoverTV, searchTV, tmdbImage } from '@/services/api/tmdb';
+import ExploreLayout from '@/components/layouts/ExploreLayout'
 import type { TMDBDiscoverMovie } from '@/types/tmdb';
 
 function TvExploreContent() {
@@ -69,19 +70,11 @@ function TvExploreContent() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          {searchQuery ? `"${searchQuery}" için dizi araması` : 'Dizileri Keşfet'}
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          {searchQuery ? `${data?.total_results || 0} sonuç bulundu` : 'Popüler diziler ve yeni çıkanları keşfet'}
-        </p>
-      </div>
-
-      {!searchQuery && (
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
-          <form className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <ExploreLayout
+      title={searchQuery ? `"${searchQuery}" için dizi araması` : 'Dizileri Keşfet'}
+      subtitle={searchQuery ? `${data?.total_results || 0} sonuç bulundu` : 'Popüler diziler ve yeni çıkanları keşfet'}
+      filters={!searchQuery ? (
+        <form className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Sırala</label>
               <select name="sort_by" defaultValue={sort_by} className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20">
@@ -114,8 +107,7 @@ function TvExploreContent() {
               </button>
             </div>
           </form>
-        </div>
-      )}
+  ) : undefined}>
 
       {error ? (
         <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">{error}</div>
@@ -152,7 +144,7 @@ function TvExploreContent() {
           Sonraki →
         </button>
       </div>
-    </div>
+    </ExploreLayout>
   );
 }
 
