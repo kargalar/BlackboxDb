@@ -3,9 +3,9 @@
 import { useEffect, useMemo, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Route } from 'next';
-import Image from 'next/image';
-import { igdbSearch, igdbImageUrl } from '@/services/api/igdb';
+import { igdbSearch } from '@/services/api/igdb';
 import ExploreLayout from '@/components/layouts/ExploreLayout'
+import GameCard from '@/components/GameCard';
 
 type Game = {
   id: number;
@@ -88,32 +88,7 @@ function GamesExploreInner() {
           ? Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className="aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-pulse" />
             ))
-          : games.map((g) => (
-              <a key={g.id} href={`/content/game/${g.id}`} className="group">
-                <div className="relative aspect-[2/3] overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-800">
-                  {g.cover?.image_id ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      alt={g.name}
-                      src={igdbImageUrl(g.cover.image_id, 'cover_big')}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="h-full w-full grid place-items-center text-gray-400">Kapak yok</div>
-                  )}
-                </div>
-                <div className="mt-2 space-y-1">
-                  <div className="line-clamp-1 text-sm font-medium text-gray-900 dark:text-white" title={g.name}>
-                    {g.name}
-                  </div>
-                  {g.platforms?.length ? (
-                    <div className="line-clamp-1 text-xs text-gray-500 dark:text-gray-400">
-                      {g.platforms.map((p) => p.name).join(', ')}
-                    </div>
-                  ) : null}
-                </div>
-              </a>
-            ))}
+          : games.map((g) => <GameCard key={g.id} game={g as any} size="large" />)}
       </div>
     </ExploreLayout>
   );

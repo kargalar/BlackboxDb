@@ -67,7 +67,7 @@ function BooksExploreInner() {
           ? Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className="aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-pulse" />
             ))
-          : books.map((b) => <BookCard key={b.id} book={b} />)}
+          : books.map((b) => <BookCard key={b.id} book={b} size="large" />)}
       </div>
     </ExploreLayout>
   );

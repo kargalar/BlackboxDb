@@ -1,6 +1,8 @@
-import Link from 'next/link';
-import Image from 'next/image';
 import { tmdbImage } from '@/services/api/tmdb';
+import ContentCard from '@/components/ui/ContentCard';
+import type { Route } from 'next';
+import { EyeIconSolid } from '@/components/icons/EyeIcon';
+import { CheckIcon } from '@/components/icons/CheckIcon';
 
 interface TvCardProps {
   tv: {
@@ -12,42 +14,35 @@ interface TvCardProps {
   };
   size?: 'small' | 'medium' | 'large';
   className?: string;
+  // Optional actions
+  showActions?: boolean;
+  isWatched?: boolean;
+  onWatch?: (tvId: number) => void;
 }
 
-const sizeClasses = {
-  small: { container: 'w-16', aspect: 'aspect-[2/3]' },
-  medium: { container: 'w-24', aspect: 'aspect-[2/3]' },
-  large: { container: 'w-full', aspect: 'aspect-[2/3]' },
-};
-
-export default function TvCard({ tv, size = 'medium', className = '' }: TvCardProps) {
-  const sizeClass = sizeClasses[size];
+export default function TvCard({ tv, size = 'medium', className = '', showActions = false, isWatched = false, onWatch }: TvCardProps) {
   const title = tv.name || tv.title || 'Bilinmeyen Dizi';
-
+  const href = (`/content/tv/${tv.id}`) as Route;
+  const overlay = showActions ? (
+    <div className="flex gap-2">
+      <button
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onWatch?.(tv.id); }}
+        className={`w-8 h-8 flex items-center justify-center rounded-full backdrop-blur-sm text-white ${isWatched ? 'bg-green-600 hover:bg-green-700' : 'bg-white/20 hover:bg-white/30'} transition-colors`}
+        title={isWatched ? 'İzlendi' : 'İzle'}
+      >
+        {isWatched ? <CheckIcon className="w-4 h-4" /> : <EyeIconSolid className="w-4 h-4" />}
+      </button>
+    </div>
+  ) : null;
   return (
-    <Link href={`/content/tv/${tv.id}`} className={`group relative cursor-pointer ${className}`}>
-      <div className={`${sizeClass.container} ${sizeClass.aspect} rounded-lg overflow-hidden relative bg-gray-800`}>
-        {tv.poster_path ? (
-          <Image
-            src={tmdbImage(tv.poster_path, 'w342')}
-            alt={title}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
-            className="object-cover group-hover:scale-105 transition-transform"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
-            <span className="text-xs text-center px-2 text-white">{title}</span>
-          </div>
-        )}
-      </div>
-
-      <div className="mt-2 space-y-1">
-        <h3 className="font-medium line-clamp-2 text-white group-hover:text-gray-300 transition-colors text-sm">{title}</h3>
-        {tv.first_air_date && (
-          <p className="text-gray-400 text-xs">{new Date(tv.first_air_date).getFullYear()}</p>
-        )}
-      </div>
-    </Link>
+    <ContentCard
+      href={href}
+      title={title}
+      subtitle={tv.first_air_date ? String(new Date(tv.first_air_date).getFullYear()) : undefined}
+      posterSrc={tv.poster_path ? tmdbImage(tv.poster_path, 'w342') : null}
+      size={size}
+      className={className}
+      overlay={overlay}
+    />
   );
 }

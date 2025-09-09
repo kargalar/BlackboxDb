@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import MovieCard from '@/components/MovieCard';
 import ExploreLayout from '@/components/layouts/ExploreLayout';
+import type { Route } from 'next';
 
 function ExploreContent() {
   const searchParams = useSearchParams();
@@ -267,6 +268,13 @@ function ExploreContent() {
 
   const results = data?.results || [];
 
+  const onSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    const next = String(form.get('search') || '').trim();
+    router.push((`/explore${next ? `?search=${encodeURIComponent(next)}` : ''}`) as Route);
+  };
+
   const makeQS = (entries: Record<string, string | undefined>) => {
     const q = new URLSearchParams();
     const base: Record<string, string | undefined> = {
@@ -286,8 +294,8 @@ function ExploreContent() {
 
   return (
     <ExploreLayout
-      title={searchQuery ? `"${searchQuery}" için arama sonuçları` : 'Keşfet'}
-      subtitle={searchQuery ? `${data?.total_results || 0} sonuç bulundu` : 'Popüler filmler ve yeni çıkanları keşfet'}
+      title={searchQuery ? `"${searchQuery}" için film araması` : 'Filmleri Keşfet'}
+      subtitle={searchQuery ? `${data?.total_results || 0} sonuç bulundu` : 'TMDB üzerinden popüler ve aradığınız filmleri bulun'}
       filters={!searchQuery ? (
         <form className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-2">
@@ -360,6 +368,19 @@ function ExploreContent() {
         </div>
       ) : null}
     >
+      {/* Search bar (consistent with Games/Books) */}
+      <form onSubmit={onSearchSubmit} className="flex gap-2">
+        <input
+          name="search"
+          defaultValue={searchQuery}
+          placeholder="Film ara..."
+          className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+        />
+        <button className="rounded-lg bg-gray-700 dark:bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:hover:bg-gray-500 transition-colors">
+          Ara
+        </button>
+      </form>
+
       {/* Grid */}
       <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
         {results.map((m: any) => (
@@ -367,6 +388,7 @@ function ExploreContent() {
             key={m.id}
             movie={m}
             size="large"
+            showActions
             showRating={m.db_rating > 0}
             rating={m.db_rating}
             reviewCount={m.db_review_count}

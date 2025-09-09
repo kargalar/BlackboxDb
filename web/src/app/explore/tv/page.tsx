@@ -2,11 +2,13 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
-import Link from 'next/link';
-import { discoverTV, searchTV, tmdbImage } from '@/services/api/tmdb';
+import type { Route } from 'next';
+import { discoverTV, searchTV } from '@/services/api/tmdb';
 import ExploreLayout from '@/components/layouts/ExploreLayout'
 import type { TMDBDiscoverMovie } from '@/types/tmdb';
+import TvCard from '@/components/TvCard';
+import { getTvDetails } from '@/services/api/tmdb';
+import { saveContentFromTMDBTv, updateUserContentLog } from '@/services/database/movieLogs';
 
 function TvExploreContent() {
   const searchParams = useSearchParams();
@@ -23,6 +25,7 @@ function TvExploreContent() {
   const [data, setData] = useState<{ page: number; total_pages: number; total_results: number; results: TMDBDiscoverMovie[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [tvStates, setTvStates] = useState<Record<number, { isWatched: boolean }>>({});
 
   useEffect(() => {
     async function load() {
@@ -53,6 +56,17 @@ function TvExploreContent() {
     }
     load();
   }, [sort_by, with_original_language, with_genres, page, yearMin, yearMax, searchQuery]);
+  const handleWatchTv = async (tvId: number) => {
+    try {
+      const details = await getTvDetails(tvId);
+      if (details) await saveContentFromTMDBTv(details as any);
+      setTvStates((prev) => ({ ...prev, [tvId]: { isWatched: true } }));
+      const result = await updateUserContentLog(tvId, { content_status_id: 1, date: new Date().toISOString() });
+      if (!result.data) setTvStates((prev) => ({ ...prev, [tvId]: { isWatched: false } }));
+    } catch (err) {
+      setTvStates((prev) => ({ ...prev, [tvId]: { isWatched: false } }));
+    }
+  };
 
   const makeQS = (entries: Record<string, string | undefined>) => {
     const q = new URLSearchParams();
@@ -69,10 +83,17 @@ function TvExploreContent() {
     return `?${q.toString()}`;
   };
 
+  const onSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    const next = String(form.get('search') || '').trim();
+    router.push((`/explore/tv${next ? `?search=${encodeURIComponent(next)}` : ''}`) as Route);
+  };
+
   return (
     <ExploreLayout
       title={searchQuery ? `"${searchQuery}" için dizi araması` : 'Dizileri Keşfet'}
-      subtitle={searchQuery ? `${data?.total_results || 0} sonuç bulundu` : 'Popüler diziler ve yeni çıkanları keşfet'}
+      subtitle={searchQuery ? `${data?.total_results || 0} sonuç bulundu` : 'TMDB üzerinden popüler ve aradığınız dizileri bulun'}
       filters={!searchQuery ? (
         <form className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2">
@@ -109,29 +130,26 @@ function TvExploreContent() {
           </form>
   ) : undefined}>
 
+      {/* Search bar for TV */}
+      <form onSubmit={onSearchSubmit} className="flex gap-2">
+        <input
+          name="search"
+          defaultValue={searchQuery}
+          placeholder="Dizi ara..."
+          className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+        />
+        <button className="rounded-lg bg-gray-700 dark:bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:hover:bg-gray-500 transition-colors">
+          Ara
+        </button>
+      </form>
+
       {error ? (
         <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">{error}</div>
       ) : null}
 
       <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
         {data?.results?.map((tv) => (
-          <Link key={tv.id} href={`/content/tv/${tv.id}`} className="group">
-            <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800">
-              {tv.poster_path ? (
-                <Image src={tmdbImage(tv.poster_path, 'w342')} alt={tv.name || tv.title || 'TV'} fill className="object-cover group-hover:scale-105 transition-transform" />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
-                  <span className="text-xs text-center px-2 text-white">{tv.name || tv.title}</span>
-                </div>
-              )}
-            </div>
-            <div className="mt-2">
-              <h3 className="font-medium text-white line-clamp-2 text-sm">{tv.name || tv.title}</h3>
-              {tv.first_air_date && (
-                <p className="text-xs text-gray-400">{new Date(tv.first_air_date).getFullYear()}</p>
-              )}
-            </div>
-          </Link>
+          <TvCard key={tv.id} tv={tv as any} size="large" showActions isWatched={!!tvStates[tv.id]?.isWatched} onWatch={handleWatchTv} />
         ))}
       </div>
 
