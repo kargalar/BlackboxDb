@@ -89,20 +89,6 @@ DoD:
 - web/src/services/api/comments.ts
 
 ====================================
-6) AKTÖR (KİŞİ) SAYFASI SEKMELEME (Film + Dizi)
-Öncelik: P2
-Açıklama: Kişi sayfasında filmler ve diziler ayrı sekmelerde.
-Adımlar:
-- Kişi sayfası için tabs (Movies, TV) ekle.
-- IGDB/TMDB servislerinden cast/crew ayrımıyla veri çek; pagination.
-DoD:
-- Sekmeler arası geçişte ilgili liste düzgün yükleniyor.
-- Boş durumda bilgilendirici mesaj.
-Önerilen Dosyalar:
-- web/src/app/person/[id]/page.tsx
-- web/src/lib/tmdb.ts / igdb.ts
-
-====================================
 7) KULLANICI İÇERİK TALEBİ (Manuel Ekleme + Onay Akışı)
 Öncelik: P0
 Açıklama: Kullanıcı bulunamayan içeriği form ile önersin; admin onaylayınca kütüphaneye eklensin; kullanıcıya bildirim gitsin.
@@ -228,18 +214,6 @@ DoD:
 Önerilen Dosyalar:
 - web/tests/*.js
 - sql/*.sql, web/src/services/database/*
-
-====================================
-15) COUNTDOWN — SANİYEYİ SAYMA
-Öncelik: P3
-Açıklama: Geri sayım saniye bazında akmasın; dakika/ saat bazlı veya sadece hedef tarihe kalan gün/saat gösterilsin.
-Adımlar:
-- Countdown bileşeninde interval’i 60s’e çek veya sadece on-demand hesapla.
-- Performans ve batarya dostu olacak şekilde optimize et.
-DoD:
-- Saniye animasyonu yok; dakika/saat güncelleniyor veya statik.
-Önerilen Dosyalar:
-- web/src/components/Countdown.tsx
 
 ====================================
 16) BİLDİRİMLER — TALEP KARARI
