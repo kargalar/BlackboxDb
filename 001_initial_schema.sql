@@ -34,15 +34,46 @@ CREATE TABLE public.content_status_lookup (
 
 -- Create main user table with Supabase auth integration
 CREATE TABLE public.app_user (
-    auth_user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    picture_path TEXT,
-    username VARCHAR(255) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    bio TEXT,
-    personality_analyze TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        auth_user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+        picture_path TEXT,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        bio TEXT,
+        personality_analyze TEXT,
+        is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+        is_moderator BOOLEAN NOT NULL DEFAULT FALSE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+COMMENT ON COLUMN public.app_user.is_admin IS 'User has full administrative privileges.';
+COMMENT ON COLUMN public.app_user.is_moderator IS 'User has moderation privileges (limited admin).';
+
+-- Guard helper functions for roles
+CREATE OR REPLACE FUNCTION public.is_admin(p_user_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+AS $$
+    SELECT COALESCE((SELECT is_admin FROM public.app_user au WHERE au.auth_user_id = p_user_id), false);
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_moderator(p_user_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+AS $$
+    SELECT COALESCE((SELECT is_moderator FROM public.app_user au WHERE au.auth_user_id = p_user_id), false);
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_privileged(p_user_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+AS $$
+    SELECT public.is_admin(p_user_id) OR public.is_moderator(p_user_id);
+$$;
+GRANT EXECUTE ON FUNCTION public.is_privileged(uuid) TO authenticated;
 
 -- Content table
 CREATE TABLE public.content (
@@ -266,13 +297,17 @@ CREATE TABLE public.review_comment (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE TABLE public.review_like (
+CREATE TABLE public.review_likes (
     id SERIAL PRIMARY KEY,
     review_id INTEGER NOT NULL REFERENCES public.review(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES public.app_user(auth_user_id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE(review_id, user_id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_review_likes_review_id ON public.review_likes(review_id);
+CREATE INDEX IF NOT EXISTS idx_review_likes_user_id ON public.review_likes(user_id);
+CREATE INDEX IF NOT EXISTS idx_review_likes_created_at ON public.review_likes(created_at);
 
 -- User follow system
 CREATE TABLE public.user_follow (
@@ -294,11 +329,12 @@ CREATE TABLE public.list_movie (
     UNIQUE(user_id, movie_id, list_name)
 );
 
--- Insert initial enum data
 INSERT INTO public.content_type_lookup (id, name) VALUES 
     (1, 'MOVIE'),
     (2, 'GAME'),
-    (3, 'BOOK');
+    (3, 'TV'),
+    (4, 'BOOK')
+ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
 
 INSERT INTO public.content_status_lookup (id, name) VALUES 
     (1, 'CONSUMED'),
@@ -325,14 +361,13 @@ ALTER TABLE public.app_user ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_content_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.review ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.review_comment ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.review_like ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.review_likes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.review_replies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_follow ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.list_movie ENABLE ROW LEVEL SECURITY;
 
 -- Review sistemi tabloları için RLS'yi devre dışı bırak (geliştirme için)
-ALTER TABLE public.review_likes DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.review_replies DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.review_reply_likes DISABLE ROW LEVEL SECURITY;
+-- Keep RLS as configured by table-specific policies
 
 -- Create RLS policies
 -- Users can only see and modify their own data
@@ -376,11 +411,27 @@ CREATE POLICY "Users can insert own review comments" ON public.review_comment
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Review likes
-CREATE POLICY "Anyone can view review likes" ON public.review_like
+CREATE POLICY "Anyone can view review likes" ON public.review_likes
     FOR SELECT USING (true);
 
-CREATE POLICY "Users can manage own review likes" ON public.review_like
-    FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert their own review likes" ON public.review_likes
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own review likes" ON public.review_likes
+    FOR DELETE USING (auth.uid() = user_id);
+
+-- Replies policies
+CREATE POLICY "Users can view all review replies" ON public.review_replies
+    FOR SELECT USING (true);
+
+CREATE POLICY "Users can insert their own review replies" ON public.review_replies
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own review replies" ON public.review_replies
+    FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own review replies" ON public.review_replies
+    FOR DELETE USING (auth.uid() = user_id);
 
 -- User follows
 CREATE POLICY "Anyone can view follows" ON public.user_follow
@@ -450,57 +501,7 @@ SELECT DISTINCT ON (user_id, content_id)
     updated_at
 FROM user_content_log
 ORDER BY user_id, content_id, date DESC;
-
-
--- Hızlı çözüm: RLS'yi tamamen kapat - TÜM TABLOLAR
-
--- Ana tablolar
-ALTER TABLE app_user DISABLE ROW LEVEL SECURITY;
-ALTER TABLE content DISABLE ROW LEVEL SECURITY;
-ALTER TABLE user_content_log DISABLE ROW LEVEL SECURITY;
-ALTER TABLE review DISABLE ROW LEVEL SECURITY;
-ALTER TABLE review_comment DISABLE ROW LEVEL SECURITY;
-ALTER TABLE review_like DISABLE ROW LEVEL SECURITY;
-ALTER TABLE user_follow DISABLE ROW LEVEL SECURITY;
-ALTER TABLE list_movie DISABLE ROW LEVEL SECURITY;
-
--- Lookup tablolar
-ALTER TABLE content_type_lookup DISABLE ROW LEVEL SECURITY;
-ALTER TABLE content_status_lookup DISABLE ROW LEVEL SECURITY;
-
--- Film ile ilgili tablolar
-ALTER TABLE m_genre DISABLE ROW LEVEL SECURITY;
-ALTER TABLE m_director DISABLE ROW LEVEL SECURITY;
-ALTER TABLE m_cast DISABLE ROW LEVEL SECURITY;
-ALTER TABLE m_platform DISABLE ROW LEVEL SECURITY;
-ALTER TABLE m_country DISABLE ROW LEVEL SECURITY;
-ALTER TABLE m_language DISABLE ROW LEVEL SECURITY;
-ALTER TABLE m_theme DISABLE ROW LEVEL SECURITY;
-
--- Oyun ile ilgili tablolar
-ALTER TABLE g_genre DISABLE ROW LEVEL SECURITY;
-ALTER TABLE g_director DISABLE ROW LEVEL SECURITY;
-ALTER TABLE g_platform DISABLE ROW LEVEL SECURITY;
-ALTER TABLE g_country DISABLE ROW LEVEL SECURITY;
-ALTER TABLE g_language DISABLE ROW LEVEL SECURITY;
-ALTER TABLE g_theme DISABLE ROW LEVEL SECURITY;
-
--- Film cross-reference tablolar
-ALTER TABLE x_movie_genre DISABLE ROW LEVEL SECURITY;
-ALTER TABLE x_movie_director DISABLE ROW LEVEL SECURITY;
-ALTER TABLE x_movie_cast DISABLE ROW LEVEL SECURITY;
-ALTER TABLE x_movie_platform DISABLE ROW LEVEL SECURITY;
-ALTER TABLE x_movie_country DISABLE ROW LEVEL SECURITY;
-ALTER TABLE x_movie_language DISABLE ROW LEVEL SECURITY;
-ALTER TABLE x_movie_theme DISABLE ROW LEVEL SECURITY;
-
--- Oyun cross-reference tablolar
-ALTER TABLE x_game_genre DISABLE ROW LEVEL SECURITY;
-ALTER TABLE x_game_director DISABLE ROW LEVEL SECURITY;
-ALTER TABLE x_game_platform DISABLE ROW LEVEL SECURITY;
-ALTER TABLE x_game_country DISABLE ROW LEVEL SECURITY;
-ALTER TABLE x_game_language DISABLE ROW LEVEL SECURITY;
-ALTER TABLE x_game_theme DISABLE ROW LEVEL SECURITY;
+-- RLS: keep enabled per-table with policies; do not disable globally
 
 -- ===========================================
 -- MIGRATION 003: Fix get_user_contents function
@@ -605,45 +606,6 @@ $$;
 
 -- Optional: grant execute to authenticated users
 GRANT EXECUTE ON FUNCTION public.get_user_contents(UUID,UUID,INTEGER,INTEGER,INTEGER) TO authenticated;
-
--- ===========================================
--- MIGRATION 004: Review likes table
--- ===========================================
-
--- Create review_likes table for handling likes on reviews
-CREATE TABLE IF NOT EXISTS review_likes (
-    id SERIAL PRIMARY KEY,
-    review_id INTEGER NOT NULL REFERENCES review(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES app_user(auth_user_id) ON DELETE CASCADE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    
-    -- Ensure a user can only like a review once
-    UNIQUE(review_id, user_id)
-);
-
--- Create indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_review_likes_review_id ON review_likes(review_id);
-CREATE INDEX IF NOT EXISTS idx_review_likes_user_id ON review_likes(user_id);
-CREATE INDEX IF NOT EXISTS idx_review_likes_created_at ON review_likes(created_at);
-
--- Add RLS (Row Level Security) policies
-ALTER TABLE review_likes ENABLE ROW LEVEL SECURITY;
-
--- Policy: Users can view all likes
-CREATE POLICY "Users can view all review likes" ON review_likes
-    FOR SELECT USING (true);
-
--- Policy: Users can insert their own likes
-CREATE POLICY "Users can insert their own review likes" ON review_likes
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- Policy: Users can delete their own likes
-CREATE POLICY "Users can delete their own review likes" ON review_likes
-    FOR DELETE USING (auth.uid() = user_id);
-
--- Grant permissions
-GRANT ALL ON review_likes TO authenticated;
-GRANT USAGE ON SEQUENCE review_likes_id_seq TO authenticated;
 
 -- ===========================================
 -- MIGRATION 005: Review replies table
@@ -836,3 +798,280 @@ DROP TRIGGER IF EXISTS after_review_delete ON public.review;
 CREATE TRIGGER after_review_delete
 AFTER DELETE ON public.review
 FOR EACH ROW EXECUTE FUNCTION public.trg_after_review_change();
+
+-- Notifications lookup and table
+CREATE TABLE IF NOT EXISTS public.notification_type_lookup (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- Seed notification types
+INSERT INTO public.notification_type_lookup (id, name)
+VALUES
+    (1, 'REVIEW_LIKED'),
+    (2, 'FOLLOWED_YOU'),
+    (3, 'CONTENT_APPROVED'),
+    (4, 'CONTENT_REJECTED'),
+    (5, 'COMMENT_REMOVED')
+ON CONFLICT (id) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS public.notification (
+    id BIGSERIAL PRIMARY KEY,
+    recipient_user_id UUID NOT NULL REFERENCES public.app_user(auth_user_id) ON DELETE CASCADE,
+    actor_user_id UUID NOT NULL REFERENCES public.app_user(auth_user_id) ON DELETE CASCADE,
+    type_id INTEGER NOT NULL REFERENCES public.notification_type_lookup(id) ON DELETE RESTRICT,
+    review_id INTEGER NULL REFERENCES public.review(id) ON DELETE CASCADE,
+    reply_id INTEGER NULL REFERENCES public.review_replies(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    read_at TIMESTAMP WITH TIME ZONE NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_notification_recipient ON public.notification(recipient_user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_notification_unread ON public.notification(recipient_user_id, read_at);
+
+ALTER TABLE public.notification DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notification_type_lookup DISABLE ROW LEVEL SECURITY;
+
+-- Notification triggers
+CREATE OR REPLACE FUNCTION public.trg_create_notification_on_review_like()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_recipient UUID;
+    v_actor UUID;
+BEGIN
+    v_actor := NEW.user_id;
+    SELECT r.user_id INTO v_recipient FROM public.review r WHERE r.id = NEW.review_id;
+    IF v_recipient IS NULL OR v_recipient = v_actor THEN
+        RETURN NEW;
+    END IF;
+    INSERT INTO public.notification (
+        recipient_user_id,
+        actor_user_id,
+        type_id,
+        review_id,
+        created_at
+    ) VALUES (
+        v_recipient,
+        v_actor,
+        1,
+        NEW.review_id,
+        now()
+    );
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS after_review_like_insert ON public.review_likes;
+CREATE TRIGGER after_review_like_insert
+AFTER INSERT ON public.review_likes
+FOR EACH ROW EXECUTE FUNCTION public.trg_create_notification_on_review_like();
+
+CREATE OR REPLACE FUNCTION public.trg_create_notification_on_follow()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    IF NEW.user_id = NEW.following_user_id THEN
+        RETURN NEW;
+    END IF;
+    INSERT INTO public.notification (
+        recipient_user_id,
+        actor_user_id,
+        type_id,
+        created_at
+    ) VALUES (
+        NEW.following_user_id,
+        NEW.user_id,
+        2,
+        now()
+    );
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS after_user_follow_insert ON public.user_follow;
+CREATE TRIGGER after_user_follow_insert
+AFTER INSERT ON public.user_follow
+FOR EACH ROW EXECUTE FUNCTION public.trg_create_notification_on_follow();
+
+-- Content request workflow
+CREATE TABLE IF NOT EXISTS public.content_request_status_lookup (
+    id SERIAL PRIMARY KEY,
+    name varchar(32) UNIQUE NOT NULL
+);
+
+INSERT INTO public.content_request_status_lookup (id, name) VALUES
+    (1, 'PENDING'),
+    (2, 'APPROVED'),
+    (3, 'REJECTED')
+ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
+
+CREATE TABLE IF NOT EXISTS public.content_request (
+    id SERIAL PRIMARY KEY,
+    requester_user_id UUID NOT NULL REFERENCES public.app_user(auth_user_id) ON DELETE CASCADE,
+    title text NOT NULL,
+    content_type_id integer NOT NULL REFERENCES public.content_type_lookup(id) ON DELETE RESTRICT,
+    release_date date NULL,
+    year integer NULL,
+    duration_minutes integer NULL,
+    description text NULL,
+    poster_path text NULL,
+    external_ids jsonb NULL,
+    details jsonb NULL,
+    status_id integer NOT NULL DEFAULT 1 REFERENCES public.content_request_status_lookup(id) ON DELETE RESTRICT,
+    admin_user_id UUID NULL REFERENCES public.app_user(auth_user_id) ON DELETE SET NULL,
+    rejection_reason text NULL,
+    decided_at timestamptz NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_content_request_requester ON public.content_request(requester_user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_content_request_status ON public.content_request(status_id, created_at DESC);
+
+CREATE OR REPLACE FUNCTION public.update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_content_request_updated_at ON public.content_request;
+CREATE TRIGGER trg_content_request_updated_at
+BEFORE UPDATE ON public.content_request
+FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+
+ALTER TABLE public.content_request ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.content_request_status_lookup DISABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Requester can view own content requests" ON public.content_request;
+CREATE POLICY "Requester can view own content requests" ON public.content_request
+    FOR SELECT USING (auth.uid() = requester_user_id OR public.is_privileged(auth.uid()));
+
+DROP POLICY IF EXISTS "Requester can insert content requests" ON public.content_request;
+CREATE POLICY "Requester can insert content requests" ON public.content_request
+    FOR INSERT WITH CHECK (auth.uid() = requester_user_id);
+
+DROP POLICY IF EXISTS "Requester can update own pending content requests" ON public.content_request;
+CREATE POLICY "Requester can update own pending content requests" ON public.content_request
+    FOR UPDATE USING (
+        auth.uid() = requester_user_id AND status_id = 1
+    ) WITH CHECK (
+        auth.uid() = requester_user_id AND status_id = 1
+    );
+
+DROP POLICY IF EXISTS "Privileged can manage any content request" ON public.content_request;
+CREATE POLICY "Privileged can manage any content request" ON public.content_request
+    USING (public.is_privileged(auth.uid()))
+    WITH CHECK (public.is_privileged(auth.uid()));
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.content_request TO authenticated;
+GRANT SELECT ON public.content_request_status_lookup TO authenticated;
+
+-- Privileged policies for content and reviews
+ALTER TABLE IF EXISTS public.content ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'content' AND policyname = 'Anyone can view content'
+    ) THEN
+        CREATE POLICY "Anyone can view content" ON public.content
+            FOR SELECT USING (true);
+    END IF;
+END $$;
+
+DROP POLICY IF EXISTS "Privileged can manage content" ON public.content;
+CREATE POLICY "Privileged can manage content" ON public.content
+    FOR ALL USING (public.is_privileged(auth.uid()))
+    WITH CHECK (public.is_privileged(auth.uid()));
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.content TO authenticated;
+
+DROP POLICY IF EXISTS "Privileged can delete any review" ON public.review;
+CREATE POLICY "Privileged can delete any review" ON public.review
+    FOR DELETE USING (public.is_privileged(auth.uid()));
+
+DO $$ BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'app_user' AND policyname = 'Privileged can view all app users'
+    ) THEN
+        CREATE POLICY "Privileged can view all app users" ON public.app_user
+            FOR SELECT USING (public.is_privileged(auth.uid()));
+    END IF;
+END $$;
+
+DROP POLICY IF EXISTS "Privileged can update any app user" ON public.app_user;
+CREATE POLICY "Privileged can update any app user" ON public.app_user
+    FOR UPDATE USING (public.is_privileged(auth.uid()))
+    WITH CHECK (public.is_privileged(auth.uid()));
+
+DROP POLICY IF EXISTS "Privileged can delete any app user" ON public.app_user;
+CREATE POLICY "Privileged can delete any app user" ON public.app_user
+    FOR DELETE USING (public.is_privileged(auth.uid()));
+
+-- Approval and rejection RPCs
+CREATE OR REPLACE FUNCTION public.approve_content_request(p_request_id integer, p_admin_id uuid)
+RETURNS integer
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_req record;
+    v_content_id integer;
+    v_release_date date;
+BEGIN
+    SELECT * INTO v_req FROM public.content_request WHERE id = p_request_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'content_request % not found', p_request_id USING ERRCODE = 'NO_DATA_FOUND';
+    END IF;
+    IF v_req.status_id <> 1 THEN
+        RAISE EXCEPTION 'content_request % is not pending', p_request_id;
+    END IF;
+    v_release_date := COALESCE(v_req.release_date, CASE WHEN v_req.year IS NOT NULL THEN make_date(v_req.year, 1, 1) END);
+    INSERT INTO public.content (title, content_type_id, release_date, description, poster_path, length)
+    VALUES (v_req.title, v_req.content_type_id, v_release_date, v_req.description, v_req.poster_path, v_req.duration_minutes)
+    RETURNING id INTO v_content_id;
+    UPDATE public.content_request
+        SET status_id = 2,
+                admin_user_id = p_admin_id,
+                decided_at = now(),
+                rejection_reason = NULL
+    WHERE id = p_request_id;
+    INSERT INTO public.notification (recipient_user_id, actor_user_id, type_id, created_at)
+    VALUES (v_req.requester_user_id, p_admin_id, 3, now());
+    RETURN v_content_id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.reject_content_request(p_request_id integer, p_admin_id uuid, p_reason text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_req record;
+BEGIN
+    SELECT * INTO v_req FROM public.content_request WHERE id = p_request_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'content_request % not found', p_request_id USING ERRCODE = 'NO_DATA_FOUND';
+    END IF;
+    IF v_req.status_id <> 1 THEN
+        RAISE EXCEPTION 'content_request % is not pending', p_request_id;
+    END IF;
+    UPDATE public.content_request
+        SET status_id = 3,
+                admin_user_id = p_admin_id,
+                decided_at = now(),
+                rejection_reason = p_reason
+    WHERE id = p_request_id;
+    INSERT INTO public.notification (recipient_user_id, actor_user_id, type_id, created_at)
+    VALUES (v_req.requester_user_id, p_admin_id, 4, now());
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.approve_content_request(integer, uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.reject_content_request(integer, uuid, text) TO authenticated;

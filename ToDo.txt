@@ -1,43 +1,332 @@
-kitaplar
+BLACKBOX DB — AYRINTILI TODO LİSTESİ
+Güncellendi: 2025-09-09
 
-supabase google ile login
+Notlar
+- Öncelik: P0 (kritik), P1 (yüksek), P2 (orta), P3 (düşük)
+- DoD (Definition of Done): Tamam saymak için gereken net kriterler
+- Önerilen dosya/klasörler proje yapısına göre verilmiştir; farklı ise eşleştirerek uygulayın.
 
-profil sayfasındaki verileri düzel
+====================================
+1) KİMLİK DOĞRULAMA (Supabase + Google)
+Öncelik: P0
+Açıklama: Google ile girişin Supabase Auth üzerinden çalışması, callback ve kullanıcı oluşturma akışlarının tamamlanması.
+Adımlar:
+- Supabase projesinde Google Provider aktif mi kontrol et (redirect URL’leri ekle).
+- Web tarafında /auth/login ve /auth/callback yapılarını doğrula (Next.js App Router).
+- Giriş sonrası yeni kullanıcıysa profil kaydı oluştur (username ataması, varsayılan avatar).
+- Hata durumları ve loading durumları için UI durumlarını ekle.
+DoD:
+- Google ile giriş yapan kullanıcı Problemsiz dashboard’a yönleniyor.
+- Yeni kullanıcılar için profil kaydı oluşuyor.
+- Hatalar kullanıcıya anlaşılır şekilde gösteriliyor.
+Önerilen Dosyalar:
+- web/src/app/auth/login/page.tsx
+- web/src/app/auth/callback/route.ts veya page.tsx
+- web/src/lib/supabase.ts, web/src/contexts/AuthContext.tsx
 
-profil sayfasında giderken url de username olsun. çünkü başkalarının profilinine de gidebilecek
+====================================
+2) PROFİL SAYFASI DÜZELTMELERİ
+Öncelik: P0
+Açıklama: Profil verileri hatasız görüntülensin; route username ile çalışsın; sekmeler düzenli.
+Adımlar:
+- URL’yi /profile/[username] yap ve mevcut /profile/page.tsx’i kendi profiline yönlendir.
+- Mevcut kullanıcı kendi profilindeyse “Takip et” butonunu gizle.
+- Sekme yapısını ortak bir Molecule bileşenine taşı (Reviews, Watchlist, Activity, About vs.).
+- Profil verileri için ProfileCacheContext kullanımı gözden geçir; null/undefined durumlarını güvenle işle.
+DoD:
+- /profile/[username] kullanıcı profillerini doğru yüklüyor; kendi profiline giden kısayol çalışıyor.
+- Kendi profilinde “Takip et” butonu görünmüyor.
+- Sekmeler stabil, SSR/CSR tutarlı ve boş durumlar için mesajlar mevcut.
+Önerilen Dosyalar:
+- web/src/app/profile/[username]/page.tsx
+- web/src/app/profile/page.tsx
+- web/src/contexts/ProfileCacheContext.tsx
+- web/src/components/profile/*
 
-profil sayfası sekmelerini düzelt
+====================================
+3) AKTİVİTE/LOG BİRLEŞTİRME
+Öncelik: P2
+Açıklama: Son 1 saat içinde olan aynı tip aktiviteler tek log girdisinde birleştirilsin.
+Adımlar:
+- Sunucu tarafında (RPC veya API route) gruplama mantığı ekle: userId, actionType, contentId ve zaman penceresi 1 saat.
+- UI’da birleştirilmiş girişlerde “+N” gibi bir sayaç göster.
+DoD:
+- 1 saatlik pencerede tekrarlayan aktiviteler tek satırda gösteriliyor.
+- Ayrıntıya tıklandığında birleştirilen öğeler listelenebiliyor.
+Önerilen Dosyalar:
+- web/src/app/dashboard/page.tsx
+- web/src/services/database aktiviteler için servis (web/src/services/database/*)
+- sql tarafında gerekiyorsa view veya function
 
-son log 1 saat içindeyse tek bir log olarak birleştirilsin
+====================================
+4) FİLM SAYFASI — WATCHLIST SAYACI
+Öncelik: P1
+Açıklama: Film sayfasında kaç kişinin watchliste eklediği gösterilsin.
+Adımlar:
+- Supabase’de ilgili içerik için watchlist_count view/fonksiyonunu hazırla veya mevcut tablodan COUNT çek.
+- UI’da ikon + sayı olarak göster; hover’da açıklama.
+DoD:
+- Film sayfasında anlık watchlist sayısı doğru görünür.
+- Ekle/çıkar sonrası sayı reaktif güncellenir.
+Önerilen Dosyalar:
+- web/src/app/content/movie/[id]/page.tsx
+- web/src/services/database/watchlist.ts
+- sql/ gerekli view/fn
 
-watchliste eklenme sayısı da gösterilsin film sayfasında
+====================================
+5) YORUM CEVAPLARI (Nested Replies)
+Öncelik: P1
+Açıklama: “Show replies” tıklandığında yorumun cevapları düzgün yüklensin ve görüntülensin.
+Adımlar:
+- API/DB sorgusunda parent_comment_id ile children fetch et.
+- UI’da lazy load + loading state ekle; hata durumunu göster.
+- Cevap ekleme formu parent id ile çalışsın.
+DoD:
+- Show replies çalışıyor, cevaplar doğru sırada geliyor.
+- Yeni cevap eklendiğinde listeye ekleniyor.
+Önerilen Dosyalar:
+- web/src/components/ui/CommentThread.tsx
+- web/src/services/api/comments.ts
 
-profilde reviewin reviewi gösterilsin
+====================================
+6) AKTÖR (KİŞİ) SAYFASI SEKMELEME (Film + Dizi)
+Öncelik: P2
+Açıklama: Kişi sayfasında filmler ve diziler ayrı sekmelerde.
+Adımlar:
+- Kişi sayfası için tabs (Movies, TV) ekle.
+- IGDB/TMDB servislerinden cast/crew ayrımıyla veri çek; pagination.
+DoD:
+- Sekmeler arası geçişte ilgili liste düzgün yükleniyor.
+- Boş durumda bilgilendirici mesaj.
+Önerilen Dosyalar:
+- web/src/app/person/[id]/page.tsx
+- web/src/lib/tmdb.ts / igdb.ts
 
-aktrönü sayfasında sadece film değil diziler de ayrı bir sekme olarak gösterilsin
+====================================
+7) KULLANICI İÇERİK TALEBİ (Manuel Ekleme + Onay Akışı)
+Öncelik: P0
+Açıklama: Kullanıcı bulunamayan içeriği form ile önersin; admin onaylayınca kütüphaneye eklensin; kullanıcıya bildirim gitsin.
+Adımlar:
+- İçerik talep formu (title, type, year, sources, açıklama, görsel URL vb.).
+- Talep kaydı supabase’de content_requests tablosuna (sql/2025-09-09_roles_and_content_requests.sql mevcut şema ile uyumla).
+- Admin panelinde talepleri listele, Onayla/Reddet aksiyonları.
+- Onayda içerik tablolarına kalem ekle; Reddet’te gerekçeyi sakla.
+- Karar sonrası talep sahibine bildirim üret (notifications tablosu).
+DoD:
+- Kullanıcı talep oluşturabiliyor.
+- Admin talepleri görebiliyor ve karar verebiliyor.
+- Karar sonrası bildirim iletiliyor; içerik uygun tabloda yerini alıyor.
+Önerilen Dosyalar:
+- web/src/app/content-requests/new/page.tsx (kullanıcı formu)
+- web/src/app/admin/content-requests/page.tsx (liste + aksiyon)
+- web/src/services/database/contentRequests.ts
+- sql/2025-09-08_add_content_type_table_and_values.sql, sql/2025-09-08_add_notifications.sql, sql/2025-09-09_roles_and_content_requests.sql
 
-kullanıcılar bulamadıkları içerikleri manuel olarak ekleyebilecekler. içerik bilgilerini girdikten sonra adminin onayına gönderecekler. admin onaylayınca bildirim gidecek kullanıcıya ve kütüphaneye eklenmiş olacak.
+====================================
+8) ADMIN PANELİ VE MODERASYON
+Öncelik: P0
+Açıklama: Admin/mod için appbar’da Admin linki görünmeli. İçerik düzenleme, yorum silme, kullanıcı suspend/silme aksiyonları.
+Adımlar:
+- Rol bazlı görünürlük (is_admin / role) kontrolü; Header’da Admin linki.
+- Admin içerik düzenleme sayfası (title, poster, açıklama, meta vs.).
+- Yorum silme/moderate etme; kullanıcı askıya alma.
+- İçerik talepleri onay sayfası (bkz. madde 7).
+DoD:
+- Admin rolü olan kullanıcı AppBar’da Admin’i görür ve sayfalara erişir.
+- Düzenleme/silme aksiyonları RLS politikaları ile güvenli.
+Önerilen Dosyalar:
+- web/src/components/Header.tsx
+- web/src/app/admin/page.tsx, web/src/app/admin/content/*, users/, moderation/
+- web/src/services/database/admin.ts
 
-admin paneli
+====================================
+9) KİTAPLAR (Books) — ÖZELLİKLER VE HATALAR
+Öncelik: P1
+Açıklama: Kitap içerikleri için sayfalar, yorum gönderimi, keşif akışları.
+Adımlar:
+- Kitap detay sayfası (mevcutsa revize), yorum gönderimi hatasını düzelt.
+- Explore/Books listesi ve filtreleri.
+- Ortak Card bileşeni (BookCard) ile tutarlı UI.
+DoD:
+- Kitaplara yorum gönderilebiliyor.
+- Explore/Books stabil, boş ve loading durumları doğru.
+Önerilen Dosyalar:
+- web/src/app/content/book/[id]/page.tsx
+- web/src/app/explore/books/page.tsx
+- web/src/components/BookCard.tsx
+- web/src/services/api/books.ts
 
-kitaplara yorum gönderilmiyor
+====================================
+10) EXPLORE/MOVIES LOADING HATASI
+Öncelik: P0
+Açıklama: /explore çalışırken /explore/movies loading’da kalıyor sorunu giderilsin.
+Adımlar:
+- Route dosyalarını kontrol et: web/src/app/explore/movies/page.tsx ve veri fetch.
+- Suspense/Server Component sınırlarını ve cache ayarlarını gözden geçir.
+- Hata tekrarı için basit loglama ekle.
+DoD:
+- /explore/movies sorunsuz listeleme yapar, loading’da takılmaz.
+Önerilen Dosyalar:
+- web/src/app/explore/movies/page.tsx
+- web/src/app/explore/components/*, hooks/*
 
-explore de filmlerin gelmesi için explore/movies yap. şuan "https://blackbox-db.vercel.app/explore/" bu adreste geliyorlar "https://blackbox-db.vercel.app/explore/movies/" de ise loading de kalıyor
+====================================
+11) GÖRSEL YAKINLAŞTIRMA (ZOOM)
+Öncelik: P3
+Açıklama: Poster ve görseller pinch-to-zoom / click-to-zoom desteklesin.
+Adımlar:
+- Hafif bir zoom kütüphanesi veya custom modal zoom bileşeni.
+- Erişilebilirlik (esc ile kapanma, odak yönetimi).
+DoD:
+- Masaüstü ve mobilde sorunsuz zoom deneyimi.
+Önerilen Dosyalar:
+- web/src/components/ui/ImageZoom.tsx
+- ilgili içerik sayfalarında entegrasyon
 
-fotoğraflar yakınlaştırılabilecek
+====================================
+12) TV DİZİLERİ — SEZON/BÖLÜM AKIŞI
+Öncelik: P1
+Açıklama: Netflix benzeri sezon ve bölüm listelemesi; bölüm puanı, izleme durumu, yorum.
+Adımlar:
+- Dizi detayında Seasons -> Episodes hiyerarşisi; ortalama bölüm süresi göster.
+- Bölüm için rating + watched toggle + yorum formu.
+- Kullanıcı/İçerik/Sezon/Bölüm ilişkileri için Supabase şema kontrolü.
+DoD:
+- Dizi sayfasında sezon/bölüm listesi düzgün.
+- Bölüm puanlama/izleme/yorum özellikleri çalışır ve kaydolur.
+Önerilen Dosyalar:
+- web/src/app/content/tv/[id]/page.tsx
+- web/src/services/database/tv.ts
+- sql/ gerekli tablolar ve RLS
 
-kullanıcının kendi profilinde takip et butonu var
+====================================
+13) TASARIM TUTARLILIĞI — ATOMIC + LAYOUT
+Öncelik: P1
+Açıklama: Film/TV/Oyun/Kitap ve Explore sayfaları genel tasarımda tutarlı olsun; farklılıklar sadece alan bazlı.
+Adımlar:
+- Atom/Molecule/Organism katmanlı ortak UI (Card, MetaRow, RatingBadge, Tabs, SectionHeader).
+- Sayfa layout’larını ortaklaştır (Container, Sidebar opsiyonel).
+- Tekrarlayan kodları hooks/utils’a taşı.
+DoD:
+- Kart ve başlık tipleri sayfalar arası aynı görünüyor.
+- Kod tekrarı azaldı, component hiyerarşisi net.
+Önerilen Dosyalar:
+- web/src/components/ui/*, web/src/components/layouts/*
+- web/src/hooks/*, web/src/lib/utils.ts
 
-tv için ayrıca bölümlere de puan verilebilecek ve bölüm bölüm izlendi olarak işaretlenebilecek ve yorum yazılabilecek?
+====================================
+14) SUPABASE VERİ BÜTÜNLÜĞÜ KONTROLÜ
+Öncelik: P0
+Açıklama: “Tüm içerikler kaydediliyor mu?” sorusunu doğrula; eksik kayıtlar için script/test ekle.
+Adımlar:
+- tests/ altındaki schema ve akış testlerini çalıştır; eksikleri raporla.
+- Eksik insert/UPSERT noktalarını düzelt (ör. dış API’den gelen içerikler).
+- RLS/policy’leri gözden geçir (okuma/yazma yetkileri).
+DoD:
+- Testler yeşil, içerik türlerinin kayıt akışı eksiksiz.
+- Gerekli SQL migration’lar güncel.
+Önerilen Dosyalar:
+- web/tests/*.js
+- sql/*.sql, web/src/services/database/*
 
-admin veya mod olarak direkt içeriğin bilgilerini düzenleyebilmeliyim. veya yorumu silebilmeliyim, kullancıyı silebilmeliyim. bunların hiçbirini şuan yapamıyorum. ayrıca admin panleinin apparda göster eğer admin ise.son olarak içerik istedkerlnii onaylayabileceğim bir sayfayı da göremedim.
+====================================
+15) COUNTDOWN — SANİYEYİ SAYMA
+Öncelik: P3
+Açıklama: Geri sayım saniye bazında akmasın; dakika/ saat bazlı veya sadece hedef tarihe kalan gün/saat gösterilsin.
+Adımlar:
+- Countdown bileşeninde interval’i 60s’e çek veya sadece on-demand hesapla.
+- Performans ve batarya dostu olacak şekilde optimize et.
+DoD:
+- Saniye animasyonu yok; dakika/saat güncelleniyor veya statik.
+Önerilen Dosyalar:
+- web/src/components/Countdown.tsx
 
-show replies diyince yorumun cevapları gösterilmyor.
+====================================
+16) BİLDİRİMLER — TALEP KARARI
+Öncelik: P0
+Açıklama: İçerik talebi onay/red sonrası talep sahibine bildirim gitsin.
+Adımlar:
+- Admin karar akışında notifications insert.
+- Bildirim menüsünde yeni bildirimi göster (okunmamış sayacı, dropdown).
+DoD:
+- Karar verildiği anda bildirim üretilir ve kullanıcı menüsünde görünür.
+Önerilen Dosyalar:
+- web/src/components/NotificationsMenu.tsx
+- web/src/services/database/notifications.ts
+- sql/2025-09-08_add_notifications.sql
 
-dizi sayfasında sezonların ve bölümleri ayrı ayrı gösteirlebielcek netflix gibi. bir bölümün ortalam süresi de yazsın
+====================================
+17) ANA SAYFA — TV VE KİTAPLAR
+Öncelik: P2
+Açıklama: Ana sayfaya dizi ve kitap bölümleri eklenmeli (trend/popüler/yakında vb.).
+Adımlar:
+- Home feed’e iki yeni section (TV, Books) ekle.
+- Ortak Card bileşenleri ile tutarlı görünüm.
+DoD:
+- Ana sayfada TV ve Books bölümleri çalışıyor, boş/loading durumları düzgün.
+Önerilen Dosyalar:
+- web/src/app/page.tsx
+- web/src/components/*Card.tsx
 
-içeriklerin sayfalarının tasarımı şuan farklı farklı oldu. aynı şekilde explore sayfaları da. tamma bazen zorunlu değişiklikler olabilir mesela oyunda platform varken kitapta yok yani o kısım gösterilemyecek. veya dizilerin sezonları ve bölünlerini ayrı ayrı görebileceğimz için onu ayrı bir kısmı da oalcak diğeerlerine olamyan ama buna benzer farklar hariç genel tasarım aynı olmalı. flutterda ne güzel widgetı çağrıarark her yerde aynı tasarımı kolayca kullanabiliyordum. reactte öyle bir şey yok mu.
+====================================
+18) SHOW REPLIES HATASI
+Öncelik: P0
+Açıklama: “Show replies” tıklandığında cevaplar görünmüyor. Veri ve UI akışını düzelt.
+Adımlar:
+- API çağrısı ve state yönetimini kontrol et; parentId ile fetch.
+- SSR/CSR çakışmaları, key prop’ları ve suspense sınırlarını düzenle.
+DoD:
+- Cevaplar güvenilir şekilde yükleniyor ve UI’da görünüyor.
+Önerilen Dosyalar:
+- web/src/components/ui/CommentThread.tsx
+- web/src/services/api/comments.ts
 
-tüm içerikler kaydediliyor mu kontrol et supabase için
+====================================
+19) KULLANICININ KENDİ PROFİLİNDE TAKİP ET BUTONU
+Öncelik: P0
+Açıklama: Kullanıcı kendi profilinde “Takip et” butonunu görmemeli.
+Adımlar:
+- currentUser.id === profileUser.id ise butonu gizle.
+DoD:
+- Kendi profilinde takip butonu görünmez; diğer profillerde görünür.
+Önerilen Dosyalar:
+- web/src/app/profile/[username]/page.tsx
+- web/src/components/profile/*
 
-geri sayımda sanieyei saymasın
+====================================
+20) GÖRSEL/GENEL HATA DÜZELTMELERİ
+Öncelik: P2
+Açıklama: Küçük UI/UX rötuşları.
+Adımlar:
+- Lazy image yükleme, skeleton’lar, boş durum komponentleri.
+- Erişilebilirlik: ARIA label’lar, kontrast, klavye ile erişim.
+DoD:
+- Lighthouse/AXE temel uyarıları azalır; UX daha akıcıdır.
+
+====================================
+EK: İZLEME/TEST
+— Her kritik değişimde ilgili test dosyasını güncelle/ekle (tests/ altı).
+— SQL migration sonrası yerel ortamda temel duman testleri çalıştır.
+
+
+
+
+
+ ##################################################
+düzenlenecek todos
+
+yine aynı componentleri kullanmadığımız için ortaya çıkan bir sorun. film türündeki içeriklerin posterinde hover varken diğer içerik türlerinde hover gelmiyor. artık şu atomic design mıdın component midir düzgünce uygula ve aynı işe yarayan kod 3 5 kere tekrar tekrar yazılmmasın.
+
+content request sayfasında reddedilen isteklerin rerddedilme sebebi de gösterilsin. oyuncular yönetmen, türler, ülkeler gibi kısımlarda ilk önce listeden seçtirmeyeçalışmak için kullanıcı yazarken önerilerden seçebilsin. eğer önerilerden sçmemiş ise o zaman kendi eklesin. ülkelerde ve türlerde seçmek zorunlu olsun. oyuncu ve yönetmeni ekleyince oyuncu ve yönetmen için de detaylar kısmı açılsın orayı da dodrusun. sonra tolu istek atmış olsun. gibi bir şey düşündüm.
+
+headerdeki bildirimler kısmında yeni butonu yerine tümünü göster olsun. orada yeni bir sayfaya gitsin. bildirimler silinebilsinler veya bildirime tıklayınca ilgili yere de yönlendiremye çalış
+
+movie ve tv profildeki kısımlarında gösteriliyor ancak oyun ve kitap gösterilmiyor. bu yine aynı kodu tekrar tekrar yazıp farklı yazmak ile alakl. tek bir özelleştirilmiş kod çağırarak göster. ayrıca zaten kitaplar content tablosunda supabase de kaydedilmiyorlar da bunun da düzelt.
+
+profildeki reviews kımında düzenle butonu ekle. review orada düzenlenebilsin. ve yine orada reviewe verilen cevaplar ve beğeni sayıalrı fala  da gösterilsin
+
+şuan liste özelliği pasiti onu da etkinleştrlem. kulalnıcı liste oluşturabilecek ve listeye içerikleri ekleyebilecek.
+
+
+
+

@@ -8,6 +8,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import MovieCard from '@/components/MovieCard';
+import ExploreLayout from '@/components/layouts/ExploreLayout';
 
 function ExploreContent() {
   const searchParams = useSearchParams();
@@ -284,33 +285,16 @@ function ExploreContent() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          {searchQuery ? `"${searchQuery}" için arama sonuçları` : 'Keşfet'}
-        </h1>
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-gray-600 dark:text-gray-400">
-            {searchQuery ? `${data?.total_results || 0} sonuç bulundu` : 'Popüler filmler ve yeni çıkanları keşfet'}
-          </p>
-          <a href="/dashboard/content-requests" className="shrink-0 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">
-            İçerik iste
-          </a>
-        </div>
-      </div>
-
-      {/* Filters - Hide when searching */}
-      {!searchQuery && (
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
-          <form className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <ExploreLayout
+      title={searchQuery ? `"${searchQuery}" için arama sonuçları` : 'Keşfet'}
+      subtitle={searchQuery ? `${data?.total_results || 0} sonuç bulundu` : 'Popüler filmler ve yeni çıkanları keşfet'}
+      filters={!searchQuery ? (
+        <form className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Sırala
-            </label>
-            <select 
-              name="sort_by" 
-              defaultValue={sort_by} 
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Sırala</label>
+            <select
+              name="sort_by"
+              defaultValue={sort_by}
               className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
             >
               <option value="popularity.desc">Popülarite ↓</option>
@@ -318,73 +302,56 @@ function ExploreContent() {
               <option value="primary_release_date.desc">Çıkış Tarihi ↓</option>
             </select>
           </div>
-          
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Dil
-            </label>
-            <input 
-              name="with_original_language" 
-              defaultValue={with_original_language} 
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20" 
-              placeholder="en, tr" 
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Dil</label>
+            <input
+              name="with_original_language"
+              defaultValue={with_original_language}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+              placeholder="en, tr"
             />
           </div>
-          
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Tür ID&apos;ler
-            </label>
-            <input 
-              name="with_genres" 
-              defaultValue={with_genres} 
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20" 
-              placeholder="28,12" 
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Tür ID&apos;ler</label>
+            <input
+              name="with_genres"
+              defaultValue={with_genres}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+              placeholder="28,12"
             />
           </div>
-          
           <div className="flex gap-2">
             <div className="flex-1 space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Yıl ≥
-              </label>
-              <input 
-                name="yearMin" 
-                defaultValue={yearMin} 
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20" 
-                placeholder="2015" 
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Yıl ≥</label>
+              <input
+                name="yearMin"
+                defaultValue={yearMin}
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+                placeholder="2015"
               />
             </div>
             <div className="flex-1 space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Yıl ≤
-              </label>
-              <input 
-                name="yearMax" 
-                defaultValue={yearMax} 
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20" 
-                placeholder="2024" 
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Yıl ≤</label>
+              <input
+                name="yearMax"
+                defaultValue={yearMax}
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+                placeholder="2024"
               />
             </div>
           </div>
-          
           <div className="lg:col-span-4">
             <button className="rounded-lg bg-gray-700 dark:bg-gray-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-gray-800 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20 transition-colors">
               Filtreleri Uygula
             </button>
           </div>
         </form>
-      </div>
-      )}
-
-      {/* Errors */}
-      {error ? (
+      ) : undefined}
+      errorBox={error ? (
         <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
           {error.includes('TMDB_API_KEY') ? (
             <>
-              <p>
-                TMDB_API_KEY ayarlanmadı. Lütfen `web/.env.local` dosyasına TMDB anahtarınızı ekleyin ve sunucuyu yeniden başlatın.
-              </p>
+              <p>TMDB_API_KEY ayarlanmadı. Lütfen `web/.env.local` dosyasına TMDB anahtarınızı ekleyin ve sunucuyu yeniden başlatın.</p>
               <p className="mt-1 text-xs opacity-80">V3 API Key veya V4 Bearer token kullanabilirsiniz.</p>
             </>
           ) : (
@@ -392,7 +359,7 @@ function ExploreContent() {
           )}
         </div>
       ) : null}
-
+    >
       {/* Grid */}
       <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
         {results.map((m: any) => (
@@ -422,11 +389,7 @@ function ExploreContent() {
         >
           ← Önceki
         </button>
-        
-        <span className="text-sm text-gray-600 dark:text-gray-400">
-          Sayfa {data?.page ?? 1} / {data?.total_pages ?? 1}
-        </span>
-        
+        <span className="text-sm text-gray-600 dark:text-gray-400">Sayfa {data?.page ?? 1} / {data?.total_pages ?? 1}</span>
         <button
           onClick={() => router.push(('/explore' + makeQS({ page: String(Math.min(data?.total_pages || 1, (data?.page || 1) + 1)) })) as any)}
           className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -435,7 +398,7 @@ function ExploreContent() {
           Sonraki →
         </button>
       </div>
-    </div>
+    </ExploreLayout>
   );
 }
 

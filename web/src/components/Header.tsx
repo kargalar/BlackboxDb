@@ -31,7 +31,8 @@ export default function Header() {
           setAppUser(result?.data || null)
           try {
             const { data: isPriv } = await supabase.rpc('is_privileged', { p_user_id: user.id })
-            setIsPrivileged(Boolean(isPriv))
+            const localPriv = Boolean(result?.data?.is_admin) || Boolean(result?.data?.is_moderator)
+            setIsPrivileged(Boolean(isPriv) || localPriv)
           } catch {
             setIsPrivileged(Boolean(result?.data?.is_admin) || Boolean(result?.data?.is_moderator))
           }
