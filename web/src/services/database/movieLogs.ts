@@ -88,7 +88,6 @@ export async function getUserWatchedMovies(userId?: string): Promise<{ data: Con
 
   try {
     // Try RPC first
-    /*
     const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_contents', {
       user_id_param: uid,
       log_user_id_param: uid,
@@ -129,7 +128,6 @@ export async function getUserWatchedMovies(userId?: string): Promise<{ data: Con
       })
       return { data: deduped }
     }
-    */
   } catch (error) {
     console.log('RPC failed, falling back to direct query:', error)
   }
@@ -228,7 +226,6 @@ export async function getUserWatchedTV(userId?: string): Promise<{ data: Content
   if (!uid) return { data: [] }
 
   try {
-    /*
     const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_contents', {
       user_id_param: uid,
       log_user_id_param: uid,
@@ -267,7 +264,6 @@ export async function getUserWatchedTV(userId?: string): Promise<{ data: Content
       })
       return { data: deduped }
     }
-    */
   } catch (error) {
     console.log('RPC failed, falling back to direct query (TV):', error)
   }
@@ -356,7 +352,6 @@ export async function getUserWatchedGames(userId?: string): Promise<{ data: Cont
   }
 
   try {
-    /*
     console.log('Calling RPC get_user_contents for games...');
     const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_contents', {
       user_id_param: uid,
@@ -398,7 +393,6 @@ export async function getUserWatchedGames(userId?: string): Promise<{ data: Cont
       })
       return { data: deduped }
     }
-    */
   } catch (error) {
     console.log('RPC failed, falling back to direct query (Games):', error)
   }
@@ -479,7 +473,6 @@ export async function getUserWatchedBooks(userId?: string): Promise<{ data: Cont
   if (!uid) return { data: [] }
 
   try {
-    /*
     const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_contents', {
       user_id_param: uid,
       log_user_id_param: uid,
@@ -518,7 +511,6 @@ export async function getUserWatchedBooks(userId?: string): Promise<{ data: Cont
       })
       return { data: deduped }
     }
-    */
   } catch (error) {
     console.log('RPC failed, falling back to direct query (Books):', error)
   }
