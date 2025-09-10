@@ -389,3 +389,7 @@ remake ve remestar ana oyun altında mı olsun farklı oyun olarak mı. mesela b
 diziler oyunlar ve kitaplar için devam ediyor seçenei ekle
 
 son film aktivitelerine wathlist dahil olamyacak
+
+kullanıcınını sehabını silem sçenei olsun. hem data baseden hem de auth dan silnisin.
+
+activitiesde her log filme yönlendiriyor ütürer ne ise o content page e yönlendirsin

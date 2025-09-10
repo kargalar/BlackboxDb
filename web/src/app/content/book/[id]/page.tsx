@@ -8,7 +8,7 @@ import {
   getContentById,
   getUserContentLog,
   updateUserContentLog,
-  logMovieWatch,
+  logBookRead,
   toggleFavorite,
   rateMovie,
   getContentReviews,
@@ -98,7 +98,14 @@ export default function BookContentPage() {
         if (!cancelled) setBook(b);
 
         // Ensure content exists in DB for logging/stats
-        console.log('Saving content from book:', id, book);
+        console.log('Kitap verisi content tablosuna kaydediliyor:', { 
+          id, 
+          bookTitle: b.title, 
+          hasDescription: !!b.description,
+          publishedDate: b.publishedDate,
+          pageCount: b.pageCount,
+          thumbnail: b.thumbnail?.substring(0, 50) + '...'
+        });
         const saveResult = await saveContentFromBook(id, {
           title: b.title,
           description: b.description,
@@ -106,9 +113,16 @@ export default function BookContentPage() {
           pageCount: b.pageCount || undefined,
           thumbnail: b.thumbnail || undefined,
         });
-        console.log('Save result:', saveResult);
+        console.log('Kitap kaydetme sonucu:', saveResult);
         if (saveResult.error) {
-          console.error('Error saving book content:', saveResult.error);
+          console.error('Kitap content tablosuna kaydedilirken hata:', saveResult.error);
+          // Hata mesajını kullanıcıya göster - error objesinin detaylarını göster
+          const errorMessage = typeof saveResult.error === 'object' 
+            ? (saveResult.error.message || JSON.stringify(saveResult.error))
+            : String(saveResult.error);
+          if (!cancelled) setError('Kitap bilgileri kaydedilirken hata oluştu: ' + errorMessage);
+        } else {
+          console.log('Kitap başarıyla content tablosuna kaydedildi, ID:', saveResult.data?.id);
         }
         await Promise.all([refreshStats(), refreshUserLog()]);
         const res = await getContentReviews(numericContentId);
@@ -124,7 +138,18 @@ export default function BookContentPage() {
   }, [id, numericContentId, refreshStats, refreshUserLog]);
 
   const handleRead = async () => {
-    await logMovieWatch(numericContentId);
+    console.log('Kitap okuma işlemi başlatılıyor, contentId:', numericContentId);
+    const result = await logBookRead(numericContentId);
+    if (result.error) {
+      console.error('Kitap okuma loglama hatası:', result.error);
+      // Hata mesajını kullanıcıya göster - error objesinin detaylarını göster
+      const errorMessage = typeof result.error === 'object' 
+        ? (result.error.message || JSON.stringify(result.error))
+        : String(result.error);
+      alert('Kitap okuma işlemi kaydedilirken hata oluştu: ' + errorMessage);
+      return;
+    }
+    console.log('Kitap okuma işlemi başarıyla tamamlandı');
     setIsRead(true);
     setIsLater(false);
     await refreshStats();

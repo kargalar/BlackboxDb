@@ -839,41 +839,78 @@ export async function saveContentFromIGDB(game: IgdbGame): Promise<{ data: Conte
   return { data: { id: data.id, title: data.title, poster_path: data.poster_path, fav_count: (data as any).favorite_count ?? 0 } }
 }
 
-// Deterministic numeric ID for books: prefix 4e9 range + hash of volume id to avoid collisions with TMDB/IGDB numeric IDs
+// Deterministic numeric ID for books: prefix 2e9 range + hash of volume id to avoid collisions with TMDB/IGDB numeric IDs
 function bookNumericId(volumeId: string): number {
   let hash = 0;
   for (let i = 0; i < volumeId.length; i++) {
     hash = (hash * 31 + volumeId.charCodeAt(i)) | 0; // 32-bit signed
   }
-  // Map to positive and into a safe range offset for books (e.g., 4_000_000_000+)
+  // Map to positive and into a safe range offset for books (e.g., 2_000_000_000+)
   const POS = Math.abs(hash);
-  const OFFSET = 4_000_000_000; // outside TMDB/IGDB typical ranges
-  return OFFSET + (POS % 1_000_000_000);
+  const OFFSET = 2_000_000_000; // smaller offset to avoid integer overflow issues
+  return OFFSET + (POS % 500_000_000);
 }
 
 export async function saveContentFromBook(volumeId: string, book: { title: string; description?: string | null; publishedDate?: string | null; pageCount?: number | null; thumbnail?: string | null; }): Promise<{ data: Content | null; error?: any }> {
   const { uid, error: authError } = await validateAuth()
-  if (authError || !uid) return { data: null, error: authError || 'not_authenticated' }
+  if (authError || !uid) {
+    console.error('Kitap kaydetme hatası - Kimlik doğrulama başarısız:', authError || 'not_authenticated')
+    return { data: null, error: authError || 'not_authenticated' }
+  }
 
   const id = bookNumericId(volumeId);
   const payload = {
     id,
     title: book.title,
-  content_type_id: CONTENT_TYPE.BOOK, // 4 = BOOK
+    content_type_id: CONTENT_TYPE.BOOK, // 4 = BOOK
     release_date: book.publishedDate ? new Date(book.publishedDate) : null,
     description: book.description ?? null,
     length: book.pageCount ?? null,
     poster_path: book.thumbnail ?? null,
   };
 
-  const { data, error } = await supabase
+  console.log('Kitap content tablosuna kaydediliyor:', { volumeId, id, payload });
+
+  // Önce kaydın var olup olmadığını kontrol et
+  const { data: existingRecord } = await supabase
     .from('content')
-    .upsert(payload, { onConflict: 'id' })
-    .select('id, title, poster_path, favorite_count')
+    .select('id')
+    .eq('id', id)
     .maybeSingle();
 
-  if (error) return { data: null, error };
-  if (!data) return { data: null };
+  let result;
+  if (existingRecord) {
+    // Kayıt varsa güncelle
+    console.log('Mevcut kitap kaydı güncelleniyor, ID:', id);
+    result = await supabase
+      .from('content')
+      .update(payload)
+      .eq('id', id)
+      .select('id, title, poster_path, favorite_count')
+      .maybeSingle();
+  } else {
+    // Kayıt yoksa ekle
+    console.log('Yeni kitap kaydı ekleniyor, ID:', id);
+    result = await supabase
+      .from('content')
+      .insert(payload)
+      .select('id, title, poster_path, favorite_count')
+      .maybeSingle();
+  }
+
+  const { data, error } = result;
+
+  if (error) {
+    console.error('Kitap content tablosuna kaydetme hatası:', error);
+    return { data: null, error };
+  }
+  
+  if (!data) {
+    console.error('Kitap content tablosuna kaydedilemedi - veri dönmedi');
+    return { data: null };
+  }
+  
+  console.log('Kitap content tablosuna başarıyla kaydedildi:', data);
   return { data: { id: data.id, title: data.title, poster_path: data.poster_path, fav_count: (data as any).favorite_count ?? 0 } };
 }
 
@@ -1950,5 +1987,42 @@ export async function getTrendingReviews(limit: number = 10): Promise<{ data: Re
   } catch (error) {
     console.error('Error in getTrendingReviews:', error);
     return { data: [] };
+  }
+}
+
+// Log a book reading
+export async function logBookRead(contentId: number): Promise<{ data: boolean; error?: any }> {
+  const { uid, error: authError } = await validateAuth()
+  if (authError || !uid) {
+    console.error('Kitap okuma loglama hatası - Kimlik doğrulama başarısız:', authError || 'not_authenticated')
+    return { data: false, error: authError || 'not_authenticated' }
+  }
+
+  // Ensure content exists minimally
+  const { data: contentRow } = await supabase.from('content').select('id').eq('id', contentId).maybeSingle()
+  if (!contentRow) {
+    console.error('Kitap okuma loglama hatası - İçerik bulunamadı, contentId:', contentId)
+    return { data: false, error: 'content_not_found' }
+  }
+
+  try {
+    console.log('Kitap okuma logu oluşturuluyor, contentId:', contentId, 'userId:', uid)
+    // Create a new log entry for each read (allows multiple reads)
+    const result = await createUserContentLog(contentId, {
+      content_status_id: 1, // CONSUMED
+      is_consume_later: false, // marking read clears readlist
+      date: new Date().toISOString(),
+    })
+
+    if (!result.data) {
+      console.error('Kitap okuma logu oluşturma başarısız:', result.error)
+      return { data: false, error: result.error }
+    }
+    
+    console.log('Kitap okuma logu başarıyla oluşturuldu')
+    return { data: true }
+  } catch (error) {
+    console.error('Kitap okuma loglama hatası:', error)
+    return { data: false, error }
   }
 }
