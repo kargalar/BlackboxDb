@@ -218,7 +218,7 @@ export default function Header() {
               <div className="flex items-center gap-3">
                 {(isPrivileged || Boolean(appUser?.is_admin) || Boolean(appUser?.is_moderator)) && (
                   <Link 
-                    href="/admin/content-requests"
+                    href="/admin"
                     className="rounded-lg px-3 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors"
                   >
                     Admin

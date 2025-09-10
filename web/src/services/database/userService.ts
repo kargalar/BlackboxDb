@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { logSupabaseRequest } from '@/lib/requestLogger';
 
 export interface AppUser {
   auth_user_id: string;
@@ -19,8 +20,10 @@ export async function getCurrentUserProfile(): Promise<{ data: AppUser | null; e
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
+      logSupabaseRequest('auth', 'getUser', false);
       return { data: null, error: authError || 'Not authenticated' };
     }
+    logSupabaseRequest('auth', 'getUser', true);
 
     const { data, error } = await supabase
       .from('app_user')
@@ -29,11 +32,13 @@ export async function getCurrentUserProfile(): Promise<{ data: AppUser | null; e
       .maybeSingle();
 
     if (error) {
+      logSupabaseRequest('app_user', 'select', false);
       return { data: null, error };
     }
-
+    logSupabaseRequest('app_user', 'select', true);
     return { data };
   } catch (e) {
+    logSupabaseRequest('app_user', 'select', false);
     return { data: null, error: e };
   }
 }
@@ -48,11 +53,13 @@ export async function getUserByUsername(username: string): Promise<{ data: AppUs
       .maybeSingle();
 
     if (error) {
+      logSupabaseRequest('app_user', 'select', false);
       return { data: null, error };
     }
-
+    logSupabaseRequest('app_user', 'select', true);
     return { data };
   } catch (e) {
+    logSupabaseRequest('app_user', 'select', false);
     return { data: null, error: e };
   }
 }
@@ -66,11 +73,13 @@ export async function getAllAppUsers(): Promise<{ data: AppUser[]; error?: any }
       .order('created_at', { ascending: false });
 
     if (error) {
+      logSupabaseRequest('app_user', 'select', false);
       return { data: [], error };
     }
-
+    logSupabaseRequest('app_user', 'select', true);
     return { data: data || [] };
   } catch (e) {
+    logSupabaseRequest('app_user', 'select', false);
     return { data: [], error: e };
   }
 }
@@ -81,8 +90,10 @@ export async function updateUserProfile(updates: Partial<Pick<AppUser, 'username
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
+      logSupabaseRequest('auth', 'getUser', false);
       return { success: false, error: authError || 'Not authenticated' };
     }
+    logSupabaseRequest('auth', 'getUser', true);
 
     const { error } = await supabase
       .from('app_user')
@@ -90,11 +101,13 @@ export async function updateUserProfile(updates: Partial<Pick<AppUser, 'username
       .eq('auth_user_id', user.id);
 
     if (error) {
+      logSupabaseRequest('app_user', 'update', false);
       return { success: false, error };
     }
-
+    logSupabaseRequest('app_user', 'update', true);
     return { success: true };
   } catch (e) {
+    logSupabaseRequest('app_user', 'update', false);
     return { success: false, error: e };
   }
 }

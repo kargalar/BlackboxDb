@@ -1,4 +1,5 @@
 import { TMDBDiscoverMovie, TMDBPaginated, TMDBMovieDetail, TMDBTvDetail } from '@/types/tmdb';
+import { logApiRequest } from '@/lib/requestLogger';
 
 const TMDB_BASE = 'https://api.themoviedb.org/3';
 
@@ -55,14 +56,20 @@ export async function discoverMovies(params: DiscoverParams, opts?: { revalidate
       headers: isV4 ? { Authorization: `Bearer ${key}` } : undefined,
       next: { revalidate: opts?.revalidate ?? 60 },
     });
-    if (!retry.ok) throw new Error(`TMDB rate limited: ${retry.status}`);
+    if (!retry.ok) {
+      logApiRequest('/discover/movie', 'GET', false);
+      throw new Error(`TMDB rate limited: ${retry.status}`);
+    }
+    logApiRequest('/discover/movie', 'GET', true);
     return (await retry.json()) as TMDBPaginated<TMDBDiscoverMovie>;
   }
 
   if (!res.ok) {
+    logApiRequest('/discover/movie', 'GET', false);
     const text = await res.text().catch(() => '');
     throw new Error(`TMDB error ${res.status}: ${text}`);
   }
+  logApiRequest('/discover/movie', 'GET', true);
   return (await res.json()) as TMDBPaginated<TMDBDiscoverMovie>;
 }
 
@@ -83,9 +90,11 @@ export async function getMovieDetails(id: string | number, opts?: { revalidate?:
   });
 
   if (!res.ok) {
+    logApiRequest(`/movie/${id}`, 'GET', false);
     const text = await res.text().catch(() => '');
     throw new Error(`TMDB error ${res.status}: ${text}`);
   }
+  logApiRequest(`/movie/${id}`, 'GET', true);
   return (await res.json()) as TMDBMovieDetail;
 }
 
@@ -118,14 +127,20 @@ export async function searchMovies(query: string, page: number = 1, opts?: { rev
       headers: isV4 ? { Authorization: `Bearer ${key}` } : undefined,
       next: { revalidate: opts?.revalidate ?? 60 },
     });
-    if (!retry.ok) throw new Error(`TMDB rate limited: ${retry.status}`);
+    if (!retry.ok) {
+      logApiRequest('/search/movie', 'GET', false);
+      throw new Error(`TMDB rate limited: ${retry.status}`);
+    }
+    logApiRequest('/search/movie', 'GET', true);
     return (await retry.json()) as TMDBPaginated<TMDBDiscoverMovie>;
   }
 
   if (!res.ok) {
+    logApiRequest('/search/movie', 'GET', false);
     const text = await res.text().catch(() => '');
     throw new Error(`TMDB error ${res.status}: ${text}`);
   }
+  logApiRequest('/search/movie', 'GET', true);
   return (await res.json()) as TMDBPaginated<TMDBDiscoverMovie>;
 }
 
@@ -148,9 +163,11 @@ export async function getPersonDetails(id: string | number, opts?: { revalidate?
   });
 
   if (!res.ok) {
+    logApiRequest(`/person/${id}`, 'GET', false);
     const text = await res.text().catch(() => '');
     throw new Error(`TMDB error: ${res.status} - ${text}`);
   }
+  logApiRequest(`/person/${id}`, 'GET', true);
   return (await res.json()) as any;
 }
 
@@ -183,14 +200,20 @@ export async function discoverTV(params: DiscoverParams, opts?: { revalidate?: n
       headers: isV4 ? { Authorization: `Bearer ${key}` } : undefined,
       next: { revalidate: opts?.revalidate ?? 60 },
     });
-    if (!retry.ok) throw new Error(`TMDB rate limited: ${retry.status}`);
+    if (!retry.ok) {
+      logApiRequest('/discover/tv', 'GET', false);
+      throw new Error(`TMDB rate limited: ${retry.status}`);
+    }
+    logApiRequest('/discover/tv', 'GET', true);
     return (await retry.json()) as TMDBPaginated<TMDBDiscoverMovie>;
   }
 
   if (!res.ok) {
+    logApiRequest('/discover/tv', 'GET', false);
     const text = await res.text().catch(() => '');
     throw new Error(`TMDB error ${res.status}: ${text}`);
   }
+  logApiRequest('/discover/tv', 'GET', true);
   return (await res.json()) as TMDBPaginated<TMDBDiscoverMovie>;
 }
 
@@ -211,9 +234,11 @@ export async function getTvDetails(id: string | number, opts?: { revalidate?: nu
   });
 
   if (!res.ok) {
+    logApiRequest(`/tv/${id}`, 'GET', false);
     const text = await res.text().catch(() => '');
     throw new Error(`TMDB error ${res.status}: ${text}`);
   }
+  logApiRequest(`/tv/${id}`, 'GET', true);
   return (await res.json()) as TMDBTvDetail;
 }
 
@@ -241,13 +266,19 @@ export async function searchTV(query: string, page: number = 1, opts?: { revalid
       headers: isV4 ? { Authorization: `Bearer ${key}` } : undefined,
       next: { revalidate: opts?.revalidate ?? 60 },
     });
-    if (!retry.ok) throw new Error(`TMDB rate limited: ${retry.status}`);
+    if (!retry.ok) {
+      logApiRequest('/search/tv', 'GET', false);
+      throw new Error(`TMDB rate limited: ${retry.status}`);
+    }
+    logApiRequest('/search/tv', 'GET', true);
     return (await retry.json()) as TMDBPaginated<TMDBDiscoverMovie>;
   }
 
   if (!res.ok) {
+    logApiRequest('/search/tv', 'GET', false);
     const text = await res.text().catch(() => '');
     throw new Error(`TMDB error ${res.status}: ${text}`);
   }
+  logApiRequest('/search/tv', 'GET', true);
   return (await res.json()) as TMDBPaginated<TMDBDiscoverMovie>;
 }

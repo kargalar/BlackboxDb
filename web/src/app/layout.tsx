@@ -6,6 +6,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ProfileCacheProvider } from '@/contexts/ProfileCacheContext';
 import { ThemeProvider } from '@/components/theme-provider';
 import Header from '@/components/Header';
+import DebugPanel from '@/components/DebugPanel';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </div>
                   </div>
                 </footer>
+                {process.env.NODE_ENV === 'development' && <DebugPanel />}
               </div>
             </ProfileCacheProvider>
           </AuthProvider>
