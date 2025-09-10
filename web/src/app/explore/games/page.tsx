@@ -31,7 +31,7 @@ function GamesExploreInner() {
       try {
         setLoading(true);
         setError(null);
-        const res = await igdbSearch(query, 24);
+        const res = await igdbSearch(query, 48); // increased from 24 to 48
         if (!cancelled) setGames(res as any);
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'IGDB hata');
@@ -85,7 +85,7 @@ function GamesExploreInner() {
 
       <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
         {loading
-          ? Array.from({ length: 12 }).map((_, i) => (
+          ? Array.from({ length: 24 }).map((_, i) => ( // increased skeleton count
               <div key={i} className="aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-pulse" />
             ))
           : games.map((g) => <GameCard key={g.id} game={g as any} size="large" />)}

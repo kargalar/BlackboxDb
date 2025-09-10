@@ -25,7 +25,9 @@ const StarRating = ({ rating, size = "w-4 h-4" }: { rating: number; size?: strin
 
 interface HomeTabProps {
   recentMovies: Content[];
+  recentTv?: Content[];
   recentGames?: Content[];
+  recentBooks?: Content[];
   favoriteMovies: Content[];
   stats: {
     totalMovies: number;
@@ -36,7 +38,7 @@ interface HomeTabProps {
   isOwnProfile?: boolean;
 }
 
-export default function HomeTab({ recentMovies, recentGames = [], favoriteMovies, stats, isOwnProfile = false }: HomeTabProps) {
+export default function HomeTab({ recentMovies, recentTv = [], recentGames = [], recentBooks = [], favoriteMovies, stats, isOwnProfile = false }: HomeTabProps) {
   const [showFeaturedDialog, setShowFeaturedDialog] = useState(false);
   const [selectedFeaturedMovies, setSelectedFeaturedMovies] = useState<number[]>([]);
   const [allMovies, setAllMovies] = useState<Content[]>([]);
@@ -273,6 +275,48 @@ export default function HomeTab({ recentMovies, recentGames = [], favoriteMovies
               {recentGames.map((game) => (
                 <div key={game.id} className="rounded-lg bg-gray-900 p-3 border border-gray-800">
                   <div className="text-sm font-medium line-clamp-2">{game.title}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Kitap Aktiviteleri */}
+        <div>
+          <h3 className="text-xl font-bold mb-6">Kitap Aktiviteleri</h3>
+          {recentBooks.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">
+              <p>Henüz kitap aktivitesi yok.</p>
+              <Link href="/explore/books" className="text-gray-400 hover:text-gray-300 mt-2 inline-block">
+                Kitap keşfet
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {recentBooks.map((book) => (
+                <div key={book.id} className="rounded-lg bg-gray-900 p-3 border border-gray-800">
+                  <div className="text-sm font-medium line-clamp-2">{book.title}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* TV/Dizi Aktiviteleri */}
+        <div>
+          <h3 className="text-xl font-bold mb-6">TV/Dizi Aktiviteleri</h3>
+          {recentTv.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">
+              <p>Henüz TV/dizi aktivitesi yok.</p>
+              <Link href="/explore/tv" className="text-gray-400 hover:text-gray-300 mt-2 inline-block">
+                TV/Dizi keşfet
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {recentTv.map((tv) => (
+                <div key={tv.id} className="rounded-lg bg-gray-900 p-3 border border-gray-800">
+                  <div className="text-sm font-medium line-clamp-2">{tv.title}</div>
                 </div>
               ))}
             </div>

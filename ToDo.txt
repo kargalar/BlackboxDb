@@ -230,32 +230,6 @@ DoD:
 - sql/2025-09-08_add_notifications.sql
 
 ====================================
-17) ANA SAYFA — TV VE KİTAPLAR
-Öncelik: P2
-Açıklama: Ana sayfaya dizi ve kitap bölümleri eklenmeli (trend/popüler/yakında vb.).
-Adımlar:
-- Home feed’e iki yeni section (TV, Books) ekle.
-- Ortak Card bileşenleri ile tutarlı görünüm.
-DoD:
-- Ana sayfada TV ve Books bölümleri çalışıyor, boş/loading durumları düzgün.
-Önerilen Dosyalar:
-- web/src/app/page.tsx
-- web/src/components/*Card.tsx
-
-====================================
-18) SHOW REPLIES HATASI
-Öncelik: P0
-Açıklama: “Show replies” tıklandığında cevaplar görünmüyor. Veri ve UI akışını düzelt.
-Adımlar:
-- API çağrısı ve state yönetimini kontrol et; parentId ile fetch.
-- SSR/CSR çakışmaları, key prop’ları ve suspense sınırlarını düzenle.
-DoD:
-- Cevaplar güvenilir şekilde yükleniyor ve UI’da görünüyor.
-Önerilen Dosyalar:
-- web/src/components/ui/CommentThread.tsx
-- web/src/services/api/comments.ts
-
-====================================
 19) KULLANICININ KENDİ PROFİLİNDE TAKİP ET BUTONU
 Öncelik: P0
 Açıklama: Kullanıcı kendi profilinde “Takip et” butonunu görmemeli.
@@ -386,3 +360,27 @@ DoD:
 
 
 
+öne çıakrıaln fimlerde favoriler gösteriliyor. öyle olamyacak. öne çıkarılanları kullanıı istedği filmi ekleyecek
+
+profildieki film aktivitleeri için tümünü göster butonu ekle. basınca movies sekmesine götürsün
+
+puanlar buçuklu desteklesin. 3.5 gibi
+
+oyun görselleri activities sayfasında gösterilmiyor.
+
+oyun sayfasında dlc leri de göster onlar da dizi bölünleri gibi oldun puan falan.
+
+remake ve remestar ana oyun altında mı olsun farklı oyun olarak mı. mesela ben oyuun bu versiyonunu oynadım olarak seçilebilir.
+✅ Ana oyunlar (category 0) dahil
+✅ DLC'ler (category 1) dahil
+✅ Expansion'lar (category 2) dahil
+✅ Bundle'lar (category 3) dahil
+✅ Standalone Expansion'lar (category 4) dahil
+✅ Mod'lar (category 5) dahil
+✅ Episode'lar (category 6) dahil
+✅ Season'lar (category 7) dahil
+✅ Remake'ler (category 8) dahil
+✅ Remaster'lar (category 9) dahil
+✅ Expanded Game'ler (category 10) dahil
+✅ Port'lar (category 11) dahil
+✅ Fork'lar (category 12) dahil

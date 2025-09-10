@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfileCache } from '@/contexts/ProfileCacheContext';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { getUserWatchedMovies, getUserWatchedTV, getUserStats, Content, Review } from '@/services/database/movieLogs';
+import { getUserWatchedMovies, getUserWatchedTV, getUserWatchedGames, getUserWatchedBooks, getUserStats, Content, Review } from '@/services/database/movieLogs';
 import { 
   getCurrentUserProfile, 
   getUserByUsername,
@@ -25,6 +25,8 @@ import ReviewsTab from '@/components/profile/ReviewsTab';
 import NetworkTab from '@/components/profile/NetworkTab';
 import ActivityTab from '@/components/profile/ActivityTab';
 import TvTab from '@/components/profile/TvTab';
+import GamesTab from '@/components/profile/GamesTab';
+import BooksTab from '@/components/profile/BooksTab';
 
 export default function UserProfilePage() {
   const { user } = useAuth();
@@ -35,8 +37,11 @@ export default function UserProfilePage() {
   const [recentMovies, setRecentMovies] = useState<Content[]>([]);
   const [recentTV, setRecentTV] = useState<Content[]>([]);
   const [recentGames, setRecentGames] = useState<Content[]>([]);
+  const [recentBooks, setRecentBooks] = useState<Content[]>([]);
   const [allWatchedMovies, setAllWatchedMovies] = useState<Content[]>([]);
   const [allWatchedTV, setAllWatchedTV] = useState<Content[]>([]);
+  const [allWatchedGames, setAllWatchedGames] = useState<Content[]>([]);
+  const [allWatchedBooks, setAllWatchedBooks] = useState<Content[]>([]);
   const [favoriteMovies, setFavoriteMovies] = useState<Content[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [followers, setFollowers] = useState<AppUser[]>([]);
@@ -70,8 +75,12 @@ export default function UserProfilePage() {
     setAppUser(cachedData.appUser);
     setRecentMovies(cachedData.recentMovies);
     setRecentTV(cachedData.recentTV || []);
+    setRecentGames(cachedData.recentGames || []);
+    setRecentBooks(cachedData.recentBooks || []);
     setAllWatchedMovies(cachedData.allWatchedMovies);
     setAllWatchedTV(cachedData.allWatchedTV || []);
+    setAllWatchedGames(cachedData.allWatchedGames || []);
+    setAllWatchedBooks(cachedData.allWatchedBooks || []);
     setFavoriteMovies(cachedData.favoriteMovies);
     setReviews(cachedData.reviews);
     setFollowers(cachedData.followers);
@@ -93,6 +102,8 @@ export default function UserProfilePage() {
       const dataPromise = Promise.all([
         getUserWatchedMovies(profileUser.auth_user_id), 
         getUserWatchedTV(profileUser.auth_user_id),
+        getUserWatchedGames(profileUser.auth_user_id),
+        getUserWatchedBooks(profileUser.auth_user_id),
         getUserStats(profileUser.auth_user_id),
         user ? getFollowData(profileUser.auth_user_id) : Promise.resolve({ followersCount: 0, followingCount: 0, isFollowing: false }),
         getReviewsByUserId(profileUser.auth_user_id),
@@ -104,6 +115,8 @@ export default function UserProfilePage() {
       const [
         watchedMoviesResult, 
         watchedTVResult,
+        watchedGamesResult,
+        watchedBooksResult,
         userStats,
         followData,
         reviewsResult,
@@ -114,8 +127,12 @@ export default function UserProfilePage() {
 
   let processedMovies: Content[] = [];
   let processedTV: Content[] = [];
+  let processedGames: Content[] = [];
+  let processedBooks: Content[] = [];
   let recentMoviesData: Content[] = [];
   let recentTVData: Content[] = [];
+  let recentGamesData: Content[] = [];
+  let recentBooksData: Content[] = [];
       let favoriteMoviesData: Content[] = [];
 
       if (watchedMoviesResult?.data) {
@@ -139,12 +156,36 @@ export default function UserProfilePage() {
         recentTVData = latestPer.slice(0, 4)
       }
 
+      if (watchedGamesResult?.data) {
+        const latestPer = [...watchedGamesResult.data].sort((a, b) => {
+          const ta = a.date ? new Date(a.date).getTime() : 0
+          const tb = b.date ? new Date(b.date).getTime() : 0
+          return tb - ta
+        })
+        processedGames = latestPer
+        recentGamesData = latestPer.slice(0, 4)
+      }
+
+      if (watchedBooksResult?.data) {
+        const latestPer = [...watchedBooksResult.data].sort((a, b) => {
+          const ta = a.date ? new Date(a.date).getTime() : 0
+          const tb = b.date ? new Date(b.date).getTime() : 0
+          return tb - ta
+        })
+        processedBooks = latestPer
+        recentBooksData = latestPer.slice(0, 4)
+      }
+
       const profileData = {
         appUser: profileUser,
         recentMovies: recentMoviesData,
         recentTV: recentTVData,
+        recentGames: recentGamesData,
+        recentBooks: recentBooksData,
         allWatchedMovies: processedMovies,
         allWatchedTV: processedTV,
+        allWatchedGames: processedGames,
+        allWatchedBooks: processedBooks,
         favoriteMovies: favoriteMoviesData,
         reviews: reviewsResult.data || [],
         followers: followersResult.data || [],
@@ -316,11 +357,15 @@ export default function UserProfilePage() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'Home':
-  return <HomeTab recentMovies={recentMovies} recentGames={recentGames} favoriteMovies={favoriteMovies} stats={stats} isOwnProfile={isOwnProfile} />;
+  return <HomeTab recentMovies={recentMovies} recentTv={recentTV} recentGames={recentGames} recentBooks={recentBooks} favoriteMovies={favoriteMovies} stats={stats} isOwnProfile={isOwnProfile} />;
       case 'Movies':
         return <MoviesTab movies={allWatchedMovies} />;
       case 'TV':
         return <TvTab tvs={allWatchedTV} />;
+      case 'Games':
+        return <GamesTab games={allWatchedGames} />;
+      case 'Books':
+        return <BooksTab books={allWatchedBooks} />;
       case 'Reviews':
         return <ReviewsTab reviews={reviews} onReviewUpdate={handleReviewUpdate} isOwnProfile={isOwnProfile} />;
       case 'Network':

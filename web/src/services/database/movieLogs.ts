@@ -132,46 +132,61 @@ export async function getUserWatchedMovies(userId?: string): Promise<{ data: Con
     console.log('RPC failed, falling back to direct query:', error)
   }
 
-  // Fallback: Direct table query using latest_user_content_log view
+  // Fallback: Direct table query using all user_content_log entries for better activity history
   try {
     const { data: logData, error: logError } = await supabase
-      .from('latest_user_content_log')
+      .from('user_content_log')
       .select(`
         content_id,
         rating,
         is_favorite,
         is_consume_later,
         date,
+        created_at,
         content:content_id (
           id,
           title,
           poster_path,
-          favorite_count
+          favorite_count,
+          content_type_id
         )
       `)
       .eq('user_id', uid)
+      .not('content', 'is', null)
       .order('date', { ascending: false })
-      .limit(40)
+      .order('created_at', { ascending: false })
+      .limit(100) // Increased limit for better history
 
     if (logError) {
       console.error('Latest log query failed:', logError)
       return { data: [] }
     }
 
-    const mapped: Content[] = (logData || [])
-      .filter(item => item.content)
-      .map((item: any) => ({
-        id: item.content.id,
-        poster_path: item.content.poster_path ?? null,
-        title: item.content.title ?? '',
-        fav_count: item.content.favorite_count ?? 0,
-        user_rating: item.rating ? Number(item.rating) : 0,
-        is_favorite: item.is_favorite ?? false,
-        is_consume_later: item.is_consume_later ?? false,
-        date: item.date
-      }))
-    // latest_user_content_log is already latest per user+content, but guard-dedupe and sort anyway
+    // Filter for movies only (content_type_id = 1)
+    const movieLogs = (logData || [])
+      .filter((item: any) => item.content && item.content.content_type_id === 1)
+
+    const mapped: Content[] = movieLogs.map((item: any) => ({
+      id: item.content.id,
+      poster_path: item.content.poster_path ?? null,
+      title: item.content.title ?? '',
+      fav_count: item.content.favorite_count ?? 0,
+      user_rating: item.rating ? Number(item.rating) : 0,
+      is_favorite: item.is_favorite ?? false,
+      is_consume_later: item.is_consume_later ?? false,
+      date: item.date || item.created_at // Use date if available, fallback to created_at
+    }))
+
+    // Keep latest entry per movie but preserve activity history
     const byId = new Map<number, Content>()
+    const activityList: Content[] = []
+    
+    // First pass: collect all activities chronologically
+    for (const m of mapped) {
+      activityList.push(m)
+    }
+    
+    // Second pass: keep only latest state per movie for the final result
     for (const m of mapped) {
       const prev = byId.get(m.id)
       if (!prev) byId.set(m.id, m)
@@ -181,6 +196,8 @@ export async function getUserWatchedMovies(userId?: string): Promise<{ data: Con
         if (currTime > prevTime) byId.set(m.id, m)
       }
     }
+    
+    // Return activities sorted by most recent first, but deduplicated by movie ID
     const deduped = Array.from(byId.values()).sort((a, b) => {
       const ta = a.date ? new Date(a.date).getTime() : 0
       const tb = b.date ? new Date(b.date).getTime() : 0
@@ -245,13 +262,14 @@ export async function getUserWatchedTV(userId?: string): Promise<{ data: Content
 
   try {
     const { data: logData, error: logError } = await supabase
-      .from('latest_user_content_log')
+      .from('user_content_log')
       .select(`
         content_id,
         rating,
         is_favorite,
         is_consume_later,
         date,
+        created_at,
         content:content_id (
           id,
           title,
@@ -261,26 +279,30 @@ export async function getUserWatchedTV(userId?: string): Promise<{ data: Content
         )
       `)
       .eq('user_id', uid)
+      .not('content', 'is', null)
       .order('date', { ascending: false })
-      .limit(60)
+      .order('created_at', { ascending: false })
+      .limit(100)
 
     if (logError) {
       console.error('Latest log query failed (TV):', logError)
       return { data: [] }
     }
 
-    const mapped: Content[] = (logData || [])
-      .filter((item: any) => item.content && (item as any).content.content_type_id === 3)
-      .map((item: any) => ({
-        id: item.content.id,
-        poster_path: item.content.poster_path ?? null,
-        title: item.content.title ?? '',
-        fav_count: item.content.favorite_count ?? 0,
-        user_rating: item.rating ? Number(item.rating) : 0,
-        is_favorite: item.is_favorite ?? false,
-        is_consume_later: item.is_consume_later ?? false,
-        date: item.date,
-      }))
+    // Filter for TV shows only (content_type_id = 3)
+    const tvLogs = (logData || [])
+      .filter((item: any) => item.content && item.content.content_type_id === 3)
+
+    const mapped: Content[] = tvLogs.map((item: any) => ({
+      id: item.content.id,
+      poster_path: item.content.poster_path ?? null,
+      title: item.content.title ?? '',
+      fav_count: item.content.favorite_count ?? 0,
+      user_rating: item.rating ? Number(item.rating) : 0,
+      is_favorite: item.is_favorite ?? false,
+      is_consume_later: item.is_consume_later ?? false,
+      date: item.date || item.created_at
+    }))
 
     const byId = new Map<number, Content>()
     for (const m of mapped) {
@@ -301,6 +323,238 @@ export async function getUserWatchedTV(userId?: string): Promise<{ data: Content
     return { data: deduped }
   } catch (error) {
     console.error('Fallback query failed (TV):', error)
+    return { data: [] }
+  }
+}
+
+// Fetch user's watched Games (content_type 5)
+export async function getUserWatchedGames(userId?: string): Promise<{ data: Content[] }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userId || userRes.user?.id
+  if (!uid) return { data: [] }
+
+  try {
+    const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_contents', {
+      user_id_param: uid,
+      log_user_id_param: uid,
+      content_type_param: 5, // 5 = Games
+      page_param: 1,
+      limit_param: 40,
+    })
+
+    if (!rpcError && rpcData) {
+      const contents = (rpcData.contents as any[] | undefined) ?? []
+      const raw: Content[] = contents.map((item: any) => ({
+        id: Number(item.content_id),
+        poster_path: item.poster_path ?? null,
+        title: item.title ?? '',
+        fav_count: item.is_favorite ? 1 : 0,
+        user_rating: item.rating ? Number(item.rating) : 0,
+        is_favorite: item.is_favorite ?? false,
+        is_consume_later: item.is_consume_later ?? false,
+        date: item.date,
+      }))
+
+      const byId = new Map<number, Content>()
+      for (const m of raw) {
+        const prev = byId.get(m.id)
+        if (!prev) byId.set(m.id, m)
+        else {
+          const prevTime = prev.date ? new Date(prev.date).getTime() : 0
+          const currTime = m.date ? new Date(m.date).getTime() : 0
+          if (currTime > prevTime) byId.set(m.id, m)
+        }
+      }
+      const deduped = Array.from(byId.values()).sort((a, b) => {
+        const ta = a.date ? new Date(a.date).getTime() : 0
+        const tb = b.date ? new Date(b.date).getTime() : 0
+        return tb - ta
+      })
+      return { data: deduped }
+    }
+  } catch (error) {
+    console.log('RPC failed, falling back to direct query (Games):', error)
+  }
+
+  try {
+    const { data: logData, error: logError } = await supabase
+      .from('user_content_log')
+      .select(`
+        content_id,
+        rating,
+        is_favorite,
+        is_consume_later,
+        date,
+        created_at,
+        content:content_id (
+          id,
+          title,
+          poster_path,
+          favorite_count,
+          content_type_id
+        )
+      `)
+      .eq('user_id', uid)
+      .not('content', 'is', null)
+      .order('date', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(100)
+
+    if (logError) {
+      console.error('Latest log query failed (Games):', logError)
+      return { data: [] }
+    }
+
+    // Filter for Games only (content_type_id = 5)
+    const gameLogs = (logData || [])
+      .filter((item: any) => item.content && item.content.content_type_id === 5)
+
+    const mapped: Content[] = gameLogs.map((item: any) => ({
+      id: item.content.id,
+      poster_path: item.content.poster_path ?? null,
+      title: item.content.title ?? '',
+      fav_count: item.content.favorite_count ?? 0,
+      user_rating: item.rating ? Number(item.rating) : 0,
+      is_favorite: item.is_favorite ?? false,
+      is_consume_later: item.is_consume_later ?? false,
+      date: item.date || item.created_at
+    }))
+
+    const byId = new Map<number, Content>()
+    for (const m of mapped) {
+      const prev = byId.get(m.id)
+      if (!prev) byId.set(m.id, m)
+      else {
+        const prevTime = prev.date ? new Date(prev.date).getTime() : 0
+        const currTime = m.date ? new Date(m.date).getTime() : 0
+        if (currTime > prevTime) byId.set(m.id, m)
+      }
+    }
+    const deduped = Array.from(byId.values()).sort((a, b) => {
+      const ta = a.date ? new Date(a.date).getTime() : 0
+      const tb = b.date ? new Date(b.date).getTime() : 0
+      return tb - ta
+    })
+
+    return { data: deduped }
+  } catch (error) {
+    console.error('Fallback query failed (Games):', error)
+    return { data: [] }
+  }
+}
+
+// Fetch user's watched Books (content_type 4)
+export async function getUserWatchedBooks(userId?: string): Promise<{ data: Content[] }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userId || userRes.user?.id
+  if (!uid) return { data: [] }
+
+  try {
+    const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_contents', {
+      user_id_param: uid,
+      log_user_id_param: uid,
+      content_type_param: 4, // 4 = Books
+      page_param: 1,
+      limit_param: 40,
+    })
+
+    if (!rpcError && rpcData) {
+      const contents = (rpcData.contents as any[] | undefined) ?? []
+      const raw: Content[] = contents.map((item: any) => ({
+        id: Number(item.content_id),
+        poster_path: item.poster_path ?? null,
+        title: item.title ?? '',
+        fav_count: item.is_favorite ? 1 : 0,
+        user_rating: item.rating ? Number(item.rating) : 0,
+        is_favorite: item.is_favorite ?? false,
+        is_consume_later: item.is_consume_later ?? false,
+        date: item.date,
+      }))
+
+      const byId = new Map<number, Content>()
+      for (const m of raw) {
+        const prev = byId.get(m.id)
+        if (!prev) byId.set(m.id, m)
+        else {
+          const prevTime = prev.date ? new Date(prev.date).getTime() : 0
+          const currTime = m.date ? new Date(m.date).getTime() : 0
+          if (currTime > prevTime) byId.set(m.id, m)
+        }
+      }
+      const deduped = Array.from(byId.values()).sort((a, b) => {
+        const ta = a.date ? new Date(a.date).getTime() : 0
+        const tb = b.date ? new Date(b.date).getTime() : 0
+        return tb - ta
+      })
+      return { data: deduped }
+    }
+  } catch (error) {
+    console.log('RPC failed, falling back to direct query (Books):', error)
+  }
+
+  try {
+    const { data: logData, error: logError } = await supabase
+      .from('user_content_log')
+      .select(`
+        content_id,
+        rating,
+        is_favorite,
+        is_consume_later,
+        date,
+        created_at,
+        content:content_id (
+          id,
+          title,
+          poster_path,
+          favorite_count,
+          content_type_id
+        )
+      `)
+      .eq('user_id', uid)
+      .not('content', 'is', null)
+      .order('date', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(100)
+
+    if (logError) {
+      console.error('Latest log query failed (Books):', logError)
+      return { data: [] }
+    }
+
+    // Filter for Books only (content_type_id = 4)
+    const bookLogs = (logData || [])
+      .filter((item: any) => item.content && item.content.content_type_id === 4)
+
+    const mapped: Content[] = bookLogs.map((item: any) => ({
+      id: item.content.id,
+      poster_path: item.content.poster_path ?? null,
+      title: item.content.title ?? '',
+      fav_count: item.content.favorite_count ?? 0,
+      user_rating: item.rating ? Number(item.rating) : 0,
+      is_favorite: item.is_favorite ?? false,
+      is_consume_later: item.is_consume_later ?? false,
+      date: item.date || item.created_at
+    }))
+
+    const byId = new Map<number, Content>()
+    for (const m of mapped) {
+      const prev = byId.get(m.id)
+      if (!prev) byId.set(m.id, m)
+      else {
+        const prevTime = prev.date ? new Date(prev.date).getTime() : 0
+        const currTime = m.date ? new Date(m.date).getTime() : 0
+        if (currTime > prevTime) byId.set(m.id, m)
+      }
+    }
+    const deduped = Array.from(byId.values()).sort((a, b) => {
+      const ta = a.date ? new Date(a.date).getTime() : 0
+      const tb = b.date ? new Date(b.date).getTime() : 0
+      return tb - ta
+    })
+
+    return { data: deduped }
+  } catch (error) {
+    console.error('Fallback query failed (Books):', error)
     return { data: [] }
   }
 }

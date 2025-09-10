@@ -134,14 +134,41 @@ export function igdbImageUrl(imageId: string, size: 'cover_small' | 'cover_big' 
 
 export async function searchGames(q: string, limit = 20) {
   const sanitized = q.trim().slice(0, 120).replace(/[\n\r\t\";]/g, ' ').trim();
-  const body = [
+  
+  // Primary search with exact search
+  const primaryBody = [
     `search "${sanitized}";`,
     'fields id,name,slug,summary,first_release_date,rating,total_rating,genres.name,platforms.name,cover.image_id;',
-    'where version_parent = null & category = (0,8);', // main games and remasters
-    `limit ${Math.max(1, Math.min(limit, 50))};`,
+    'where version_parent = null;', // include all categories
+    `limit ${Math.max(1, Math.min(limit, 100))};`, // increased limit
   ].join('\n');
 
-  return igdbRequest<IgdbGame[]>('games', body, { revalidate: 60 });
+  const primaryResults = await igdbRequest<IgdbGame[]>('games', primaryBody, { revalidate: 60 });
+
+  // If primary search returns few results, try a broader search
+  if (primaryResults.length < Math.min(10, limit)) {
+    const fallbackBody = [
+      `fields id,name,slug,summary,first_release_date,rating,total_rating,genres.name,platforms.name,cover.image_id;`,
+      `where name ~ *"${sanitized}"* & version_parent = null;`,
+      'sort total_rating desc;',
+      `limit ${Math.max(1, Math.min(limit, 100))};`,
+    ].join('\n');
+    
+    try {
+      const fallbackResults = await igdbRequest<IgdbGame[]>('games', fallbackBody, { revalidate: 60 });
+      
+      // Merge results, removing duplicates
+      const existingIds = new Set(primaryResults.map(game => game.id));
+      const additionalResults = fallbackResults.filter(game => !existingIds.has(game.id));
+      
+      return [...primaryResults, ...additionalResults].slice(0, limit);
+    } catch (error) {
+      console.warn('Fallback search failed:', error);
+      return primaryResults;
+    }
+  }
+
+  return primaryResults;
 }
 
 export async function getGameById(id: number) {
@@ -185,7 +212,7 @@ export async function getGameById(id: number) {
 export async function trendingGames(limit = 20) {
   const body = [
     'fields id,name,slug,summary,first_release_date,total_rating,genres.name,platforms.name,cover.image_id;',
-    'where total_rating != null & version_parent = null;',
+    'where total_rating != null & version_parent = null & category = (0,2,4,8,9,10,11);',
     'sort total_rating desc;',
     `limit ${Math.max(1, Math.min(limit, 50))};`,
   ].join('\n');
@@ -196,7 +223,7 @@ export async function upcomingGames(limit = 20) {
   const nowSec = Math.floor(Date.now() / 1000);
   const body = [
     'fields id,name,slug,summary,first_release_date,genres.name,platforms.name,cover.image_id;',
-    `where first_release_date != null & first_release_date > ${nowSec} & version_parent = null;`,
+    `where first_release_date != null & first_release_date > ${nowSec} & version_parent = null & category = (0,2,4,8,9,10,11);`,
     'sort first_release_date asc;',
     `limit ${Math.max(1, Math.min(limit, 50))};`,
   ].join('\n');

@@ -4,9 +4,24 @@ import { ReviewReply } from './movieLogs';
 export async function getReviewReplies(reviewId: number): Promise<{ data: ReviewReply[] }> {
   try {
     console.log('Fetching replies for review ID:', reviewId);
+    
+    // Get current user for like status
+    const { data: userRes } = await supabase.auth.getUser();
+    const currentUserId = userRes.user?.id;
+
     const { data, error } = await supabase
-      .from('review_reply')
-      .select('*')
+      .from('review_replies')
+      .select(`
+        id,
+        review_id,
+        user_id,
+        text,
+        created_at,
+        parent_reply_id,
+        app_user!inner (
+          username
+        )
+      `)
       .eq('review_id', reviewId)
       .order('created_at', { ascending: true });
 
@@ -16,7 +31,21 @@ export async function getReviewReplies(reviewId: number): Promise<{ data: Review
       console.error('Error fetching review replies:', error);
       return { data: [] };
     }
-    return { data: data as ReviewReply[] };
+
+    // Transform data to match ReviewReply interface
+    const transformedData: ReviewReply[] = (data || []).map((item: any) => ({
+      id: item.id,
+      review_id: item.review_id,
+      user_id: item.user_id,
+      user_name: item.app_user?.username || 'Unknown User',
+      text: item.text,
+      created_at: item.created_at,
+      parent_reply_id: item.parent_reply_id,
+      like_count: 0, // We'll implement like count later
+      is_liked_by_current_user: false // We'll implement like status later
+    }));
+
+    return { data: transformedData };
   } catch (error) {
     console.error('Error in getReviewReplies:', error);
     return { data: [] };
