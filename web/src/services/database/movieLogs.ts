@@ -2018,3 +2018,227 @@ export async function logBookRead(contentId: string): Promise<{ data: boolean; e
     return { data: false, error }
   }
 }
+
+// Get user's favorite movies
+export async function getUserFavoriteMovies(userId?: string): Promise<{ data: Content[] }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userId || userRes.user?.id
+  if (!uid) return { data: [] }
+
+  try {
+    const { data: logData, error: logError } = await supabase
+      .from('user_content_log')
+      .select(`
+        content_id,
+        rating,
+        is_favorite,
+        is_consume_later,
+        date,
+        updated_at,
+        content:content_id (
+          id,
+          title,
+          poster_path,
+          favorite_count,
+          content_type_id
+        )
+      `)
+      .eq('user_id', uid)
+      .eq('is_favorite', true)
+      .not('content', 'is', null)
+      .order('date', { ascending: false })
+
+    if (logError) {
+      console.error('Favorite movies query failed:', logError)
+      return { data: [] }
+    }
+
+    // Filter for movies only (content_type_id = 1)
+    const favoriteMovies = (logData || [])
+      .filter((item: any) => item.content && item.content.content_type_id === 1)
+
+    const mapped: Content[] = favoriteMovies.map((item: any) => ({
+      id: item.content.id,
+      poster_path: item.content.poster_path ?? null,
+      title: item.content.title ?? '',
+      fav_count: item.content.favorite_count ?? 0,
+      user_rating: item.rating ? Number(item.rating) : 0,
+      is_favorite: item.is_favorite ?? false,
+      is_consume_later: item.is_consume_later ?? false,
+      date: item.date || item.updated_at
+    }))
+
+    return { data: mapped }
+  } catch (error) {
+    console.error('Error fetching favorite movies:', error)
+    return { data: [] }
+  }
+}
+
+// Get user's favorite TV shows
+export async function getUserFavoriteTV(userId?: string): Promise<{ data: Content[] }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userId || userRes.user?.id
+  if (!uid) return { data: [] }
+
+  try {
+    const { data: logData, error: logError } = await supabase
+      .from('user_content_log')
+      .select(`
+        content_id,
+        rating,
+        is_favorite,
+        is_consume_later,
+        date,
+        updated_at,
+        content:content_id (
+          id,
+          title,
+          poster_path,
+          favorite_count,
+          content_type_id
+        )
+      `)
+      .eq('user_id', uid)
+      .eq('is_favorite', true)
+      .not('content', 'is', null)
+      .order('date', { ascending: false })
+
+    if (logError) {
+      console.error('Favorite TV query failed:', logError)
+      return { data: [] }
+    }
+
+    // Filter for TV shows only (content_type_id = 3)
+    const favoriteTV = (logData || [])
+      .filter((item: any) => item.content && item.content.content_type_id === 3)
+
+    const mapped: Content[] = favoriteTV.map((item: any) => ({
+      id: item.content.id,
+      poster_path: item.content.poster_path ?? null,
+      title: item.content.title ?? '',
+      fav_count: item.content.favorite_count ?? 0,
+      user_rating: item.rating ? Number(item.rating) : 0,
+      is_favorite: item.is_favorite ?? false,
+      is_consume_later: item.is_consume_later ?? false,
+      date: item.date || item.updated_at
+    }))
+
+    return { data: mapped }
+  } catch (error) {
+    console.error('Error fetching favorite TV:', error)
+    return { data: [] }
+  }
+}
+
+// Get user's favorite games
+export async function getUserFavoriteGames(userId?: string): Promise<{ data: Content[] }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userId || userRes.user?.id
+  if (!uid) return { data: [] }
+
+  try {
+    const { data: logData, error: logError } = await supabase
+      .from('user_content_log')
+      .select(`
+        content_id,
+        rating,
+        is_favorite,
+        is_consume_later,
+        date,
+        updated_at,
+        content:content_id (
+          id,
+          title,
+          poster_path,
+          favorite_count,
+          content_type_id
+        )
+      `)
+      .eq('user_id', uid)
+      .eq('is_favorite', true)
+      .not('content', 'is', null)
+      .order('date', { ascending: false })
+
+    if (logError) {
+      console.error('Favorite games query failed:', logError)
+      return { data: [] }
+    }
+
+    // Filter for games only (content_type_id = 2)
+    const favoriteGames = (logData || [])
+      .filter((item: any) => item.content && item.content.content_type_id === 2)
+
+    const mapped: Content[] = favoriteGames.map((item: any) => ({
+      id: item.content.id,
+      poster_path: item.content.poster_path ?? null,
+      title: item.content.title ?? '',
+      fav_count: item.content.favorite_count ?? 0,
+      user_rating: item.rating ? Number(item.rating) : 0,
+      is_favorite: item.is_favorite ?? false,
+      is_consume_later: item.is_consume_later ?? false,
+      date: item.date || item.updated_at
+    }))
+
+    return { data: mapped }
+  } catch (error) {
+    console.error('Error fetching favorite games:', error)
+    return { data: [] }
+  }
+}
+
+// Get user's favorite books
+export async function getUserFavoriteBooks(userId?: string): Promise<{ data: Content[] }> {
+  const { data: userRes } = await supabase.auth.getUser()
+  const uid = userId || userRes.user?.id
+  if (!uid) return { data: [] }
+
+  try {
+    const { data: logData, error: logError } = await supabase
+      .from('user_content_log')
+      .select(`
+        content_id,
+        rating,
+        is_favorite,
+        is_consume_later,
+        date,
+        updated_at,
+        content:content_id (
+          id,
+          title,
+          poster_path,
+          favorite_count,
+          content_type_id
+        )
+      `)
+      .eq('user_id', uid)
+      .eq('is_favorite', true)
+      .not('content', 'is', null)
+      .order('date', { ascending: false })
+
+    if (logError) {
+      console.error('Favorite books query failed:', logError)
+      return { data: [] }
+    }
+
+    // Filter for books only (content_type_id = 4)
+    const favoriteBooks = (logData || [])
+      .filter((item: any) => item.content && item.content.content_type_id === 4)
+
+    const mapped: Content[] = favoriteBooks.map((item: any) => ({
+      id: item.content.id,
+      poster_path: item.content.poster_path ?? null,
+      title: item.content.title ?? '',
+      fav_count: item.content.favorite_count ?? 0,
+      user_rating: item.rating ? Number(item.rating) : 0,
+      is_favorite: item.is_favorite ?? false,
+      is_consume_later: item.is_consume_later ?? false,
+      date: item.date || item.updated_at
+    }))
+
+    return { data: mapped }
+  } catch (error) {
+    console.error('Error fetching favorite books:', error)
+    return { data: [] }
+  }
+}

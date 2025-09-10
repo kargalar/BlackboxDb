@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfileCache } from '@/contexts/ProfileCacheContext';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { getUserWatchedMovies, getUserWatchedTV, getUserWatchedGames, getUserWatchedBooks, getUserStats, Content, Review } from '@/services/database/movieLogs';
+import { getUserWatchedMovies, getUserWatchedTV, getUserWatchedGames, getUserWatchedBooks, getUserStats, Content, Review, getUserFavoriteMovies, getUserFavoriteTV, getUserFavoriteGames, getUserFavoriteBooks } from '@/services/database/movieLogs';
 import { 
   getCurrentUserProfile, 
   getUserByUsername,
@@ -43,6 +43,9 @@ export default function UserProfilePage() {
   const [allWatchedGames, setAllWatchedGames] = useState<Content[]>([]);
   const [allWatchedBooks, setAllWatchedBooks] = useState<Content[]>([]);
   const [favoriteMovies, setFavoriteMovies] = useState<Content[]>([]);
+  const [favoriteTV, setFavoriteTV] = useState<Content[]>([]);
+  const [favoriteGames, setFavoriteGames] = useState<Content[]>([]);
+  const [favoriteBooks, setFavoriteBooks] = useState<Content[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [followers, setFollowers] = useState<AppUser[]>([]);
   const [following, setFollowing] = useState<AppUser[]>([]);
@@ -81,7 +84,10 @@ export default function UserProfilePage() {
     setAllWatchedTV(cachedData.allWatchedTV || []);
     setAllWatchedGames(cachedData.allWatchedGames || []);
     setAllWatchedBooks(cachedData.allWatchedBooks || []);
-    setFavoriteMovies(cachedData.favoriteMovies);
+    setFavoriteMovies(cachedData.favoriteMovies || []);
+    setFavoriteTV(cachedData.favoriteTV || []);
+    setFavoriteGames(cachedData.favoriteGames || []);
+    setFavoriteBooks(cachedData.favoriteBooks || []);
     setReviews(cachedData.reviews);
     setFollowers(cachedData.followers);
     setFollowing(cachedData.following);
@@ -104,6 +110,10 @@ export default function UserProfilePage() {
         getUserWatchedTV(profileUser.auth_user_id),
         getUserWatchedGames(profileUser.auth_user_id),
         getUserWatchedBooks(profileUser.auth_user_id),
+        getUserFavoriteMovies(profileUser.auth_user_id),
+        getUserFavoriteTV(profileUser.auth_user_id),
+        getUserFavoriteGames(profileUser.auth_user_id),
+        getUserFavoriteBooks(profileUser.auth_user_id),
         getUserStats(profileUser.auth_user_id),
         user ? getFollowData(profileUser.auth_user_id) : Promise.resolve({ followersCount: 0, followingCount: 0, isFollowing: false }),
         getReviewsByUserId(profileUser.auth_user_id),
@@ -117,6 +127,10 @@ export default function UserProfilePage() {
         watchedTVResult,
         watchedGamesResult,
         watchedBooksResult,
+        favoriteMoviesResult,
+        favoriteTVResult,
+        favoriteGamesResult,
+        favoriteBooksResult,
         userStats,
         followData,
         reviewsResult,
@@ -136,6 +150,9 @@ export default function UserProfilePage() {
   let recentGamesData: Content[] = [];
   let recentBooksData: Content[] = [];
       let favoriteMoviesData: Content[] = [];
+      let favoriteTVData: Content[] = [];
+      let favoriteGamesData: Content[] = [];
+      let favoriteBooksData: Content[] = [];
 
       if (watchedMoviesResult?.data) {
         const latestPerMovie = [...watchedMoviesResult.data].sort((a, b) => {
@@ -145,7 +162,10 @@ export default function UserProfilePage() {
         })
         processedMovies = latestPerMovie;
         recentMoviesData = latestPerMovie.slice(0, 4);
-        favoriteMoviesData = latestPerMovie.filter(m => m.is_favorite).slice(0, 5);
+      }
+
+      if (favoriteMoviesResult?.data) {
+        favoriteMoviesData = favoriteMoviesResult.data.slice(0, 5);
       }
 
       if (watchedTVResult?.data) {
@@ -156,6 +176,10 @@ export default function UserProfilePage() {
         })
         processedTV = latestPer
         recentTVData = latestPer.slice(0, 4)
+      }
+
+      if (favoriteTVResult?.data) {
+        favoriteTVData = favoriteTVResult.data.slice(0, 5);
       }
 
       if (watchedGamesResult?.data) {
@@ -172,6 +196,10 @@ export default function UserProfilePage() {
         console.log('No games data received:', watchedGamesResult);
       }
 
+      if (favoriteGamesResult?.data) {
+        favoriteGamesData = favoriteGamesResult.data.slice(0, 5);
+      }
+
       if (watchedBooksResult?.data) {
         const latestPer = [...watchedBooksResult.data].sort((a, b) => {
           const ta = a.date ? new Date(a.date).getTime() : 0
@@ -180,6 +208,10 @@ export default function UserProfilePage() {
         })
         processedBooks = latestPer
         recentBooksData = latestPer.slice(0, 4)
+      }
+
+      if (favoriteBooksResult?.data) {
+        favoriteBooksData = favoriteBooksResult.data.slice(0, 5);
       }
 
       const profileData = {
@@ -193,6 +225,9 @@ export default function UserProfilePage() {
         allWatchedGames: processedGames,
         allWatchedBooks: processedBooks,
         favoriteMovies: favoriteMoviesData,
+        favoriteTV: favoriteTVData,
+        favoriteGames: favoriteGamesData,
+        favoriteBooks: favoriteBooksData,
         reviews: reviewsResult.data || [],
         followers: followersResult.data || [],
         following: followingResult.data || [],
@@ -363,7 +398,18 @@ export default function UserProfilePage() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'Home':
-  return <HomeTab recentMovies={recentMovies} recentTv={recentTV} recentGames={recentGames} recentBooks={recentBooks} favoriteMovies={favoriteMovies} stats={stats} isOwnProfile={isOwnProfile} />;
+  return <HomeTab 
+    recentMovies={recentMovies} 
+    recentTv={recentTV} 
+    recentGames={recentGames} 
+    recentBooks={recentBooks} 
+    favoriteMovies={favoriteMovies}
+    favoriteTv={favoriteTV}
+    favoriteGames={favoriteGames}
+    favoriteBooks={favoriteBooks}
+    stats={stats} 
+    isOwnProfile={isOwnProfile} 
+  />;
       case 'Movies':
         return <MoviesTab movies={allWatchedMovies} />;
       case 'TV':

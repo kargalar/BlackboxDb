@@ -29,6 +29,9 @@ interface HomeTabProps {
   recentGames?: Content[];
   recentBooks?: Content[];
   favoriteMovies: Content[];
+  favoriteTv?: Content[];
+  favoriteGames?: Content[];
+  favoriteBooks?: Content[];
   stats: {
     totalMovies: number;
     thisYearMovies: number;
@@ -38,11 +41,23 @@ interface HomeTabProps {
   isOwnProfile?: boolean;
 }
 
-export default function HomeTab({ recentMovies, recentTv = [], recentGames = [], recentBooks = [], favoriteMovies, stats, isOwnProfile = false }: HomeTabProps) {
+export default function HomeTab({ 
+  recentMovies, 
+  recentTv = [], 
+  recentGames = [], 
+  recentBooks = [], 
+  favoriteMovies,
+  favoriteTv = [],
+  favoriteGames = [],
+  favoriteBooks = [],
+  stats, 
+  isOwnProfile = false 
+}: HomeTabProps) {
   const [showFeaturedDialog, setShowFeaturedDialog] = useState(false);
   const [selectedFeaturedMovies, setSelectedFeaturedMovies] = useState<number[]>([]);
   const [allMovies, setAllMovies] = useState<Content[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [featuredType, setFeaturedType] = useState<'movies' | 'tv' | 'games' | 'books'>('movies');
 
   useEffect(() => {
     const combinedMovies = [...recentMovies, ...favoriteMovies];
@@ -51,6 +66,21 @@ export default function HomeTab({ recentMovies, recentTv = [], recentGames = [],
     );
     setAllMovies(uniqueMovies);
   }, [recentMovies, favoriteMovies]);
+
+  const getFeaturedContent = () => {
+    switch (featuredType) {
+      case 'movies':
+        return favoriteMovies;
+      case 'tv':
+        return favoriteTv;
+      case 'games':
+        return favoriteGames;
+      case 'books':
+        return favoriteBooks;
+      default:
+        return [];
+    }
+  };
 
   const handleToggleWatch = async (movieId: number) => {
     try {
@@ -141,90 +171,250 @@ export default function HomeTab({ recentMovies, recentTv = [], recentGames = [],
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-      {/* Left Sidebar */}
+      {/* Left Sidebar - Stats */}
       <div className="lg:col-span-1 space-y-6">
-        {/* Recent Movies */}
-        {!showFeaturedDialog && (
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Recent Movies</h3>
-            {recentMovies.length === 0 ? (
-              <div className="text-center text-gray-400 py-8">
-                <p>Henüz film izlemediniz.</p>
-                <Link href="/explore" className="text-gray-400 hover:text-gray-300 mt-2 inline-block">
-                  Keşfetmeye başlayın
+        {/* Stats */}
+        <div className="bg-gray-900 rounded-lg p-6">
+          <h3 className="text-lg font-semibold mb-4">İstatistikler</h3>
+          <div className="space-y-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold">★ {stats.averageRating.toFixed(1)}</div>
+              <div className="text-sm text-gray-400">Ortalama Puan</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold">{stats.reviewCount}</div>
+              <div className="text-sm text-gray-400">İnceleme</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold">{stats.totalMovies}</div>
+              <div className="text-sm text-gray-400">Toplam İçerik</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="lg:col-span-3 space-y-8">
+        {/* Film Aktiviteleri */}
+        <div>
+          <h3 className="text-xl font-bold mb-6">Film Aktiviteleri</h3>
+          {recentMovies.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">
+              <p>Henüz film izlemediniz.</p>
+              <Link href="/explore" className="text-gray-400 hover:text-gray-300 mt-2 inline-block">
+                Keşfetmeye başlayın
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {recentMovies.map((movie) => (
+                <MovieCard
+                  key={movie.id}
+                  movie={{
+                    ...movie,
+                    title: movie.title || 'Unknown Title'
+                  }}
+                  isWatched={true}
+                  isFavorite={movie.is_favorite || false}
+                  rating={movie.user_rating}
+                  showActions={true}
+                  size="large"
+                  showRating={true}
+                  onWatch={handleToggleWatch}
+                  onToggleFavorite={handleToggleFavorite}
+                  onToggleWatchlist={handleToggleWatchlist}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Oyun Aktiviteleri */}
+        <div>
+          <h3 className="text-xl font-bold mb-6">Oyun Aktiviteleri</h3>
+          {recentGames.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">
+              <p>Henüz oyun aktivitesi yok.</p>
+              <Link href="/explore/games" className="text-gray-400 hover:text-gray-300 mt-2 inline-block">
+                Oyun keşfet
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {recentGames.map((game) => (
+                <Link key={game.id} href={`/content/game/${game.id}`} className="group">
+                  <div className="aspect-[3/4] bg-gray-800 rounded-lg overflow-hidden relative">
+                    {game.poster_path ? (
+                      <Image
+                        src={game.poster_path}
+                        alt={game.title || game.name || 'Unknown Game'}
+                        width={200}
+                        height={300}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
+                        <span className="text-xs text-center px-2 text-white">{game.title || 'Unknown Game'}</span>
+                      </div>
+                    )}
+                  </div>
                 </Link>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3">
-                {recentMovies.slice(0, 2).map((movie) => (
-                  <Link key={movie.id} href={`/content/movie/${movie.id}`} className="relative group cursor-pointer">
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* TV/Dizi Aktiviteleri */}
+        <div>
+          <h3 className="text-xl font-bold mb-6">TV/Dizi Aktiviteleri</h3>
+          {recentTv.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">
+              <p>Henüz TV/dizi aktivitesi yok.</p>
+              <Link href="/explore/tv" className="text-gray-400 hover:text-gray-300 mt-2 inline-block">
+                TV/Dizi keşfet
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {recentTv.map((tv) => (
+                <Link key={tv.id} href={`/content/tv/${tv.id}`} className="group">
+                  <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden relative">
+                    {tv.poster_path ? (
+                      <Image
+                        src={tmdbImage(tv.poster_path, 'w342')}
+                        alt={tv.title || 'Unknown TV Show'}
+                        width={150}
+                        height={225}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
+                        <span className="text-xs text-center px-2 text-white">{tv.title || 'Unknown TV Show'}</span>
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Kitap Aktiviteleri */}
+        <div>
+          <h3 className="text-xl font-bold mb-6">Kitap Aktiviteleri</h3>
+          {recentBooks.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">
+              <p>Henüz kitap aktivitesi yok.</p>
+              <Link href="/explore/books" className="text-gray-400 hover:text-gray-300 mt-2 inline-block">
+                Kitap keşfet
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {recentBooks.map((book) => (
+                <Link key={book.id} href={`/content/book/${book.id}`} className="group">
+                  <div className="aspect-[3/4] bg-gray-800 rounded-lg overflow-hidden relative">
+                    {book.poster_path ? (
+                      <Image
+                        src={book.poster_path}
+                        alt={book.title || 'Unknown Book'}
+                        width={200}
+                        height={300}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
+                        <span className="text-xs text-center px-2 text-white">{book.title || 'Unknown Book'}</span>
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Öne Çıkarılan İçerikler */}
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold">Öne Çıkarılan İçerikler</h3>
+            {isOwnProfile && (
+              <button
+                onClick={() => {
+                  setShowFeaturedDialog(true);
+                  setSearchQuery('');
+                }}
+                className="p-2 text-gray-400 hover:text-white transition-colors"
+                title="Öne çıkarılan içerikleri düzenle"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {/* Content Type Tabs */}
+          <div className="flex space-x-1 mb-6 bg-gray-800 p-1 rounded-lg">
+            {[
+              { key: 'movies', label: 'Filmler', count: favoriteMovies.length },
+              { key: 'tv', label: 'TV/Dizi', count: favoriteTv.length },
+              { key: 'games', label: 'Oyunlar', count: favoriteGames.length },
+              { key: 'books', label: 'Kitaplar', count: favoriteBooks.length }
+            ].map(({ key, label, count }) => (
+              <button
+                key={key}
+                onClick={() => setFeaturedType(key as any)}
+                className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                  featuredType === key
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700'
+                }`}
+              >
+                {label} ({count})
+              </button>
+            ))}
+          </div>
+
+          {getFeaturedContent().length === 0 ? (
+            <div className="text-center text-gray-400 py-8">
+              <p>Henüz öne çıkarılan {featuredType === 'movies' ? 'film' : featuredType === 'tv' ? 'TV/dizi' : featuredType === 'games' ? 'oyun' : 'kitap'} yok.</p>
+              <Link href={featuredType === 'movies' ? '/explore' : `/explore/${featuredType}`} className="text-gray-400 hover:text-gray-300 mt-2 inline-block">
+                Keşfetmeye başlayın
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              {getFeaturedContent().map((content) => {
+                const title = content.title || 'Unknown Title';
+                const linkPath = featuredType === 'movies' ? `/content/movie/${content.id}` :
+                                featuredType === 'tv' ? `/content/tv/${content.id}` :
+                                featuredType === 'games' ? `/content/game/${content.id}` :
+                                `/content/book/${content.id}`;
+
+                return (
+                  <Link key={content.id} href={`/content/${featuredType === 'tv' ? 'tv' : featuredType}/${content.id}` as any} className="group">
                     <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden relative">
-                      {movie.poster_path ? (
+                      {content.poster_path ? (
                         <Image
-                          src={tmdbImage(movie.poster_path, 'w342')}
-                          alt={movie.title}
+                          src={featuredType === 'games' || featuredType === 'books' ? content.poster_path : tmdbImage(content.poster_path, 'w342')}
+                          alt={title}
                           width={150}
                           height={225}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
-                          <span className="text-xs text-center px-2">{movie.title}</span>
+                          <span className="text-xs text-center px-2 text-white">{title}</span>
                         </div>
                       )}
-
-                      {/* Hover Overlay with Action Buttons */}
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              // Handle watch action
-                            }}
-                            className="flex items-center justify-center w-8 h-8 rounded-full backdrop-blur-sm text-white bg-white/20 hover:bg-white/30 transition-colors"
-                            title="İzle"
-                          >
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                              <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
-                            </svg>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              // Handle favorite action
-                            }}
-                            className="flex items-center justify-center w-8 h-8 rounded-full backdrop-blur-sm text-white bg-white/20 hover:bg-white/30 transition-colors"
-                            title="Favori"
-                          >
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"/>
-                            </svg>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              // Handle watchlist action
-                            }}
-                            className="flex items-center justify-center w-8 h-8 rounded-full backdrop-blur-sm text-white bg-white/20 hover:bg-white/30 transition-colors"
-                            title="İzleme Listesi"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
                     </div>
                   </Link>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Main Content */}
