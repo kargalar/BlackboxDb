@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Review, updateReview } from '@/services/database/movieLogs';
 import type { ReviewReply } from '@/services/database/movieLogs';
 import { tmdbImage } from '@/services/api/tmdb';
+import { igdbImageUrl } from '@/lib/igdb-client';
+import { CONTENT_TYPE } from '@/lib/constants';
 import { getReviewReplies, testReviewReplyTable } from '@/services/database/reviewReplies';
 import { EyeIconSolid } from '@/components/icons/EyeIcon';
 import { HeartIcon } from '@/components/icons/HeartIcon';
@@ -13,6 +15,60 @@ interface ReviewsTabProps {
   reviews: Review[];
   onReviewUpdate?: (reviewId: number, newText: string) => void;
   isOwnProfile?: boolean;
+}
+
+function getContentImageUrl(review: Review): string | null {
+  if (!review.content?.poster_path) {
+    console.log('⚠️ Poster path yok:', review.content?.title);
+    return null;
+  }
+  
+  const contentTypeId = review.content.content_type_id;
+  console.log('🔍 Content türü kontrolü:', review.content.title, 'Type ID:', contentTypeId, 'Poster path:', review.content.poster_path);
+  
+  // If poster_path is already a full URL, use it directly
+  if (review.content.poster_path.startsWith('http')) {
+    console.log('🌐 Tam URL kullanılıyor:', review.content.poster_path);
+    return review.content.poster_path;
+  }
+  
+  switch (contentTypeId) {
+    case CONTENT_TYPE.MOVIE:
+    case CONTENT_TYPE.TV:
+      const tmdbUrl = tmdbImage(review.content.poster_path, 'w342');
+      console.log('🎬 TMDB URL:', tmdbUrl);
+      return tmdbUrl;
+    case CONTENT_TYPE.GAME:
+      // IGDB images use image_id format, not full path
+      const igdbUrl = igdbImageUrl(review.content.poster_path, 'cover_big');
+      console.log('🎮 IGDB URL:', igdbUrl);
+      return igdbUrl;
+    case CONTENT_TYPE.BOOK:
+      // For books, poster_path might be a Google Books thumbnail URL
+      console.log('📚 Kitap URL (fallback):', review.content.poster_path);
+      return review.content.poster_path;
+    default:
+      const defaultUrl = tmdbImage(review.content.poster_path, 'w342');
+      console.log('❓ Varsayılan URL:', defaultUrl);
+      return defaultUrl;
+  }
+}
+
+function getContentLink(review: Review): string {
+  const contentTypeId = review.content?.content_type_id;
+  
+  switch (contentTypeId) {
+    case CONTENT_TYPE.MOVIE:
+      return `/content/movie/${review.content_id}`;
+    case CONTENT_TYPE.TV:
+      return `/content/tv/${review.content_id}`;
+    case CONTENT_TYPE.GAME:
+      return `/content/game/${review.content_id}`;
+    case CONTENT_TYPE.BOOK:
+      return `/content/book/${review.content_id}`;
+    default:
+      return `/content/movie/${review.content_id}`;
+  }
 }
 
 export default function ReviewsTab({ reviews, onReviewUpdate, isOwnProfile = false }: ReviewsTabProps) {
@@ -53,6 +109,17 @@ export default function ReviewsTab({ reviews, onReviewUpdate, isOwnProfile = fal
   };
 
   useEffect(() => {
+    console.log('📝 ReviewsTab yüklendi, reviews sayısı:', reviews.length);
+    reviews.forEach((review, index) => {
+      console.log(`📝 Review ${index + 1}:`, {
+        id: review.id,
+        content_id: review.content_id,
+        title: review.content?.title,
+        poster_path: review.content?.poster_path,
+        content_type_id: review.content?.content_type_id
+      });
+    });
+    
     // Test if review_reply table exists
     testReviewReplyTable();
 
@@ -81,19 +148,26 @@ export default function ReviewsTab({ reviews, onReviewUpdate, isOwnProfile = fal
       {reviews.map((review) => (
         <div key={review.id} className="bg-gray-900 rounded-lg p-4 flex space-x-4">
           <div className="w-24 flex-shrink-0">
-            <Link href={`/content/movie/${review.content_id}`} className="group relative">
+            <Link href={getContentLink(review) as any} className="group relative">
               <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden relative">
                 {review.content?.poster_path ? (
                   <Image
-                    src={tmdbImage(review.content.poster_path, 'w342')}
+                    src={getContentImageUrl(review) || ''}
                     alt={review.content.title}
                     width={100}
                     height={150}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    onError={(e) => {
+                      console.error('❌ Poster görüntü yüklenemedi:', review.content?.title, 'URL:', getContentImageUrl(review));
+                      console.error('❌ Review data:', review);
+                      // Hide the image on error
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
                   />
-                ) : (
+                ) : null}
+                {!review.content?.poster_path && (
                   <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
-                    <span className="text-xs text-center px-2">{review.content?.title || 'Film'}</span>
+                    <span className="text-xs text-center px-2">{review.content?.title || 'İçerik'}</span>
                   </div>
                 )}
 

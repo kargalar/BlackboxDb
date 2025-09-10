@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type { TMDBMovieDetail, TMDBTvDetail } from '@/types/tmdb'
 import type { IgdbGame } from '@/types/igdb'
-import { igdbImageUrl } from '@/services/api/igdb'
+import { igdbImageUrl } from '@/lib/igdb-client'
 import type { GoogleBook } from '@/services/api/books'
 import { CONTENT_TYPE } from '@/lib/constants'
 
@@ -81,6 +81,7 @@ export interface Review {
     id: number
     title: string
     poster_path: string | null
+    content_type_id?: number
   }
 }
 
@@ -608,7 +609,8 @@ export async function getReviewsByUserId(userId: string): Promise<{ data: Review
         content:content_id (
           id,
           title,
-          poster_path
+          poster_path,
+          content_type_id
         )
       `)
       .eq('user_id', userId)

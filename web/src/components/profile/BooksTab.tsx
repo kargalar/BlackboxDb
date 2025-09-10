@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Content } from '@/services/database/movieLogs';
 import { supabase } from '@/lib/supabase';
 
@@ -138,6 +139,27 @@ export default function BooksTab({ books }: BooksTabProps) {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {filteredBooks.map((book) => (
           <div key={book.id} className="space-y-2">
+            <Link href={`/content/book/${book.id}`} className="group block">
+              <div className="aspect-[3/4] bg-gray-800 rounded-lg overflow-hidden relative">
+                {book.poster_path ? (
+                  <Image
+                    src={book.poster_path}
+                    alt={book.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform"
+                    onError={(e) => {
+                      console.error('❌ Kitap poster yüklenemedi:', book.title, book.poster_path);
+                      // Hide the image on error
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
+                    <span className="text-xs text-center px-2 text-gray-300">{book.title}</span>
+                  </div>
+                )}
+              </div>
+            </Link>
             <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
               <div className="text-sm font-medium line-clamp-2 text-white">{book.title}</div>
               {(book.user_rating ?? 0) > 0 && (
