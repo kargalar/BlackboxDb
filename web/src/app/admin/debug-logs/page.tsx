@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { getCurrentUserProfile } from '@/services/database/userService'
-import { getLogs, resetRequestCounts, getRequestCounts } from '@/lib/requestLogger'
+import { getLogs, getRequestCounts } from '@/lib/requestLogger'
 import type { Route } from 'next'
 
 interface LogEntry {
@@ -33,12 +33,6 @@ export default function DebugLogsPage() {
     }
   }, [allowed])
 
-  const handleReset = () => {
-    resetRequestCounts()
-    setLogs([])
-    setCounts({ apiRequests: 0, supabaseRequests: 0 })
-  }
-
   if (!allowed) {
     return (
       <div className="max-w-4xl mx-auto p-6">
@@ -52,12 +46,6 @@ export default function DebugLogsPage() {
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">Debug Logları</h1>
-        <button
-          onClick={handleReset}
-          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-        >
-          Logları Temizle
-        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

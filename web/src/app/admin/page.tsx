@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { getCurrentUserProfile } from '@/services/database/userService'
-import { getLogs, getRequestCounts } from '@/lib/requestLogger'
+import { getLogs, getRequestCounts, resetRequestCounts } from '@/lib/requestLogger'
 import type { Route } from 'next'
 
 interface LogEntry {
@@ -20,6 +20,11 @@ export default function AdminHome() {
   const [allowed, setAllowed] = useState<boolean>(false)
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [counts, setCounts] = useState({ apiRequests: 0, supabaseRequests: 0 })
+  const handleReset = () => {
+    resetRequestCounts()
+    setLogs([])
+    setCounts({ apiRequests: 0, supabaseRequests: 0 })
+  }
 
   useEffect(() => {
     getCurrentUserProfile().then(r => {
@@ -31,6 +36,14 @@ export default function AdminHome() {
     if (allowed) {
       setLogs(getLogs().slice(-5)) // Last 5 logs
       setCounts(getRequestCounts())
+      
+      // Update stats every 1 second
+      const interval = setInterval(() => {
+        setLogs(getLogs().slice(-5))
+        setCounts(getRequestCounts())
+      }, 1000)
+      
+      return () => clearInterval(interval)
     }
   }, [allowed])
 
@@ -72,7 +85,15 @@ export default function AdminHome() {
 
       {/* Quick Debug Stats */}
       <div className="space-y-4">
-        <h2 className="text-xl font-medium">Hızlı İstatistikler</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-medium">Genel İstatistikler (Tüm Pencereler)</h2>
+          <button
+            onClick={handleReset}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-medium transition-colors"
+          >
+            Tüm İstatistikleri Sıfırla
+          </button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="p-4 rounded-lg border bg-blue-50 dark:bg-blue-900/20">
             <div className="text-lg font-medium text-blue-800 dark:text-blue-200">API İstekleri</div>
