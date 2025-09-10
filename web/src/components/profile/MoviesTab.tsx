@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Content } from '@/services/database/movieLogs';
 import { tmdbImage } from '@/services/api/tmdb';
 import { supabase } from '@/lib/supabase';
@@ -28,11 +28,60 @@ interface MoviesTabProps {
 
 export default function MoviesTab({ movies }: MoviesTabProps) {
   const [showOnlyWatchlist, setShowOnlyWatchlist] = useState(false);
-  
-  // Filter movies based on watchlist status
-  const filteredMovies = showOnlyWatchlist 
-    ? movies.filter(movie => movie.is_consume_later)
-    : movies.filter(movie => !movie.is_consume_later);
+  const [sortBy, setSortBy] = useState<'date' | 'rating' | 'title'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [filterRating, setFilterRating] = useState<number | null>(null);
+  const [filterYear, setFilterYear] = useState<number | null>(null);
+
+  // Filter and sort movies
+  const filteredAndSortedMovies = useMemo(() => {
+    let filtered = showOnlyWatchlist
+      ? movies.filter(movie => movie.is_consume_later)
+      : movies.filter(movie => !movie.is_consume_later);
+
+    // Apply rating filter
+    if (filterRating !== null) {
+      filtered = filtered.filter(movie => movie.user_rating && movie.user_rating >= filterRating);
+    }
+
+    // Apply year filter
+    if (filterYear !== null) {
+      filtered = filtered.filter(movie => {
+        const movieYear = movie.date ? new Date(movie.date).getFullYear() : null;
+        return movieYear && movieYear >= filterYear;
+      });
+    }
+
+    // Sort movies
+    filtered.sort((a, b) => {
+      let aValue: any, bValue: any;
+
+      switch (sortBy) {
+        case 'date':
+          aValue = new Date(a.date || '1900-01-01');
+          bValue = new Date(b.date || '1900-01-01');
+          break;
+        case 'rating':
+          aValue = a.user_rating || 0;
+          bValue = b.user_rating || 0;
+          break;
+        case 'title':
+          aValue = a.title || '';
+          bValue = b.title || '';
+          break;
+        default:
+          return 0;
+      }
+
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+    return filtered;
+  }, [movies, showOnlyWatchlist, sortBy, sortOrder, filterRating, filterYear]);
 
   const handleToggleFavorite = async (movieId: number) => {
     try {
@@ -51,66 +100,14 @@ export default function MoviesTab({ movies }: MoviesTabProps) {
         .eq('user_id', user.user.id)
         .eq('content_id', movieId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating favorite status:', error);
+        return;
+      }
 
-      // Update local state (you might want to pass an onUpdate callback from parent)
       console.log(`Movie ${movieId} favorite status updated to ${newFavoriteStatus}`);
-    } catch (error) {
-      console.error('Error updating favorite status:', error);
-    }
-  };
-
-  const handleToggleWatch = async (movieId: number) => {
-    try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return;
-
-      const movie = movies.find(m => m.id === movieId);
-      if (!movie) return;
-
-      // For profile pages, toggle watch status (mark as unwatched or vice versa)
-      const newWatchedStatus = false; // Since these are watched movies, clicking watch should mark as unwatched
-
-      // Update in database
-      const { error } = await supabase
-        .from('user_content_log')
-        .update({ 
-          is_watched: newWatchedStatus,
-          date: newWatchedStatus ? new Date().toISOString() : null 
-        })
-        .eq('user_id', user.user.id)
-        .eq('content_id', movieId);
-
-      if (error) throw error;
-
-      console.log(`Movie ${movieId} watch status updated to ${newWatchedStatus}`);
-    } catch (error) {
-      console.error('Error updating watch status:', error);
-    }
-  };
-
-  const handleToggleWatchlist = async (movieId: number) => {
-    try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return;
-
-      const movie = movies.find(m => m.id === movieId);
-      if (!movie) return;
-
-      const newWatchlistStatus = !movie.is_consume_later;
-
-      // Update in database
-      const { error } = await supabase
-        .from('user_content_log')
-        .update({ is_consume_later: newWatchlistStatus })
-        .eq('user_id', user.user.id)
-        .eq('content_id', movieId);
-
-      if (error) throw error;
-
-      console.log(`Movie ${movieId} watchlist status updated to ${newWatchlistStatus}`);
-    } catch (error) {
-      console.error('Error updating watchlist status:', error);
+    } catch (err) {
+      console.error('Error in handleToggleFavorite:', err);
     }
   };
 
@@ -126,36 +123,84 @@ export default function MoviesTab({ movies }: MoviesTabProps) {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Filter Controls */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={() => setShowOnlyWatchlist(false)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              !showOnlyWatchlist 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-          >
-            İzlenen Filmler ({movies.filter(m => !m.is_consume_later).length})
-          </button>
-          <button
-            onClick={() => setShowOnlyWatchlist(true)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              showOnlyWatchlist 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-          >
-            Watchlist ({movies.filter(m => m.is_consume_later).length})
-          </button>
+    <div className="space-y-6">
+      {/* Filters and Sorting */}
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Watchlist Filter */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Filtre</label>
+            <select
+              value={showOnlyWatchlist ? 'watchlist' : 'all'}
+              onChange={(e) => setShowOnlyWatchlist(e.target.value === 'watchlist')}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+            >
+              <option value="all">Tüm Filmler</option>
+              <option value="watchlist">İzleme Listesi</option>
+            </select>
+          </div>
+
+          {/* Sort By */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Sırala</label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as 'date' | 'rating' | 'title')}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+            >
+              <option value="date">Tarih</option>
+              <option value="rating">Puan</option>
+              <option value="title">Başlık</option>
+            </select>
+          </div>
+
+          {/* Sort Order */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Sıralama</label>
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+            >
+              <option value="desc">Azalan</option>
+              <option value="asc">Artan</option>
+            </select>
+          </div>
+
+          {/* Rating Filter */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Min Puan</label>
+            <select
+              value={filterRating || ''}
+              onChange={(e) => setFilterRating(e.target.value ? Number(e.target.value) : null)}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+            >
+              <option value="">Tümü</option>
+              <option value="1">1+</option>
+              <option value="2">2+</option>
+              <option value="3">3+</option>
+              <option value="4">4+</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Year Filter */}
+        <div className="mt-4">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Yıl (ve sonrası)</label>
+          <input
+            type="number"
+            value={filterYear || ''}
+            onChange={(e) => setFilterYear(e.target.value ? Number(e.target.value) : null)}
+            placeholder="örn: 2020"
+            className="ml-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+          />
         </div>
       </div>
 
       {/* Movies Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {filteredMovies.map((movie) => (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {filteredAndSortedMovies.map((movie) => (
           <div key={movie.id} className="space-y-2">
             <Link href={`/content/movie/${movie.id}`} className="group relative">
               <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden relative border border-gray-700">

@@ -19,6 +19,10 @@ function BooksExploreInner() {
 
   const searchQuery = useMemo(() => (searchParams.get('search') || '').trim(), [searchParams]);
   const page = useMemo(() => Math.max(1, Number(searchParams.get('page') || '1')), [searchParams]);
+  const sortBy = useMemo(() => searchParams.get('sort_by') || 'relevance', [searchParams]);
+  const yearMin = useMemo(() => searchParams.get('year_min') || '', [searchParams]);
+  const yearMax = useMemo(() => searchParams.get('year_max') || '', [searchParams]);
+  const author = useMemo(() => searchParams.get('author') || '', [searchParams]);
   const query = searchQuery || 'harry potter';
 
   useEffect(() => {
@@ -216,13 +220,30 @@ function BooksExploreInner() {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const next = String(form.get('search') || '').trim();
-    router.push((`/explore/books${next ? `?search=${encodeURIComponent(next)}` : ''}`) as Route);
+    const sortBy = String(form.get('sort_by') || 'relevance');
+    const yearMin = String(form.get('year_min') || '');
+    const yearMax = String(form.get('year_max') || '');
+    const author = String(form.get('author') || '');
+    
+    const params = new URLSearchParams();
+    if (next) params.set('search', next);
+    if (sortBy !== 'relevance') params.set('sort_by', sortBy);
+    if (yearMin) params.set('year_min', yearMin);
+    if (yearMax) params.set('year_max', yearMax);
+    if (author) params.set('author', author);
+    
+    const queryString = params.toString();
+    router.push((`/explore/books${queryString ? `?${queryString}` : ''}`) as Route);
   };
 
   const makeQS = (entries: Record<string, string | undefined>) => {
     const q = new URLSearchParams();
     const base: Record<string, string | undefined> = {
       search: searchQuery,
+      sort_by: sortBy,
+      year_min: yearMin,
+      year_max: yearMax,
+      author: author,
     };
     const all = { ...base, ...entries };
     Object.entries(all).forEach(([k, v]) => { if (v) q.set(k, v); });
@@ -231,8 +252,134 @@ function BooksExploreInner() {
 
   const totalPages = Math.ceil(totalItems / 24);
 
+  // Client-side filtering
+  const filteredBooks = useMemo(() => {
+    let filtered = [...books];
+    
+    // Filter by year
+    if (yearMin) {
+      const minYear = parseInt(yearMin);
+      filtered = filtered.filter(book => {
+        if (!book.publishedDate) return false;
+        const bookYear = parseInt(book.publishedDate.split('-')[0]);
+        return bookYear >= minYear;
+      });
+    }
+    
+    if (yearMax) {
+      const maxYear = parseInt(yearMax);
+      filtered = filtered.filter(book => {
+        if (!book.publishedDate) return false;
+        const bookYear = parseInt(book.publishedDate.split('-')[0]);
+        return bookYear <= maxYear;
+      });
+    }
+    
+    // Filter by author
+    if (author) {
+      filtered = filtered.filter(book => {
+        if (!book.authors) return false;
+        return book.authors.some(a => a.toLowerCase().includes(author.toLowerCase()));
+      });
+    }
+    
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'title':
+          return (a.title || '').localeCompare(b.title || '');
+        case 'author':
+          const authorA = (a.authors || []).join(' ').toLowerCase();
+          const authorB = (b.authors || []).join(' ').toLowerCase();
+          return authorA.localeCompare(authorB);
+        case 'newest':
+          const dateA = a.publishedDate ? new Date(a.publishedDate).getTime() : 0;
+          const dateB = b.publishedDate ? new Date(b.publishedDate).getTime() : 0;
+          return dateB - dateA;
+        case 'oldest':
+          const dateA2 = a.publishedDate ? new Date(a.publishedDate).getTime() : 0;
+          const dateB2 = b.publishedDate ? new Date(b.publishedDate).getTime() : 0;
+          return dateA2 - dateB2;
+        case 'relevance':
+        default:
+          return 0; // Keep original order for relevance
+      }
+    });
+    
+    return filtered;
+  }, [books, sortBy, yearMin, yearMax, author]);
+
   return (
-    <ExploreLayout title="Kitapları Keşfet" subtitle="Google Books üzerinden popüler ve aradığınız kitapları bulun">
+    <ExploreLayout title="Kitapları Keşfet" subtitle="Google Books üzerinden popüler ve aradığınız kitapları bulun" filters={!searchQuery ? (
+      <form onSubmit={onSubmit} className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {/* Sıralama */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Sırala</label>
+          <select
+            name="sort_by"
+            defaultValue={sortBy}
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+          >
+            <option value="relevance">Alakalılık</option>
+            <option value="newest">En Yeni</option>
+            <option value="oldest">En Eski</option>
+            <option value="title">Başlık A-Z</option>
+            <option value="author">Yazar A-Z</option>
+          </select>
+        </div>
+
+        {/* Yayın Yılı */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Yayın Yılı</label>
+          <div className="flex gap-2">
+            <input
+              name="year_min"
+              defaultValue={yearMin}
+              className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+              placeholder="2000"
+              type="number"
+            />
+            <input
+              name="year_max"
+              defaultValue={yearMax}
+              className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+              placeholder="2024"
+              type="number"
+            />
+          </div>
+        </div>
+
+        {/* Yazar */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Yazar</label>
+          <input
+            name="author"
+            defaultValue={author}
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+            placeholder="J.K. Rowling, Stephen King..."
+          />
+        </div>
+
+        {/* Filtreleri Temizle Butonu */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 opacity-0">Filtreler</label>
+          <button
+            type="button"
+            onClick={() => router.push('/explore/books')}
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            Filtreleri Temizle
+          </button>
+        </div>
+
+        {/* Uygula Butonu */}
+        <div className="lg:col-span-4 xl:col-span-4">
+          <button type="submit" className="rounded-lg bg-gray-700 dark:bg-gray-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-gray-800 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20 transition-colors">
+            Filtreleri Uygula
+          </button>
+        </div>
+      </form>
+    ) : undefined}>
       <form onSubmit={onSubmit} className="flex gap-2">
         <input
           name="search"
@@ -256,7 +403,7 @@ function BooksExploreInner() {
           ? Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className="aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-pulse" />
             ))
-          : books.map((b) => <BookCard 
+          : filteredBooks.map((b) => <BookCard 
               key={b.id} 
               book={b} 
               size="large"

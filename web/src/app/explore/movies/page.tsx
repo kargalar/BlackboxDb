@@ -231,6 +231,11 @@ function MoviesExploreContent() {
   const page = sp.page || '1';
   const yearMin = sp.yearMin || '';
   const yearMax = sp.yearMax || '';
+  const voteMin = sp.voteMin || '';
+  const voteMax = sp.voteMax || '';
+  const runtimeMin = sp.runtimeMin || '';
+  const runtimeMax = sp.runtimeMax || '';
+  const certification = sp.certification || '';
   const searchQuery = sp.search || '';
 
   useEffect(() => {
@@ -259,7 +264,12 @@ function MoviesExploreContent() {
             page,
             'primary_release_date.gte': gte,
             'primary_release_date.lte': lte,
-          });
+            'vote_average.gte': voteMin || undefined,
+            'vote_average.lte': voteMax || undefined,
+            'with_runtime.gte': runtimeMin || undefined,
+            'with_runtime.lte': runtimeMax || undefined,
+            certification: certification || undefined,
+          } as any);
         }
         
         if (result && result.results) {
@@ -301,7 +311,7 @@ function MoviesExploreContent() {
     };
 
     fetchData();
-  }, [sort_by, with_original_language, with_genres, page, yearMin, yearMax, searchQuery]);
+  }, [sort_by, with_original_language, with_genres, page, yearMin, yearMax, voteMin, voteMax, runtimeMin, runtimeMax, certification, searchQuery]);
 
   const results = data?.results || [];
 
@@ -320,6 +330,11 @@ function MoviesExploreContent() {
       with_genres,
       yearMin,
       yearMax,
+      voteMin,
+      voteMax,
+      runtimeMin,
+      runtimeMax,
+      certification,
       search: searchQuery,
     };
     const all = { ...base, ...entries };
@@ -334,7 +349,23 @@ function MoviesExploreContent() {
       title={searchQuery ? `"${searchQuery}" için film araması` : 'Filmleri Keşfet'}
       subtitle={searchQuery ? `${data?.total_results || 0} sonuç bulundu` : 'TMDB üzerinden popüler ve aradığınız filmleri bulun'}
       filters={!searchQuery ? (
-        <form className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.currentTarget);
+          const params: Record<string, string> = {};
+          
+          // Collect all form values
+          formData.forEach((value, key) => {
+            if (value && typeof value === 'string' && value.trim()) {
+              params[key] = value.trim();
+            }
+          });
+          
+          // Build query string
+          const queryString = Object.keys(params).length > 0 ? '?' + new URLSearchParams(params).toString() : '';
+          router.push(`/explore/movies${queryString}` as Route);
+        }} className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {/* Sıralama */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Sırala</label>
             <select
@@ -342,51 +373,148 @@ function MoviesExploreContent() {
               defaultValue={sort_by}
               className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
             >
-              <option value="popularity.desc">Popülarite ↓</option>
+              <option value="popularity.desc">Popülerlik ↓</option>
+              <option value="popularity.asc">Popülerlik ↑</option>
               <option value="vote_average.desc">Puan ↓</option>
+              <option value="vote_average.asc">Puan ↑</option>
               <option value="primary_release_date.desc">Çıkış Tarihi ↓</option>
+              <option value="primary_release_date.asc">Çıkış Tarihi ↑</option>
+              <option value="title.asc">Başlık A-Z</option>
+              <option value="title.desc">Başlık Z-A</option>
+              <option value="vote_count.desc">Oy Sayısı ↓</option>
+              <option value="vote_count.asc">Oy Sayısı ↑</option>
             </select>
           </div>
+
+          {/* Dil */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Dil</label>
-            <input
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Orijinal Dil</label>
+            <select
               name="with_original_language"
               defaultValue={with_original_language}
               className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
-              placeholder="en, tr"
-            />
+            >
+              <option value="">Tümü</option>
+              <option value="en">İngilizce</option>
+              <option value="tr">Türkçe</option>
+              <option value="es">İspanyolca</option>
+              <option value="fr">Fransızca</option>
+              <option value="de">Almanca</option>
+              <option value="it">İtalyanca</option>
+              <option value="ja">Japonca</option>
+              <option value="ko">Korece</option>
+              <option value="zh">Çince</option>
+            </select>
           </div>
+
+          {/* Türler */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Tür ID&apos;ler</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Türler</label>
             <input
               name="with_genres"
               defaultValue={with_genres}
               className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
-              placeholder="28,12"
+              placeholder="28,12,16 (Aksiyon, Macera, Animasyon)"
             />
           </div>
-          <div className="flex gap-2">
-            <div className="flex-1 space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Yıl ≥</label>
+
+          {/* Yayın Yılı */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Yayın Yılı</label>
+            <div className="flex gap-2">
               <input
                 name="yearMin"
                 defaultValue={yearMin}
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
-                placeholder="2015"
+                className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+                placeholder="2020"
               />
-            </div>
-            <div className="flex-1 space-y-2">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Yıl ≤</label>
               <input
                 name="yearMax"
                 defaultValue={yearMax}
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+                className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
                 placeholder="2024"
               />
             </div>
           </div>
-          <div className="lg:col-span-4">
-            <button className="rounded-lg bg-gray-700 dark:bg-gray-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-gray-800 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20 transition-colors">
+
+          {/* Puan Aralığı */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Puan Aralığı</label>
+            <div className="flex gap-2">
+              <input
+                name="voteMin"
+                defaultValue={voteMin}
+                className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+                placeholder="7.0"
+                step="0.1"
+                min="0"
+                max="10"
+              />
+              <input
+                name="voteMax"
+                defaultValue={voteMax}
+                className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+                placeholder="10.0"
+                step="0.1"
+                min="0"
+                max="10"
+              />
+            </div>
+          </div>
+
+          {/* Süre */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Süre (dk)</label>
+            <div className="flex gap-2">
+              <input
+                name="runtimeMin"
+                defaultValue={runtimeMin}
+                className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+                placeholder="60"
+                type="number"
+              />
+              <input
+                name="runtimeMax"
+                defaultValue={runtimeMax}
+                className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+                placeholder="180"
+                type="number"
+              />
+            </div>
+          </div>
+
+          {/* Yaş Sınırı */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Yaş Sınırı</label>
+            <select
+              name="certification"
+              defaultValue={certification}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+            >
+              <option value="">Tümü</option>
+              <option value="G">G (Genel İzleyici)</option>
+              <option value="PG">PG (Velilerle)</option>
+              <option value="PG-13">PG-13 (13 Yaş Altı)</option>
+              <option value="R">R (Yetişkin)</option>
+              <option value="NC-17">NC-17 (17 Yaş Altı)</option>
+            </select>
+          </div>
+
+          {/* Filtreleri Temizle Butonu */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 opacity-0">Filtreler</label>
+            <button
+              type="button"
+              onClick={() => router.push('/explore/movies')}
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              Filtreleri Temizle
+            </button>
+          </div>
+
+          {/* Uygula Butonu */}
+          <div className="lg:col-span-4 xl:col-span-4">
+            <button type="submit" className="rounded-lg bg-gray-700 dark:bg-gray-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-gray-800 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20 transition-colors">
               Filtreleri Uygula
             </button>
           </div>

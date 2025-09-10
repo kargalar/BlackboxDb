@@ -13,6 +13,7 @@ type Game = {
   name: string;
   cover?: { image_id: string };
   platforms?: { name: string }[];
+  first_release_date?: number;
   total_rating?: number;
 };
 
@@ -26,6 +27,10 @@ function GamesExploreInner() {
 
   const searchQuery = useMemo(() => (searchParams.get('search') || '').trim(), [searchParams]);
   const page = useMemo(() => Math.max(1, Number(searchParams.get('page') || '1')), [searchParams]);
+  const sortBy = useMemo(() => searchParams.get('sort_by') || 'total_rating.desc', [searchParams]);
+  const yearMin = useMemo(() => searchParams.get('year_min') || '', [searchParams]);
+  const yearMax = useMemo(() => searchParams.get('year_max') || '', [searchParams]);
+  const platform = useMemo(() => searchParams.get('platform') || '', [searchParams]);
   const query = searchQuery || 'zelda';
 
   useEffect(() => {
@@ -222,22 +227,92 @@ function GamesExploreInner() {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const next = String(form.get('search') || '').trim();
-  router.push((`/explore/games${next ? `?search=${encodeURIComponent(next)}` : ''}`) as Route);
+    const sortBy = String(form.get('sort_by') || 'total_rating.desc');
+    const yearMin = String(form.get('year_min') || '');
+    const yearMax = String(form.get('year_max') || '');
+    const platform = String(form.get('platform') || '');
+    
+    const params = new URLSearchParams();
+    if (next) params.set('search', next);
+    if (sortBy !== 'total_rating.desc') params.set('sort_by', sortBy);
+    if (yearMin) params.set('year_min', yearMin);
+    if (yearMax) params.set('year_max', yearMax);
+    if (platform) params.set('platform', platform);
+    
+    const queryString = params.toString();
+    router.push((`/explore/games${queryString ? `?${queryString}` : ''}`) as Route);
   };
 
   const makeQS = (entries: Record<string, string | undefined>) => {
     const q = new URLSearchParams();
     const base: Record<string, string | undefined> = {
       search: searchQuery,
+      sort_by: sortBy,
+      year_min: yearMin,
+      year_max: yearMax,
+      platform: platform,
     };
     const all = { ...base, ...entries };
     Object.entries(all).forEach(([k, v]) => { if (v) q.set(k, v); });
     return `?${q.toString()}`;
   };
 
+  // Client-side filtering
+  const filteredGames = useMemo(() => {
+    let filtered = [...games];
+    
+    // Filter by year
+    if (yearMin) {
+      const minYear = parseInt(yearMin);
+      filtered = filtered.filter(game => {
+        if (!game.first_release_date) return false;
+        const gameYear = new Date(game.first_release_date * 1000).getFullYear();
+        return gameYear >= minYear;
+      });
+    }
+    
+    if (yearMax) {
+      const maxYear = parseInt(yearMax);
+      filtered = filtered.filter(game => {
+        if (!game.first_release_date) return false;
+        const gameYear = new Date(game.first_release_date * 1000).getFullYear();
+        return gameYear <= maxYear;
+      });
+    }
+    
+    // Filter by platform
+    if (platform) {
+      filtered = filtered.filter(game => {
+        if (!game.platforms) return false;
+        return game.platforms.some(p => p.name.toLowerCase().includes(platform.toLowerCase()));
+      });
+    }
+    
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'name.asc':
+          return (a.name || '').localeCompare(b.name || '');
+        case 'name.desc':
+          return (b.name || '').localeCompare(a.name || '');
+        case 'first_release_date.asc':
+          return (a.first_release_date || 0) - (b.first_release_date || 0);
+        case 'first_release_date.desc':
+          return (b.first_release_date || 0) - (a.first_release_date || 0);
+        case 'total_rating.asc':
+          return (a.total_rating || 0) - (b.total_rating || 0);
+        case 'total_rating.desc':
+        default:
+          return (b.total_rating || 0) - (a.total_rating || 0);
+      }
+    });
+    
+    return filtered;
+  }, [games, sortBy, yearMin, yearMax, platform]);
+
   // For games, we'll assume a reasonable total pages since IGDB doesn't provide total count easily
   // We can show pagination if we have results and allow navigation
-  const hasResults = games.length > 0;
+  const hasResults = filteredGames.length > 0;
   const canGoNext = games.length === 48 && !loading; // If we got full limit, there might be more pages
   const canGoPrev = page > 1;
 
@@ -245,7 +320,77 @@ function GamesExploreInner() {
   const mightBeLastPage = games.length > 0 && games.length < 48;
 
   return (
-    <ExploreLayout title="Oyunları Keşfet" subtitle="IGDB üzerinden popüler ve aradığınız oyunları bulun">
+    <ExploreLayout title="Oyunları Keşfet" subtitle="IGDB üzerinden popüler ve aradığınız oyunları bulun" filters={!searchQuery ? (
+      <form onSubmit={onSubmit} className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {/* Sıralama */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Sırala</label>
+          <select
+            name="sort_by"
+            defaultValue={sortBy}
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+          >
+            <option value="total_rating.desc">Puan ↓</option>
+            <option value="total_rating.asc">Puan ↑</option>
+            <option value="name.asc">İsim A-Z</option>
+            <option value="name.desc">İsim Z-A</option>
+            <option value="first_release_date.desc">Çıkış Tarihi ↓</option>
+            <option value="first_release_date.asc">Çıkış Tarihi ↑</option>
+          </select>
+        </div>
+
+        {/* Yayın Yılı */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Yayın Yılı</label>
+          <div className="flex gap-2">
+            <input
+              name="year_min"
+              defaultValue={yearMin}
+              className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+              placeholder="2020"
+              type="number"
+            />
+            <input
+              name="year_max"
+              defaultValue={yearMax}
+              className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+              placeholder="2024"
+              type="number"
+            />
+          </div>
+        </div>
+
+        {/* Platform */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Platform</label>
+          <input
+            name="platform"
+            defaultValue={platform}
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20"
+            placeholder="PC, PlayStation, Xbox..."
+          />
+        </div>
+
+        {/* Filtreleri Temizle Butonu */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 opacity-0">Filtreler</label>
+          <button
+            type="button"
+            onClick={() => router.push('/explore/games')}
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            Filtreleri Temizle
+          </button>
+        </div>
+
+        {/* Uygula Butonu */}
+        <div className="lg:col-span-4 xl:col-span-4">
+          <button type="submit" className="rounded-lg bg-gray-700 dark:bg-gray-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-gray-800 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500/20 transition-colors">
+            Filtreleri Uygula
+          </button>
+        </div>
+      </form>
+    ) : undefined}>
       <form onSubmit={onSubmit} className="flex gap-2">
         <input
           name="search"
@@ -280,7 +425,7 @@ function GamesExploreInner() {
           ? Array.from({ length: 24 }).map((_, i) => ( // increased skeleton count
               <div key={i} className="aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-pulse" />
             ))
-          : games.map((g) => <GameCard 
+          : filteredGames.map((g) => <GameCard 
               key={g.id} 
               game={g as any} 
               size="large"
