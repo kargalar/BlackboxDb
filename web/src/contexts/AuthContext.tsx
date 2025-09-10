@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { deleteAccount as deleteUserAccount } from '@/services/database/userService'
 
 interface AuthContextType {
   user: User | null
@@ -12,6 +13,7 @@ interface AuthContextType {
   signUpWithEmail: (email: string, password: string, username?: string) => Promise<void>
   signInWithEmail: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
+  deleteAccount: () => Promise<{ success: boolean; error?: any }>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -21,7 +23,8 @@ const AuthContext = createContext<AuthContextType>({
   signInWithGoogle: async () => {},
   signUpWithEmail: async () => {},
   signInWithEmail: async () => {},
-  signOut: async () => {}
+  signOut: async () => {},
+  deleteAccount: async () => ({ success: false, error: 'Not implemented' })
 })
 
 export const useAuth = () => {
@@ -154,6 +157,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const deleteAccount = async () => {
+    return await deleteUserAccount()
+  }
+
   const value = {
     user,
     session,
@@ -161,7 +168,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithGoogle,
     signUpWithEmail,
     signInWithEmail,
-    signOut
+    signOut,
+    deleteAccount
   }
 
   return (

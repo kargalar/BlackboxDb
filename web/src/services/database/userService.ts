@@ -278,3 +278,188 @@ export async function getFollowing(userId: string): Promise<{ data: AppUser[]; e
     return { data: [], error: e };
   }
 }
+
+// Delete user account and all associated data
+export async function deleteAccount(): Promise<{ success: boolean; error?: any }> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      logSupabaseRequest('auth', 'getUser', false);
+      return { success: false, error: authError || 'Not authenticated' };
+    }
+    logSupabaseRequest('auth', 'getUser', true);
+
+    const userId = user.id;
+
+    // Delete all user data in the correct order to handle foreign keys
+    // 1. Delete review_reply_likes (likes on user's replies and by user)
+    const { error: replyLikesError } = await supabase
+      .from('review_reply_likes')
+      .delete()
+      .eq('user_id', userId);
+
+    if (replyLikesError) {
+      console.error('Error deleting review_reply_likes:', replyLikesError);
+    }
+
+    // Also delete likes on replies made by this user
+    const userReplyIds = await getReplyIdsByUser(userId);
+    if (userReplyIds.length > 0) {
+      const { error: replyLikesError2 } = await supabase
+        .from('review_reply_likes')
+        .delete()
+        .in('reply_id', userReplyIds);
+
+      if (replyLikesError2) {
+        console.error('Error deleting likes on user replies:', replyLikesError2);
+      }
+    }
+
+    // 2. Delete review_replies
+    const { error: repliesError } = await supabase
+      .from('review_replies')
+      .delete()
+      .eq('user_id', userId);
+
+    if (repliesError) {
+      console.error('Error deleting review_replies:', repliesError);
+    }
+
+    // 3. Delete review_likes
+    const { error: likesError } = await supabase
+      .from('review_likes')
+      .delete()
+      .eq('user_id', userId);
+
+    if (likesError) {
+      console.error('Error deleting review_likes:', likesError);
+    }
+
+    // 4. Delete review_comments
+    const { error: commentsError } = await supabase
+      .from('review_comment')
+      .delete()
+      .eq('user_id', userId);
+
+    if (commentsError) {
+      console.error('Error deleting review_comments:', commentsError);
+    }
+
+    // 5. Delete user_content_log (this will cascade to reviews if FK is set)
+    const { error: logError } = await supabase
+      .from('user_content_log')
+      .delete()
+      .eq('user_id', userId);
+
+    if (logError) {
+      console.error('Error deleting user_content_log:', logError);
+    }
+
+    // 6. Delete reviews (if not cascaded)
+    const { error: reviewsError } = await supabase
+      .from('review')
+      .delete()
+      .eq('user_id', userId);
+
+    if (reviewsError) {
+      console.error('Error deleting reviews:', reviewsError);
+    }
+
+    // 7. Delete user_follow (both as follower and following)
+    const { error: followError1 } = await supabase
+      .from('user_follow')
+      .delete()
+      .eq('user_id', userId);
+
+    const { error: followError2 } = await supabase
+      .from('user_follow')
+      .delete()
+      .eq('following_user_id', userId);
+
+    if (followError1 || followError2) {
+      console.error('Error deleting user_follow:', followError1 || followError2);
+    }
+
+    // 8. Delete list_movie
+    const { error: listError } = await supabase
+      .from('list_movie')
+      .delete()
+      .eq('user_id', userId);
+
+    if (listError) {
+      console.error('Error deleting list_movie:', listError);
+    }
+
+    // 9. Delete notifications (both sent and received)
+    const { error: notifError1 } = await supabase
+      .from('notification')
+      .delete()
+      .eq('recipient_user_id', userId);
+
+    const { error: notifError2 } = await supabase
+      .from('notification')
+      .delete()
+      .eq('actor_user_id', userId);
+
+    if (notifError1 || notifError2) {
+      console.error('Error deleting notifications:', notifError1 || notifError2);
+    }
+
+    // 10. Delete content_requests
+    const { error: requestError } = await supabase
+      .from('content_request')
+      .delete()
+      .eq('requester_user_id', userId);
+
+    if (requestError) {
+      console.error('Error deleting content_requests:', requestError);
+    }
+
+    // 11. Finally, delete the app_user record
+    const { error: userError } = await supabase
+      .from('app_user')
+      .delete()
+      .eq('auth_user_id', userId);
+
+    if (userError) {
+      logSupabaseRequest('app_user', 'delete', false);
+      return { success: false, error: userError };
+    }
+    logSupabaseRequest('app_user', 'delete', true);
+
+    // Sign out the user
+    const { error: signOutError } = await supabase.auth.signOut();
+    if (signOutError) {
+      console.error('❌ Hesap silme sonrası çıkış yapılırken hata:', signOutError);
+    } else {
+      console.log('✅ Kullanıcı başarıyla çıkış yaptı');
+    }
+
+    console.log('✅ Kullanıcı hesabı ve tüm verileri başarıyla silindi');
+    return { success: true };
+  } catch (e) {
+    logSupabaseRequest('app_user', 'delete', false);
+    return { success: false, error: e };
+  }
+}
+
+// Helper function to get reply IDs by user (for deleting likes on user's replies)
+async function getReplyIdsByUser(userId: string): Promise<number[]> {
+  try {
+    const { data, error } = await supabase
+      .from('review_replies')
+      .select('id')
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error getting reply IDs:', error);
+      return [];
+    }
+
+    return data?.map(reply => reply.id) || [];
+  } catch (e) {
+    console.error('Error in getReplyIdsByUser:', e);
+    return [];
+  }
+}
