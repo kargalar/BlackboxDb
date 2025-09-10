@@ -88,6 +88,7 @@ export async function getUserWatchedMovies(userId?: string): Promise<{ data: Con
 
   try {
     // Try RPC first
+    /*
     const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_contents', {
       user_id_param: uid,
       log_user_id_param: uid,
@@ -128,12 +129,14 @@ export async function getUserWatchedMovies(userId?: string): Promise<{ data: Con
       })
       return { data: deduped }
     }
+    */
   } catch (error) {
     console.log('RPC failed, falling back to direct query:', error)
   }
 
   // Fallback: Direct table query using all user_content_log entries for better activity history
   try {
+    console.log('Fallback query for movies, userId:', uid);
     const { data: logData, error: logError } = await supabase
       .from('user_content_log')
       .select(`
@@ -142,7 +145,7 @@ export async function getUserWatchedMovies(userId?: string): Promise<{ data: Con
         is_favorite,
         is_consume_later,
         date,
-        created_at,
+        updated_at,
         content:content_id (
           id,
           title,
@@ -154,8 +157,11 @@ export async function getUserWatchedMovies(userId?: string): Promise<{ data: Con
       .eq('user_id', uid)
       .not('content', 'is', null)
       .order('date', { ascending: false })
-      .order('created_at', { ascending: false })
+      .order('updated_at', { ascending: false })
       .limit(100) // Increased limit for better history
+
+    console.log('Fallback logData for movies:', logData);
+    console.log('Fallback logError for movies:', logError);
 
     if (logError) {
       console.error('Latest log query failed:', logError)
@@ -166,6 +172,8 @@ export async function getUserWatchedMovies(userId?: string): Promise<{ data: Con
     const movieLogs = (logData || [])
       .filter((item: any) => item.content && item.content.content_type_id === 1)
 
+    console.log('Filtered movieLogs:', movieLogs);
+
     const mapped: Content[] = movieLogs.map((item: any) => ({
       id: item.content.id,
       poster_path: item.content.poster_path ?? null,
@@ -174,8 +182,10 @@ export async function getUserWatchedMovies(userId?: string): Promise<{ data: Con
       user_rating: item.rating ? Number(item.rating) : 0,
       is_favorite: item.is_favorite ?? false,
       is_consume_later: item.is_consume_later ?? false,
-      date: item.date || item.created_at // Use date if available, fallback to created_at
+      date: item.date || item.updated_at // Use date if available, fallback to updated_at
     }))
+
+    console.log('Mapped movies:', mapped);
 
     // Keep latest entry per movie but preserve activity history
     const byId = new Map<number, Content>()
@@ -218,6 +228,7 @@ export async function getUserWatchedTV(userId?: string): Promise<{ data: Content
   if (!uid) return { data: [] }
 
   try {
+    /*
     const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_contents', {
       user_id_param: uid,
       log_user_id_param: uid,
@@ -256,11 +267,13 @@ export async function getUserWatchedTV(userId?: string): Promise<{ data: Content
       })
       return { data: deduped }
     }
+    */
   } catch (error) {
     console.log('RPC failed, falling back to direct query (TV):', error)
   }
 
   try {
+    console.log('Fallback query for TV, userId:', uid);
     const { data: logData, error: logError } = await supabase
       .from('user_content_log')
       .select(`
@@ -269,7 +282,7 @@ export async function getUserWatchedTV(userId?: string): Promise<{ data: Content
         is_favorite,
         is_consume_later,
         date,
-        created_at,
+        updated_at,
         content:content_id (
           id,
           title,
@@ -281,8 +294,11 @@ export async function getUserWatchedTV(userId?: string): Promise<{ data: Content
       .eq('user_id', uid)
       .not('content', 'is', null)
       .order('date', { ascending: false })
-      .order('created_at', { ascending: false })
+      .order('updated_at', { ascending: false })
       .limit(100)
+
+    console.log('Fallback logData for TV:', logData);
+    console.log('Fallback logError for TV:', logError);
 
     if (logError) {
       console.error('Latest log query failed (TV):', logError)
@@ -292,6 +308,8 @@ export async function getUserWatchedTV(userId?: string): Promise<{ data: Content
     // Filter for TV shows only (content_type_id = 3)
     const tvLogs = (logData || [])
       .filter((item: any) => item.content && item.content.content_type_id === 3)
+
+    console.log('Filtered tvLogs:', tvLogs);
 
     const mapped: Content[] = tvLogs.map((item: any) => ({
       id: item.content.id,
@@ -338,6 +356,7 @@ export async function getUserWatchedGames(userId?: string): Promise<{ data: Cont
   }
 
   try {
+    /*
     console.log('Calling RPC get_user_contents for games...');
     const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_contents', {
       user_id_param: uid,
@@ -379,6 +398,7 @@ export async function getUserWatchedGames(userId?: string): Promise<{ data: Cont
       })
       return { data: deduped }
     }
+    */
   } catch (error) {
     console.log('RPC failed, falling back to direct query (Games):', error)
   }
@@ -459,6 +479,7 @@ export async function getUserWatchedBooks(userId?: string): Promise<{ data: Cont
   if (!uid) return { data: [] }
 
   try {
+    /*
     const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_contents', {
       user_id_param: uid,
       log_user_id_param: uid,
@@ -497,6 +518,7 @@ export async function getUserWatchedBooks(userId?: string): Promise<{ data: Cont
       })
       return { data: deduped }
     }
+    */
   } catch (error) {
     console.log('RPC failed, falling back to direct query (Books):', error)
   }

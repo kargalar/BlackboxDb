@@ -715,6 +715,7 @@ BEGIN
         json_build_object(
             'user_id', user_id_param,
             'content_id', c_id,
+            'title', c.title,
             'poster_path', poster_path,
             'content_type_id', content_type_id,
             'content_status_id', COALESCE(viewer_content_status_id, log_content_status_id),
