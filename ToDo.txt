@@ -389,3 +389,5 @@ remake ve remestar ana oyun altında mı olsun farklı oyun olarak mı. mesela b
 diziler oyunlar ve kitaplar için devam ediyor seçenei ekle
 
 son film aktivitelerine wathlist dahil olamyacak
+
+bölümlere puan verebileyim ve favori olarak işaretleyebileyim. toplu olarak sezonu da izlenildi olarak işaretleyebilmek istiyorum. sezonun bölümlerine verilen puanların ortalaması sezonda gösterilsin.

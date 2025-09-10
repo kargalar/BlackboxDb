@@ -77,6 +77,28 @@ export interface TMDBMovieDetail {
   similar?: TMDBPaginated<TMDBDiscoverMovie>;
 }
 
+export interface TMDBTvSeason {
+  id: number;
+  name: string;
+  overview: string;
+  poster_path: string | null;
+  season_number: number;
+  episode_count: number;
+  air_date: string | null;
+}
+
+export interface TMDBTvEpisode {
+  id: number;
+  name: string;
+  overview: string;
+  episode_number: number;
+  air_date: string | null;
+  runtime: number | null;
+  still_path: string | null;
+  vote_average: number;
+  vote_count: number;
+}
+
 export interface TMDBTvDetail {
   id: number;
   name: string;
@@ -95,6 +117,7 @@ export interface TMDBTvDetail {
   genres: TMDBGenre[];
   original_language: string;
   tagline: string | null;
+  seasons?: TMDBTvSeason[];
   credits?: TMDBCredits;
   videos?: {
     results: TMDBVideo[];

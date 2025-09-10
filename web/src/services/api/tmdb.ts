@@ -1,4 +1,4 @@
-import { TMDBDiscoverMovie, TMDBPaginated, TMDBMovieDetail, TMDBTvDetail } from '@/types/tmdb';
+import { TMDBDiscoverMovie, TMDBPaginated, TMDBMovieDetail, TMDBTvDetail, TMDBTvSeason, TMDBTvEpisode } from '@/types/tmdb';
 import { logApiRequest } from '@/lib/requestLogger';
 
 const TMDB_BASE = 'https://api.themoviedb.org/3';
@@ -222,7 +222,7 @@ export async function getTvDetails(id: string | number, opts?: { revalidate?: nu
   const isV4 = isV4Token(key);
 
   const url = new URL(`${TMDB_BASE}/tv/${id}`);
-  url.searchParams.set('append_to_response', 'credits,videos,similar');
+  url.searchParams.set('append_to_response', 'credits,videos,similar,seasons');
   if (!isV4) {
     url.searchParams.set('api_key', key);
   }
@@ -240,6 +240,30 @@ export async function getTvDetails(id: string | number, opts?: { revalidate?: nu
   }
   logApiRequest(`/tv/${id}`, 'GET', true);
   return (await res.json()) as TMDBTvDetail;
+}
+
+export async function getTvSeasonDetails(tvId: string | number, seasonNumber: number, opts?: { revalidate?: number }) {
+  const key = getAuth();
+  const isV4 = isV4Token(key);
+
+  const url = new URL(`${TMDB_BASE}/tv/${tvId}/season/${seasonNumber}`);
+  if (!isV4) {
+    url.searchParams.set('api_key', key);
+  }
+
+  const res = await fetch(url.toString(), {
+    method: 'GET',
+    headers: isV4 ? { Authorization: `Bearer ${key}` } : undefined,
+    next: { revalidate: opts?.revalidate ?? 300 },
+  });
+
+  if (!res.ok) {
+    logApiRequest(`/tv/${tvId}/season/${seasonNumber}`, 'GET', false);
+    const text = await res.text().catch(() => '');
+    throw new Error(`TMDB error ${res.status}: ${text}`);
+  }
+  logApiRequest(`/tv/${tvId}/season/${seasonNumber}`, 'GET', true);
+  return (await res.json()) as TMDBTvSeason & { episodes: TMDBTvEpisode[] };
 }
 
 export async function searchTV(query: string, page: number = 1, opts?: { revalidate?: number }) {
