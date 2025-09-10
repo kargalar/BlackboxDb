@@ -37,7 +37,8 @@ const Stars = ({ value = 0, onChange }: { value?: number; onChange?: (v: number)
 
 export default function GameContentPage() {
   const params = useParams();
-  const id = Number(params.id as string);
+    const id = Number(params.id as string);
+  const contentId = params.id as string;
   const [game, setGame] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +62,7 @@ export default function GameContentPage() {
 
   const refreshStats = useCallback(async () => {
     if (!Number.isFinite(id)) return;
-    const { data } = await getContentById(id);
+    const { data } = await getContentById(contentId);
     if (data) setStats({
       consume_count: data.consume_count ?? 0,
       favorite_count: data.favorite_count ?? 0,
@@ -73,7 +74,7 @@ export default function GameContentPage() {
 
   const refreshUserLog = useCallback(async () => {
     if (!Number.isFinite(id)) return;
-    const { data } = await getUserContentLog(id);
+    const { data } = await getUserContentLog(contentId);
     if (data) {
       setIsFavorite(!!data.is_favorite);
       setIsLater(!!data.is_consume_later);
@@ -94,7 +95,7 @@ export default function GameContentPage() {
         // Ensure content exists in DB for logging/stats
   await saveContentFromIGDB(g);
   await Promise.all([refreshStats(), refreshUserLog()]);
-  const res = await getContentReviews(id);
+  const res = await getContentReviews(contentId);
   if (!cancelled) setReviews(res.data ?? []);
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'Oyun bulunamadı');
@@ -107,7 +108,7 @@ export default function GameContentPage() {
   }, [id, refreshStats, refreshUserLog]);
 
   const handlePlayed = async () => {
-    await logMovieWatch(id);
+    await logMovieWatch(contentId);
     setIsPlayed(true);
     setIsLater(false);
     await refreshStats();
@@ -115,9 +116,9 @@ export default function GameContentPage() {
   };
 
   const handleLater = async () => {
-    const { data } = await getUserContentLog(id);
+    const { data } = await getUserContentLog(contentId);
     const next = !data?.is_consume_later;
-    await updateUserContentLog(id, {
+    await updateUserContentLog(contentId, {
       content_status_id: data?.content_status_id || (isPlayed ? 1 : 2),
       rating: data?.rating ?? null,
       is_favorite: data?.is_favorite ?? false,
@@ -130,14 +131,14 @@ export default function GameContentPage() {
   };
 
   const handleFavorite = async () => {
-    const res = await toggleFavorite(id);
+    const res = await toggleFavorite(contentId);
     if (res.data) setIsFavorite(res.isFavorite);
     await refreshStats();
   };
 
   const handleRate = async (val: number) => {
     setUserRating(val);
-    await rateMovie(id, val);
+    await rateMovie(contentId, val);
     await refreshStats();
     await refreshUserLog();
   };
@@ -145,10 +146,10 @@ export default function GameContentPage() {
   const handleAddReview = async () => {
     const text = reviewText.trim();
     if (!text) return;
-    const ok = await addReview(id, text);
+    const ok = await addReview(contentId, text);
     if (ok.data) {
       setReviewText('');
-      const res = await getContentReviews(id);
+      const res = await getContentReviews(contentId);
       setReviews(res.data ?? []);
       await refreshStats();
     }

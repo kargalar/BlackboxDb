@@ -4,12 +4,12 @@ import { listContent, updateContent, deleteContent, getContentById } from '@/ser
 import { useEffect, useState } from 'react'
 import { getCurrentUserProfile } from '@/services/database/userService'
 
-interface ContentRow { id: number; title: string; content_type_id: number; release_date: string | null; description: string | null; length: number | null; poster_path: string | null }
+interface ContentRow { id: string; title: string; content_type_id: number; release_date: string | null; description: string | null; length: number | null; poster_path: string | null }
 
 export default function AdminContentPage() {
   const [allowed, setAllowed] = useState(false)
   const [items, setItems] = useState<ContentRow[]>([])
-  const [editing, setEditing] = useState<number | null>(null)
+  const [editing, setEditing] = useState<string | null>(null)
   const [editData, setEditData] = useState<Partial<ContentRow>>({})
   const [search, setSearch] = useState('')
 
@@ -26,7 +26,7 @@ export default function AdminContentPage() {
   useEffect(() => { load() // eslint-disable-next-line
   }, [])
 
-  const startEdit = async (id: number) => {
+  const startEdit = async (id: string) => {
     const { data } = await getContentById(id)
     setEditing(id)
     setEditData({ ...data })
@@ -50,7 +50,7 @@ export default function AdminContentPage() {
     }
   }
 
-  const remove = async (id: number) => {
+  const remove = async (id: string) => {
     if (!confirm('Bu içeriği silmek istediğine emin misin?')) return
     const { error } = await deleteContent(id)
     if (!error) setItems(prev => prev.filter(i => i.id !== id))

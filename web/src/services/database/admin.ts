@@ -15,7 +15,7 @@ export async function listContent(params?: { search?: string; limit?: number }) 
   return { data: data || [], error }
 }
 
-export async function getContentById(id: number) {
+export async function getContentById(id: string) {
   const { data, error } = await supabase
     .from('content')
     .select('id, title, content_type_id, release_date, description, length, poster_path')
@@ -24,7 +24,7 @@ export async function getContentById(id: number) {
   return { data, error }
 }
 
-export async function updateContent(id: number, updates: Partial<{ title: string; description: string | null; release_date: string | null; length: number | null; poster_path: string | null }>) {
+export async function updateContent(id: string, updates: Partial<{ title: string; description: string | null; release_date: string | null; length: number | null; poster_path: string | null }>) {
   const { data, error } = await supabase
     .from('content')
     .update(updates)
@@ -34,7 +34,7 @@ export async function updateContent(id: number, updates: Partial<{ title: string
   return { data, error }
 }
 
-export async function deleteContent(id: number) {
+export async function deleteContent(id: string) {
   const { error } = await supabase.from('content').delete().eq('id', id)
   return { error }
 }

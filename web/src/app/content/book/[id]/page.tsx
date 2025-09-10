@@ -54,21 +54,9 @@ export default function BookContentPage() {
 
   const year = useMemo(() => (book?.publishedDate ? (book.publishedDate.match(/\d{4}/)?.[0] ?? undefined) : undefined), [book]);
 
-  const numericContentId = useMemo(() => {
-    // Reuse server-side mapping function logic: mirror in client to know the numeric id used in DB
-    let hash = 0;
-    const vol = String(id);
-    for (let i = 0; i < vol.length; i++) hash = (hash * 31 + vol.charCodeAt(i)) | 0;
-    const POS = Math.abs(hash);
-    const OFFSET = 4_000_000_000;
-    const result = OFFSET + (POS % 1_000_000_000);
-    console.log('Calculated numericContentId:', result, 'from id:', id);
-    return result;
-  }, [id]);
-
   const refreshStats = useCallback(async () => {
-    if (!numericContentId) return;
-    const { data } = await getContentById(numericContentId);
+    if (!id) return;
+    const { data } = await getContentById(id);
     if (data) setStats({
       consume_count: data.consume_count ?? 0,
       favorite_count: data.favorite_count ?? 0,
@@ -76,18 +64,18 @@ export default function BookContentPage() {
       average_rating: data.average_rating,
       rating_count: data.rating_count,
     });
-  }, [numericContentId]);
+  }, [id]);
 
   const refreshUserLog = useCallback(async () => {
-    if (!numericContentId) return;
-    const { data } = await getUserContentLog(numericContentId);
+    if (!id) return;
+    const { data } = await getUserContentLog(id);
     if (data) {
       setIsFavorite(!!data.is_favorite);
       setIsLater(!!data.is_consume_later);
       setUserRating(data.rating ? Number(data.rating) : 0);
       setIsRead(Number(data.content_status_id) === 1 || (data.rating ?? 0) > 0);
     }
-  }, [numericContentId]);
+  }, [id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -125,7 +113,7 @@ export default function BookContentPage() {
           console.log('Kitap başarıyla content tablosuna kaydedildi, ID:', saveResult.data?.id);
         }
         await Promise.all([refreshStats(), refreshUserLog()]);
-        const res = await getContentReviews(numericContentId);
+        const res = await getContentReviews(id);
         if (!cancelled) setReviews(res.data ?? []);
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'Kitap bulunamadı');
@@ -135,11 +123,11 @@ export default function BookContentPage() {
     };
     if (id) run();
     return () => { cancelled = true; };
-  }, [id, numericContentId, refreshStats, refreshUserLog]);
+  }, [id, refreshStats, refreshUserLog]);
 
   const handleRead = async () => {
-    console.log('Kitap okuma işlemi başlatılıyor, contentId:', numericContentId);
-    const result = await logBookRead(numericContentId);
+    console.log('Kitap okuma işlemi başlatılıyor, contentId:', id);
+    const result = await logBookRead(id);
     if (result.error) {
       console.error('Kitap okuma loglama hatası:', result.error);
       // Hata mesajını kullanıcıya göster - error objesinin detaylarını göster
@@ -157,9 +145,9 @@ export default function BookContentPage() {
   };
 
   const handleLater = async () => {
-    const { data } = await getUserContentLog(numericContentId);
+    const { data } = await getUserContentLog(id);
     const next = !data?.is_consume_later;
-    await updateUserContentLog(numericContentId, {
+    await updateUserContentLog(id, {
       content_status_id: data?.content_status_id || (isRead ? 1 : 2),
       rating: data?.rating ?? null,
       is_favorite: data?.is_favorite ?? false,
@@ -172,14 +160,14 @@ export default function BookContentPage() {
   };
 
   const handleFavorite = async () => {
-    const res = await toggleFavorite(numericContentId);
+    const res = await toggleFavorite(id);
     if (res.data) setIsFavorite(res.isFavorite);
     await refreshStats();
   };
 
   const handleRate = async (val: number) => {
     setUserRating(val);
-    await rateMovie(numericContentId, val);
+    await rateMovie(id, val);
     await refreshStats();
     await refreshUserLog();
   };
@@ -187,15 +175,15 @@ export default function BookContentPage() {
   const handleAddReview = async () => {
     const text = reviewText.trim();
     if (!text) return;
-    console.log('Adding review:', text, 'for content:', numericContentId);
-    const ok = await addReview(numericContentId, text);
+    console.log('Adding review:', text, 'for content:', id);
+    const ok = await addReview(id, text);
     console.log('Add review result:', ok);
     if (ok.error) {
       console.error('Error adding review:', ok.error);
     }
     if (ok.data) {
       setReviewText('');
-      const res = await getContentReviews(numericContentId);
+      const res = await getContentReviews(id);
       setReviews(res.data ?? []);
       await refreshStats();
     }

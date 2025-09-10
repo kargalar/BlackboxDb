@@ -728,7 +728,7 @@ export async function getUserStats(userId?: string): Promise<{ totalMovies: numb
 
 // --- Movie detail helpers used by movie page ---
 
-export async function getContentById(id: number): Promise<{ data: Content | null }> {
+export async function getContentById(id: string): Promise<{ data: Content | null }> {
   try {
     // Get content basic info
     const { data: contentData, error: contentError } = await supabase
@@ -839,16 +839,9 @@ export async function saveContentFromIGDB(game: IgdbGame): Promise<{ data: Conte
   return { data: { id: data.id, title: data.title, poster_path: data.poster_path, fav_count: (data as any).favorite_count ?? 0 } }
 }
 
-// Deterministic numeric ID for books: prefix 2e9 range + hash of volume id to avoid collisions with TMDB/IGDB numeric IDs
-function bookNumericId(volumeId: string): number {
-  let hash = 0;
-  for (let i = 0; i < volumeId.length; i++) {
-    hash = (hash * 31 + volumeId.charCodeAt(i)) | 0; // 32-bit signed
-  }
-  // Map to positive and into a safe range offset for books (e.g., 2_000_000_000+)
-  const POS = Math.abs(hash);
-  const OFFSET = 2_000_000_000; // smaller offset to avoid integer overflow issues
-  return OFFSET + (POS % 500_000_000);
+// Deterministic string ID for books: use the original volume ID directly
+function bookStringId(volumeId: string): string {
+  return volumeId;
 }
 
 export async function saveContentFromBook(volumeId: string, book: { title: string; description?: string | null; publishedDate?: string | null; pageCount?: number | null; thumbnail?: string | null; }): Promise<{ data: Content | null; error?: any }> {
@@ -858,9 +851,8 @@ export async function saveContentFromBook(volumeId: string, book: { title: strin
     return { data: null, error: authError || 'not_authenticated' }
   }
 
-  const id = bookNumericId(volumeId);
   const payload = {
-    id,
+    id: volumeId, // Use the original volumeId as string
     title: book.title,
     content_type_id: CONTENT_TYPE.BOOK, // 4 = BOOK
     release_date: book.publishedDate ? new Date(book.publishedDate) : null,
@@ -869,28 +861,28 @@ export async function saveContentFromBook(volumeId: string, book: { title: strin
     poster_path: book.thumbnail ?? null,
   };
 
-  console.log('Kitap content tablosuna kaydediliyor:', { volumeId, id, payload });
+  console.log('Kitap content tablosuna kaydediliyor:', { volumeId, payload });
 
   // Önce kaydın var olup olmadığını kontrol et
   const { data: existingRecord } = await supabase
     .from('content')
     .select('id')
-    .eq('id', id)
+    .eq('id', volumeId)
     .maybeSingle();
 
   let result;
   if (existingRecord) {
     // Kayıt varsa güncelle
-    console.log('Mevcut kitap kaydı güncelleniyor, ID:', id);
+    console.log('Mevcut kitap kaydı güncelleniyor, ID:', volumeId);
     result = await supabase
       .from('content')
       .update(payload)
-      .eq('id', id)
+      .eq('id', volumeId)
       .select('id, title, poster_path, favorite_count')
       .maybeSingle();
   } else {
     // Kayıt yoksa ekle
-    console.log('Yeni kitap kaydı ekleniyor, ID:', id);
+    console.log('Yeni kitap kaydı ekleniyor, ID:', volumeId);
     result = await supabase
       .from('content')
       .insert(payload)
@@ -929,7 +921,7 @@ export async function isMovieWatched(contentId: number): Promise<{ isWatched: bo
   return { isWatched: !!data && (data as any).content_status_id === 1 }
 }
 
-export async function logMovieWatch(contentId: number): Promise<{ data: boolean; error?: any }> {
+export async function logMovieWatch(contentId: string): Promise<{ data: boolean; error?: any }> {
   const { uid, error: authError } = await validateAuth()
   if (authError || !uid) return { data: false, error: authError || 'not_authenticated' }
 
@@ -955,7 +947,7 @@ export async function logMovieWatch(contentId: number): Promise<{ data: boolean;
 }
 
 // Rate a movie (1-5 stars)
-export async function rateMovie(contentId: number, rating: number): Promise<{ data: boolean; error?: any }> {
+export async function rateMovie(contentId: string, rating: number): Promise<{ data: boolean; error?: any }> {
   const { uid, error: authError } = await validateAuth()
   if (authError || !uid) return { data: false, error: authError || 'not_authenticated' }
 
@@ -1018,7 +1010,7 @@ export async function getUserFavoriteStatus(contentId: number): Promise<{ isFavo
 }
 
 // Get content statistics from database
-export async function getContentStats(contentId: number): Promise<{
+export async function getContentStats(contentId: string): Promise<{
   consume_count: number;
   favorite_count: number;
   review_count: number;
@@ -1079,7 +1071,7 @@ export async function getContentStats(contentId: number): Promise<{
 }
 
 // Update content statistics in content table
-export async function updateContentStats(contentId: number): Promise<{ success: boolean }> {
+export async function updateContentStats(contentId: string): Promise<{ success: boolean }> {
   try {
     const stats = await getContentStats(contentId)
     
@@ -1107,7 +1099,7 @@ export async function updateContentStats(contentId: number): Promise<{ success: 
 }
 
 // Toggle favorite status for a movie
-export async function toggleFavorite(contentId: number): Promise<{ data: boolean; isFavorite: boolean; error?: any }> {
+export async function toggleFavorite(contentId: string): Promise<{ data: boolean; isFavorite: boolean; error?: any }> {
   const { uid, error: authError } = await validateAuth()
   if (authError || !uid) return { data: false, isFavorite: false, error: authError || 'not_authenticated' }
 
@@ -1213,7 +1205,7 @@ export async function getUserMovieReview(contentId: number): Promise<{ data: Rev
 }
 
 // Get reviews for a specific content
-export async function getContentReviews(contentId: number): Promise<{
+export async function getContentReviews(contentId: string): Promise<{
   data: Array<{
     id: number;
     user_name: string;
@@ -1312,7 +1304,7 @@ export async function getContentReviews(contentId: number): Promise<{
 }
 
 // Add a review for content
-export async function addReview(contentId: number, reviewText: string): Promise<{ data: boolean; error?: any }> {
+export async function addReview(contentId: string, reviewText: string): Promise<{ data: boolean; error?: any }> {
   const { data: userRes } = await supabase.auth.getUser()
   const uid = userRes.user?.id
   if (!uid) return { data: false, error: 'not_authenticated' }
@@ -1564,7 +1556,7 @@ export interface UserContentLog {
 }
 
 // Get user's log for specific content
-export async function getUserContentLog(contentId: number): Promise<{ data: UserContentLog | null; error?: any }> {
+export async function getUserContentLog(contentId: string): Promise<{ data: UserContentLog | null; error?: any }> {
   const { data: userRes } = await supabase.auth.getUser()
   const uid = userRes.user?.id
   if (!uid) return { data: null, error: 'not_authenticated' }
@@ -1587,7 +1579,7 @@ export async function getUserContentLog(contentId: number): Promise<{ data: User
 }
 
 // Get all user's logs for specific content
-export async function getUserContentLogs(contentId: number): Promise<{ data: UserContentLog[]; error?: any }> {
+export async function getUserContentLogs(contentId: string): Promise<{ data: UserContentLog[]; error?: any }> {
   const { data: userRes } = await supabase.auth.getUser()
   const uid = userRes.user?.id
   if (!uid) return { data: [], error: 'not_authenticated' }
@@ -1609,7 +1601,7 @@ export async function getUserContentLogs(contentId: number): Promise<{ data: Use
 
 // Create a new user content log (allows multiple logs per content)
 export async function createUserContentLog(
-  contentId: number,
+  contentId: string,
   logData: {
     rating?: number | null
     is_favorite?: boolean
@@ -1649,7 +1641,7 @@ export async function createUserContentLog(
 
 // Update user's content log (updates latest log or creates new one)
 export async function updateUserContentLog(
-  contentId: number,
+  contentId: string,
   updates: {
     rating?: number | null
     is_favorite?: boolean
@@ -1771,7 +1763,7 @@ export async function updateUserContentLogById(
 }
 
 // Delete user's content log
-export async function deleteUserContentLog(contentId: number): Promise<{ data: boolean; error?: any }> {
+export async function deleteUserContentLog(contentId: string): Promise<{ data: boolean; error?: any }> {
   const { data: userRes } = await supabase.auth.getUser()
   const uid = userRes.user?.id
   if (!uid) return { data: false, error: 'not_authenticated' }
@@ -1991,7 +1983,7 @@ export async function getTrendingReviews(limit: number = 10): Promise<{ data: Re
 }
 
 // Log a book reading
-export async function logBookRead(contentId: number): Promise<{ data: boolean; error?: any }> {
+export async function logBookRead(contentId: string): Promise<{ data: boolean; error?: any }> {
   const { uid, error: authError } = await validateAuth()
   if (authError || !uid) {
     console.error('Kitap okuma loglama hatası - Kimlik doğrulama başarısız:', authError || 'not_authenticated')

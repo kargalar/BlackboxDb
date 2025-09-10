@@ -77,7 +77,7 @@ GRANT EXECUTE ON FUNCTION public.is_privileged(uuid) TO authenticated;
 
 -- Content table
 CREATE TABLE public.content (
-    id SERIAL PRIMARY KEY,
+    id VARCHAR(255) PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     content_type_id INTEGER NOT NULL REFERENCES public.content_type_lookup(id),
     release_date DATE,
@@ -172,21 +172,21 @@ CREATE TABLE public.g_theme (
 -- Cross-reference tables for movies
 CREATE TABLE public.x_movie_genre (
     id SERIAL PRIMARY KEY,
-    movie_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
+    movie_id VARCHAR(255) NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     genre_id INTEGER NOT NULL REFERENCES public.m_genre(id) ON DELETE CASCADE,
     UNIQUE(movie_id, genre_id)
 );
 
 CREATE TABLE public.x_movie_director (
     id SERIAL PRIMARY KEY,
-    movie_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
+    movie_id VARCHAR(255) NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     director_id INTEGER NOT NULL REFERENCES public.m_director(id) ON DELETE CASCADE,
     UNIQUE(movie_id, director_id)
 );
 
 CREATE TABLE public.x_movie_cast (
     id SERIAL PRIMARY KEY,
-    movie_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
+    movie_id VARCHAR(255) NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     cast_id INTEGER NOT NULL REFERENCES public.m_cast(id) ON DELETE CASCADE,
     character_name VARCHAR(255),
     UNIQUE(movie_id, cast_id)
@@ -194,28 +194,28 @@ CREATE TABLE public.x_movie_cast (
 
 CREATE TABLE public.x_movie_platform (
     id SERIAL PRIMARY KEY,
-    movie_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
+    movie_id VARCHAR(255) NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     platform_id INTEGER NOT NULL REFERENCES public.m_platform(id) ON DELETE CASCADE,
     UNIQUE(movie_id, platform_id)
 );
 
 CREATE TABLE public.x_movie_country (
     id SERIAL PRIMARY KEY,
-    movie_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
+    movie_id VARCHAR(255) NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     country_id INTEGER NOT NULL REFERENCES public.m_country(id) ON DELETE CASCADE,
     UNIQUE(movie_id, country_id)
 );
 
 CREATE TABLE public.x_movie_language (
     id SERIAL PRIMARY KEY,
-    movie_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
+    movie_id VARCHAR(255) NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     language_id INTEGER NOT NULL REFERENCES public.m_language(id) ON DELETE CASCADE,
     UNIQUE(movie_id, language_id)
 );
 
 CREATE TABLE public.x_movie_theme (
     id SERIAL PRIMARY KEY,
-    movie_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
+    movie_id VARCHAR(255) NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     theme_id INTEGER NOT NULL REFERENCES public.m_theme(id) ON DELETE CASCADE,
     UNIQUE(movie_id, theme_id)
 );
@@ -223,42 +223,42 @@ CREATE TABLE public.x_movie_theme (
 -- Cross-reference tables for games
 CREATE TABLE public.x_game_genre (
     id SERIAL PRIMARY KEY,
-    game_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
+    game_id VARCHAR(255) NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     genre_id INTEGER NOT NULL REFERENCES public.g_genre(id) ON DELETE CASCADE,
     UNIQUE(game_id, genre_id)
 );
 
 CREATE TABLE public.x_game_director (
     id SERIAL PRIMARY KEY,
-    game_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
+    game_id VARCHAR(255) NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     director_id INTEGER NOT NULL REFERENCES public.g_director(id) ON DELETE CASCADE,
     UNIQUE(game_id, director_id)
 );
 
 CREATE TABLE public.x_game_platform (
     id SERIAL PRIMARY KEY,
-    game_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
+    game_id VARCHAR(255) NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     platform_id INTEGER NOT NULL REFERENCES public.g_platform(id) ON DELETE CASCADE,
     UNIQUE(game_id, platform_id)
 );
 
 CREATE TABLE public.x_game_country (
     id SERIAL PRIMARY KEY,
-    game_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
+    game_id VARCHAR(255) NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     country_id INTEGER NOT NULL REFERENCES public.g_country(id) ON DELETE CASCADE,
     UNIQUE(game_id, country_id)
 );
 
 CREATE TABLE public.x_game_language (
     id SERIAL PRIMARY KEY,
-    game_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
+    game_id VARCHAR(255) NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     language_id INTEGER NOT NULL REFERENCES public.g_language(id) ON DELETE CASCADE,
     UNIQUE(game_id, language_id)
 );
 
 CREATE TABLE public.x_game_theme (
     id SERIAL PRIMARY KEY,
-    game_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
+    game_id VARCHAR(255) NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     theme_id INTEGER NOT NULL REFERENCES public.g_theme(id) ON DELETE CASCADE,
     UNIQUE(game_id, theme_id)
 );
@@ -267,7 +267,7 @@ CREATE TABLE public.x_game_theme (
 CREATE TABLE public.review (
     id SERIAL PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES public.app_user(auth_user_id) ON DELETE CASCADE,
-    content_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
+    content_id VARCHAR(255) NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     text TEXT NOT NULL,
     rating DECIMAL(3,2) CHECK (rating >= 0 AND rating <= 5),
     like_count INTEGER DEFAULT 0,
@@ -280,7 +280,7 @@ CREATE TABLE public.review (
 CREATE TABLE public.user_content_log (
     id SERIAL PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES public.app_user(auth_user_id) ON DELETE CASCADE,
-    content_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
+    content_id VARCHAR(255) NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     content_status_id INTEGER REFERENCES public.content_status_lookup(id),
     rating DECIMAL(3,2) CHECK (rating >= 0 AND rating <= 5),
     is_favorite BOOLEAN DEFAULT FALSE,
@@ -326,7 +326,7 @@ CREATE TABLE public.user_follow (
 CREATE TABLE public.list_movie (
     id SERIAL PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES public.app_user(auth_user_id) ON DELETE CASCADE,
-    movie_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
+    movie_id VARCHAR(255) NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     list_name VARCHAR(255) NOT NULL,
     added_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE(user_id, movie_id, list_name)
@@ -705,7 +705,7 @@ COMMENT ON COLUMN public.review_reply_likes.user_id IS 'Reference to the user wh
 
 -- Recompute and maintain aggregated content stats (favorites, consumes, reviews, rating distribution)
 CREATE OR REPLACE FUNCTION public.recompute_content_stats(
-    content_id_param INTEGER
+    content_id_param VARCHAR(255)
 )
 RETURNS VOID
 LANGUAGE plpgsql
@@ -1155,13 +1155,13 @@ CREATE POLICY "Privileged can delete any app user" ON public.app_user
 
 -- Approval and rejection RPCs
 CREATE OR REPLACE FUNCTION public.approve_content_request(p_request_id integer, p_admin_id uuid)
-RETURNS integer
+RETURNS VARCHAR(255)
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
     v_req record;
-    v_content_id integer;
+    v_content_id VARCHAR(255);
     v_release_date date;
 BEGIN
     SELECT * INTO v_req FROM public.content_request WHERE id = p_request_id FOR UPDATE;
@@ -1218,7 +1218,7 @@ GRANT EXECUTE ON FUNCTION public.reject_content_request(integer, uuid, text) TO 
 
 -- Function to save book content (bypasses RLS)
 CREATE OR REPLACE FUNCTION public.save_book_content(
-    p_id INTEGER,
+    p_id VARCHAR(255),
     p_title VARCHAR(255),
     p_content_type_id INTEGER,
     p_release_date DATE,
@@ -1248,4 +1248,4 @@ BEGIN
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION public.save_book_content(INTEGER, VARCHAR, INTEGER, DATE, TEXT, INTEGER, TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.save_book_content(VARCHAR(255), VARCHAR, INTEGER, DATE, TEXT, INTEGER, TEXT) TO authenticated;
