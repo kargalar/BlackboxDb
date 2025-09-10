@@ -15,8 +15,10 @@ function BooksExploreInner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bookStates, setBookStates] = useState<Record<string, { isWatched: boolean; isFavorite: boolean; isInList: boolean }>>({});
+  const [totalItems, setTotalItems] = useState(0);
 
   const searchQuery = useMemo(() => (searchParams.get('search') || '').trim(), [searchParams]);
+  const page = useMemo(() => Math.max(1, Number(searchParams.get('page') || '1')), [searchParams]);
   const query = searchQuery || 'harry potter';
 
   useEffect(() => {
@@ -25,8 +27,11 @@ function BooksExploreInner() {
       try {
         setLoading(true);
         setError(null);
-        const res = await booksSearch(query, 24);
-        if (!cancelled) setBooks(res);
+        const res = await booksSearch(query, 24, page);
+        if (!cancelled) {
+          setBooks(res.data);
+          setTotalItems(res.totalItems || 0);
+        }
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'Books hata');
       } finally {
@@ -35,7 +40,7 @@ function BooksExploreInner() {
     };
     run();
     return () => { cancelled = true; };
-  }, [query]);
+  }, [query, page]);
 
   // Load user states for books
   const loadUserStatesForBooks = async (books: GoogleBook[]) => {
@@ -214,6 +219,18 @@ function BooksExploreInner() {
     router.push((`/explore/books${next ? `?search=${encodeURIComponent(next)}` : ''}`) as Route);
   };
 
+  const makeQS = (entries: Record<string, string | undefined>) => {
+    const q = new URLSearchParams();
+    const base: Record<string, string | undefined> = {
+      search: searchQuery,
+    };
+    const all = { ...base, ...entries };
+    Object.entries(all).forEach(([k, v]) => { if (v) q.set(k, v); });
+    return `?${q.toString()}`;
+  };
+
+  const totalPages = Math.ceil(totalItems / 24);
+
   return (
     <ExploreLayout title="Kitapları Keşfet" subtitle="Google Books üzerinden popüler ve aradığınız kitapları bulun">
       <form onSubmit={onSubmit} className="flex gap-2">
@@ -252,6 +269,26 @@ function BooksExploreInner() {
               onToggleWatchlist={handleToggleWatchlist}
             />)}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4">
+          <button 
+            onClick={() => router.push(('/explore/books' + makeQS({ page: String(Math.max(1, page - 1)) })) as any)} 
+            className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50" 
+            disabled={loading || page <= 1}
+          >
+            ← Önceki
+          </button>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Sayfa {page} / {totalPages}</span>
+          <button 
+            onClick={() => router.push(('/explore/books' + makeQS({ page: String(Math.min(totalPages, page + 1)) })) as any)} 
+            className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" 
+            disabled={loading || page >= totalPages}
+          >
+            Sonraki →
+          </button>
+        </div>
+      )}
     </ExploreLayout>
   );
 }

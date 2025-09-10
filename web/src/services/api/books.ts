@@ -7,10 +7,11 @@ export type GoogleBook = {
   infoLink?: string | null;
 };
 
-export async function booksSearch(q: string, limit = 24) {
+export async function booksSearch(q: string, limit = 24, page = 1) {
   const url = new URL('/api/books/search', typeof window === 'undefined' ? 'http://localhost' : window.location.origin);
   url.searchParams.set('q', q);
   url.searchParams.set('limit', String(limit));
+  url.searchParams.set('page', String(page));
 
   const res = await fetch(url.toString(), { method: 'GET', cache: 'no-store' });
   if (!res.ok) {
@@ -26,8 +27,8 @@ export async function booksSearch(q: string, limit = 24) {
     }
     throw new Error(msg);
   }
-  const json = (await res.json()) as { data: GoogleBook[] };
-  return json.data;
+  const json = (await res.json()) as { data: GoogleBook[]; totalItems?: number };
+  return json;
 }
 
 export async function getBookById(id: string) {

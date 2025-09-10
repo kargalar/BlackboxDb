@@ -25,6 +25,7 @@ function GamesExploreInner() {
   const [gameStates, setGameStates] = useState<Record<number, { isWatched: boolean; isFavorite: boolean; isInList: boolean }>>({});
 
   const searchQuery = useMemo(() => (searchParams.get('search') || '').trim(), [searchParams]);
+  const page = useMemo(() => Math.max(1, Number(searchParams.get('page') || '1')), [searchParams]);
   const query = searchQuery || 'zelda';
 
   useEffect(() => {
@@ -33,7 +34,7 @@ function GamesExploreInner() {
       try {
         setLoading(true);
         setError(null);
-        const res = await igdbSearch(query, 48); // increased from 24 to 48
+        const res = await igdbSearch(query, 48, page); // increased from 24 to 48
         if (!cancelled) setGames(res as any);
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'IGDB hata');
@@ -45,7 +46,7 @@ function GamesExploreInner() {
     return () => {
       cancelled = true;
     };
-  }, [query]);
+  }, [query, page]);
 
   // Load user states for games
   const loadUserStatesForGames = async (games: Game[]) => {
@@ -224,6 +225,25 @@ function GamesExploreInner() {
   router.push((`/explore/games${next ? `?search=${encodeURIComponent(next)}` : ''}`) as Route);
   };
 
+  const makeQS = (entries: Record<string, string | undefined>) => {
+    const q = new URLSearchParams();
+    const base: Record<string, string | undefined> = {
+      search: searchQuery,
+    };
+    const all = { ...base, ...entries };
+    Object.entries(all).forEach(([k, v]) => { if (v) q.set(k, v); });
+    return `?${q.toString()}`;
+  };
+
+  // For games, we'll assume a reasonable total pages since IGDB doesn't provide total count easily
+  // We can show pagination if we have results and allow navigation
+  const hasResults = games.length > 0;
+  const canGoNext = games.length === 48 && !loading; // If we got full limit, there might be more pages
+  const canGoPrev = page > 1;
+
+  // Try to detect if we're on the last page
+  const mightBeLastPage = games.length > 0 && games.length < 48;
+
   return (
     <ExploreLayout title="Oyunları Keşfet" subtitle="IGDB üzerinden popüler ve aradığınız oyunları bulun">
       <form onSubmit={onSubmit} className="flex gap-2">
@@ -273,6 +293,33 @@ function GamesExploreInner() {
               onToggleWatchlist={handleToggleWatchlist}
             />)}
       </div>
+
+      {hasResults && (
+        <div className="flex items-center justify-center gap-4">
+          <button 
+            onClick={() => router.push(('/explore/games' + makeQS({ page: String(Math.max(1, page - 1)) })) as any)} 
+            className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50" 
+            disabled={loading || !canGoPrev}
+          >
+            ← Önceki
+          </button>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Sayfa {page}</span>
+            {mightBeLastPage && (
+              <span className="text-xs text-gray-500 dark:text-gray-400">(son sayfa olabilir)</span>
+            )}
+          </div>
+          
+          <button 
+            onClick={() => router.push(('/explore/games' + makeQS({ page: String(page + 1) })) as any)} 
+            className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50" 
+            disabled={loading || !canGoNext}
+          >
+            Sonraki →
+          </button>
+        </div>
+      )}
     </ExploreLayout>
   );
 }

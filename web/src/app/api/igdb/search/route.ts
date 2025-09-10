@@ -7,11 +7,12 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const q = (searchParams.get('q') || '').trim();
   const limit = Number(searchParams.get('limit') || '20');
+  const page = Number(searchParams.get('page') || '1');
   if (!q) {
     return new Response(JSON.stringify({ error: 'Missing q' }), { status: 400 });
   }
   try {
-    const data = await searchGames(q, isNaN(limit) ? 20 : limit);
+    const data = await searchGames(q, isNaN(limit) ? 20 : limit, isNaN(page) ? 1 : page);
     return Response.json({ data });
   } catch (e: any) {
     console.error('IGDB search error:', e);

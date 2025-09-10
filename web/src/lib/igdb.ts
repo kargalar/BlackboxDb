@@ -132,43 +132,36 @@ export function igdbImageUrl(imageId: string, size: 'cover_small' | 'cover_big' 
   return `https://images.igdb.com/igdb/image/upload/t_${size}/${imageId}.jpg`;
 }
 
-export async function searchGames(q: string, limit = 20) {
+export async function searchGames(q: string, limit = 20, page = 1) {
   const sanitized = q.trim().slice(0, 120).replace(/[\n\r\t\";]/g, ' ').trim();
+  const offset = (page - 1) * limit;
+  console.log('🎮 IGDB searchGames called with:', { q: sanitized, limit, page, offset });
   
-  // Primary search with exact search
-  const primaryBody = [
-    `search "${sanitized}";`,
+  // Use games endpoint instead of search for better pagination support
+  const body = [
     'fields id,name,slug,summary,first_release_date,rating,total_rating,genres.name,platforms.name,cover.image_id;',
-    'where version_parent = null;', // include all categories
-    `limit ${Math.max(1, Math.min(limit, 100))};`, // increased limit
+    `where name ~ *"${sanitized}"* & version_parent = null;`,
+    'sort total_rating desc;',
+    `limit ${Math.max(1, Math.min(limit, 100))};`,
+    `offset ${offset};`,
   ].join('\n');
 
-  const primaryResults = await igdbRequest<IgdbGame[]>('games', primaryBody, { revalidate: 60 });
-
-  // If primary search returns few results, try a broader search
-  if (primaryResults.length < Math.min(10, limit)) {
+  try {
+    const results = await igdbRequest<IgdbGame[]>('games', body, { revalidate: 60 });
+    console.log('🎮 IGDB results:', results.length);
+    return results;
+  } catch (error) {
+    console.warn('🎮 Games search failed:', error);
+    // Fallback to original search method if games endpoint fails
     const fallbackBody = [
-      `fields id,name,slug,summary,first_release_date,rating,total_rating,genres.name,platforms.name,cover.image_id;`,
-      `where name ~ *"${sanitized}"* & version_parent = null;`,
-      'sort total_rating desc;',
+      `search "${sanitized}";`,
+      'fields id,name,slug,summary,first_release_date,rating,total_rating,genres.name,platforms.name,cover.image_id;',
+      'where version_parent = null;',
       `limit ${Math.max(1, Math.min(limit, 100))};`,
     ].join('\n');
     
-    try {
-      const fallbackResults = await igdbRequest<IgdbGame[]>('games', fallbackBody, { revalidate: 60 });
-      
-      // Merge results, removing duplicates
-      const existingIds = new Set(primaryResults.map(game => game.id));
-      const additionalResults = fallbackResults.filter(game => !existingIds.has(game.id));
-      
-      return [...primaryResults, ...additionalResults].slice(0, limit);
-    } catch (error) {
-      console.warn('Fallback search failed:', error);
-      return primaryResults;
-    }
+    return await igdbRequest<IgdbGame[]>('games', fallbackBody, { revalidate: 60 });
   }
-
-  return primaryResults;
 }
 
 export async function getGameById(id: number) {

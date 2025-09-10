@@ -5,10 +5,11 @@ export function igdbImageUrl(imageId: string, size: 'cover_small' | 'cover_big' 
   return `https://images.igdb.com/igdb/image/upload/t_${size}/${imageId}.jpg`;
 }
 
-export async function igdbSearch(q: string, limit = 20) {
+export async function igdbSearch(q: string, limit = 20, page = 1) {
   const url = new URL('/api/igdb/search', typeof window === 'undefined' ? 'http://localhost' : window.location.origin);
   url.searchParams.set('q', q);
   url.searchParams.set('limit', String(limit));
+  url.searchParams.set('page', String(page));
 
   const res = await fetch(url.toString(), { method: 'GET', cache: 'no-store' });
   if (!res.ok) {
