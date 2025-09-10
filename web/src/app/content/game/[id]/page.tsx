@@ -70,7 +70,7 @@ export default function GameContentPage() {
       average_rating: data.average_rating,
       rating_count: data.rating_count,
     });
-  }, [id]);
+  }, [id, contentId]);
 
   const refreshUserLog = useCallback(async () => {
     if (!Number.isFinite(id)) return;
@@ -105,7 +105,7 @@ export default function GameContentPage() {
     };
     if (Number.isFinite(id)) run();
     return () => { cancelled = true; };
-  }, [id, refreshStats, refreshUserLog]);
+  }, [id, contentId, refreshStats, refreshUserLog]);
 
   const handlePlayed = async () => {
     await logMovieWatch(contentId);

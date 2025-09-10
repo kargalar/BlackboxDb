@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface CountdownProps {
   date: string;
 }
 
 const Countdown: React.FC<CountdownProps> = ({ date }) => {
-  const calculateTimeLeft = () => {
+  const calculateTimeLeft = useCallback(() => {
     const difference = +new Date(date) - +new Date();
     if (difference <= 0) return null;
 
@@ -16,7 +16,7 @@ const Countdown: React.FC<CountdownProps> = ({ date }) => {
       hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
       minutes: Math.floor((difference / 1000 / 60) % 60),
     } as const;
-  };
+  }, [date]);
 
   const [timeLeft, setTimeLeft] = useState<ReturnType<typeof calculateTimeLeft>>(calculateTimeLeft());
 
@@ -39,7 +39,7 @@ const Countdown: React.FC<CountdownProps> = ({ date }) => {
         intervalRef.current = null;
       }
     };
-  }, [date]);
+  }, [date, calculateTimeLeft]);
 
   // Small flip unit component for a calendar-like leaf change effect
   const FlipUnit = ({ value, label, pad = 2 }: { value: number; label: string; pad?: number }) => {

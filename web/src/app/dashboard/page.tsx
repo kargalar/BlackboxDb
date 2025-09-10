@@ -70,7 +70,7 @@ export default function DashboardPage() {
         // Fetch books separately
         booksSearch('bestseller', 10)
           .then((books) => {
-            setPopularBooks(books);
+            setPopularBooks(books.data);
             setBooksLoading(false);
           })
           .catch((err) => {
