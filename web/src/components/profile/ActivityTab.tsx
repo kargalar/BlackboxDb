@@ -34,12 +34,19 @@ const ActivityItem = ({ activity }: { activity: any }) => {
   } else if (activity.is_favorite) {
     actionText = 'favorited';
   } else if (activity.content_status_id === 1) {
-    actionText = 'watched';
+    // Content type check: 1=MOVIE, 2=GAME, 3=TV, 4=BOOK
+    const contentType = activity.content?.content_type_id;
+    if (contentType === 4) {
+      actionText = 'read';
+    } else {
+      actionText = 'watched';
+    }
   }
 
   // Content type check: 1=MOVIE, 2=GAME, 3=TV, 4=BOOK
   const contentType = activity.content?.content_type_id;
   const isGame = contentType === 2;
+  const isBook = contentType === 4;
   
   // Get proper image URL based on content type
   const getImageUrl = () => {
@@ -48,18 +55,34 @@ const ActivityItem = ({ activity }: { activity: any }) => {
     if (isGame) {
       // For games, poster_path is already a full URL from IGDB
       return activity.content.poster_path;
+    } else if (isBook) {
+      // For books, poster_path is already a full URL from Google Books
+      return activity.content.poster_path;
     } else {
       // For movies/TV, use TMDB
       return tmdbImage(activity.content.poster_path, 'w342');
     }
   };
 
+  // Get proper content link based on content type
+  const getContentLink = () => {
+    const contentId = activity.content.id;
+    switch (contentType) {
+      case 1: return `/content/movie/${contentId}`;
+      case 2: return `/content/game/${contentId}`;
+      case 3: return `/content/tv/${contentId}`;
+      case 4: return `/content/book/${contentId}`;
+      default: return `/content/movie/${contentId}`;
+    }
+  };
+
+  const contentLink = getContentLink();
   const imageUrl = getImageUrl();
 
   return (
     <div className="bg-gray-900 rounded-lg p-4 flex items-center space-x-4">
       <div className="w-16 flex-shrink-0">
-        <Link href={`/content/movie/${activity.content.id}`} className="group relative">
+        <Link href={contentLink as any} className="group relative">
           <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden relative">
             {imageUrl ? (
               <Image
@@ -126,7 +149,7 @@ const ActivityItem = ({ activity }: { activity: any }) => {
       <div className="flex-grow">
         <p className="text-gray-300">
           You {actionText}{' '}
-          <Link href={`/content/movie/${activity.content.id}`} className="font-bold text-white hover:underline">
+          <Link href={contentLink as any} className="font-bold text-white hover:underline">
             {activity.content.title}
           </Link>
         </p>
