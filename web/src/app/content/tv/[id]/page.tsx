@@ -25,49 +25,89 @@ export default function TvShowPage() {
 
   const refreshStats = useCallback(async () => {
     if (!id) return;
-    const { data } = await getContentById(id);
-    if (data) setStats({
-      consume_count: data.consume_count,
-      favorite_count: data.favorite_count,
-      review_count: data.review_count,
-      average_rating: data.average_rating,
-      rating_count: data.rating_count,
-    });
+    try {
+      console.log('📊 İstatistikler yenileniyor...');
+      const { data } = await getContentById(id);
+      if (data) {
+        setStats({
+          consume_count: data.consume_count,
+          favorite_count: data.favorite_count,
+          review_count: data.review_count,
+          average_rating: data.average_rating,
+          rating_count: data.rating_count,
+        });
+        console.log('✅ İstatistikler güncellendi:', data);
+      }
+    } catch (e) {
+      console.error('❌ İstatistikler yüklenirken hata:', e);
+    }
   }, [id]);
 
   const refreshUserLog = useCallback(async () => {
     if (!Number.isFinite(id)) return;
-    const { data } = await getUserContentLog(id);
-    if (data) {
-      setIsFavorite(!!data.is_favorite);
-      setIsLater(!!data.is_consume_later);
-      setUserRating(data.rating ? Number(data.rating) : 0);
-      setIsWatched(Number(data.content_status_id) === 1 || (data.rating ?? 0) > 0);
+    try {
+      console.log('👤 Kullanıcı logları yükleniyor...');
+      const { data } = await getUserContentLog(id);
+      if (data) {
+        setIsFavorite(!!data.is_favorite);
+        setIsLater(!!data.is_consume_later);
+        setUserRating(data.rating ? Number(data.rating) : 0);
+        setIsWatched(Number(data.content_status_id) === 1 || (data.rating ?? 0) > 0);
+        console.log('✅ Kullanıcı logları güncellendi:', data);
+      }
+    } catch (e) {
+      console.error('❌ Kullanıcı logları yüklenirken hata:', e);
     }
   }, [id]);
 
   const loadReviews = useCallback(async () => {
     if (!Number.isFinite(id)) return;
-    const res = await getContentReviews(id);
-    setReviews(res.data ?? []);
+    try {
+      console.log('💬 Yorumlar yükleniyor...');
+      const res = await getContentReviews(id);
+      setReviews(res.data ?? []);
+      console.log('✅ Yorumlar yüklendi:', res.data?.length, 'yorum');
+    } catch (e) {
+      console.error('❌ Yorumlar yüklenirken hata:', e);
+    }
   }, [id]);
 
   useEffect(() => {
     async function load() {
       try {
+        console.log('🔍 TV sayfası yükleniyor, ID:', id);
         setLoading(true);
+        
+        console.log('📺 TMDB TV detayları alınıyor...');
         const data = await getTvDetails(String(id));
+        console.log('✅ TMDB TV detayları alındı:', data?.name);
         setTv(data);
-        // Ensure content exists for logging/stats
+        
+        console.log('💾 Content veritabanına kaydediliyor...');
         await saveContentFromTMDBTv(data);
+        console.log('✅ Content kaydedildi');
+        
+        console.log('📊 İstatistikler yükleniyor...');
         await Promise.all([refreshStats(), refreshUserLog(), loadReviews()]);
+        console.log('✅ Tüm veriler yüklendi');
       } catch (e: any) {
+        console.error('❌ TV sayfası yükleme hatası:', e);
         setError(e?.message || 'Bilinmeyen hata');
       } finally {
+        console.log('🏁 Loading tamamlandı');
         setLoading(false);
       }
     }
-    if (Number.isFinite(id)) load();
+    
+    const numericId = Number(id);
+    if (Number.isFinite(numericId)) {
+      console.log('▶️ Load fonksiyonu çağrılıyor, numeric ID:', numericId);
+      load();
+    } else {
+      console.error('❌ Geçersiz ID:', id, 'Loading durduruluyor');
+      setLoading(false);
+      setError('Geçersiz dizi ID');
+    }
   }, [id, refreshStats, refreshUserLog, loadReviews]);
 
   const handleWatched = async () => {
