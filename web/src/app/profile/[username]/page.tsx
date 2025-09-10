@@ -125,6 +125,8 @@ export default function UserProfilePage() {
         activityFeedResult
       ] = await Promise.race([dataPromise, timeoutPromise]) as any;
 
+      console.log('Activity Feed Result:', activityFeedResult);
+
   let processedMovies: Content[] = [];
   let processedTV: Content[] = [];
   let processedGames: Content[] = [];
@@ -157,6 +159,7 @@ export default function UserProfilePage() {
       }
 
       if (watchedGamesResult?.data) {
+        console.log('Games data from getUserWatchedGames:', watchedGamesResult.data);
         const latestPer = [...watchedGamesResult.data].sort((a, b) => {
           const ta = a.date ? new Date(a.date).getTime() : 0
           const tb = b.date ? new Date(b.date).getTime() : 0
@@ -164,6 +167,9 @@ export default function UserProfilePage() {
         })
         processedGames = latestPer
         recentGamesData = latestPer.slice(0, 4)
+        console.log('Processed games:', processedGames);
+      } else {
+        console.log('No games data received:', watchedGamesResult);
       }
 
       if (watchedBooksResult?.data) {

@@ -1,9 +1,30 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { tmdbImage } from '@/services/api/tmdb';
+import { igdbImageUrl } from '@/services/api/igdb';
 
 interface ActivityTabProps {
   activities: any[];
+}
+
+export default function ActivityTab({ activities }: ActivityTabProps) {
+  console.log('ActivityTab received activities:', activities);
+  
+  if (!activities || activities.length === 0) {
+    return (
+      <div className="text-center text-gray-400 py-8">
+        <p>Henüz aktivite yok.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {activities.map((activity) => (
+        <ActivityItem key={activity.id} activity={activity} />
+      ))}
+    </div>
+  );
 }
 
 const ActivityItem = ({ activity }: { activity: any }) => {
@@ -16,14 +37,33 @@ const ActivityItem = ({ activity }: { activity: any }) => {
     actionText = 'watched';
   }
 
+  // Content type check: 1=MOVIE, 2=GAME, 3=TV, 4=BOOK
+  const contentType = activity.content?.content_type_id;
+  const isGame = contentType === 2;
+  
+  // Get proper image URL based on content type
+  const getImageUrl = () => {
+    if (!activity.content?.poster_path) return null;
+    
+    if (isGame) {
+      // For games, poster_path is already a full URL from IGDB
+      return activity.content.poster_path;
+    } else {
+      // For movies/TV, use TMDB
+      return tmdbImage(activity.content.poster_path, 'w342');
+    }
+  };
+
+  const imageUrl = getImageUrl();
+
   return (
     <div className="bg-gray-900 rounded-lg p-4 flex items-center space-x-4">
       <div className="w-16 flex-shrink-0">
         <Link href={`/content/movie/${activity.content.id}`} className="group relative">
           <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden relative">
-            {activity.content.poster_path ? (
+            {imageUrl ? (
               <Image
-                src={tmdbImage(activity.content.poster_path, 'w342')}
+                src={imageUrl}
                 alt={activity.content.title}
                 width={64}
                 height={96}
@@ -101,21 +141,3 @@ const ActivityItem = ({ activity }: { activity: any }) => {
     </div>
   );
 };
-
-export default function ActivityTab({ activities }: ActivityTabProps) {
-  if (activities.length === 0) {
-    return (
-      <div className="text-center text-gray-400 py-8">
-        <p>No activity yet.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {activities.map((activity) => (
-        <ActivityItem key={activity.id} activity={activity} />
-      ))}
-    </div>
-  );
-}

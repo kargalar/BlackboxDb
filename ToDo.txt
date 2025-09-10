@@ -384,3 +384,6 @@ remake ve remestar ana oyun altında mı olsun farklı oyun olarak mı. mesela b
 ✅ Expanded Game'ler (category 10) dahil
 ✅ Port'lar (category 11) dahil
 ✅ Fork'lar (category 12) dahil
+
+
+diziler oyunlar ve kitaplar için devam ediyor seçenei ekle

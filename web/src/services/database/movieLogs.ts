@@ -329,18 +329,25 @@ export async function getUserWatchedTV(userId?: string): Promise<{ data: Content
 
 // Fetch user's watched Games (content_type 5)
 export async function getUserWatchedGames(userId?: string): Promise<{ data: Content[] }> {
+  console.log('getUserWatchedGames called with userId:', userId);
   const { data: userRes } = await supabase.auth.getUser()
   const uid = userId || userRes.user?.id
-  if (!uid) return { data: [] }
+  if (!uid) {
+    console.log('No user ID found');
+    return { data: [] }
+  }
 
   try {
+    console.log('Calling RPC get_user_contents for games...');
     const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_contents', {
       user_id_param: uid,
       log_user_id_param: uid,
-      content_type_param: 5, // 5 = Games
+      content_type_param: 2, // Changed from 5 to 2 (GAME content type)
       page_param: 1,
       limit_param: 40,
     })
+
+    console.log('RPC result for games:', { rpcData, rpcError });
 
     if (!rpcError && rpcData) {
       const contents = (rpcData.contents as any[] | undefined) ?? []
@@ -405,9 +412,11 @@ export async function getUserWatchedGames(userId?: string): Promise<{ data: Cont
       return { data: [] }
     }
 
-    // Filter for Games only (content_type_id = 5)
+    // Filter for Games only (content_type_id = 2)
     const gameLogs = (logData || [])
-      .filter((item: any) => item.content && item.content.content_type_id === 5)
+      .filter((item: any) => item.content && item.content.content_type_id === 2)
+
+    console.log('Filtered game logs:', gameLogs);
 
     const mapped: Content[] = gameLogs.map((item: any) => ({
       id: item.content.id,
@@ -1759,7 +1768,8 @@ export async function getActivityFeed(userId: string): Promise<{ data: any[] }> 
           content:content_id (
             id,
             title,
-            poster_path
+            poster_path,
+            content_type_id
           )
         `)
         .eq('user_id', userId)

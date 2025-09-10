@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Content } from '@/services/database/movieLogs';
 import { supabase } from '@/lib/supabase';
 
@@ -10,6 +11,7 @@ interface GamesTabProps {
 }
 
 export default function GamesTab({ games }: GamesTabProps) {
+  console.log('GamesTab received games:', games);
   const [showOnlyWishlist, setShowOnlyWishlist] = useState(false);
 
   const filteredGames = games.filter(game => {
@@ -138,19 +140,34 @@ export default function GamesTab({ games }: GamesTabProps) {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {filteredGames.map((game) => (
           <div key={game.id} className="space-y-2">
-            <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
-              <div className="text-sm font-medium line-clamp-2 text-white">{game.title}</div>
-              {(game.user_rating ?? 0) > 0 && (
-                <div className="flex items-center mt-2">
-                  <span className="text-xs text-yellow-400">★ {game.user_rating}</span>
-                </div>
-              )}
-              {game.date && (
-                <div className="text-xs text-gray-400 mt-1">
-                  {new Date(game.date).toLocaleDateString('tr-TR')}
-                </div>
-              )}
-            </div>
+            <Link href={`/content/game/${game.id}`} className="group relative">
+              <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden relative border border-gray-700">
+                {game.poster_path ? (
+                  <Image
+                    src={game.poster_path}
+                    alt={game.title}
+                    width={200}
+                    height={300}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
+                    <span className="text-xs text-center px-2 text-white">{game.title}</span>
+                  </div>
+                )}
+              </div>
+            </Link>
+            <div className="text-xs font-medium line-clamp-2 text-white">{game.title}</div>
+            {(game.user_rating ?? 0) > 0 && (
+              <div className="flex items-center">
+                <span className="text-xs text-yellow-400">★ {game.user_rating}</span>
+              </div>
+            )}
+            {game.date && (
+              <div className="text-xs text-gray-400">
+                {new Date(game.date).toLocaleDateString('tr-TR')}
+              </div>
+            )}
           </div>
         ))}
       </div>
