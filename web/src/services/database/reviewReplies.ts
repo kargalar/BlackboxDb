@@ -55,18 +55,18 @@ export async function getReviewReplies(reviewId: number): Promise<{ data: Review
 export async function testReviewReplyTable(): Promise<{ exists: boolean; count: number }> {
   try {
     const { data, error, count } = await supabase
-      .from('review_reply')
+      .from('review_replies')
       .select('*', { count: 'exact', head: true });
 
     if (error) {
-      console.error('review_reply table error:', error);
+      console.error('review_replies table error:', error);
       return { exists: false, count: 0 };
     }
 
-    console.log('review_reply table exists, count:', count);
+    console.log('review_replies table exists, count:', count);
     return { exists: true, count: count || 0 };
   } catch (error) {
-    console.error('Error testing review_reply table:', error);
+    console.error('Error testing review_replies table:', error);
     return { exists: false, count: 0 };
   }
 }
