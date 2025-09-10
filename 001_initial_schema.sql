@@ -366,7 +366,6 @@ ALTER TABLE public.user_content_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.review ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.review_comment ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.review_likes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.review_replies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_follow ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.list_movie ENABLE ROW LEVEL SECURITY;
 
@@ -435,19 +434,6 @@ CREATE POLICY "Users can insert their own review likes" ON public.review_likes
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete their own review likes" ON public.review_likes
-    FOR DELETE USING (auth.uid() = user_id);
-
--- Replies policies
-CREATE POLICY "Users can view all review replies" ON public.review_replies
-    FOR SELECT USING (true);
-
-CREATE POLICY "Users can insert their own review replies" ON public.review_replies
-    FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own review replies" ON public.review_replies
-    FOR UPDATE USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete their own review replies" ON public.review_replies
     FOR DELETE USING (auth.uid() = user_id);
 
 -- User follows
@@ -629,11 +615,11 @@ GRANT EXECUTE ON FUNCTION public.get_user_contents(UUID,UUID,INTEGER,INTEGER,INT
 -- ===========================================
 
 -- Create review_replies table for nested comments on reviews
-CREATE TABLE IF NOT EXISTS review_replies (
+CREATE TABLE IF NOT EXISTS public.review_replies (
     id SERIAL PRIMARY KEY,
-    review_id INTEGER NOT NULL REFERENCES review(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES app_user(auth_user_id) ON DELETE CASCADE,
-    parent_reply_id INTEGER REFERENCES review_replies(id) ON DELETE CASCADE, -- For nested replies
+    review_id INTEGER NOT NULL REFERENCES public.review(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.app_user(auth_user_id) ON DELETE CASCADE,
+    parent_reply_id INTEGER REFERENCES public.review_replies(id) ON DELETE CASCADE, -- For nested replies
     text TEXT NOT NULL,
     like_count INTEGER DEFAULT 0,
     reply_count INTEGER DEFAULT 0,
@@ -642,33 +628,33 @@ CREATE TABLE IF NOT EXISTS review_replies (
 );
 
 -- Create indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_review_replies_review_id ON review_replies(review_id);
-CREATE INDEX IF NOT EXISTS idx_review_replies_user_id ON review_replies(user_id);
-CREATE INDEX IF NOT EXISTS idx_review_replies_parent_id ON review_replies(parent_reply_id);
-CREATE INDEX IF NOT EXISTS idx_review_replies_created_at ON review_replies(created_at);
+CREATE INDEX IF NOT EXISTS idx_review_replies_review_id ON public.review_replies(review_id);
+CREATE INDEX IF NOT EXISTS idx_review_replies_user_id ON public.review_replies(user_id);
+CREATE INDEX IF NOT EXISTS idx_review_replies_parent_id ON public.review_replies(parent_reply_id);
+CREATE INDEX IF NOT EXISTS idx_review_replies_created_at ON public.review_replies(created_at);
 
 -- Add RLS (Row Level Security) policies
-ALTER TABLE review_replies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.review_replies ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Users can view all replies
-CREATE POLICY "Users can view all review replies" ON review_replies
+CREATE POLICY "Users can view all review replies" ON public.review_replies
     FOR SELECT USING (true);
 
 -- Policy: Users can insert their own replies
-CREATE POLICY "Users can insert their own review replies" ON review_replies
+CREATE POLICY "Users can insert their own review replies" ON public.review_replies
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Policy: Users can update their own replies
-CREATE POLICY "Users can update their own review replies" ON review_replies
+CREATE POLICY "Users can update their own review replies" ON public.review_replies
     FOR UPDATE USING (auth.uid() = user_id);
 
 -- Policy: Users can delete their own replies
-CREATE POLICY "Users can delete their own review replies" ON review_replies
+CREATE POLICY "Users can delete their own review replies" ON public.review_replies
     FOR DELETE USING (auth.uid() = user_id);
 
 -- Grant permissions
-GRANT ALL ON review_replies TO authenticated;
-GRANT USAGE ON SEQUENCE review_replies_id_seq TO authenticated;
+GRANT ALL ON public.review_replies TO authenticated;
+GRANT USAGE ON SEQUENCE public.review_replies_id_seq TO authenticated;
 
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_review_replies_updated_at()
@@ -681,7 +667,7 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger to automatically update updated_at
 CREATE TRIGGER update_review_replies_updated_at
-    BEFORE UPDATE ON review_replies
+    BEFORE UPDATE ON public.review_replies
     FOR EACH ROW
     EXECUTE FUNCTION update_review_replies_updated_at();
 
@@ -690,10 +676,10 @@ CREATE TRIGGER update_review_replies_updated_at
 -- ===========================================
 
 -- Create review_reply_likes table for tracking reply likes
-CREATE TABLE review_reply_likes (
+CREATE TABLE public.review_reply_likes (
     id BIGSERIAL PRIMARY KEY,
-    reply_id BIGINT NOT NULL REFERENCES review_replies(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES app_user(auth_user_id) ON DELETE CASCADE,
+    reply_id BIGINT NOT NULL REFERENCES public.review_replies(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.app_user(auth_user_id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     
     -- Ensure a user can only like a reply once
@@ -701,17 +687,17 @@ CREATE TABLE review_reply_likes (
 );
 
 -- Create indexes for better performance
-CREATE INDEX idx_review_reply_likes_reply_id ON review_reply_likes(reply_id);
-CREATE INDEX idx_review_reply_likes_user_id ON review_reply_likes(user_id);
-CREATE INDEX idx_review_reply_likes_created_at ON review_reply_likes(created_at);
+CREATE INDEX idx_review_reply_likes_reply_id ON public.review_reply_likes(reply_id);
+CREATE INDEX idx_review_reply_likes_user_id ON public.review_reply_likes(user_id);
+CREATE INDEX idx_review_reply_likes_created_at ON public.review_reply_likes(created_at);
 
 -- Disable RLS for development
-ALTER TABLE review_reply_likes DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.review_reply_likes DISABLE ROW LEVEL SECURITY;
 
 -- Add some comments for documentation
-COMMENT ON TABLE review_reply_likes IS 'Tracks which users have liked which review replies';
-COMMENT ON COLUMN review_reply_likes.reply_id IS 'Reference to the review reply being liked';
-COMMENT ON COLUMN review_reply_likes.user_id IS 'Reference to the user who liked the reply';
+COMMENT ON TABLE public.review_reply_likes IS 'Tracks which users have liked which review replies';
+COMMENT ON COLUMN public.review_reply_likes.reply_id IS 'Reference to the review reply being liked';
+COMMENT ON COLUMN public.review_reply_likes.user_id IS 'Reference to the user who liked the reply';
 
 -- ===========================================
 -- MIGRATION 007: Update content stats

@@ -9,3 +9,6 @@ Provide project context and coding guidelines that AI should follow when generat
 - Feature-based klasör yapısı uygula.
 - UI parçalarını atomic design (atoms, molecules, organisms, pages) mantığına göre ayır.
 - Tekrarlayan kodları custom hook veya utils içine taşı.
+- uygulamda hatalar gerçekleşiyor ama çoğu zaman göremiyor. bundan sonra yazdığım kodlar için debug panelde mesajı için kodlar da ekle. hata veya başarılı olma durumlarında.
+
+
