@@ -8,7 +8,8 @@ import ExploreLayout from '@/components/layouts/ExploreLayout'
 import type { TMDBDiscoverMovie } from '@/types/tmdb';
 import TvCard from '@/components/TvCard';
 import { getTvDetails } from '@/services/api/tmdb';
-import { saveContentFromTMDBTv, updateUserContentLog } from '@/services/database/movieLogs';
+import { saveContentFromTMDBTv } from '@/services/database/movieLogs';
+import { supabase } from '@/lib/supabase';
 
 function TvExploreContent() {
   const searchParams = useSearchParams();
@@ -25,7 +26,7 @@ function TvExploreContent() {
   const [data, setData] = useState<{ page: number; total_pages: number; total_results: number; results: TMDBDiscoverMovie[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tvStates, setTvStates] = useState<Record<number, { isWatched: boolean }>>({});
+  const [tvStates, setTvStates] = useState<Record<number, { isWatched: boolean; isFavorite: boolean; isInList: boolean }>>({});
 
   useEffect(() => {
     async function load() {
@@ -56,15 +57,169 @@ function TvExploreContent() {
     }
     load();
   }, [sort_by, with_original_language, with_genres, page, yearMin, yearMax, searchQuery]);
+
+  // Load user states for TV shows
+  const loadUserStatesForTV = async (tvs: any[]) => {
+    try {
+      const { data: userRes } = await supabase.auth.getUser();
+      if (!userRes.user?.id) return;
+
+      const tvIds = tvs.map(tv => tv.id);
+      
+      // Get user content logs for all TV shows
+      const { data: logs, error } = await supabase
+        .from('user_content_log')
+        .select('*')
+        .eq('user_id', userRes.user.id)
+        .in('content_id', tvIds);
+
+      if (error) return;
+
+      // Group logs by content_id and get the latest for each
+      const latestLogs: Record<number, any> = {};
+      logs?.forEach(log => {
+        if (!latestLogs[log.content_id] || new Date(log.date) > new Date(latestLogs[log.content_id].date)) {
+          latestLogs[log.content_id] = log;
+        }
+      });
+
+      // Update TV states
+      const newStates: Record<number, { isWatched: boolean; isFavorite: boolean; isInList: boolean }> = {};
+      tvIds.forEach(tvId => {
+        const log = latestLogs[tvId];
+        if (log) {
+          newStates[tvId] = {
+            isWatched: log.content_status_id === 1,
+            isFavorite: log.is_favorite || false,
+            isInList: log.is_consume_later || false
+          };
+        } else {
+          newStates[tvId] = {
+            isWatched: false,
+            isFavorite: false,
+            isInList: false
+          };
+        }
+      });
+
+      setTvStates(newStates);
+    } catch (error) {
+      console.error('Error loading user states for TV shows:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (data?.results) {
+      loadUserStatesForTV(data.results);
+    }
+  }, [data?.results]);
+
   const handleWatchTv = async (tvId: number) => {
+    console.log('📺 handleWatchTv called for tvId:', tvId);
     try {
       const details = await getTvDetails(tvId);
       if (details) await saveContentFromTMDBTv(details as any);
-      setTvStates((prev) => ({ ...prev, [tvId]: { isWatched: true } }));
-      const result = await updateUserContentLog(tvId.toString(), { content_status_id: 1, date: new Date().toISOString() });
-      if (!result.data) setTvStates((prev) => ({ ...prev, [tvId]: { isWatched: false } }));
+      
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        console.error('📺 No authenticated user');
+        return;
+      }
+
+      console.log('📺 User authenticated, updating database...');
+      const { error } = await supabase
+        .from('user_content_log')
+        .upsert({
+          user_id: user.user.id,
+          content_id: tvId.toString(),
+          content_status_id: 1,
+          date: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,content_id'
+        });
+
+      if (error) {
+        console.error('📺 Database error:', error);
+        throw error;
+      }
+
+      console.log('📺 TV watch logged successfully');
+      setTvStates((prev) => ({ ...prev, [tvId]: { ...prev[tvId], isWatched: true } }));
     } catch (err) {
-      setTvStates((prev) => ({ ...prev, [tvId]: { isWatched: false } }));
+      console.error('📺 Error in handleWatchTv:', err);
+      // Don't revert state on error since we want optimistic updates
+    }
+  };
+
+  const handleToggleFavorite = async (tvId: number) => {
+    console.log('📺 handleToggleFavorite called for tvId:', tvId);
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        console.error('📺 No authenticated user');
+        return;
+      }
+
+      const currentState = tvStates[tvId];
+      const newFavoriteState = !currentState?.isFavorite;
+      console.log('📺 Setting favorite state to:', newFavoriteState);
+
+      const { error } = await supabase
+        .from('user_content_log')
+        .upsert({
+          user_id: user.user.id,
+          content_id: tvId.toString(),
+          is_favorite: newFavoriteState
+        }, {
+          onConflict: 'user_id,content_id'
+        });
+
+      if (error) {
+        console.error('📺 Database error:', error);
+        throw error;
+      }
+
+      console.log('📺 TV favorite updated successfully');
+      setTvStates((prev) => ({ ...prev, [tvId]: { ...prev[tvId], isFavorite: newFavoriteState } }));
+    } catch (err) {
+      console.error('📺 Error in handleToggleFavorite:', err);
+      // Don't revert state on error since we want optimistic updates
+    }
+  };
+
+  const handleToggleWatchlist = async (tvId: number) => {
+    console.log('📺 handleToggleWatchlist called for tvId:', tvId);
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        console.error('📺 No authenticated user');
+        return;
+      }
+
+      const currentState = tvStates[tvId];
+      const newWatchlistState = !currentState?.isInList;
+      console.log('📺 Setting watchlist state to:', newWatchlistState);
+
+      const { error } = await supabase
+        .from('user_content_log')
+        .upsert({
+          user_id: user.user.id,
+          content_id: tvId.toString(),
+          is_consume_later: newWatchlistState
+        }, {
+          onConflict: 'user_id,content_id'
+        });
+
+      if (error) {
+        console.error('📺 Database error:', error);
+        throw error;
+      }
+
+      console.log('📺 TV watchlist updated successfully');
+      setTvStates((prev) => ({ ...prev, [tvId]: { ...prev[tvId], isInList: newWatchlistState } }));
+    } catch (err) {
+      console.error('📺 Error in handleToggleWatchlist:', err);
+      // Don't revert state on error since we want optimistic updates
     }
   };
 
@@ -149,7 +304,18 @@ function TvExploreContent() {
 
       <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
         {data?.results?.map((tv) => (
-          <TvCard key={tv.id} tv={tv as any} size="large" showActions isWatched={!!tvStates[tv.id]?.isWatched} onWatch={handleWatchTv} />
+          <TvCard 
+            key={tv.id} 
+            tv={tv as any} 
+            size="large" 
+            showActions 
+            isWatched={!!tvStates[tv.id]?.isWatched}
+            isFavorite={!!tvStates[tv.id]?.isFavorite}
+            isInList={!!tvStates[tv.id]?.isInList}
+            onWatch={handleWatchTv}
+            onToggleFavorite={handleToggleFavorite}
+            onToggleWatchlist={handleToggleWatchlist}
+          />
         ))}
       </div>
 

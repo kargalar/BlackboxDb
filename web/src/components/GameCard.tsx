@@ -57,20 +57,26 @@ export default function GameCard({
   const href = (`/content/game/${game.id}`) as Route;
 
   const handleWatch = (e: React.MouseEvent) => {
+    console.log('🎮 GameCard handleWatch called for game:', game.id);
     e.preventDefault();
     e.stopPropagation();
+    console.log('🎮 Calling onWatch with game.id:', game.id);
     onWatch?.(game.id);
   };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
+    console.log('🎮 GameCard handleToggleFavorite called for game:', game.id);
     e.preventDefault();
     e.stopPropagation();
+    console.log('🎮 Calling onToggleFavorite with game.id:', game.id);
     onToggleFavorite?.(game.id);
   };
 
   const handleToggleWatchlist = (e: React.MouseEvent) => {
+    console.log('🎮 GameCard handleToggleWatchlist called for game:', game.id);
     e.preventDefault();
     e.stopPropagation();
+    console.log('🎮 Calling onToggleWatchlist with game.id:', game.id);
     onToggleWatchlist?.(game.id);
   };
 

@@ -6,6 +6,7 @@ import type { Route } from 'next';
 import BookCard from '@/components/BookCard';
 import ExploreLayout from '@/components/layouts/ExploreLayout'
 import { booksSearch, type GoogleBook } from '@/services/api/books';
+import { supabase } from '@/lib/supabase';
 
 function BooksExploreInner() {
   const router = useRouter();
@@ -13,6 +14,7 @@ function BooksExploreInner() {
   const [books, setBooks] = useState<GoogleBook[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bookStates, setBookStates] = useState<Record<string, { isWatched: boolean; isFavorite: boolean; isInList: boolean }>>({});
 
   const searchQuery = useMemo(() => (searchParams.get('search') || '').trim(), [searchParams]);
   const query = searchQuery || 'harry potter';
@@ -34,6 +36,176 @@ function BooksExploreInner() {
     run();
     return () => { cancelled = true; };
   }, [query]);
+
+  // Load user states for books
+  const loadUserStatesForBooks = async (books: GoogleBook[]) => {
+    try {
+      const { data: userRes } = await supabase.auth.getUser();
+      if (!userRes.user?.id) return;
+
+      const bookIds = books.map(book => book.id);
+      
+      // Get user content logs for all books
+      const { data: logs, error } = await supabase
+        .from('user_content_log')
+        .select('*')
+        .eq('user_id', userRes.user.id)
+        .in('content_id', bookIds);
+
+      if (error) return;
+
+      // Group logs by content_id and get the latest for each
+      const latestLogs: Record<string, any> = {};
+      logs?.forEach(log => {
+        if (!latestLogs[log.content_id] || new Date(log.date) > new Date(latestLogs[log.content_id].date)) {
+          latestLogs[log.content_id] = log;
+        }
+      });
+
+      // Update book states
+      const newStates: Record<string, { isWatched: boolean; isFavorite: boolean; isInList: boolean }> = {};
+      bookIds.forEach(bookId => {
+        const log = latestLogs[bookId];
+        if (log) {
+          newStates[bookId] = {
+            isWatched: log.content_status_id === 1,
+            isFavorite: log.is_favorite || false,
+            isInList: log.is_consume_later || false
+          };
+        } else {
+          newStates[bookId] = {
+            isWatched: false,
+            isFavorite: false,
+            isInList: false
+          };
+        }
+      });
+
+      setBookStates(newStates);
+    } catch (error) {
+      console.error('Error loading user states for books:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (books.length > 0) {
+      loadUserStatesForBooks(books);
+    }
+  }, [books]);
+
+  const handleWatchBook = async (bookId: string) => {
+    console.log('📚 handleWatchBook called for bookId:', bookId);
+    console.log('📚 Current bookStates:', bookStates);
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      console.log('📚 Auth user:', user?.user?.id);
+      if (!user.user) {
+        console.error('📚 No authenticated user');
+        return;
+      }
+
+      console.log('📚 User authenticated, updating database...');
+      const { error } = await supabase
+        .from('user_content_log')
+        .upsert({
+          user_id: user.user.id,
+          content_id: bookId,
+          content_status_id: 1,
+          date: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,content_id'
+        });
+
+      if (error) {
+        console.error('📚 Database error:', error);
+        throw error;
+      }
+
+      console.log('📚 Book watch logged successfully, updating state...');
+      setBookStates((prev) => {
+        console.log('📚 Previous state:', prev);
+        const newState = { ...prev, [bookId]: { ...prev[bookId], isWatched: true } };
+        console.log('📚 New state:', newState);
+        return newState;
+      });
+      console.log('📚 State update completed');
+    } catch (err) {
+      console.error('📚 Error in handleWatchBook:', err);
+      // Don't revert state on error since we want optimistic updates
+    }
+  };
+
+  const handleToggleFavorite = async (bookId: string) => {
+    console.log('📚 handleToggleFavorite called for bookId:', bookId);
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        console.error('📚 No authenticated user');
+        return;
+      }
+
+      const currentState = bookStates[bookId];
+      const newFavoriteState = !currentState?.isFavorite;
+      console.log('📚 Setting favorite state to:', newFavoriteState);
+
+      const { error } = await supabase
+        .from('user_content_log')
+        .upsert({
+          user_id: user.user.id,
+          content_id: bookId,
+          is_favorite: newFavoriteState
+        }, {
+          onConflict: 'user_id,content_id'
+        });
+
+      if (error) {
+        console.error('📚 Database error:', error);
+        throw error;
+      }
+
+      console.log('📚 Book favorite updated successfully');
+      setBookStates((prev) => ({ ...prev, [bookId]: { ...prev[bookId], isFavorite: newFavoriteState } }));
+    } catch (err) {
+      console.error('📚 Error in handleToggleFavorite:', err);
+      // Don't revert state on error since we want optimistic updates
+    }
+  };
+
+  const handleToggleWatchlist = async (bookId: string) => {
+    console.log('📚 handleToggleWatchlist called for bookId:', bookId);
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) {
+        console.error('📚 No authenticated user');
+        return;
+      }
+
+      const currentState = bookStates[bookId];
+      const newWatchlistState = !currentState?.isInList;
+      console.log('📚 Setting watchlist state to:', newWatchlistState);
+
+      const { error } = await supabase
+        .from('user_content_log')
+        .upsert({
+          user_id: user.user.id,
+          content_id: bookId,
+          is_consume_later: newWatchlistState
+        }, {
+          onConflict: 'user_id,content_id'
+        });
+
+      if (error) {
+        console.error('📚 Database error:', error);
+        throw error;
+      }
+
+      console.log('📚 Book watchlist updated successfully');
+      setBookStates((prev) => ({ ...prev, [bookId]: { ...prev[bookId], isInList: newWatchlistState } }));
+    } catch (err) {
+      console.error('📚 Error in handleToggleWatchlist:', err);
+      // Don't revert state on error since we want optimistic updates
+    }
+  };
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -67,7 +239,18 @@ function BooksExploreInner() {
           ? Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className="aspect-[2/3] rounded-xl bg-gray-200 dark:bg-gray-700 animate-pulse" />
             ))
-          : books.map((b) => <BookCard key={b.id} book={b} size="large" />)}
+          : books.map((b) => <BookCard 
+              key={b.id} 
+              book={b} 
+              size="large"
+              showActions
+              isWatched={!!bookStates[b.id]?.isWatched}
+              isFavorite={!!bookStates[b.id]?.isFavorite}
+              isInList={!!bookStates[b.id]?.isInList}
+              onWatch={handleWatchBook}
+              onToggleFavorite={handleToggleFavorite}
+              onToggleWatchlist={handleToggleWatchlist}
+            />)}
       </div>
     </ExploreLayout>
   );

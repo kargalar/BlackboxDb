@@ -59,20 +59,26 @@ export default function BookCard({
   const href = (`/content/book/${book.id}`) as Route;
 
   const handleWatch = (e: React.MouseEvent) => {
+    console.log('📚 BookCard handleWatch called for book:', book.id);
     e.preventDefault();
     e.stopPropagation();
+    console.log('📚 Calling onWatch with book.id:', book.id);
     onWatch?.(book.id);
   };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
+    console.log('📚 BookCard handleToggleFavorite called for book:', book.id);
     e.preventDefault();
     e.stopPropagation();
+    console.log('📚 Calling onToggleFavorite with book.id:', book.id);
     onToggleFavorite?.(book.id);
   };
 
   const handleToggleWatchlist = (e: React.MouseEvent) => {
+    console.log('📚 BookCard handleToggleWatchlist called for book:', book.id);
     e.preventDefault();
     e.stopPropagation();
+    console.log('📚 Calling onToggleWatchlist with book.id:', book.id);
     onToggleWatchlist?.(book.id);
   };
 
