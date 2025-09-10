@@ -61,7 +61,7 @@ function TvExploreContent() {
       const details = await getTvDetails(tvId);
       if (details) await saveContentFromTMDBTv(details as any);
       setTvStates((prev) => ({ ...prev, [tvId]: { isWatched: true } }));
-      const result = await updateUserContentLog(tvId, { content_status_id: 1, date: new Date().toISOString() });
+      const result = await updateUserContentLog(tvId.toString(), { content_status_id: 1, date: new Date().toISOString() });
       if (!result.data) setTvStates((prev) => ({ ...prev, [tvId]: { isWatched: false } }));
     } catch (err) {
       setTvStates((prev) => ({ ...prev, [tvId]: { isWatched: false } }));

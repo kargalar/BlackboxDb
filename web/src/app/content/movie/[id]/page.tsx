@@ -407,8 +407,8 @@ export default function MoviePage() {
       setIsInList(next);
 
       // Get current log and preserve existing status
-      const { data: currentLog } = await getUserContentLog(Number(id));
-      const result = await updateUserContentLog(Number(id), {
+      const { data: currentLog } = await getUserContentLog(id);
+      const result = await updateUserContentLog(id, {
         is_consume_later: next,
         // Only set content_status_id to CONSUME_LATER if not already watched
         content_status_id: currentLog?.content_status_id === 1 ? 1 : (next ? 2 : currentLog?.content_status_id || 2),
@@ -566,7 +566,7 @@ export default function MoviePage() {
   // Edit log handlers
   const handleOpenEditModal = async () => {
     try {
-      const { data: logs } = await getUserContentLogs(Number(id));
+      const { data: logs } = await getUserContentLogs(id);
       setUserLogs(logs);
       
       // Always start with log selection view, never auto-open the form
@@ -666,7 +666,7 @@ export default function MoviePage() {
   setShowLogForm(false);
   setNewLogReviewText('');
         // Refresh UI state with latest log data
-        const { data: logs } = await getUserContentLogs(Number(id));
+        const { data: logs } = await getUserContentLogs(id);
         if (logs.length > 0) {
           const latestLog = logs[0]; // Most recent log
           setUserRating(latestLog.rating || 0);
@@ -691,7 +691,7 @@ export default function MoviePage() {
         setShowEditModal(false);
         setShowLogForm(false);
         // Refresh UI state - check remaining logs
-        const { data: logs } = await getUserContentLogs(Number(id));
+        const { data: logs } = await getUserContentLogs(id);
         if (logs.length > 0) {
           const latestLog = logs[0];
           setUserRating(latestLog.rating || 0);
@@ -717,7 +717,7 @@ export default function MoviePage() {
     if (!id) return;
     
     try {
-      const contentId = Number(id);
+      const contentId = id;
       // Fetch content stats, user latest log, and reviews in parallel
       const [{ data: content }, { data: currentLog }, { data: reviewsData }] = await Promise.all([
         getContentById(contentId),
@@ -798,7 +798,7 @@ export default function MoviePage() {
         setIsInList(false);
         setContentStats((s) => ({ ...s, consume_count: (s.consume_count || 0) + 1 }));
 
-        const result = await createUserContentLog(contentId, {
+        const result = await createUserContentLog(id, {
           content_status_id: 1,
           rating: userRating || null,
           is_favorite: isFavorited,
@@ -823,7 +823,7 @@ export default function MoviePage() {
         setUserRating(0);
         setContentStats((s) => ({ ...s, consume_count: Math.max(0, (s.consume_count || 0) - 1) }));
 
-        const result = await updateUserContentLog(contentId, {
+        const result = await updateUserContentLog(id, {
           content_status_id: 2,
           rating: null,
           is_favorite: isFavorited,
@@ -854,7 +854,7 @@ export default function MoviePage() {
       favorite_count: Math.max(0, (s.favorite_count || 0) + (nextFav ? 1 : -1)),
     }));
     try {
-      const contentId = Number(id);
+      const contentId = id;
       
       // Use updateUserContentLog instead of direct insert
       const result = await updateUserContentLog(contentId, {
@@ -934,7 +934,7 @@ export default function MoviePage() {
     }));
     
     try {
-      const result = await rateMovie(Number(id), rating);
+      const result = await rateMovie(id, rating);
       if (!result.data) {
         setUserRating(prev);
         setIsWatched(wasWatched);
@@ -948,7 +948,7 @@ export default function MoviePage() {
       } else {
         // Update the average rating with server data for accuracy
         try {
-          const { data: content } = await getContentById(Number(id));
+          const { data: content } = await getContentById(id);
           if (content) {
             setContentStats((s) => ({ 
               ...s, 
@@ -1013,10 +1013,10 @@ export default function MoviePage() {
     setReviewText('');
     
     try {
-      const result = await addReview(Number(id), reviewText.trim());
+      const result = await addReview(id, reviewText.trim());
       if (result.data) {
         // Replace temp review with real data
-        const { data: updatedReviews } = await getContentReviews(Number(id));
+        const { data: updatedReviews } = await getContentReviews(id);
         if (updatedReviews) {
           setReviews(updatedReviews);
         }

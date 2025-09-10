@@ -10,7 +10,7 @@ import { getContentById, getUserContentLog, updateUserContentLog, logMovieWatch,
 
 export default function TvShowPage() {
   const params = useParams();
-  const id = Number(params.id as string);
+  const id = params.id as string;
   const [tv, setTv] = useState<TMDBTvDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +24,7 @@ export default function TvShowPage() {
   const [reviewText, setReviewText] = useState('');
 
   const refreshStats = useCallback(async () => {
-    if (!Number.isFinite(id)) return;
+    if (!id) return;
     const { data } = await getContentById(id);
     if (data) setStats({
       consume_count: data.consume_count,

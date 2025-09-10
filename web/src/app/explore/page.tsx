@@ -89,7 +89,7 @@ function ExploreContent() {
       }));
 
       // Update database
-      const result = await updateUserContentLog(movieId, {
+      const result = await updateUserContentLog(movieId.toString(), {
         content_status_id: 1, // CONSUMED
         date: new Date().toISOString()
       });
@@ -128,7 +128,7 @@ function ExploreContent() {
       }));
 
       // Update database
-      const result = await toggleFavorite(movieId);
+      const result = await toggleFavorite(movieId.toString());
       if (!result.data) {
         // Revert on error
         setMovieStates(prev => ({
@@ -164,7 +164,7 @@ function ExploreContent() {
       }));
 
       // Update database
-      const result = await updateUserContentLog(movieId, {
+      const result = await updateUserContentLog(movieId.toString(), {
         is_consume_later: nextState,
         content_status_id: nextState ? 2 : undefined, // CONSUME_LATER or undefined
         date: new Date().toISOString()
