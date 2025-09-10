@@ -1,7 +1,8 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import TvCard from '@/components/TvCard';
+import { tmdbImage } from '@/services/api/tmdb';
 import type { Content } from '@/services/database/movieLogs';
 
 interface TvTabProps {
@@ -107,31 +108,38 @@ export default function TvTab({ tvs }: TvTabProps) {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {filtered.map((tv) => (
           <div key={tv.id} className="space-y-2">
-            <TvCard
-              tv={{ id: tv.id, title: tv.title, poster_path: tv.poster_path || undefined }}
-              size="large"
-            />
-            {/* Action row to mirror movie UX (optional minimal) */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleToggleWatch(tv.id)}
-                className="px-2 py-1 text-xs rounded bg-gray-800 hover:bg-gray-700"
-              >
-                İzlendi Kaldır
-              </button>
-              <button
-                onClick={() => handleToggleFavorite(tv.id)}
-                className="px-2 py-1 text-xs rounded bg-gray-800 hover:bg-gray-700"
-              >
-                {tv.is_favorite ? 'Favoriden Çıkar' : 'Favori'}
-              </button>
-              <button
-                onClick={() => handleToggleWatchlist(tv.id)}
-                className="px-2 py-1 text-xs rounded bg-gray-800 hover:bg-gray-700"
-              >
-                {tv.is_consume_later ? 'Listeden Çıkar' : 'İzleme Listesi'}
-              </button>
-            </div>
+            <Link href={`/content/tv/${tv.id}`} className="group relative">
+              <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden relative border border-gray-700">
+                {tv.poster_path ? (
+                  <Image
+                    src={tmdbImage(tv.poster_path, 'w342')}
+                    alt={tv.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform"
+                    onError={(e) => {
+                      console.error('❌ Dizi poster yüklenemedi:', tv.title, tv.poster_path ? tmdbImage(tv.poster_path, 'w342') : 'null poster_path');
+                      // Hide the image on error
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
+                    <span className="text-xs text-center px-2 text-white">{tv.title}</span>
+                  </div>
+                )}
+              </div>
+            </Link>
+            <div className="text-xs font-medium line-clamp-2 text-white">{tv.title}</div>
+            {(tv.user_rating ?? 0) > 0 && (
+              <div className="flex items-center">
+                <span className="text-xs text-yellow-400">★ {tv.user_rating}</span>
+              </div>
+            )}
+            {tv.date && (
+              <div className="text-xs text-gray-400">
+                {new Date(tv.date).toLocaleDateString('tr-TR')}
+              </div>
+            )}
           </div>
         ))}
       </div>

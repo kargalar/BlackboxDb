@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { discoverMovies, discoverTV } from '@/services/api/tmdb';
+import { discoverMovies, discoverTV, tmdbImage } from '@/services/api/tmdb';
 import { igdbTrending, igdbUpcoming } from '@/services/api/igdb';
 import { getTrendingReviews } from '@/services/database/movieLogs';
 import { booksSearch } from '@/services/api/books';
@@ -208,7 +208,7 @@ export default function DashboardPage() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {trendingIgdb.slice(0, 5).map((g) => (
-                <GameCard key={g.id} game={g} />
+                <GameCard key={g.id} game={g} size="large" />
               ))}
             </div>
           </section>
@@ -249,16 +249,7 @@ export default function DashboardPage() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {trendingMovies.slice(0, 5).map((movie) => (
-                <MovieCard
-                  key={movie.id}
-                  movie={movie}
-                  size="large"
-                  showRating={false}
-                  showActions={true}
-                  onWatch={(movieId) => handleWatchMovie(movieId, movie)}
-                  onToggleFavorite={(movieId) => handleToggleFavorite(movieId, movie)}
-                  onToggleWatchlist={(movieId) => handleToggleWatchlist(movieId, movie)}
-                />
+                <MovieCard key={movie.id} movie={movie} size="large" showActions={false} />
               ))}
             </div>
           </section>
@@ -315,7 +306,7 @@ export default function DashboardPage() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {upcomingIgdb.slice(0, 5).map((g) => (
-                <GameCard key={g.id} game={g} />
+                <GameCard key={g.id} game={g} size="large" />
               ))}
             </div>
           </section>
@@ -340,10 +331,7 @@ export default function DashboardPage() {
             ) : upcomingTv.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {upcomingTv.slice(0, 5).map((tv) => (
-                  <div key={tv.id} className="space-y-2">
-                    <TvCard tv={tv} size="large" showActions={false} />
-                    {tv.first_air_date && <Countdown date={tv.first_air_date} />}
-                  </div>
+                  <TvCard key={tv.id} tv={tv} size="large" showActions={false} />
                 ))}
               </div>
             ) : (
@@ -362,18 +350,7 @@ export default function DashboardPage() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {upcomingMovies.slice(0, 5).map((movie) => (
-                <div key={movie.id} className="space-y-2">
-                  <MovieCard
-                    movie={movie}
-                    size="large"
-                    showRating={false}
-                    showActions={true}
-                    onWatch={(movieId) => handleWatchMovie(movieId, movie)}
-                    onToggleFavorite={(movieId) => handleToggleFavorite(movieId, movie)}
-                    onToggleWatchlist={(movieId) => handleToggleWatchlist(movieId, movie)}
-                  />
-                  {movie.release_date && <Countdown date={movie.release_date} />}
-                </div>
+                <MovieCard key={movie.id} movie={movie} size="large" showActions={false} />
               ))}
             </div>
           </section>

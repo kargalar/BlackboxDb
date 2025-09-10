@@ -1,9 +1,8 @@
-'use client';
-
-import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState } from 'react';
 import { Content } from '@/services/database/movieLogs';
+import { igdbImageUrl } from '@/lib/igdb-client';
 import { supabase } from '@/lib/supabase';
 
 interface GamesTabProps {
@@ -144,11 +143,15 @@ export default function GamesTab({ games }: GamesTabProps) {
               <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden relative border border-gray-700">
                 {game.poster_path ? (
                   <Image
-                    src={game.poster_path}
+                    src={game.poster_path.startsWith('http') ? game.poster_path : igdbImageUrl(game.poster_path, 'cover_big')}
                     alt={game.title}
-                    width={200}
-                    height={300}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform"
+                    onError={(e) => {
+                      console.error('❌ Oyun poster yüklenemedi:', game.title, game.poster_path);
+                      // Hide the image on error
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">

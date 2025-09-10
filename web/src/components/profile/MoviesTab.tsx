@@ -3,7 +3,6 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { Content } from '@/services/database/movieLogs';
 import { tmdbImage } from '@/services/api/tmdb';
-import MovieCard from '@/components/MovieCard';
 import { supabase } from '@/lib/supabase';
 
 // Star Rating Component
@@ -158,19 +157,38 @@ export default function MoviesTab({ movies }: MoviesTabProps) {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {filteredMovies.map((movie) => (
           <div key={movie.id} className="space-y-2">
-            <MovieCard
-              movie={movie}
-              size="large"
-              showRating={true}
-              rating={movie.user_rating}
-              isWatched={true}
-              isFavorite={movie.is_favorite}
-              isInList={movie.is_consume_later}
-              showActions={true}
-              onWatch={handleToggleWatch}
-              onToggleFavorite={handleToggleFavorite}
-              onToggleWatchlist={handleToggleWatchlist}
-            />
+            <Link href={`/content/movie/${movie.id}`} className="group relative">
+              <div className="aspect-[2/3] bg-gray-800 rounded-lg overflow-hidden relative border border-gray-700">
+                {movie.poster_path ? (
+                  <Image
+                    src={tmdbImage(movie.poster_path, 'w342')}
+                    alt={movie.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform"
+                    onError={(e) => {
+                      console.error('❌ Film poster yüklenemedi:', movie.title, movie.poster_path ? tmdbImage(movie.poster_path, 'w342') : 'null poster_path');
+                      // Hide the image on error
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-b from-gray-700 to-gray-800 flex items-center justify-center">
+                    <span className="text-xs text-center px-2 text-white">{movie.title}</span>
+                  </div>
+                )}
+              </div>
+            </Link>
+            <div className="text-xs font-medium line-clamp-2 text-white">{movie.title}</div>
+            {(movie.user_rating ?? 0) > 0 && (
+              <div className="flex items-center">
+                <span className="text-xs text-yellow-400">★ {movie.user_rating}</span>
+              </div>
+            )}
+            {movie.date && (
+              <div className="text-xs text-gray-400">
+                {new Date(movie.date).toLocaleDateString('tr-TR')}
+              </div>
+            )}
           </div>
         ))}
       </div>

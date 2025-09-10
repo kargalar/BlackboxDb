@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { discoverMovies, tmdbImage, searchMovies, getMovieDetails } from '@/services/api/tmdb';
 import { getContentStats, toggleFavorite, updateUserContentLog, saveContentFromTMDB } from '@/services/database/movieLogs';
 import { useSearchParams, useRouter } from 'next/navigation';

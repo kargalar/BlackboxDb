@@ -81,7 +81,7 @@ export default function GameContentPage() {
       setUserRating(data.rating ? Number(data.rating) : 0);
       setIsPlayed(Number(data.content_status_id) === 1 || (data.rating ?? 0) > 0);
     }
-  }, [id]);
+  }, [id, contentId]);
 
   useEffect(() => {
     let cancelled = false;
