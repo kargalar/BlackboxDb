@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { getCurrentUserProfile } from '@/services/database/userService'
-import { getLogs, getRequestCounts, resetRequestCounts } from '@/lib/requestLogger'
+import { getLogs, getRequestCounts, resetRequestCounts, formatLogForClipboard, formatAllLogsForClipboard, formatLogsAsJSON } from '@/lib/requestLogger'
 import type { Route } from 'next'
 
 interface LogEntry {
@@ -21,10 +21,35 @@ export default function AdminHome() {
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [counts, setCounts] = useState({ apiRequests: 0, supabaseRequests: 0 })
   const handleReset = () => {
-    resetRequestCounts()
-    setLogs([])
-    setCounts({ apiRequests: 0, supabaseRequests: 0 })
+    try {
+      resetRequestCounts()
+      setLogs([])
+      setCounts({ apiRequests: 0, supabaseRequests: 0 })
+    } catch (error) {
+      console.warn('Failed to reset request counts:', error);
+    }
   }
+
+  const copyLogToClipboard = (log: LogEntry) => {
+    const logText = formatLogForClipboard(log);
+    navigator.clipboard.writeText(logText).catch(err => {
+      console.warn('Failed to copy log to clipboard:', err);
+    });
+  };
+
+  const copyAllLogsToClipboard = () => {
+    const allLogsText = formatAllLogsForClipboard(logs);
+    navigator.clipboard.writeText(allLogsText).catch(err => {
+      console.warn('Failed to copy all logs to clipboard:', err);
+    });
+  };
+
+  const copyLogsAsJSON = () => {
+    const jsonText = formatLogsAsJSON(logs);
+    navigator.clipboard.writeText(jsonText).catch(err => {
+      console.warn('Failed to copy logs as JSON:', err);
+    });
+  };
 
   useEffect(() => {
     getCurrentUserProfile().then(r => {
@@ -107,7 +132,23 @@ export default function AdminHome() {
 
         {logs.length > 0 && (
           <div className="space-y-2">
-            <h3 className="text-lg font-medium">Son Loglar</h3>
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium">Son Loglar</h3>
+              <div className="flex gap-2">
+                <button
+                  onClick={copyAllLogsToClipboard}
+                  className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium transition-colors"
+                >
+                  Metin Olarak Kopyala
+                </button>
+                <button
+                  onClick={copyLogsAsJSON}
+                  className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm font-medium transition-colors"
+                >
+                  JSON Olarak Kopyala
+                </button>
+              </div>
+            </div>
             <div className="max-h-48 overflow-y-auto border rounded">
               {logs.map((log) => (
                 <div
@@ -127,12 +168,21 @@ export default function AdminHome() {
                         {log.timestamp.toLocaleString()}
                       </div>
                     </div>
-                    <div className={`px-2 py-1 rounded text-xs font-medium ${
-                      log.success
-                        ? 'bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-200'
-                        : 'bg-red-200 text-red-800 dark:bg-red-800 dark:text-red-200'
-                    }`}>
-                      {log.success ? '✓' : '✗'}
+                    <div className="flex items-center gap-2">
+                      <div className={`px-2 py-1 rounded text-xs font-medium ${
+                        log.success
+                          ? 'bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-200'
+                          : 'bg-red-200 text-red-800 dark:bg-red-800 dark:text-red-200'
+                      }`}>
+                        {log.success ? '✓' : '✗'}
+                      </div>
+                      <button
+                        onClick={() => copyLogToClipboard(log)}
+                        className="px-2 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-xs transition-colors"
+                        title="Bu logu kopyala"
+                      >
+                        📋
+                      </button>
                     </div>
                   </div>
                 </div>

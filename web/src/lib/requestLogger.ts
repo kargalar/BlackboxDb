@@ -23,26 +23,42 @@ const WINDOW_SUPABASE_KEY = 'blackbox_window_supabase_requests';
 
 function getWindowApiCount(): number {
   if (typeof window === 'undefined') return 0;
-  const stored = sessionStorage.getItem(WINDOW_API_KEY);
-  return stored ? parseInt(stored, 10) : 0;
+  try {
+    const stored = sessionStorage.getItem(WINDOW_API_KEY);
+    return stored ? parseInt(stored, 10) : 0;
+  } catch {
+    return 0;
+  }
 }
 
 function getWindowSupabaseCount(): number {
   if (typeof window === 'undefined') return 0;
-  const stored = sessionStorage.getItem(WINDOW_SUPABASE_KEY);
-  return stored ? parseInt(stored, 10) : 0;
+  try {
+    const stored = sessionStorage.getItem(WINDOW_SUPABASE_KEY);
+    return stored ? parseInt(stored, 10) : 0;
+  } catch {
+    return 0;
+  }
 }
 
 function incrementWindowApiCount(): void {
   if (typeof window === 'undefined') return;
-  const current = getWindowApiCount();
-  sessionStorage.setItem(WINDOW_API_KEY, (current + 1).toString());
+  try {
+    const current = getWindowApiCount();
+    sessionStorage.setItem(WINDOW_API_KEY, (current + 1).toString());
+  } catch (error) {
+    console.warn('Failed to increment window API count:', error);
+  }
 }
 
 function incrementWindowSupabaseCount(): void {
   if (typeof window === 'undefined') return;
-  const current = getWindowSupabaseCount();
-  sessionStorage.setItem(WINDOW_SUPABASE_KEY, (current + 1).toString());
+  try {
+    const current = getWindowSupabaseCount();
+    sessionStorage.setItem(WINDOW_SUPABASE_KEY, (current + 1).toString());
+  } catch (error) {
+    console.warn('Failed to increment window Supabase count:', error);
+  }
 }
 
 export function logApiRequest(endpoint: string, method: string = 'GET', success: boolean = true, error?: string) {
@@ -102,8 +118,25 @@ export function resetRequestCounts() {
   supabaseRequestCount = 0;
   logs.length = 0; // Clear logs
   if (typeof window !== 'undefined') {
-    sessionStorage.removeItem(WINDOW_API_KEY);
-    sessionStorage.removeItem(WINDOW_SUPABASE_KEY);
+    try {
+      sessionStorage.removeItem(WINDOW_API_KEY);
+      sessionStorage.removeItem(WINDOW_SUPABASE_KEY);
+    } catch (error) {
+      console.warn('Failed to clear sessionStorage:', error);
+    }
   }
   console.log('[DEBUG] Request counts and logs reset');
+}
+
+// Helper functions for copying logs
+export function formatLogForClipboard(log: LogEntry): string {
+  return `[${log.timestamp.toLocaleString()}] ${log.type.toUpperCase()} - ${log.operation} ${log.endpoint}${log.error ? `\nError: ${log.error}` : ''}`;
+}
+
+export function formatAllLogsForClipboard(logsToFormat: LogEntry[]): string {
+  return logsToFormat.map(log => formatLogForClipboard(log)).join('\n\n');
+}
+
+export function formatLogsAsJSON(logsToFormat: LogEntry[]): string {
+  return JSON.stringify(logsToFormat, null, 2);
 }
