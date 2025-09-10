@@ -33,6 +33,22 @@ async function validateAuth(): Promise<{ uid: string | null; error?: string }> {
   }
 }
 
+// Helper function to check if user is privileged (admin or moderator)
+async function isUserPrivileged(uid: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from('app_user')
+      .select('is_admin, is_moderator')
+      .eq('auth_user_id', uid)
+      .maybeSingle()
+
+    if (error || !data) return false
+    return !!(data.is_admin || data.is_moderator)
+  } catch (error) {
+    return false
+  }
+}
+
 export interface Content {
   id: number
   poster_path: string | null
@@ -836,6 +852,9 @@ function bookNumericId(volumeId: string): number {
 }
 
 export async function saveContentFromBook(volumeId: string, book: { title: string; description?: string | null; publishedDate?: string | null; pageCount?: number | null; thumbnail?: string | null; }): Promise<{ data: Content | null; error?: any }> {
+  const { uid, error: authError } = await validateAuth()
+  if (authError || !uid) return { data: null, error: authError || 'not_authenticated' }
+
   const id = bookNumericId(volumeId);
   const payload = {
     id,

@@ -381,9 +381,11 @@ remake ve remestar ana oyun altında mı olsun farklı oyun olarak mı. mesela b
 ✅ Season'lar (category 7) dahil
 ✅ Remake'ler (category 8) dahil
 ✅ Remaster'lar (category 9) dahil
-✅ Expanded Game'ler (category 10) dahil
+✅ Expanded Game'ler (cate gory 10) dahil
 ✅ Port'lar (category 11) dahil
 ✅ Fork'lar (category 12) dahil
 
 
 diziler oyunlar ve kitaplar için devam ediyor seçenei ekle
+
+son film aktivitelerine wathlist dahil olamyacak

@@ -269,6 +269,9 @@ CREATE TABLE public.review (
     user_id UUID NOT NULL REFERENCES public.app_user(auth_user_id) ON DELETE CASCADE,
     content_id INTEGER NOT NULL REFERENCES public.content(id) ON DELETE CASCADE,
     text TEXT NOT NULL,
+    rating DECIMAL(3,2) CHECK (rating >= 0 AND rating <= 5),
+    like_count INTEGER DEFAULT 0,
+    reply_count INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -358,6 +361,7 @@ CREATE INDEX idx_user_follow_following ON public.user_follow(following_user_id);
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.app_user ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.content ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_content_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.review ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.review_comment ENABLE ROW LEVEL SECURITY;
@@ -379,6 +383,19 @@ CREATE POLICY "Users can update own profile" ON public.app_user
 
 CREATE POLICY "Users can insert own profile" ON public.app_user
     FOR INSERT WITH CHECK (auth.uid() = auth_user_id);
+
+-- Content policies
+CREATE POLICY "Anyone can view content" ON public.content
+    FOR SELECT USING (true);
+
+CREATE POLICY "Anyone can insert content" ON public.content
+    FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Privileged can update content" ON public.content
+    FOR UPDATE USING (public.is_privileged(auth.uid()));
+
+CREATE POLICY "Privileged can delete content" ON public.content
+    FOR DELETE USING (public.is_privileged(auth.uid()));
 
 -- User content logs
 CREATE POLICY "Users can view own content logs" ON public.user_content_log
@@ -618,6 +635,8 @@ CREATE TABLE IF NOT EXISTS review_replies (
     user_id UUID NOT NULL REFERENCES app_user(auth_user_id) ON DELETE CASCADE,
     parent_reply_id INTEGER REFERENCES review_replies(id) ON DELETE CASCADE, -- For nested replies
     text TEXT NOT NULL,
+    like_count INTEGER DEFAULT 0,
+    reply_count INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -798,6 +817,141 @@ DROP TRIGGER IF EXISTS after_review_delete ON public.review;
 CREATE TRIGGER after_review_delete
 AFTER DELETE ON public.review
 FOR EACH ROW EXECUTE FUNCTION public.trg_after_review_change();
+
+-- Function to update review stats (like_count, reply_count)
+CREATE OR REPLACE FUNCTION public.recompute_review_stats(review_id_param INTEGER)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_like_count INTEGER := 0;
+    v_reply_count INTEGER := 0;
+BEGIN
+    -- Like count
+    SELECT COUNT(*) INTO v_like_count
+    FROM public.review_likes rl
+    WHERE rl.review_id = review_id_param;
+
+    -- Reply count
+    SELECT COUNT(*) INTO v_reply_count
+    FROM public.review_replies rr
+    WHERE rr.review_id = review_id_param;
+
+    -- Update review table
+    UPDATE public.review
+    SET like_count = COALESCE(v_like_count, 0),
+        reply_count = COALESCE(v_reply_count, 0)
+    WHERE id = review_id_param;
+END;
+$$;
+
+-- Function to update reply stats (like_count, reply_count)
+CREATE OR REPLACE FUNCTION public.recompute_reply_stats(reply_id_param INTEGER)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_like_count INTEGER := 0;
+    v_reply_count INTEGER := 0;
+BEGIN
+    -- Like count
+    SELECT COUNT(*) INTO v_like_count
+    FROM public.review_reply_likes rrl
+    WHERE rrl.reply_id = reply_id_param;
+
+    -- Reply count (nested replies)
+    SELECT COUNT(*) INTO v_reply_count
+    FROM public.review_replies rr
+    WHERE rr.parent_reply_id = reply_id_param;
+
+    -- Update reply table
+    UPDATE public.review_replies
+    SET like_count = COALESCE(v_like_count, 0),
+        reply_count = COALESCE(v_reply_count, 0)
+    WHERE id = reply_id_param;
+END;
+$$;
+
+-- Triggers for review stats
+CREATE OR REPLACE FUNCTION public.trg_after_review_like_change()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    PERFORM public.recompute_review_stats(COALESCE(NEW.review_id, OLD.review_id));
+    RETURN COALESCE(NEW, OLD);
+END;
+$$;
+
+DROP TRIGGER IF EXISTS after_review_like_insert ON public.review_likes;
+CREATE TRIGGER after_review_like_insert
+AFTER INSERT ON public.review_likes
+FOR EACH ROW EXECUTE FUNCTION public.trg_after_review_like_change();
+
+DROP TRIGGER IF EXISTS after_review_like_delete ON public.review_likes;
+CREATE TRIGGER after_review_like_delete
+AFTER DELETE ON public.review_likes
+FOR EACH ROW EXECUTE FUNCTION public.trg_after_review_like_change();
+
+-- Triggers for reply stats
+CREATE OR REPLACE FUNCTION public.trg_after_reply_change()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    -- Update parent review's reply count
+    IF TG_OP = 'INSERT' THEN
+        PERFORM public.recompute_review_stats(NEW.review_id);
+    ELSIF TG_OP = 'DELETE' THEN
+        PERFORM public.recompute_review_stats(OLD.review_id);
+    END IF;
+    
+    -- Update reply stats if it's a nested reply
+    IF TG_OP = 'INSERT' AND NEW.parent_reply_id IS NOT NULL THEN
+        PERFORM public.recompute_reply_stats(NEW.parent_reply_id);
+    ELSIF TG_OP = 'DELETE' AND OLD.parent_reply_id IS NOT NULL THEN
+        PERFORM public.recompute_reply_stats(OLD.parent_reply_id);
+    END IF;
+    
+    RETURN COALESCE(NEW, OLD);
+END;
+$$;
+
+DROP TRIGGER IF EXISTS after_reply_insert ON public.review_replies;
+CREATE TRIGGER after_reply_insert
+AFTER INSERT ON public.review_replies
+FOR EACH ROW EXECUTE FUNCTION public.trg_after_reply_change();
+
+DROP TRIGGER IF EXISTS after_reply_delete ON public.review_replies;
+CREATE TRIGGER after_reply_delete
+AFTER DELETE ON public.review_replies
+FOR EACH ROW EXECUTE FUNCTION public.trg_after_reply_change();
+
+-- Triggers for reply like stats
+CREATE OR REPLACE FUNCTION public.trg_after_reply_like_change()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    PERFORM public.recompute_reply_stats(COALESCE(NEW.reply_id, OLD.reply_id));
+    RETURN COALESCE(NEW, OLD);
+END;
+$$;
+
+DROP TRIGGER IF EXISTS after_reply_like_insert ON public.review_reply_likes;
+CREATE TRIGGER after_reply_like_insert
+AFTER INSERT ON public.review_reply_likes
+FOR EACH ROW EXECUTE FUNCTION public.trg_after_reply_like_change();
+
+DROP TRIGGER IF EXISTS after_reply_like_delete ON public.review_reply_likes;
+CREATE TRIGGER after_reply_like_delete
+AFTER DELETE ON public.review_reply_likes
+FOR EACH ROW EXECUTE FUNCTION public.trg_after_reply_like_change();
 
 -- Notifications lookup and table
 CREATE TABLE IF NOT EXISTS public.notification_type_lookup (
@@ -1075,3 +1229,37 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.approve_content_request(integer, uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.reject_content_request(integer, uuid, text) TO authenticated;
+
+-- Function to save book content (bypasses RLS)
+CREATE OR REPLACE FUNCTION public.save_book_content(
+    p_id INTEGER,
+    p_title VARCHAR(255),
+    p_content_type_id INTEGER,
+    p_release_date DATE,
+    p_description TEXT,
+    p_length INTEGER,
+    p_poster_path TEXT
+)
+RETURNS JSON
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_data JSON;
+BEGIN
+    INSERT INTO public.content (id, title, content_type_id, release_date, description, length, poster_path)
+    VALUES (p_id, p_title, p_content_type_id, p_release_date, p_description, p_length, p_poster_path)
+    ON CONFLICT (id) DO UPDATE SET
+        title = EXCLUDED.title,
+        content_type_id = EXCLUDED.content_type_id,
+        release_date = EXCLUDED.release_date,
+        description = EXCLUDED.description,
+        length = EXCLUDED.length,
+        poster_path = EXCLUDED.poster_path
+    RETURNING id, title, poster_path, favorite_count INTO v_data;
+    
+    RETURN v_data;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.save_book_content(INTEGER, VARCHAR, INTEGER, DATE, TEXT, INTEGER, TEXT) TO authenticated;

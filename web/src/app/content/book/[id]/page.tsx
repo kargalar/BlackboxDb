@@ -38,6 +38,7 @@ const Stars = ({ value = 0, onChange }: { value?: number; onChange?: (v: number)
 export default function BookContentPage() {
   const params = useParams();
   const id = params.id as string;
+  console.log('Book page loaded with id:', id);
   const [book, setBook] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +61,9 @@ export default function BookContentPage() {
     for (let i = 0; i < vol.length; i++) hash = (hash * 31 + vol.charCodeAt(i)) | 0;
     const POS = Math.abs(hash);
     const OFFSET = 4_000_000_000;
-    return OFFSET + (POS % 1_000_000_000);
+    const result = OFFSET + (POS % 1_000_000_000);
+    console.log('Calculated numericContentId:', result, 'from id:', id);
+    return result;
   }, [id]);
 
   const refreshStats = useCallback(async () => {
@@ -95,13 +98,18 @@ export default function BookContentPage() {
         if (!cancelled) setBook(b);
 
         // Ensure content exists in DB for logging/stats
-        await saveContentFromBook(id, {
+        console.log('Saving content from book:', id, book);
+        const saveResult = await saveContentFromBook(id, {
           title: b.title,
           description: b.description,
           publishedDate: b.publishedDate || undefined,
           pageCount: b.pageCount || undefined,
           thumbnail: b.thumbnail || undefined,
         });
+        console.log('Save result:', saveResult);
+        if (saveResult.error) {
+          console.error('Error saving book content:', saveResult.error);
+        }
         await Promise.all([refreshStats(), refreshUserLog()]);
         const res = await getContentReviews(numericContentId);
         if (!cancelled) setReviews(res.data ?? []);
@@ -154,7 +162,12 @@ export default function BookContentPage() {
   const handleAddReview = async () => {
     const text = reviewText.trim();
     if (!text) return;
+    console.log('Adding review:', text, 'for content:', numericContentId);
     const ok = await addReview(numericContentId, text);
+    console.log('Add review result:', ok);
+    if (ok.error) {
+      console.error('Error adding review:', ok.error);
+    }
     if (ok.data) {
       setReviewText('');
       const res = await getContentReviews(numericContentId);
