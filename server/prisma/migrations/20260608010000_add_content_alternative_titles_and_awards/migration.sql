@@ -1,0 +1,3 @@
+ALTER TABLE "content"
+ADD COLUMN "alternative_titles" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN "awards" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];

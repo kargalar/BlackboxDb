@@ -1,0 +1,12 @@
+{
+    "typescript.autoClosingTags": false,
+    "editor.tokenColorCustomizations": {
+        "comments": "#00FF00"
+    },
+    "chat.tools.terminal.autoApprove": {
+        "/^node patch_upload\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

@@ -1,0 +1,1486 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ContentTypeLookup {
+  id           Int           @id @default(autoincrement())
+  name         String        @db.VarChar(50)
+  slug         String        @unique @db.VarChar(50)
+  content      Content[]
+  quizSettings QuizSettings?
+  userLists    UserList[]
+
+  @@map("content_type_lookup")
+}
+
+model AppUser {
+  id                            String                     @id @map("auth_user_id") @db.Uuid
+  picturePath                   String?                    @map("picture_url")
+  coverPhotoUrl                 String?                    @map("cover_photo_url")
+  username                      String                     @unique @db.VarChar(255)
+  email                         String                     @unique @db.VarChar(255)
+  bio                           String?
+  location                      String?                    @db.VarChar(255)
+  website                       String?                    @db.VarChar(500)
+  personalityAnalyze            String?                    @map("personality_analyze")
+  isAdmin                       Boolean                    @default(false) @map("is_admin")
+  isModerator                   Boolean                    @default(false) @map("is_moderator")
+  passwordHash                  String?                    @map("password_hash")
+  googleId                      String?                    @unique @map("google_id")
+  authProvider                  String                     @default("email") @map("auth_provider") @db.VarChar(20)
+  preferredContentTypes         Int[]                      @default([]) @map("preferred_content_types")
+  gridColumns                   Int                        @default(5) @map("grid_columns")
+  gridRows                      Int                        @default(4) @map("grid_rows")
+  posterZoomEnabled             Boolean                    @default(true) @map("poster_zoom_enabled")
+  posterIconsBelow              Boolean                    @default(true) @map("poster_icons_below")
+  showSensitiveContent          Boolean                    @default(false) @map("show_sensitive_content")
+  isDeleted                     Boolean                    @default(false) @map("is_deleted")
+  deletedAt                     DateTime?                  @map("deleted_at")
+  createdAt                     DateTime                   @default(now()) @map("created_at")
+  updatedAt                     DateTime                   @updatedAt @map("updated_at")
+  preferredGamePlatformId       Int?                       @map("preferred_game_platform_id")
+  preferredGamePlatformIds      Int[]                      @default([]) @map("preferred_game_platform_ids")
+  splitHomePopularSections      Boolean                    @default(false) @map("split_home_popular_sections")
+  notifyOnFollows               Boolean                    @default(true) @map("notify_on_follows")
+  notifyOnContentRequestUpdates Boolean                    @default(true) @map("notify_on_content_request_updates")
+  notifyOnCommentVotes          Boolean                    @default(true) @map("notify_on_comment_votes")
+  notifyOnCommentReplies        Boolean                    @default(true) @map("notify_on_comment_replies")
+  notifyOnMentions              Boolean                    @default(true) @map("notify_on_mentions")
+  notifyOnRecommendations       Boolean                    @default(true) @map("notify_on_recommendations")
+  notifyOnNewSeasons            Boolean                    @default(true) @map("notify_on_new_seasons")
+  notifyOnContentReleased       Boolean                    @default(true) @map("notify_on_content_released")
+  notifyOnRoleUpdates           Boolean                    @default(true) @map("notify_on_role_updates")
+  contributionScore             Int                        @default(0) @map("contribution_score")
+  letterboxd_password           String?                    @db.VarChar(255)
+  letterboxd_sync_enabled       Boolean                    @default(false)
+  letterboxd_username           String?                    @db.VarChar(255)
+  letterboxd_cookie             String?
+  contentEditHistory            ContentEditHistory[]       @relation("ContentEditHistoryActor")
+  recommendationsReceived       ContentRecommendation[]    @relation("RecommendationRecipient")
+  recommendationsSent           ContentRecommendation[]    @relation("RecommendationRecommender")
+  reviewsDone                   Contribution[]             @relation("UserReviews")
+  contributions                 Contribution[]             @relation("UserContributions")
+  discussions                   Discussion[]
+  discussionComments            DiscussionComment[]
+  discussionCommentMentions     DiscussionCommentMention[]
+  discussionCommentVotes        DiscussionCommentVote[]
+  discussionVotes               DiscussionVote[]
+  importJobs                    ImportJob[]
+  sentNotifications             Notification[]             @relation("NotificationActor")
+  receivedNotifications         Notification[]             @relation("NotificationRecipient")
+  quizLeaderboard               QuizLeaderboard[]
+  quizResults                   QuizResult[]
+  reportsSent                   Report[]                   @relation("ReportReporter")
+  userContentLogs               UserContentLog[]
+  userContentPreferences        UserContentPreference[]
+  userEpisodeLogs               UserEpisodeLog[]
+  podcastListens                UserPodcastListen[]
+  eventAttendances              UserEventAttendance[]
+  userExpansionLogs             UserExpansionLog[]
+  favoritePeople                UserFavoritePerson[]
+  featuredContent               UserFeaturedContent[]
+  following                     UserFollow[]               @relation("UserFollowing")
+  followers                     UserFollow[]               @relation("UserFollowers")
+  UserImageVote                 UserImageVote[]
+  ownedLists                    UserList[]                 @relation("UserOwnedLists")
+  listCollaborations            UserListCollaborator[]     @relation("UserListCollaborations")
+  listItemsAdded                UserListItem[]             @relation("UserListItemsAdded")
+  listVotes                     UserListVote[]
+  savedLists                    UserSavedList[]            @relation("UserSavedLists")
+  UserScreenshotVote            UserScreenshotVote[]
+  taggedInLogs                  UserContentLog[]           @relation("TaggedUsers")
+
+  @@map("app_user")
+}
+
+model ContentRecommendation {
+  id                Int       @id @default(autoincrement())
+  contentId         String    @map("content_id") @db.VarChar(255)
+  recipientUserId   String    @map("recipient_user_id") @db.Uuid
+  recommenderUserId String    @map("recommender_user_id") @db.Uuid
+  createdAt         DateTime  @default(now()) @map("created_at")
+  thankedAt         DateTime? @map("thanked_at")
+  content           Content   @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  recipient         AppUser   @relation("RecommendationRecipient", fields: [recipientUserId], references: [id], onDelete: Cascade)
+  recommender       AppUser   @relation("RecommendationRecommender", fields: [recommenderUserId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, recipientUserId, recommenderUserId])
+  @@index([recipientUserId])
+  @@index([recommenderUserId])
+  @@index([contentId])
+  @@map("content_recommendation")
+}
+
+model Person {
+  id                    String                 @id @db.VarChar(255)
+  name                  String                 @db.VarChar(255)
+  biography             String?
+  birthDate             DateTime?              @map("birth_date") @db.Date
+  deathDate             DateTime?              @map("death_date") @db.Date
+  gender                String?                @db.VarChar(20)
+  profileUrl            String?                @map("profile_url")
+  placeOfBirth          String?                @map("place_of_birth") @db.VarChar(255)
+  isPending             Boolean                @default(false) @map("is_pending")
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+  tmdbPopularity        Float?                 @map("tmdb_popularity") @db.Real
+  contentRoles          ContentPerson[]
+  translations          PersonTranslation[]
+  favoritedBy           UserFavoritePerson[]
+  podcastProgramCredits PodcastProgramCredit[]
+  podcastEpisodeCredits PodcastEpisodeCredit[]
+  mediaEventCredits     MediaEventCredit[]
+
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "person_name_trgm_idx")
+  @@index([isPending, name, id])
+  @@map("person")
+}
+
+model Company {
+  id               String               @id @db.VarChar(255)
+  name             String               @db.VarChar(255)
+  description      String?
+  headquarters     String?              @db.VarChar(255)
+  logoUrl          String?              @map("logo_url")
+  website          String?
+  foundingYear     Int?                 @map("founding_year")
+  defaultRoleIds   Int[]                @default([]) @map("default_role_ids")
+  isPending        Boolean              @default(false) @map("is_pending")
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+  bookPublications BookPublication[]
+  translations     CompanyTranslation[]
+  contentCompanies ContentCompany[]
+
+  @@map("company")
+}
+
+model CompanyRole {
+  id               Int              @id @default(autoincrement())
+  name             String           @unique @db.VarChar(50)
+  contentTypeId    Int?             @map("content_type_id")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  contentCompanies ContentCompany[]
+
+  @@index([contentTypeId])
+  @@map("company_role")
+}
+
+model PersonRole {
+  id             Int             @id @default(autoincrement())
+  label          String          @db.VarChar(100)
+  contentTypeId  Int?            @map("content_type_id")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  contentPersons ContentPerson[]
+
+  @@index([contentTypeId])
+  @@map("person_role")
+}
+
+model Genre {
+  id            Int            @id @default(autoincrement())
+  name          String         @db.VarChar(100)
+  contentTypeId Int?           @map("content_type_id")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  contentGenres ContentGenre[]
+
+  @@index([contentTypeId])
+  @@map("genre")
+}
+
+model GameMode {
+  id               Int               @id @default(autoincrement())
+  name             String            @db.VarChar(100)
+  createdAt        DateTime          @default(now()) @map("created_at")
+  contentGameModes ContentGameMode[]
+
+  @@map("game_mode")
+}
+
+model GameEngine {
+  id                 Int                 @id @default(autoincrement())
+  name               String              @unique @db.VarChar(100)
+  createdAt          DateTime            @default(now()) @map("created_at")
+  contentGameEngines ContentGameEngine[]
+
+  @@map("game_engine")
+}
+
+model Perspective {
+  id                  Int                  @id @default(autoincrement())
+  name                String               @db.VarChar(100)
+  createdAt           DateTime             @default(now()) @map("created_at")
+  contentPerspectives ContentPerspective[]
+
+  @@map("perspective")
+}
+
+model Platform {
+  id               Int               @id @default(autoincrement())
+  name             String            @unique @db.VarChar(100)
+  createdAt        DateTime          @default(now()) @map("created_at")
+  contentPlatforms ContentPlatform[]
+  userContentLogs  UserContentLog[]
+
+  @@map("platform")
+}
+
+model Theme {
+  id            Int            @id @default(autoincrement())
+  name          String         @db.VarChar(100)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  contentThemes ContentTheme[]
+
+  @@map("theme")
+}
+
+model Mood {
+  id           Int           @id @default(autoincrement())
+  name         String        @db.VarChar(100)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  contentMoods ContentMood[]
+
+  @@map("mood")
+}
+
+model AgeRating {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique @db.VarChar(50)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  contents  Content[]
+
+  @@map("age_rating")
+}
+
+model Franchise {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String    @db.VarChar(255)
+  createdAt DateTime  @default(now()) @map("created_at")
+  contents  Content[]
+
+  @@map("franchise")
+}
+
+model Language {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("language")
+}
+
+model ContentSimilarity {
+  content1Id String   @map("content1_id") @db.VarChar(255)
+  content2Id String   @map("content2_id") @db.VarChar(255)
+  createdAt  DateTime @default(now()) @map("created_at")
+  content1   Content  @relation("SimilarContents1", fields: [content1Id], references: [id], onDelete: Cascade)
+  content2   Content  @relation("SimilarContents2", fields: [content2Id], references: [id], onDelete: Cascade)
+
+  @@id([content1Id, content2Id])
+  @@index([content1Id])
+  @@index([content2Id])
+  @@map("content_similarity")
+}
+
+model ContentCitation {
+  id              Int      @id @default(autoincrement())
+  citingContentId String   @map("citing_content_id") @db.VarChar(255)
+  citedContentId  String   @map("cited_content_id") @db.VarChar(255)
+  note            String?  @db.Text
+  imageUrl        String?  @map("image_url") @db.VarChar(500)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  citingContent Content @relation("CitingContent", fields: [citingContentId], references: [id], onDelete: Cascade)
+  citedContent  Content @relation("CitedContent", fields: [citedContentId], references: [id], onDelete: Cascade)
+
+  @@unique([citingContentId, citedContentId])
+  @@index([citingContentId])
+  @@index([citedContentId])
+  @@map("content_citation")
+}
+
+model SimilarityGroup {
+  id        String                @id @default(uuid()) @db.Uuid
+  createdAt DateTime              @default(now()) @map("created_at")
+  updatedAt DateTime              @updatedAt @map("updated_at")
+  items     SimilarityGroupItem[]
+
+  @@map("similarity_group")
+}
+
+model SimilarityGroupItem {
+  id        Int                @id @default(autoincrement())
+  groupId   String             @map("group_id") @db.Uuid
+  nodeType  SimilarityNodeType @map("node_type")
+  nodeId    String             @map("node_id") @db.VarChar(255)
+  createdAt DateTime           @default(now()) @map("created_at")
+  group     SimilarityGroup    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([nodeType, nodeId])
+  @@unique([groupId, nodeType, nodeId])
+  @@index([groupId])
+  @@index([nodeType, nodeId])
+  @@map("similarity_group_item")
+}
+
+model Content {
+  id                          String                  @id @db.VarChar(255)
+  title                       String                  @db.VarChar(255)
+  originalTitle               String?                 @map("original_title") @db.VarChar(255)
+  tmdbId                      Int?                    @map("tmdb_id")
+  igdbId                      Int?                    @map("igdb_id")
+  contentTypeId               Int                     @map("content_type_id")
+  releaseDate                 DateTime?               @map("release_date") @db.Date
+  description                 String?
+  // Retained only for historical data; omitted from Prisma Client and all application APIs.
+  legacyTagline               String?                 @map("tagline") @ignore
+  status                      String?                 @db.VarChar(50)
+  runtime                     Int?
+  isbn                        String?                 @db.VarChar(20)
+  pageCount                   Int?                    @map("page_count")
+  isContinuing                Boolean                 @default(false) @map("is_continuing")
+  consumeCount                Int                     @default(0) @map("consume_count")
+  favoriteCount               Int                     @default(0) @map("favorite_count")
+  discussionCount             Int                     @default(0) @map("discussion_count")
+  ratingDistribution          Int[]                   @default([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) @map("rating_distribution")
+  posterImageId               Int?                    @map("poster_image_id")
+  backdropImageId             Int?                    @map("backdrop_image_id")
+  screenshotImageIds          Int[]                   @default([]) @map("screenshot_image_ids")
+  totalRatingScore            Decimal?                @map("total_rating_score") @db.Decimal(10, 2)
+  totalRatingVotes            Int                     @default(0) @map("total_rating_votes")
+  totalPlaytimeMinutes        Int?                    @map("total_playtime_minutes")
+  totalPlaytimeLogs           Int                     @default(0) @map("total_playtime_logs")
+  franchiseId                 String?                 @map("franchise_id") @db.Uuid
+  languages                   String[]                @default([])
+  ageRatingId                 Int?                    @map("age_rating_id")
+  budget                      BigInt?
+  revenue                     BigInt?
+  averageDuration             Int?                    @map("average_duration")
+  numberOfEpisodes            Int?                    @map("number_of_episodes")
+  numberOfSeasons             Int?                    @map("number_of_seasons")
+  tvType                      String?                 @map("tv_type") @db.VarChar(50)
+  inProduction                Boolean?                @map("in_production")
+  firstAirDate                DateTime?               @map("first_air_date") @db.Date
+  lastAirDate                 DateTime?               @map("last_air_date") @db.Date
+  seasonsData                 String?                 @map("seasons_data")
+  cast                        String?
+  crew                        String?
+  authors                     String[]                @default([])
+  previewLink                 String?                 @map("preview_link")
+  infoLink                    String?                 @map("info_link")
+  canonicalVolumeLink         String?                 @map("canonical_volume_link")
+  versionTitle                String?                 @map("version_title") @db.VarChar(255)
+  versionParent               Int?                    @map("version_parent")
+  collection                  Int?
+  trailerUrl                  String?                 @map("trailer_url")
+  spotifyPlaylistUrl          String?                 @map("spotify_playlist_url")
+  isEnabledForQuiz            Boolean                 @default(true) @map("is_enabled_for_quiz")
+  isDeleted                   Boolean                 @default(false) @map("is_deleted")
+  deletedAt                   DateTime?               @map("deleted_at")
+  createdAt                   DateTime                @default(now()) @map("created_at")
+  updatedAt                   DateTime                @updatedAt @map("updated_at")
+  gameplayVideoUrl            String?                 @map("gameplay_video_url")
+  reviewVideoUrl              String?                 @map("review_video_url")
+  lockedFields                String[]                @default([]) @map("locked_fields")
+  alternativeTitles           String[]                @default([]) @map("alternative_titles")
+  awards                      String[]                @default([])
+  spotifyUrl                  String?                 @map("spotify_url")
+  explicit                    Boolean?                @map("explicit")
+  label                       String?                 @db.VarChar(255)
+  totalTracks                 Int?                    @map("total_tracks")
+  musicReleaseType            MusicReleaseType?       @map("music_release_type")
+  additionalRatingCategories  String[]                @default([]) @map("additional_rating_categories")
+  autoSelectHighestVotedMedia Boolean                 @default(true) @map("auto_select_highest_voted_media")
+  bookPublications            BookPublication[]
+  ageRating                   AgeRating?              @relation(fields: [ageRatingId], references: [id])
+  contentType                 ContentTypeLookup       @relation(fields: [contentTypeId], references: [id])
+  franchise                   Franchise?              @relation(fields: [franchiseId], references: [id])
+  companies                   ContentCompany[]
+  editHistory                 ContentEditHistory[]
+  contentGameEngines          ContentGameEngine[]
+  contentGameModes            ContentGameMode[]
+  genres                      ContentGenre[]
+  images                      ContentImage[]
+  contentMoods                ContentMood[]
+  people                      ContentPerson[]
+  contentPerspectives         ContentPerspective[]
+  contentPlatforms            ContentPlatform[]
+  recommendations             ContentRecommendation[]
+  screenshots                 ContentScreenshot[]
+  similarContentsAs1          ContentSimilarity[]     @relation("SimilarContents1")
+  similarContentsAs2          ContentSimilarity[]     @relation("SimilarContents2")
+  contentThemes               ContentTheme[]
+  translations                ContentTranslation[]
+  contributions               Contribution[]
+  discussions                 Discussion[]
+  expansions                  Expansion[]
+  citationsMade               ContentCitation[]       @relation("CitingContent")
+  citationsReceived           ContentCitation[]       @relation("CitedContent")
+
+  notifications          Notification[]
+  episodes               TvEpisode[]
+  seasons                TvSeason[]
+  podcastProgram         PodcastProgram?
+  musicReleaseTracks     MusicReleaseTrack[]     @relation("MusicRelease")
+  musicTrackReleases     MusicReleaseTrack[]     @relation("MusicTrack")
+  theaterEvents          MediaEvent[]            @relation("TheaterProductionEvents")
+  userContentLogs        UserContentLog[]
+  userContentPreferences UserContentPreference[]
+  featuredBy             UserFeaturedContent[]
+  userListItems          UserListItem[]
+
+  @@index([contentTypeId])
+  @@index([releaseDate])
+  @@index([isbn])
+  @@index([status])
+  @@index([isContinuing])
+  @@index([franchiseId])
+  @@index([title])
+  @@index([tmdbId])
+  @@index([igdbId])
+  @@index([ageRatingId])
+  @@index([isDeleted])
+  @@map("content")
+}
+
+model TvSeason {
+  id           Int         @id @default(autoincrement())
+  tvShowId     String      @map("tv_show_id") @db.VarChar(255)
+  seasonNumber Int         @map("season_number")
+  name         String      @db.VarChar(255)
+  overview     String?
+  airDate      DateTime?   @map("air_date") @db.Date
+  episodeCount Int         @map("episode_count")
+  posterUrl    String?     @map("poster_url")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  episodes     TvEpisode[]
+  tvShow       Content     @relation(fields: [tvShowId], references: [id], onDelete: Cascade)
+
+  @@unique([tvShowId, seasonNumber])
+  @@index([tvShowId])
+  @@map("tv_season")
+}
+
+model TvEpisode {
+  id               Int              @id @default(autoincrement())
+  tvShowId         String           @map("tv_show_id") @db.VarChar(255)
+  seasonNumber     Int              @map("season_number")
+  episodeNumber    Int              @map("episode_number")
+  name             String           @db.VarChar(255)
+  overview         String?
+  airDate          DateTime?        @map("air_date") @db.Date
+  runtime          Int?
+  stillUrl         String?          @map("still_url")
+  totalRatingScore Decimal?         @map("total_rating_score") @db.Decimal(10, 2)
+  totalRatingVotes Int              @default(0) @map("total_rating_votes")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+  seasonId         Int?             @map("season_id")
+  season           TvSeason?        @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  tvShow           Content          @relation(fields: [tvShowId], references: [id], onDelete: Cascade)
+  userEpisodeLogs  UserEpisodeLog[]
+
+  @@unique([tvShowId, seasonNumber, episodeNumber])
+  @@index([tvShowId])
+  @@index([seasonId])
+  @@index([seasonNumber])
+  @@map("tv_episode")
+}
+
+model UserEpisodeLog {
+  id        Int       @id @default(autoincrement())
+  userId    String    @map("user_id") @db.Uuid
+  episodeId Int       @map("episode_id")
+  watched   Boolean   @default(false)
+  rating    Decimal?  @db.Decimal(4, 2)
+  watchedAt DateTime? @map("watched_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  episode   TvEpisode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  user      AppUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, episodeId])
+  @@index([userId])
+  @@index([episodeId])
+  @@index([watched])
+  @@map("user_episode_log")
+}
+
+model PodcastProgram {
+  id                String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  contentId         String                 @unique @map("content_id") @db.VarChar(255)
+  publicationStatus String                 @default("ongoing") @map("publication_status") @db.VarChar(30)
+  languageCode      String?                @map("language_code") @db.VarChar(20)
+  releaseFrequency  String?                @map("release_frequency") @db.VarChar(30)
+  releaseInterval   Int?                   @map("release_interval")
+  releaseWeekdays   Int[]                  @default([]) @map("release_weekdays")
+  createdAt         DateTime               @default(now()) @map("created_at")
+  updatedAt         DateTime               @updatedAt @map("updated_at")
+  content           Content                @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  episodes          PodcastEpisode[]
+  credits           PodcastProgramCredit[]
+
+  @@index([publicationStatus])
+  @@map("podcast_program")
+}
+
+model PodcastProgramCredit {
+  id        Int            @id @default(autoincrement())
+  programId String         @map("program_id") @db.Uuid
+  personId  String         @map("person_id") @db.VarChar(255)
+  role      String         @default("host") @db.VarChar(30)
+  position  Int            @default(0)
+  program   PodcastProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  person    Person         @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([programId, personId, role])
+  @@index([personId])
+  @@map("podcast_program_credit")
+}
+
+model PodcastEpisode {
+  id              String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  programId       String                 @map("program_id") @db.Uuid
+  seasonNumber    Int                    @default(1) @map("season_number")
+  episodeNumber   Int                    @map("episode_number")
+  title           String                 @db.VarChar(255)
+  description     String?
+  publishedAt     DateTime?              @map("published_at")
+  durationSeconds Int?                   @map("duration_seconds")
+  audioUrl        String?                @map("audio_url") @db.VarChar(2000)
+  externalGuid    String?                @map("external_guid") @db.VarChar(500)
+  isExplicit      Boolean?               @map("is_explicit")
+  createdAt       DateTime               @default(now()) @map("created_at")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
+  program         PodcastProgram         @relation(fields: [programId], references: [id], onDelete: Cascade)
+  credits         PodcastEpisodeCredit[]
+  listens         UserPodcastListen[]
+
+  @@unique([programId, seasonNumber, episodeNumber])
+  @@unique([programId, externalGuid])
+  @@index([programId, publishedAt])
+  @@map("podcast_episode")
+}
+
+model PodcastEpisodeCredit {
+  id        Int            @id @default(autoincrement())
+  episodeId String         @map("episode_id") @db.Uuid
+  personId  String         @map("person_id") @db.VarChar(255)
+  role      String         @default("guest") @db.VarChar(30)
+  position  Int            @default(0)
+  episode   PodcastEpisode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  person    Person         @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([episodeId, personId, role])
+  @@index([personId])
+  @@map("podcast_episode_credit")
+}
+
+model UserPodcastListen {
+  id              Int            @id @default(autoincrement())
+  userId          String         @map("user_id") @db.Uuid
+  episodeId       String         @map("episode_id") @db.Uuid
+  listenedAt      DateTime       @default(now()) @map("listened_at")
+  secondsListened Int?           @map("seconds_listened")
+  completed       Boolean        @default(true)
+  createdAt       DateTime       @default(now()) @map("created_at")
+  episode         PodcastEpisode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  user            AppUser        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, episodeId, listenedAt(sort: Desc)])
+  @@index([episodeId])
+  @@map("user_podcast_listen")
+}
+
+model MediaEvent {
+  id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventType           MediaEventType        @map("event_type")
+  theaterProductionId String?               @map("theater_production_id") @db.VarChar(255)
+  title               String?               @db.VarChar(255)
+  startsAt            DateTime              @map("starts_at")
+  timeZone            String                @default("Europe/Istanbul") @map("time_zone") @db.VarChar(100)
+  venueName           String                @map("venue_name") @db.VarChar(255)
+  city                String                @db.VarChar(150)
+  address             String?               @db.VarChar(500)
+  status              MediaEventStatus      @default(SCHEDULED)
+  rescheduledFromId   String?               @map("rescheduled_from_id") @db.Uuid
+  createdAt           DateTime              @default(now()) @map("created_at")
+  updatedAt           DateTime              @updatedAt @map("updated_at")
+  theaterProduction   Content?              @relation("TheaterProductionEvents", fields: [theaterProductionId], references: [id], onDelete: Restrict)
+  rescheduledFrom     MediaEvent?           @relation("MediaEventReschedule", fields: [rescheduledFromId], references: [id], onDelete: SetNull)
+  rescheduledAs       MediaEvent[]          @relation("MediaEventReschedule")
+  credits             MediaEventCredit[]
+  attendances         UserEventAttendance[]
+
+  @@index([eventType, startsAt])
+  @@index([city, startsAt])
+  @@index([theaterProductionId, startsAt])
+  @@index([status, startsAt])
+  @@map("media_event")
+}
+
+model MediaEventCredit {
+  id          Int        @id @default(autoincrement())
+  eventId     String     @map("event_id") @db.Uuid
+  personId    String?    @map("person_id") @db.VarChar(255)
+  displayName String     @map("display_name") @db.VarChar(255)
+  role        String?    @db.VarChar(100)
+  position    Int        @default(0)
+  event       MediaEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  person      Person?    @relation(fields: [personId], references: [id], onDelete: SetNull)
+
+  @@index([eventId, position])
+  @@index([personId])
+  @@map("media_event_credit")
+}
+
+model UserEventAttendance {
+  id           Int             @id @default(autoincrement())
+  userId       String          @map("user_id") @db.Uuid
+  eventId      String          @map("event_id") @db.Uuid
+  attendedAt   DateTime        @default(now()) @map("attended_at")
+  note         String?
+  contentLogId Int?            @unique @map("content_log_id")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  user         AppUser         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event        MediaEvent      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  contentLog   UserContentLog? @relation(fields: [contentLogId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, eventId])
+  @@index([userId, attendedAt(sort: Desc)])
+  @@index([eventId])
+  @@map("user_event_attendance")
+}
+
+model MusicReleaseTrack {
+  id               Int     @id @default(autoincrement())
+  releaseContentId String  @map("release_content_id") @db.VarChar(255)
+  trackContentId   String  @map("track_content_id") @db.VarChar(255)
+  discNumber       Int     @default(1) @map("disc_number")
+  trackNumber      Int     @map("track_number")
+  release          Content @relation("MusicRelease", fields: [releaseContentId], references: [id], onDelete: Cascade)
+  track            Content @relation("MusicTrack", fields: [trackContentId], references: [id], onDelete: Cascade)
+
+  @@unique([releaseContentId, discNumber, trackNumber], map: "music_release_track_release_content_id_disc_number_track_number")
+  @@index([trackContentId])
+  @@map("music_release_track")
+}
+
+model ContentGenre {
+  id        Int     @id @default(autoincrement())
+  contentId String  @map("content_id") @db.VarChar(255)
+  genreId   Int     @map("genre_id")
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  genre     Genre   @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, genreId])
+  @@index([contentId])
+  @@index([genreId])
+  @@map("content_genre")
+}
+
+model ContentPerson {
+  id           Int         @id @default(autoincrement())
+  contentId    String      @map("content_id") @db.VarChar(255)
+  personId     String      @map("person_id") @db.VarChar(255)
+  role         String?     @db.VarChar(50)
+  personRoleId Int?        @map("person_role_id")
+  character    String?     @db.VarChar(255)
+  department   String?     @db.VarChar(100)
+  job          String?     @db.VarChar(100)
+  creditOrder  Int?        @map("credit_order")
+  content      Content     @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  person       Person      @relation(fields: [personId], references: [id], onDelete: Cascade)
+  personRole   PersonRole? @relation(fields: [personRoleId], references: [id])
+
+  @@unique([contentId, personId, personRoleId, character])
+  @@index([contentId])
+  @@index([personId])
+  @@index([personRoleId])
+  @@index([personId, personRoleId, contentId])
+  @@map("content_person")
+}
+
+model ContentCompany {
+  id            Int         @id @default(autoincrement())
+  contentId     String      @map("content_id") @db.VarChar(255)
+  companyId     String      @map("company_id") @db.VarChar(255)
+  companyRoleId Int         @map("company_role_id")
+  company       Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyRole   CompanyRole @relation(fields: [companyRoleId], references: [id], onDelete: Cascade)
+  content       Content     @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, companyId, companyRoleId])
+  @@index([contentId])
+  @@index([companyId])
+  @@index([companyRoleId])
+  @@map("content_company")
+}
+
+model ContentImage {
+  id                  Int                     @id @default(autoincrement())
+  contentId           String                  @map("content_id") @db.VarChar(255)
+  type                String                  @db.VarChar(50)
+  version             String                  @default("original") @db.VarChar(50)
+  filePath            String                  @map("file_url")
+  downvoteCount       Int                     @default(0) @map("downvote_count")
+  upvoteCount         Int                     @default(0) @map("upvote_count")
+  content             Content                 @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  preferredAsBackdrop UserContentPreference[] @relation("PreferenceBackdrop")
+  preferredAsPoster   UserContentPreference[] @relation("PreferencePoster")
+  votes               UserImageVote[]
+
+  @@index([contentId])
+  @@index([type])
+  @@index([version])
+  @@index([contentId, type, id])
+  @@map("content_image")
+}
+
+model BookPublication {
+  id                 Int              @id @default(autoincrement())
+  contentId          String           @map("content_id") @db.VarChar(255)
+  title              String?          @db.VarChar(255)
+  subtitle           String?          @db.VarChar(255)
+  isbn               String?          @db.VarChar(20)
+  publisherId        String?          @map("publisher_id") @db.VarChar(255)
+  translators        String[]         @default([])
+  language           String?          @db.VarChar(20)
+  pageCount          Int?             @map("page_count")
+  coverUrl           String?          @map("cover_url")
+  publishedDate      String?          @map("published_date") @db.VarChar(50)
+  editionType        String?          @map("edition_type") @db.VarChar(50)
+  format             String?          @db.VarChar(50)
+  isAbridged         Boolean          @default(false) @map("is_abridged")
+  consumeCount       Int              @default(0) @map("consume_count")
+  ratingDistribution Int[]            @default([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) @map("rating_distribution")
+  totalRatingScore   Decimal?         @map("total_rating_score") @db.Decimal(10, 2)
+  totalRatingVotes   Int              @default(0) @map("total_rating_votes")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  isOriginal         Boolean          @default(false) @map("is_original")
+  content            Content          @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  publisher          Company?         @relation(fields: [publisherId], references: [id])
+  userContentLogs    UserContentLog[]
+
+  @@index([contentId])
+  @@index([publisherId])
+  @@index([isbn])
+  @@index([language])
+  @@index([contentId, isOriginal])
+  @@index([consumeCount])
+  @@map("book_publication")
+}
+
+model ContentScreenshot {
+  id               Int                  @id @default(autoincrement())
+  contentId        String               @map("content_id") @db.VarChar(255)
+  imageUrl         String               @map("image_url")
+  difficulty       Int                  @default(1)
+  order            Int                  @default(0)
+  isEnabledForQuiz Boolean              @default(false) @map("is_enabled_for_quiz")
+  isSpoiler        Boolean              @default(false) @map("is_spoiler")
+  isSensitive      Boolean              @default(false) @map("is_sensitive")
+  seasonNumber     Int?                 @map("season_number")
+  downvoteCount    Int                  @default(0) @map("downvote_count")
+  upvoteCount      Int                  @default(0) @map("upvote_count")
+  content          Content              @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  votes            UserScreenshotVote[]
+
+  @@index([contentId])
+  @@index([difficulty])
+  @@index([isEnabledForQuiz])
+  @@index([contentId, isEnabledForQuiz])
+  @@map("content_screenshot")
+}
+
+model Notification {
+  id                  Int       @id @default(autoincrement())
+  recipientUserId     String    @map("recipient_user_id") @db.Uuid
+  actorUserId         String?   @map("actor_user_id") @db.Uuid
+  typeId              Int       @map("type_id")
+  contentId           String?   @map("content_id") @db.VarChar(255)
+  replyId             Int?      @map("reply_id")
+  discussionCommentId Int?      @map("discussion_comment_id")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  readAt              DateTime? @map("read_at")
+  message             String?   @db.VarChar(500)
+  actor               AppUser?  @relation("NotificationActor", fields: [actorUserId], references: [id], onDelete: Cascade)
+  content             Content?  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  recipient           AppUser   @relation("NotificationRecipient", fields: [recipientUserId], references: [id], onDelete: Cascade)
+
+  @@index([recipientUserId])
+  @@index([actorUserId])
+  @@index([contentId])
+  @@index([recipientUserId, createdAt(sort: Desc), id(sort: Desc)])
+  @@index([recipientUserId, readAt])
+  @@map("notification")
+}
+
+model UserContentLog {
+  id                Int                  @id @default(autoincrement())
+  userId            String               @map("user_id") @db.Uuid
+  contentId         String               @map("content_id") @db.VarChar(255)
+  rating            Decimal?             @db.Decimal(4, 2)
+  isFavorite        Boolean              @default(false) @map("is_favorite")
+  isConsumeLater    Boolean              @default(false) @map("is_consume_later")
+  isContinuing      Boolean              @default(false) @map("is_continuing")
+  isConsumed        Boolean              @default(false) @map("is_consumed")
+  isAbandoned       Boolean              @default(false) @map("is_abandoned")
+  playtimeMinutes   Int?                 @map("playtime_minutes")
+  tags              String[]             @default([])
+  date              DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  notifyOnRelease   Boolean              @default(false) @map("notify_on_release")
+  platformId        Int?                 @map("platform_id")
+  bookPublicationId Int?                 @map("book_publication_id")
+  bookFormat        String?              @map("book_format") @db.VarChar(20)
+  ratingDetails     Json?                @map("rating_details")
+  bookPublication   BookPublication?     @relation(fields: [bookPublicationId], references: [id])
+  content           Content              @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  platform          Platform?            @relation(fields: [platformId], references: [id])
+  user              AppUser              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taggedUsers       AppUser[]            @relation("TaggedUsers")
+  eventAttendance   UserEventAttendance?
+
+  @@index([userId])
+  @@index([contentId])
+  @@index([date])
+  @@index([notifyOnRelease])
+  @@index([platformId])
+  @@index([bookPublicationId])
+  @@index([userId, contentId])
+  @@index([userId, contentId, date(sort: Desc)])
+  @@index([userId, date(sort: Desc), updatedAt(sort: Desc), id(sort: Desc)])
+  @@map("user_content_log")
+}
+
+model UserContentPreference {
+  id              Int           @id @default(autoincrement())
+  userId          String        @map("user_id") @db.Uuid
+  contentId       String        @map("content_id") @db.VarChar(255)
+  posterImageId   Int?          @map("poster_image_id")
+  backdropImageId Int?          @map("backdrop_image_id")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  backdropImage   ContentImage? @relation("PreferenceBackdrop", fields: [backdropImageId], references: [id])
+  content         Content       @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  posterImage     ContentImage? @relation("PreferencePoster", fields: [posterImageId], references: [id])
+  user            AppUser       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contentId])
+  @@index([userId])
+  @@index([contentId])
+  @@map("user_content_preference")
+}
+
+model UserFollow {
+  id              Int      @id @default(autoincrement())
+  userId          String   @map("user_id") @db.Uuid
+  followingUserId String   @map("following_user_id") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at")
+  followingUser   AppUser  @relation("UserFollowing", fields: [followingUserId], references: [id], onDelete: Cascade)
+  user            AppUser  @relation("UserFollowers", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, followingUserId])
+  @@index([userId])
+  @@index([followingUserId])
+  @@map("user_follow")
+}
+
+model ContentTheme {
+  id        Int     @id @default(autoincrement())
+  contentId String  @map("content_id") @db.VarChar(255)
+  themeId   Int     @map("theme_id")
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  theme     Theme   @relation(fields: [themeId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, themeId])
+  @@index([contentId])
+  @@index([themeId])
+  @@map("content_theme")
+}
+
+model ContentMood {
+  id        Int     @id @default(autoincrement())
+  contentId String  @map("content_id") @db.VarChar(255)
+  moodId    Int     @map("mood_id")
+  content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  mood      Mood    @relation(fields: [moodId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, moodId])
+  @@index([contentId])
+  @@index([moodId])
+  @@map("content_mood")
+}
+
+model ContentGameMode {
+  id         Int      @id @default(autoincrement())
+  contentId  String   @map("content_id") @db.VarChar(255)
+  gameModeId Int      @map("game_mode_id")
+  content    Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  gameMode   GameMode @relation(fields: [gameModeId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, gameModeId])
+  @@index([contentId])
+  @@index([gameModeId])
+  @@map("content_game_mode")
+}
+
+model ContentGameEngine {
+  id           Int        @id @default(autoincrement())
+  contentId    String     @map("content_id") @db.VarChar(255)
+  gameEngineId Int        @map("game_engine_id")
+  content      Content    @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  gameEngine   GameEngine @relation(fields: [gameEngineId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, gameEngineId])
+  @@index([contentId])
+  @@index([gameEngineId])
+  @@map("content_game_engine")
+}
+
+model ContentPerspective {
+  id            Int         @id @default(autoincrement())
+  contentId     String      @map("content_id") @db.VarChar(255)
+  perspectiveId Int         @map("perspective_id")
+  content       Content     @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  perspective   Perspective @relation(fields: [perspectiveId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, perspectiveId])
+  @@index([contentId])
+  @@index([perspectiveId])
+  @@map("content_perspective")
+}
+
+model ContentPlatform {
+  id          Int       @id @default(autoincrement())
+  contentId   String    @map("content_id") @db.VarChar(255)
+  platformId  Int       @map("platform_id")
+  releaseDate DateTime? @map("release_date") @db.Date
+  link        String?
+  content     Content   @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  platform    Platform  @relation(fields: [platformId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, platformId])
+  @@index([contentId])
+  @@index([platformId])
+  @@map("content_platform")
+}
+
+model Expansion {
+  id                 Int                @id @default(autoincrement())
+  contentId          String             @map("content_id") @db.VarChar(255)
+  name               String             @db.VarChar(255)
+  description        String?
+  posterUrl          String?            @map("poster_url")
+  releaseDate        DateTime?          @map("release_date") @db.Date
+  type               String             @default("expansion") @db.VarChar(20)
+  consumeCount       Int                @default(0) @map("consume_count")
+  ratingDistribution Int[]              @default([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) @map("rating_distribution")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  content            Content            @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  userExpansionLogs  UserExpansionLog[]
+
+  @@index([contentId])
+  @@index([type])
+  @@map("expansion")
+}
+
+model UserExpansionLog {
+  id          Int       @id @default(autoincrement())
+  userId      String    @map("user_id") @db.Uuid
+  expansionId Int       @map("expansion_id")
+  rating      Decimal?  @db.Decimal(4, 2)
+  isConsumed  Boolean   @default(false) @map("is_consumed")
+  date        DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  expansion   Expansion @relation(fields: [expansionId], references: [id], onDelete: Cascade)
+  user        AppUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, expansionId])
+  @@index([userId])
+  @@index([expansionId])
+  @@map("user_expansion_log")
+}
+
+model QuizSettings {
+  id              Int               @id @default(autoincrement())
+  contentTypeId   Int               @unique @map("content_type_id")
+  isActive        Boolean           @default(true) @map("is_active")
+  timePerQuestion Int               @default(30) @map("time_per_question")
+  questionsCount  Int               @default(10) @map("questions_count")
+  pointsLevel1    Int               @default(10) @map("points_level1")
+  pointsLevel2    Int               @default(15) @map("points_level2")
+  pointsLevel3    Int               @default(25) @map("points_level3")
+  pointsLevel4    Int               @default(40) @map("points_level4")
+  pointsLevel5    Int               @default(50) @map("points_level5")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  contentType     ContentTypeLookup @relation(fields: [contentTypeId], references: [id])
+
+  @@map("quiz_settings")
+}
+
+model QuizResult {
+  id             Int      @id @default(autoincrement())
+  userId         String   @map("user_id") @db.Uuid
+  contentTypeId  Int      @map("content_type_id")
+  score          Int      @default(0)
+  correctAnswers Int      @default(0) @map("correct_answers")
+  totalQuestions Int      @map("total_questions")
+  timeTaken      Int      @map("time_taken")
+  createdAt      DateTime @default(now()) @map("created_at")
+  user           AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([contentTypeId])
+  @@index([score])
+  @@index([createdAt])
+  @@map("quiz_result")
+}
+
+model QuizLeaderboard {
+  id             Int      @id @default(autoincrement())
+  userId         String   @map("user_id") @db.Uuid
+  contentTypeId  Int      @map("content_type_id")
+  totalScore     Int      @default(0) @map("total_score")
+  totalQuizzes   Int      @default(0) @map("total_quizzes")
+  correctAnswers Int      @default(0) @map("correct_answers")
+  totalQuestions Int      @default(0) @map("total_questions")
+  bestScore      Int      @default(0) @map("best_score")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  user           AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contentTypeId])
+  @@index([contentTypeId])
+  @@index([totalScore])
+  @@map("quiz_leaderboard")
+}
+
+model UserList {
+  id            Int                    @id @default(autoincrement())
+  name          String                 @db.VarChar(255)
+  description   String?
+  contentTypeId Int                    @map("content_type_id")
+  ownerId       String                 @map("owner_id") @db.Uuid
+  isPublic      Boolean                @default(false) @map("is_public")
+  isOrdered     Boolean                @default(false) @map("is_ordered")
+  upvoteCount   Int                    @default(0) @map("upvote_count")
+  downvoteCount Int                    @default(0) @map("downvote_count")
+  isDeleted     Boolean                @default(false) @map("is_deleted")
+  deletedAt     DateTime?              @map("deleted_at")
+  createdAt     DateTime               @default(now()) @map("created_at")
+  updatedAt     DateTime               @updatedAt @map("updated_at")
+  contentType   ContentTypeLookup      @relation(fields: [contentTypeId], references: [id])
+  owner         AppUser                @relation("UserOwnedLists", fields: [ownerId], references: [id], onDelete: Cascade)
+  collaborators UserListCollaborator[]
+  items         UserListItem[]
+  votes         UserListVote[]
+  savedBy       UserSavedList[]
+
+  @@index([ownerId])
+  @@index([contentTypeId])
+  @@index([isPublic])
+  @@map("user_list")
+}
+
+model UserSavedList {
+  id      Int      @id @default(autoincrement())
+  userId  String   @map("user_id") @db.Uuid
+  listId  Int      @map("list_id")
+  savedAt DateTime @default(now()) @map("saved_at")
+  list    UserList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  user    AppUser  @relation("UserSavedLists", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listId])
+  @@index([userId])
+  @@index([listId])
+  @@map("user_saved_list")
+}
+
+model UserListItem {
+  id           Int      @id @default(autoincrement())
+  listId       Int      @map("list_id")
+  contentId    String   @map("content_id") @db.VarChar(255)
+  addedById    String   @map("added_by_id") @db.Uuid
+  displayOrder Int      @default(0) @map("display_order")
+  addedAt      DateTime @default(now()) @map("added_at")
+  addedBy      AppUser  @relation("UserListItemsAdded", fields: [addedById], references: [id], onDelete: Cascade)
+  content      Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  list         UserList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, contentId])
+  @@index([listId])
+  @@index([contentId])
+  @@index([addedById])
+  @@map("user_list_item")
+}
+
+model UserListCollaborator {
+  id      Int      @id @default(autoincrement())
+  listId  Int      @map("list_id")
+  userId  String   @map("user_id") @db.Uuid
+  role    String   @default("editor") @db.VarChar(50)
+  addedAt DateTime @default(now()) @map("added_at")
+  list    UserList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  user    AppUser  @relation("UserListCollaborations", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, userId])
+  @@index([listId])
+  @@index([userId])
+  @@map("user_list_collaborator")
+}
+
+model UserListVote {
+  id        Int      @id @default(autoincrement())
+  listId    Int      @map("list_id")
+  userId    String   @map("user_id") @db.Uuid
+  voteType  Int      @map("vote_type")
+  createdAt DateTime @default(now()) @map("created_at")
+  list      UserList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  user      AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, userId])
+  @@index([listId])
+  @@index([userId])
+  @@map("user_list_vote")
+}
+
+model ContentRequest {
+  id              Int       @id @default(autoincrement())
+  requesterUserId String    @map("requester_user_id") @db.Uuid
+  title           String    @db.VarChar(255)
+  contentTypeId   Int       @map("content_type_id")
+  releaseDate     String?   @map("release_date") @db.VarChar(50)
+  description     String?
+  reason          String?
+  payload         Json?     @map("payload")
+  status          String    @default("pending") @db.VarChar(20)
+  reviewedBy      String?   @map("reviewed_by") @db.Uuid
+  reviewedAt      DateTime? @map("reviewed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  @@index([requesterUserId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("content_request")
+}
+
+model UserFeaturedContent {
+  id           Int      @id @default(autoincrement())
+  userId       String   @map("user_id") @db.Uuid
+  contentId    String   @map("content_id") @db.VarChar(255)
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  content      Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  user         AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contentId])
+  @@index([userId])
+  @@index([contentId])
+  @@map("user_featured_content")
+}
+
+model UserFavoritePerson {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id") @db.Uuid
+  personId  String   @map("person_id") @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  person    Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+  user      AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, personId])
+  @@index([userId])
+  @@index([personId])
+  @@map("user_favorite_person")
+}
+
+model Discussion {
+  id            Int                 @id @default(autoincrement())
+  contentId     String?             @map("content_id") @db.VarChar(255)
+  authorId      String              @map("author_id") @db.Uuid
+  type          String              @default("discussion") @db.VarChar(20)
+  isPublic      Boolean             @default(true) @map("is_public")
+  isSpoiler     Boolean             @default(false) @map("is_spoiler")
+  title         String?             @db.VarChar(255)
+  description   String
+  upvoteCount   Int                 @default(0) @map("upvote_count")
+  downvoteCount Int                 @default(0) @map("downvote_count")
+  commentCount  Int                 @default(0) @map("comment_count")
+  isDeleted     Boolean             @default(false) @map("is_deleted")
+  deletedAt     DateTime?           @map("deleted_at")
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
+  author        AppUser             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content       Content?            @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  comments      DiscussionComment[]
+  votes         DiscussionVote[]
+
+  @@index([contentId])
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([type])
+  @@index([isPublic])
+  @@index([authorId, contentId, type, isDeleted, createdAt, id], map: "discussion_author_id_content_id_type_is_deleted_created_at_id_i")
+  @@map("discussion")
+}
+
+model DiscussionComment {
+  id            Int                        @id @default(autoincrement())
+  discussionId  Int                        @map("discussion_id")
+  authorId      String                     @map("author_id") @db.Uuid
+  text          String
+  parentId      Int?                       @map("parent_id")
+  upvoteCount   Int                        @default(0) @map("upvote_count")
+  downvoteCount Int                        @default(0) @map("downvote_count")
+  isDeleted     Boolean                    @default(false) @map("is_deleted")
+  deletedAt     DateTime?                  @map("deleted_at")
+  createdAt     DateTime                   @default(now()) @map("created_at")
+  updatedAt     DateTime                   @updatedAt @map("updated_at")
+  author        AppUser                    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  discussion    Discussion                 @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  parent        DiscussionComment?         @relation("DiscussionCommentReplies", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  replies       DiscussionComment[]        @relation("DiscussionCommentReplies")
+  mentions      DiscussionCommentMention[]
+  votes         DiscussionCommentVote[]
+
+  @@index([discussionId])
+  @@index([authorId])
+  @@index([parentId])
+  @@map("discussion_comment")
+}
+
+model DiscussionCommentMention {
+  id              Int               @id @default(autoincrement())
+  commentId       Int               @map("comment_id")
+  mentionedUserId String            @map("mentioned_user_id") @db.Uuid
+  createdAt       DateTime          @default(now()) @map("created_at")
+  comment         DiscussionComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  mentionedUser   AppUser           @relation(fields: [mentionedUserId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, mentionedUserId])
+  @@index([commentId])
+  @@index([mentionedUserId])
+  @@map("discussion_comment_mention")
+}
+
+model DiscussionVote {
+  id           Int        @id @default(autoincrement())
+  discussionId Int        @map("discussion_id")
+  userId       String     @map("user_id") @db.Uuid
+  voteType     Int        @map("vote_type")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  user         AppUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([discussionId, userId])
+  @@index([discussionId])
+  @@index([userId])
+  @@map("discussion_vote")
+}
+
+model DiscussionCommentVote {
+  id        Int               @id @default(autoincrement())
+  commentId Int               @map("comment_id")
+  userId    String            @map("user_id") @db.Uuid
+  voteType  Int               @map("vote_type")
+  createdAt DateTime          @default(now()) @map("created_at")
+  comment   DiscussionComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      AppUser           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@index([commentId])
+  @@index([userId])
+  @@map("discussion_comment_vote")
+}
+
+model Report {
+  id         Int      @id @default(autoincrement())
+  reporterId String   @map("reporter_id") @db.Uuid
+  targetType String   @db.VarChar(50)
+  targetId   String   @map("target_id") @db.VarChar(255)
+  reason     String
+  status     String   @default("pending") @db.VarChar(20)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  reporter   AppUser  @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([reporterId])
+  @@index([targetType, targetId])
+  @@index([status])
+  @@map("report")
+}
+
+model ImportJob {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  type           String   @db.VarChar(50)
+  fileName       String   @map("file_name") @db.VarChar(255)
+  totalItems     Int      @map("total_items")
+  processedItems Int      @default(0) @map("processed_items")
+  status         String   @default("PENDING") @db.VarChar(50)
+  errors         String[] @default([])
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  currentItem    String?  @map("current_item") @db.VarChar(255)
+  user           AppUser  @relation(fields: [userId], references: [id])
+
+  @@map("import_job")
+}
+
+model Contribution {
+  id           Int       @id @default(autoincrement())
+  userId       String    @map("user_id") @db.Uuid
+  contentId    String?   @map("content_id") @db.VarChar(255)
+  type         String    @db.VarChar(50)
+  status       String    @default("PENDING") @db.VarChar(20)
+  payload      Json?
+  pointsEarned Int       @default(0) @map("points_earned")
+  reviewedById String?   @map("reviewed_by_id") @db.Uuid
+  reviewedAt   DateTime? @map("reviewed_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  content      Content?  @relation(fields: [contentId], references: [id])
+  reviewer     AppUser?  @relation("UserReviews", fields: [reviewedById], references: [id])
+  user         AppUser   @relation("UserContributions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([contentId])
+  @@index([status])
+  @@map("contribution")
+}
+
+model ContentEditHistory {
+  id            Int      @id @default(autoincrement())
+  contentId     String?  @map("content_id") @db.VarChar(255)
+  actorUserId   String?  @map("actor_user_id") @db.Uuid
+  action        String   @db.VarChar(20)
+  summary       String?
+  changedFields String[] @default([]) @map("changed_fields")
+  before        Json?
+  after         Json?
+  createdAt     DateTime @default(now()) @map("created_at")
+  actor         AppUser? @relation("ContentEditHistoryActor", fields: [actorUserId], references: [id])
+  content       Content? @relation(fields: [contentId], references: [id])
+
+  @@index([contentId])
+  @@index([actorUserId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("content_edit_history")
+}
+
+model AppConfig {
+  id            Int      @id @default(1)
+  theme         String   @default("default") @db.VarChar(50)
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  isBookEnabled Boolean  @default(true) @map("is_book_enabled")
+
+  @@map("app_config")
+}
+
+model ContentTranslation {
+  id            Int      @id @default(autoincrement())
+  contentId     String   @map("content_id")
+  language      String   @db.VarChar(5)
+  title         String?  @db.VarChar(500)
+  description   String?
+  // Retained only for historical data; omitted from Prisma Client and all application APIs.
+  legacyTagline String?  @map("tagline") @ignore @db.VarChar(500)
+  trailerUrl    String?  @map("trailer_url")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  content       Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, language])
+  @@map("content_translation")
+}
+
+model PersonTranslation {
+  id        Int      @id @default(autoincrement())
+  personId  String   @map("person_id")
+  language  String   @db.VarChar(5)
+  biography String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  person    Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([personId, language])
+  @@map("person_translation")
+}
+
+model CompanyTranslation {
+  id          Int      @id @default(autoincrement())
+  companyId   String   @map("company_id")
+  language    String   @db.VarChar(5)
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, language])
+  @@map("company_translation")
+}
+
+model UserImageVote {
+  id        Int          @id @default(autoincrement())
+  imageId   Int          @map("image_id")
+  userId    String       @map("user_id") @db.Uuid
+  voteType  Int          @map("vote_type")
+  createdAt DateTime     @default(now()) @map("created_at")
+  image     ContentImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  user      AppUser      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([imageId, userId])
+  @@index([imageId])
+  @@index([userId])
+  @@map("user_image_vote")
+}
+
+model UserScreenshotVote {
+  id           Int               @id @default(autoincrement())
+  screenshotId Int               @map("screenshot_id")
+  userId       String            @map("user_id") @db.Uuid
+  voteType     Int               @map("vote_type")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  screenshot   ContentScreenshot @relation(fields: [screenshotId], references: [id], onDelete: Cascade)
+  user         AppUser           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([screenshotId, userId])
+  @@index([screenshotId])
+  @@index([userId])
+  @@map("user_screenshot_vote")
+}
+
+enum SimilarityNodeType {
+  content
+  franchise
+}
+
+enum MediaEventType {
+  THEATER_PERFORMANCE
+  CONCERT
+}
+
+enum MediaEventStatus {
+  SCHEDULED
+  POSTPONED
+  COMPLETED
+  CANCELLED
+}
+
+enum MusicReleaseType {
+  ALBUM
+  SINGLE
+  TRACK
+}

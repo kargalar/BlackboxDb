@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@prisma/client": "^6.17.1",
+    "@prisma/extension-accelerate": "^2.0.2",
+    "cors": "^2.8.5",
+    "prisma": "^6.17.1"
+  }
+}

@@ -1,0 +1,30 @@
+.playwright-cli/
+web/.playwright-cli/
+web/output/playwright/
+
+# Dependencies and generated files
+node_modules/
+**/node_modules/
+output/
+build/
+web/.next/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.p12
+*.jks
+
+# Local databases, backups, and personal import data
+backups/
+server/backups/
+server/prisma/*.db
+admin import/
+film.csv
+dizi.csv
+oyun.csv

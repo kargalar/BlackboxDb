@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Blackbox</title>
+  <rect width="64" height="64" rx="16" fill="#000" />
+  <defs>
+    <path
+      id="b"
+      fill-rule="evenodd"
+      d="M10 18 12 16h9c6 0 10 3 10 8 0 3-1.5 5-4 6 3 1 5 4 5 8 0 6-4 10-11 10H10V18Zm6 4v6h5c3 0 4-1 4-3s-1-3-4-3h-5Zm0 12v8h5c3 0 5-1.5 5-4s-2-4-5-4h-5Z"
+    />
+  </defs>
+  <g fill="#fff" transform="translate(3 0) skewX(-5)">
+    <use href="#b" />
+    <use href="#b" x="24" />
+  </g>
+</svg>

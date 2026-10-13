@@ -1,0 +1,2370 @@
+{
+  "Sidebar": {
+    "movies": "Movies",
+    "tvShows": "TV Shows",
+    "games": "Games",
+    "books": "Books",
+    "people": "People",
+    "companies": "Companies",
+    "discussions": "Discussions",
+    "lists": "Lists",
+    "recommended": "Recommended",
+    "notifications": "Notifications",
+    "episodeTracker": "Episode Tracker",
+    "requestContent": "Request Content",
+    "settings": "Settings",
+    "admin": "Admin",
+    "addContent": "Add Content",
+    "pendingRequests": "Pending Requests",
+    "quiz": "Quiz",
+    "movieFinder": "Movie Finder",
+    "sections": {
+      "content": "Content",
+      "other": "Other",
+      "account": "Account",
+      "management": "Management"
+    },
+    "actions": {
+      "login": "Login",
+      "logout": "Logout",
+      "pinMenu": "Pin Menu",
+      "autoHideMenu": "Auto-hide Menu"
+    },
+    "mobile": {
+      "home": "Home",
+      "profile": "Profile"
+    }
+  },
+  "Landing": {
+    "hero": {
+      "titlePart1": "Movies, TV Shows, Games",
+      "titlePart2": "Track Your Experience",
+      "subtitle": "Track the movies you watch, the games you play. Rate, take notes, and discover new content."
+    },
+    "actions": {
+      "startExploring": "Start Exploring",
+      "goToProfile": "Go to Profile",
+      "createAccount": "Create Account",
+      "signUpForFree": "Sign Up for Free"
+    },
+    "contentTypes": {
+      "movies": "Movies",
+      "tvShows": "TV Shows",
+      "games": "Games",
+      "books": "Books"
+    },
+    "features": {
+      "title": "What Can You Do?",
+      "watchlist": {
+        "title": "Watchlist",
+        "description": "List the movies and games you want to watch or play."
+      },
+      "rating": {
+        "title": "Rating",
+        "description": "Rate contents and save your notes."
+      },
+      "discover": {
+        "title": "Discover",
+        "description": "Discover new contents and review recommendations."
+      }
+    },
+    "cta": {
+      "title": "Start Now",
+      "description": "Create a free account and join the world of content."
+    }
+  },
+  "Dashboard": {
+    "header": {
+      "welcome": "Welcome{name}! 👋",
+      "subtitle": "Discover the latest content and expand your collection."
+    },
+    "sections": {
+      "popularGames": "Popular Games",
+      "popularTvShows": "Popular TV Shows",
+      "popularMovies": "Popular Movies",
+      "popularBooks": "Popular Books",
+      "noTvShows": "No popular TV shows yet",
+      "noBooks": "No popular books yet"
+    }
+  },
+  "Explore_1": {
+    "title": "Explore",
+    "description": "Discover your favorite content from movies, tv shows, games, books, people and companies, create watchlists and track your experiences.",
+    "categories": {
+      "movies": "Movies",
+      "moviesDesc": "Discover among thousands of movies",
+      "tv": "TV Shows",
+      "tvDesc": "Discover popular TV shows",
+      "games": "Games",
+      "gamesDesc": "Explore the gaming world",
+      "books": "Books",
+      "booksDesc": "Explore the universe of books",
+      "persons": "People",
+      "personsDesc": "Discover actors, directors and writers",
+      "companies": "Companies",
+      "companiesDesc": "Discover production companies and studios"
+    },
+    "actions": {
+      "startExploring": "Start Exploring"
+    },
+    "stats": {
+      "totalContent": "Total Content",
+      "activeUsers": "Active Users",
+      "reviews": "Reviews",
+      "lists": "Lists"
+    }
+  },
+  "Auth": {
+    "brandSubtitle": "Discover movies and games",
+    "login": {
+      "title": "Login",
+      "emailLabel": "Email",
+      "emailPlaceholder": "example@email.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Your password",
+      "submitButton": "Login",
+      "loading": "Logging in...",
+      "googleButton": "Login with Google",
+      "noAccountText": "Don't have an account?",
+      "signUpLink": "Sign up",
+      "errorDefault": "An error occurred during login. Please try again."
+    },
+    "register": {
+      "title": "Sign Up",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "Your username",
+      "passwordPlaceholder": "At least 6 characters",
+      "submitButton": "Sign Up",
+      "loading": "Registering...",
+      "googleButton": "Sign up with Google",
+      "hasAccountText": "Already have an account?",
+      "loginLink": "Login",
+      "terms": "By signing up, you agree to our Terms of Use and Privacy Policy.",
+      "errorLength": "Password must be at least 6 characters.",
+      "errorDefault": "An error occurred during registration.",
+      "successMessage": "Registration successful! Welcome."
+    },
+    "common": {
+      "or": "or"
+    }
+  },
+  "AddContent": {
+    "loading": "Loading...",
+    "loginRequired": {
+      "title": "Please Login",
+      "description": "You need to login to add content."
+    },
+    "requestInfo": {
+      "title": "Content Request",
+      "description": "The content information you submit will be forwarded to the team for review. Once approved, the content will be added to the system."
+    },
+    "headers": {
+      "edit": "Edit Content",
+      "add": "Add New Content",
+      "request": "Request Content",
+      "bulkMode": "Bulk Add Mode"
+    },
+    "buttons": {
+      "saving": "⏳ Saving...",
+      "saveUpdates": "✅ Save Updates",
+      "addContent": "✅ Add Content",
+      "sendRequest": "📤 Send Request"
+    },
+    "bulkAdd": {
+      "title": "Bulk Content Search",
+      "searchPlaceholder": "Search content name...",
+      "searching": "Searching...",
+      "search": "Search",
+      "searchResults": "Search Results",
+      "noImage": "No Image",
+      "alreadySaved": "Already Saved",
+      "loadingMore": "Loading...",
+      "showMore": "Show more",
+      "selectedItems": "Selected Items ({count})",
+      "addAll": "Add All",
+      "openAdded": "Open Uploaded ({count})",
+      "processing": "Processing...",
+      "liveUploadStatus": "Live Upload Status",
+      "open": "Open",
+      "noItemsSelected": "No content selected yet.",
+      "status": {
+        "pending": "Pending",
+        "uploading": "Uploading",
+        "uploaded": "Uploaded",
+        "error": "Error"
+      },
+      "remove": "Remove",
+      "alreadyInList": "{title} already in list",
+      "addedToList": "{title} added to list",
+      "alreadyInListLabel": "Already in list",
+      "alreadyInDb": "{title} already registered in the system",
+      "alreadyInDbText": "Already in system, cannot be re-added",
+      "close": "Close",
+      "errorUnknown": "Unknown error",
+      "popupsBlocked": "{count} tab(s) could not be opened. Browser popup permission may be required.",
+      "createError": "Could not create content",
+      "completeMessage": "Bulk add completed: {success} successful, {error} failed."
+    },
+    "formLayout": {
+      "basic": "📋 Basic Info",
+      "movieInfo": "🎬 Movie Info",
+      "tvInfo": "📺 TV Info",
+      "tvSeasons": "📅 Seasons",
+      "castCrew": "🎭 Cast & Crew",
+      "gameInfo": "🎮 Game Info",
+      "gameExpansions": "🧩 Expansions & Remakes",
+      "bookInfo": "📚 Book Info",
+      "bookPublications": "Book Publications",
+      "allChanges": "All Changes",
+      "screenshots": "📸 Screenshots",
+      "generalScreenshots": "General Screenshots",
+      "seasonScreenshots": "{seasonName} Screenshots",
+      "seasonName": "Season {number}",
+      "soundtrack": "🎵 Soundtrack",
+      "media": "🖼️ Cover & Poster",
+      "videos": "🎥 Videos",
+      "similarContents": "🔗 Similar Content"
+    },
+    "typeSelector": {
+      "title": "📌 Content Type"
+    },
+    "diffAlert": {
+      "title": "Changes in this tab",
+      "revert": "Revert",
+      "changed": "Changed",
+      "added": "Added",
+      "removed": "Removed",
+      "yes": "Yes",
+      "no": "No",
+      "yesToYes": "{old} → {new}",
+      "detailsChanged": "{name} (details changed)",
+      "itemsCountChanged": "{old} → {new} items",
+      "itemsDetailsChanged": "{count, plural, one {1 item} other {{count} items}} (details changed)",
+      "andMore": "+{count} more...",
+      "seasonName": "Season {number}",
+      "seasonAdded": "{name} added ({count} episodes)",
+      "seasonRemoved": "{name} removed",
+      "seasonDetailsChanged": "{name} details changed",
+      "episodeFormat": "Episode {number}",
+      "itemAdded": "{name} added",
+      "itemRemoved": "{name} removed",
+      "itemChanged": "{name} changed",
+      "moreAdded": "{name}: +{count} more episodes added",
+      "moreRemoved": "{name}: -{count} more episodes removed",
+      "moreChanged": "{name}: {count} more episodes changed"
+    }
+  },
+  "Quiz": {
+    "title": "🎯 Screenshot Quiz",
+    "description": "Guess the content from its screenshot, earn points and take your place on the leaderboard!",
+    "types": {
+      "movie": "Movie",
+      "tv": "TV Show",
+      "game": "Game",
+      "book": "Book"
+    },
+    "card": {
+      "secondsPerQuestion": "s / question",
+      "questions": "questions",
+      "comingSoon": "Coming Soon",
+      "startQuiz": "Start Quiz"
+    },
+    "howToPlay": {
+      "title": "How to Play?",
+      "step1": "A screenshot is shown for each question",
+      "step2": "Guess the content by searching its name",
+      "step3": "If you answer incorrectly, the next photo is shown",
+      "step4": "More points if you guess correctly on the first photo!",
+      "step5": "Take your place on the leaderboard!"
+    },
+    "points": {
+      "title": "Point System",
+      "veryEasy": "Very Easy",
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard",
+      "veryHard": "Very Hard"
+    },
+    "leaderboard": {
+      "title": "Leaderboard",
+      "seeAll": "See All",
+      "yourRank": "Your Rank",
+      "correct": "correct",
+      "points": "points",
+      "empty": "No one has played yet",
+      "beFirst": "Be the first!"
+    },
+    "emptyState": "Start by selecting a category!"
+  },
+  "ContentDetail": {
+    "loading": "Loading...",
+    "error": "Error: {error}",
+    "retry": "Try Again",
+    "notFound": "Content not found",
+    "errors": {
+      "seasonWatchFailed": "Failed to watch Season {season}",
+      "episodeWatchFailed": "Failed to watch Episode {episode}",
+      "updateLogFailed": "Failed to update content"
+    },
+    "languages": {
+      "en": "English",
+      "tr": "Turkish"
+    },
+    "runtime": {
+      "hoursMins": "{hours}h {mins}m",
+      "mins": "{mins}m"
+    }
+  },
+  "ContentHeader": {
+    "originalTitle": "Original Title",
+    "ongoing": "Ongoing",
+    "upcoming": "Upcoming",
+    "more": "+ {count} more",
+    "average": "• Average: {time}",
+    "pages": "{count} pages",
+    "seasons": "• {count} seasons",
+    "episodes": "• {count} episodes",
+    "avgMins": "(~{count} mins)",
+    "minsPerEpisode": "• {count} mins/episode",
+    "previewBook": "📖 Preview Book",
+    "tabs": {
+      "cast": "Cast",
+      "details": "Details",
+      "production": "Production & Crew"
+    },
+    "videos": "Videos",
+    "videoTypes": {
+      "trailer": "Trailer",
+      "review": "Review",
+      "gameplay": "Gameplay"
+    },
+    "timeFormats": {
+      "hoursAndMins": "{hours}h {mins}m",
+      "hours": "{hours}h",
+      "mins": "{mins}m"
+    }
+  },
+  "UserContentActions": {
+    "loginRequired": "You must be logged in to {action} this content.",
+    "actions": {
+      "mark": "mark",
+      "favorite": "add to favorites",
+      "list": "add to list",
+      "continuing": "mark as continuing",
+      "abandoned": "mark as abandoned",
+      "notification": "receive notifications",
+      "log": "add log",
+      "rate": "rate",
+      "readFormat": "select reading format"
+    },
+    "titles": {
+      "yourActions": "Your Actions",
+      "quickActions": "Quick Actions",
+      "readingFormat": "Reading Format",
+      "playtime": "Playtime",
+      "yourRating": "Your Rating",
+      "log": "Log"
+    },
+    "buttons": {
+      "read": "Read",
+      "played": "Played",
+      "watched": "Watched",
+      "favorite": "Favorite",
+      "watchLater": "Watch Later",
+      "continuing": "Continuing",
+      "abandoned": "Abandoned",
+      "notifyRelease": "Notify me when released",
+      "sendNotification": "Send notification on release",
+      "recommend": "Recommend",
+      "addToList": "Add to List",
+      "addNewLog": "Add New Log",
+      "viewLogHistory": "View Log History"
+    },
+    "labels": {
+      "totalPlaytime": "Total Playtime",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "with": "With:"
+    },
+    "bookFormats": {
+      "physical": "Physical Book",
+      "ebook": "E-book",
+      "audiobook": "Audiobook"
+    },
+    "errors": {
+      "playtime": "Failed to update playtime",
+      "action": "Action failed",
+      "favorite": "Failed to add favorite",
+      "watchLater": "Failed to add to watch later",
+      "continuing": "Failed to mark as continuing: {error}",
+      "abandoned": "Failed to mark as abandoned: {error}",
+      "notification": "Failed to update release notification",
+      "clearRating": "Failed to clear rating",
+      "rate": "Failed to rate",
+      "readFormat": "Failed to update reading format"
+    }
+  },
+  "ContentDetailTab": {
+    "basicInfo": "Basic Info",
+    "releaseDate": "Release Date:",
+    "firstAirDate": "First Air:",
+    "lastAirDate": "Last Air:",
+    "originalLanguage": "Original Language:",
+    "studio": "🏢 Studio:",
+    "gameModes": "🎮 Game Modes:",
+    "gameEngine": "Game Engine:",
+    "perspective": "👁️ Perspective:",
+    "platforms": "🖥️ Platforms:",
+    "themesWithEmoji": "🎨 Themes:",
+    "publisherBook": "📚 Publisher:",
+    "publisherGame": "🏢 Publisher:",
+    "isbn": "📖 ISBN:",
+    "pageCount": "📄 Page Count:",
+    "firstPublishDate": "📅 First Publish Date:",
+    "editionPublishDate": "📅 Edition Publish Date:",
+    "language": "🌐 Language:",
+    "categories": "📂 Categories:",
+    "series": "📚 Series:",
+    "maturityRating": "⚠️ Maturity Rating:",
+    "genres": "🎬 Genres",
+    "themes": "🎨 Themes",
+    "mood": "😊 Mood",
+    "ageRating": "🔞 Age Rating",
+    "languageTitle": "🌍 Language",
+    "financialInfo": "💰 Financial Info",
+    "budget": "Budget",
+    "revenue": "Revenue",
+    "network": "📺 Network"
+  },
+  "ContentProductionTab": {
+    "title": "Production & Crew",
+    "productionCompany": "Production Company:",
+    "director": "🎬 Director:",
+    "writer": "✍️ Writer:",
+    "creator": "Creator:",
+    "cinematographer": "🎥 Cinematographer:",
+    "composer": "🎵 Composer:",
+    "producer": "🎬 Producer:",
+    "editor": "✂️ Editor:",
+    "otherCrew": "👥 Other Crew:",
+    "showLess": "Show Less",
+    "showMore": "+{count} More",
+    "country": "Country:"
+  },
+  "ContentCastTab": {
+    "voiceActor": "🎙️ Voice Actor",
+    "showLess": "Show Less",
+    "showMore": "+{count} Show More",
+    "noCastInfo": "No cast information found."
+  },
+  "ContentComments": {
+    "loginRequired": "You must log in to perform this action: {action}",
+    "actions": {
+      "comment": "comment",
+      "cancel": "Cancel",
+      "sending": "Sending...",
+      "send": "Send",
+      "addComment": "Add Comment",
+      "delete": "Delete",
+      "edit": "Edit",
+      "report": "Report",
+      "save": "Save"
+    },
+    "sort": {
+      "date": "Date",
+      "votes": "Votes",
+      "rating": "Rating"
+    },
+    "viewDiscussions": "View Discussions",
+    "viewDiscussionsCount": "View Discussions ({count})",
+    "newComment": "New Comment",
+    "placeholder": "Write your comment... (you can tag @users)",
+    "emptyState": {
+      "title": "No comments yet",
+      "description": "Be the first to comment on this content!"
+    },
+    "moreOptions": "More options",
+    "areYouSure": "Are you sure?",
+    "tooltips": {
+      "givenRating": "Given rating",
+      "addedToFavorites": "Added to favorites",
+      "playtime": "Playtime"
+    },
+    "replies": "{count} replies",
+    "reportTarget": "This Comment",
+    "timeFormats": {
+      "hoursAndMins": "{h}h {m}m",
+      "hours": "{h}h",
+      "mins": "{m}m"
+    },
+    "errors": {
+      "create": "An error occurred while posting comment.",
+      "update": "An error occurred while updating comment.",
+      "delete": "An error occurred while deleting comment. Please try again."
+    }
+  },
+  "ContentDiscussions": {
+    "loginRequired": "You must log in to perform this action: {action}",
+    "actions": {
+      "startDiscussion": "start a discussion",
+      "cancel": "Cancel",
+      "sending": "Sending...",
+      "share": "Share",
+      "newDiscussion": "New Discussion"
+    },
+    "sort": {
+      "newest": "Newest",
+      "topRated": "Top Rated"
+    },
+    "viewComments": "View Comments",
+    "viewCommentsCount": "View Comments ({count})",
+    "placeholders": {
+      "title": "Discussion title...",
+      "description": "Discussion description... (you can tag @users)"
+    },
+    "emptyState": {
+      "title": "No discussions yet",
+      "description": "Start the first discussion about this content!"
+    },
+    "commentsCount": "{count} comments"
+  },
+  "AddLogDialog": {
+    "title": "Add New Log",
+    "recordDate": "Record Date",
+    "platform": "Platform",
+    "selectPlatform": "Select Platform",
+    "clearSelection": "Clear Selection",
+    "platformNotFound": "Platform not found",
+    "readingFormat": "Reading Format",
+    "playtime": "Playtime",
+    "hours": "Hours",
+    "minutes": "Minutes",
+    "resetTime": "Reset Time",
+    "review": "Review",
+    "reviewPlaceholder": "What do you think about this content?",
+    "tags": "Tags",
+    "tagsPlaceholder": "IMAX, Cinema, Book Club etc. (Comma separated)",
+    "tagsHelper": "Ex: IMAX, Cinema, Audiobook, Book Club",
+    "withWho": "With Who?",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "errors": {
+      "noChanges": "Please make at least one change (select status, rate or add review)",
+      "saveFailed": "Failed to add log"
+    },
+    "statuses": {
+      "watched": "Watched",
+      "watching": "Watching",
+      "toWatch": "To Watch",
+      "read": "Read",
+      "reading": "Reading",
+      "toRead": "To Read",
+      "played": "Played",
+      "playing": "Playing",
+      "toPlay": "To Play",
+      "completed": "Completed",
+      "continuing": "Continuing",
+      "planned": "Planned",
+      "abandoned": "Abandoned",
+      "favorite": "Favorite",
+      "watchLater": "Watch Later",
+      "noStatus": "No Status Selected"
+    },
+    "rating": {
+      "title": "Your Rating",
+      "unrated": "UNRATED"
+    }
+  },
+  "AddToListModal": {
+    "title": "Add to List",
+    "successRemove": "Content removed from list",
+    "successAdd": "Content added to list",
+    "errorAction": "Action failed",
+    "nameRequired": "List name required",
+    "successCreateAdd": "List '{name}' created and content added",
+    "warnCreateNoAdd": "List created but content could not be added",
+    "errorCreate": "List could not be created",
+    "createNewList": "Create New List",
+    "listNamePlaceholder": "List name...",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "createAndAdd": "Create and Add",
+    "existingLists": "Existing Lists",
+    "inList": "(In List)",
+    "itemsCount": "{count} items",
+    "noListsForType": "You don't have any list for this content type yet. You can create a new list above."
+  },
+  "LogHistoryModal": {
+    "title": "Log History",
+    "totalPlaytime": "Total Playtime: {time}",
+    "loading": "Loading logs...",
+    "empty": "No logs found yet.",
+    "statuses": {
+      "read": "Read",
+      "played": "Played",
+      "watched": "Watched",
+      "continuing": "Continuing",
+      "abandoned": "Abandoned",
+      "favorite": "Favorite",
+      "watchLaterBook": "Read Later",
+      "watchLaterGame": "Play Later",
+      "watchLater": "Watch Later"
+    },
+    "rating": "Rating",
+    "review": "Review",
+    "with": "With",
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirmDeleteTitle": "Delete Log",
+      "confirmDeleteDesc": "Are you sure you want to delete this log? This action cannot be undone.",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "updateFailed": "Failed to update log: {error}",
+      "deleteFailed": "An error occurred while deleting log."
+    },
+    "success": {
+      "updated": "Log successfully updated",
+      "deleted": "Log successfully deleted"
+    }
+  },
+  "ContentStats": {
+    "labels": {
+      "read": "Read",
+      "played": "Played",
+      "watched": "Watched",
+      "favorite": "Favorite",
+      "toRead": "To Read",
+      "toPlay": "To Play",
+      "toWatch": "To Watch",
+      "review": "Review"
+    },
+    "tooltips": {
+      "ratingCount": "{rating} rating: {count} people"
+    },
+    "dialog": {
+      "title": "People who gave {rating}/10",
+      "sortDesc": "Newest to Oldest",
+      "sortAsc": "Oldest to Newest",
+      "new": "New",
+      "old": "Old",
+      "noUsers": "No user found who gave this rating",
+      "average": "avg.",
+      "points": "{count} points"
+    }
+  },
+  "AdminActions": {
+    "title": "Admin Actions",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "confirmDelete": "Are you sure you want to delete this content? This action cannot be undone.",
+    "deleteSuccess": "Content successfully deleted",
+    "deleteError": "Failed to delete content"
+  },
+  "ContentSimilar": {
+    "title": "Similar Content",
+    "titleCount": "Similar Content ({count})",
+    "showAll": "Show All ({count})",
+    "hideAll": "Hide"
+  },
+  "ContentScreenshots": {
+    "spoilerContent": "Spoiler Content",
+    "imageAlt": "Screenshot {index}",
+    "sensitiveContent": "Sensitive",
+    "title": "Screenshots",
+    "all": "All",
+    "sensitive": "Sensitive",
+    "collapse": "Collapse",
+    "showMore": "All ({count} more)",
+    "close": "Close (Esc)",
+    "prev": "Previous (←)",
+    "next": "Next (→)",
+    "hint": "← → navigate • E sensitive/S spoiler toggle • Esc close"
+  },
+  "ContentFriendsActivity": {
+    "title": "Friends on this Content",
+    "friendCount": "{count} friends",
+    "status": {
+      "consumed": "Watched",
+      "favorite": "Favorite",
+      "continuing": "Continuing",
+      "abandoned": "Abandoned"
+    }
+  },
+  "ContentFranchise": {
+    "markedWatched": "Content marked as watched",
+    "unmarkedWatched": "Content unmarked as watched",
+    "otherContent": "Other Content in the Series",
+    "otherContentFranchise": "{franchiseName} ({count})"
+  },
+  "ContentTvSeasons": {
+    "title": "Seasons",
+    "subtitle": "A simpler view for season flow and episode tracking.",
+    "stats": {
+      "total": "Total",
+      "episode": "Episode",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "overallProgress": "Overall Progress",
+      "seasonsCount": "{count} seasons",
+      "watchedCount": "{count} watched",
+      "episodesCount": "{count} episodes"
+    },
+    "season": {
+      "noCover": "No Cover",
+      "specials": "Specials",
+      "upcoming": "Upcoming",
+      "completed": "Completed",
+      "inProgress": "In progress",
+      "peopleWatched": "{count} people watched",
+      "progress": "Season progress",
+      "markWatched": "Complete season",
+      "watched": "✓ Season watched"
+    },
+    "episode": {
+      "upcoming": "Upcoming",
+      "watched": "Watched",
+      "clearRating": "Clear rating",
+      "noDate": "No date",
+      "runtime": "{minutes} min"
+    }
+  },
+  "ProfilePage": {
+    "loginRequired": "Log in to view the profile page",
+    "login": "Log In",
+    "userNotFound": "User not found",
+    "userNotFoundDesc": "A profile with the username \"{username}\" could not be found.",
+    "backToExplore": "Back to Explore",
+    "loginToViewProfiles": "Log in to view profiles",
+    "profileNotFound": "Profile Not Found",
+    "profileNotFoundDesc": "The user profile you are looking for does not exist.",
+    "backToHome": "Back to Home Page"
+  },
+  "ProfileTabs": {
+    "Home": "Home",
+    "Movies": "Movies",
+    "TV": "TV",
+    "Games": "Games",
+    "Books": "Books",
+    "Stats": "Stats",
+    "Lists": "Lists",
+    "Reviews": "Reviews",
+    "Discussions": "Discussions",
+    "Network": "Network",
+    "Activity": "Activity",
+    "Interactions": "Interactions",
+    "Contributions": "Contributions"
+  },
+  "ProfileHeader": {
+    "defaultUser": "User",
+    "coverPhoto": "Cover photo",
+    "changeCover": "Change Cover",
+    "addCover": "Add Cover",
+    "loading": "Loading...",
+    "followers": "Followers",
+    "following": "Following",
+    "contributionScore": "Contribution Score Details",
+    "unfollow": "Unfollow",
+    "follow": "Follow",
+    "changeAvatar": "Change Profile Picture",
+    "editProfile": "Edit Profile",
+    "editFeatured": "Edit Featured",
+    "deleteAccount": "Delete Account",
+    "deleteConfirmTitle": "Delete Account",
+    "deleteConfirmDesc": "Are you sure you want to delete your account? This action cannot be undone.",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "yesDelete": "Yes, Delete",
+    "content": {
+      "movie": "Movie",
+      "tv": "TV",
+      "game": "Game",
+      "book": "Book"
+    },
+    "errors": {
+      "deleteError": "An error occurred while deleting the account.",
+      "unexpected": "An unexpected error occurred.",
+      "avatarUpload": "Could not upload profile picture. Please try again.",
+      "avatarUploadUnexpected": "An unexpected error occurred while uploading profile picture.",
+      "coverUpload": "Could not upload cover photo. Please try again.",
+      "coverUploadUnexpected": "An unexpected error occurred while uploading cover photo."
+    }
+  },
+  "ProfileActivity": {
+    "empty": "No activity yet.",
+    "deleteConfirm": "Are you sure you want to delete this log?",
+    "deleteError": "Deletion failed: {error}",
+    "unexpectedError": "An error occurred.",
+    "edit": "Edit",
+    "delete": "Delete",
+    "personFavorite": "Added a person to favorites",
+    "badges": {
+      "watched": "Watched",
+      "read": "Read",
+      "played": "Played",
+      "favorited": "Favorited",
+      "continuing": "Continuing",
+      "watchlist": "Watchlist"
+    }
+  },
+  "ProfileContentTab": {
+    "toast": {
+      "statusAdded": "Content status updated",
+      "statusRemoved": "Content status removed",
+      "statusError": "Error updating content status",
+      "favoriteAdded": "Content added to favorites",
+      "favoriteRemoved": "Content removed from favorites",
+      "favoriteError": "Error updating favorite status",
+      "watchlistAdded": "Content added to watchlist",
+      "watchlistRemoved": "Content removed from watchlist",
+      "watchlistError": "Error updating watchlist status",
+      "continuingAdded": "Content marked as continuing",
+      "continuingRemoved": "Content unmarked as continuing",
+      "continuingError": "Error updating continuing status"
+    },
+    "pagination": {
+      "showing": "Showing {count} / {total} items",
+      "page": " • Page {current}/{pages}"
+    }
+  },
+  "ProfileContributionsTab": {
+    "error": "An error occurred while loading contributions.",
+    "emptyTitle": "No Contributions Yet",
+    "emptyDesc": "This user hasn't made any contributions to the content in the system yet.",
+    "history": "Contribution History",
+    "totalPoints": "Total Points Earned: {points}",
+    "unknownContent": "Unknown Content",
+    "points": "+{points} Points",
+    "types": {
+      "newContent": "Adding New Content",
+      "editContent": "Editing Content",
+      "contribution": "Contribution"
+    }
+  },
+  "ProfileDiscussionsTab": {
+    "errorLoading": "Error loading discussions",
+    "emptyTitle": "No discussions started yet.",
+    "emptyDesc": "You can start a new discussion from content pages or the discussions page.",
+    "errorUpdating": "An error occurred while updating the discussion.",
+    "errorDeleting": "An error occurred while deleting the discussion. Please try again.",
+    "stats": "discussions",
+    "more": "More",
+    "areYouSure": "Are you sure?",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "report": "Report",
+    "generalDiscussion": "General Discussion",
+    "titlePlaceholder": "Title (Optional)",
+    "save": "Save",
+    "thisDiscussion": "This Discussion",
+    "contentTypes": {
+      "movie": "Movie",
+      "tv": "TV",
+      "game": "Game",
+      "book": "Book",
+      "general": "General"
+    }
+  },
+  "ProfileEditDialog": {
+    "title": "Edit Profile",
+    "username": "Username",
+    "usernamePlaceholder": "Username",
+    "bio": "Bio",
+    "bioPlaceholder": "Write a short description about yourself...",
+    "characters": "{length}/300 characters",
+    "location": "Location",
+    "locationPlaceholder": "E.g. Istanbul, Turkey",
+    "website": "Website / Social Media",
+    "websiteHelper": "You can add your personal website, Instagram, Twitter etc. links",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "errors": {
+      "usernameLength": "Username must be at least 3 characters long",
+      "updateError": "An error occurred while updating profile",
+      "unexpected": "An unexpected error occurred"
+    }
+  },
+  "ProfileHomeTab": {
+    "movie": {
+      "title": "Movie Activity",
+      "empty": "No movie activity yet.",
+      "explore": "Start exploring"
+    },
+    "game": {
+      "title": "Game Activity",
+      "empty": "No game activity yet.",
+      "explore": "Explore games"
+    },
+    "tv": {
+      "title": "TV Activity",
+      "empty": "No TV activity yet.",
+      "explore": "Explore TV shows"
+    },
+    "book": {
+      "title": "Book Activity",
+      "empty": "No book activity yet.",
+      "explore": "Explore books"
+    }
+  },
+  "ProfileListsTab": {
+    "contentTypes": {
+      "movie": "Movie",
+      "tv": "TV",
+      "game": "Game",
+      "book": "Book",
+      "general": "Content"
+    },
+    "errors": {
+      "nameRequired": "List name is required",
+      "createError": "Error creating list"
+    },
+    "createModal": {
+      "title": "Create New List",
+      "nameLabel": "List Name",
+      "namePlaceholder": "My Favorite Movies",
+      "descLabel": "Description",
+      "descPlaceholder": "A short description about this list...",
+      "typeLabel": "Content Type",
+      "public": "Public list",
+      "ordered": "Ordered list (Numbered)",
+      "cancel": "Cancel",
+      "creating": "Creating...",
+      "create": "Create"
+    },
+    "loading": "Loading lists...",
+    "title": "Lists",
+    "tabs": {
+      "myLists": "My Lists",
+      "savedLists": "Saved Lists"
+    },
+    "newList": "New List",
+    "empty": {
+      "saved": "You haven't saved any lists yet.",
+      "created": "You haven't created any lists yet.",
+      "otherUser": "This user doesn't have any lists yet.",
+      "helper": "Create your first list to organize your content."
+    },
+    "createFirstList": "Create First List"
+  },
+  "ProfileNetworkTab": {
+    "followers": "Followers ({count})",
+    "following": "Following ({count})",
+    "noFollowers": "No followers yet.",
+    "noFollowing": "Not following anyone yet."
+  },
+  "ProfileListCard": {
+    "contentTypes": {
+      "movie": "Movie",
+      "tv": "TV",
+      "game": "Game",
+      "book": "Book",
+      "general": "Content"
+    },
+    "time": {
+      "now": "Just now",
+      "minutes": "{count}m ago",
+      "hours": "{count}h ago",
+      "days": "{count}d ago",
+      "weeks": "{count}w ago"
+    },
+    "extraUsers": "+{count} people",
+    "empty": "No content yet",
+    "emptyDesc": "First posters will appear here.",
+    "deleteConfirm": "Are you sure you want to delete this list?",
+    "unsave": "Unsave",
+    "save": "Save",
+    "deleteList": "Delete List",
+    "items": "items",
+    "noDesc": "No description provided for this list.",
+    "visibility": {
+      "public": "Public",
+      "private": "Private"
+    },
+    "order": {
+      "ordered": "Ordered",
+      "unordered": "Unordered"
+    },
+    "contributors": "Contributors"
+  },
+  "ProfileStatsTab": {
+    "title": "Statistics",
+    "description": "Highly detailed summaries and charts generated from your watch/read/play history.",
+    "timeRange": "Time Range",
+    "ranges": {
+      "24h": "24 hours",
+      "week": "This week",
+      "month": "This month",
+      "6m": "Last 6 months",
+      "year": "This year",
+      "all": "All time"
+    },
+    "empty": {
+      "title": "No data yet",
+      "description": "You need to log at least one content to see the statistics."
+    },
+    "skeletons": {
+      "time": "⏱️ Time Summary",
+      "rating": "⚖️ Rating Analysis",
+      "directorActor": "🎬 Director & Actor",
+      "game": "🎮 Game Statistics",
+      "themeMood": "🎭 Theme & Mood",
+      "franchise": "🎬 Franchises",
+      "ageRating": "🔞 Age Rating",
+      "abandoned": "🚪 Abandoned",
+      "reviews": "✍️ Reviews",
+      "compatibility": "Compatibility",
+      "loading": "{title} loading…"
+    },
+    "cards": {
+      "interacted": "Interacted",
+      "actualConsumed": "Actual consumed: {count}",
+      "totalFavorites": "Total Favorites",
+      "allContentTypes": "All content types",
+      "avgRating": "Average Rating",
+      "rated": "Rated: {count}",
+      "streak": "Streak",
+      "days": "{count} days",
+      "best": "Best: {count} days"
+    },
+    "errors": {
+      "deepLoad": "⚠️ Deep statistics failed to load: {error}"
+    },
+    "debug": "Debug: client computation + server deep stats active. Details in console.",
+    "filters": {
+      "all": "All",
+      "movies": "🎬 Movies",
+      "tv": "📺 TV Shows",
+      "games": "🎮 Games",
+      "books": "📚 Books"
+    }
+  },
+  "AdminPage": {
+    "title": "Admin Panel",
+    "description": "Manage system settings and contents",
+    "accessDenied": "Access Denied",
+    "accessDeniedDesc": "You do not have permission to view this page.",
+    "links": {
+      "requests": {
+        "title": "Content Requests",
+        "desc": "Approve or reject pending requests"
+      },
+      "content": {
+        "title": "Content Management",
+        "desc": "Edit or delete content information"
+      },
+      "users": {
+        "title": "Users",
+        "desc": "Update roles or delete users"
+      },
+      "moderation": {
+        "title": "Moderation",
+        "desc": "Manage comments and replies"
+      },
+      "expansions": {
+        "title": "Expansions & DLC",
+        "desc": "Manage DLCs and expansions"
+      },
+      "quiz": {
+        "title": "Quiz Management",
+        "desc": "Manage screenshot quizzes"
+      },
+      "debugLogs": {
+        "title": "Debug Logs",
+        "desc": "API and database logs"
+      },
+      "categories": {
+        "title": "Categories",
+        "desc": "Genres, people, countries"
+      }
+    },
+    "dangerous": {
+      "title": "Dangerous Operations",
+      "desc": "These actions cannot be undone!",
+      "backupRestore": "Backup & Restore",
+      "backup": "Backup Database",
+      "backupDesc": "Download entire database as native .dump",
+      "restore": "Restore from Backup",
+      "restoreDesc": "Restore database natively from .dump backup file",
+      "deletion": "Deletion Operations",
+      "resetData": "Reset All Data",
+      "resetDataDesc": "Contents will be deleted, users will be preserved",
+      "deleteUsers": "Delete All Users",
+      "deleteUsersDesc": "Only you will be preserved"
+    },
+    "theme": {
+      "title": "Global Theme Settings",
+      "desc": "Change the site's overall appearance for everyone.",
+      "default": "Default (Blue/Purple)",
+      "red": "Red",
+      "green": "Green"
+    },
+    "stats": {
+      "title": "General Statistics",
+      "reset": "Reset",
+      "apiRequests": "API Requests"
+    },
+    "logs": {
+      "title": "Recent Logs",
+      "text": "Text",
+      "json": "JSON"
+    },
+    "alerts": {
+      "themeSuccess": "✅ Theme updated successfully!",
+      "themeError": "❌ Error updating theme: ",
+      "resetWarning": "WARNING!\\n\\nAll data will be deleted. Continue?",
+      "finalWarning": "FINAL WARNING!\\n\\nReally continue?",
+      "error": "❌ Error: ",
+      "dataReset": "✅ Data reset!",
+      "usersWarning": "WARNING! All users will be deleted. Continue?",
+      "usersDeleted": "✅ Users deleted!",
+      "tokenMissing": "Session key not found.",
+      "backupFailed": "❌ Backup failed: ",
+      "restoreWarning": "WARNING!\\n\\nCurrent database will be cleared and restored from backup.\\nDo you want to continue?",
+      "restoreFinalWarning": "FINAL WARNING!\\n\\nThis action cannot be undone. Really continue?",
+      "restoreSuccess": "✅ Database restored successfully!",
+      "restoreFailed": "❌ Restore failed: "
+    }
+  },
+  "AdminCategoriesPage": {
+    "title": "Categories Management",
+    "accessDenied": "Access Denied",
+    "accessDeniedDesc": "You do not have permission to view this page.",
+    "tabs": {
+      "genres": "Genres",
+      "persons": "Persons",
+      "languages": "Languages",
+      "gameModes": "Game Modes",
+      "gameEngines": "Game Engines",
+      "perspectives": "Perspectives",
+      "platforms": "Platforms",
+      "themes": "Themes",
+      "moods": "Moods",
+      "ageRatings": "Age Ratings",
+      "personRoles": "Person Roles",
+      "companyRoles": "Company Roles",
+      "series": "Series",
+      "companies": "Companies"
+    },
+    "contentTypes": {
+      "1": "🎬 Movie/TV",
+      "3": "🎮 Game",
+      "4": "📚 Book"
+    },
+    "form": {
+      "edit": "✏️ Edit",
+      "addNew": "➕ Add New",
+      "label": "Label",
+      "name": "Name",
+      "phRole": "e.g., Director, Actor...",
+      "phName": "Enter name",
+      "contentType": "Content Type (Optional)",
+      "allTypes": "All Types",
+      "movieTv": "Movie/TV",
+      "game": "Game",
+      "book": "Book",
+      "biography": "Biography",
+      "phBiography": "Enter biography",
+      "birthDate": "Birth Date",
+      "deathDate": "Death Date",
+      "gender": "Gender",
+      "select": "Select",
+      "male": "Male",
+      "female": "Female",
+      "other": "Other",
+      "unknown": "Unknown",
+      "placeOfBirth": "Place of Birth",
+      "cityCountry": "City, Country",
+      "profilePhoto": "Profile Photo",
+      "description": "Description",
+      "phDescription": "Enter description",
+      "headquarters": "Headquarters (City, Country)",
+      "foundingYear": "Founding Year",
+      "phYear": "e.g. 1990",
+      "website": "Website",
+      "companyLogo": "Company Logo",
+      "companyRoles": "🏷️ Company Roles",
+      "companyRolesDesc": "Select the roles this company assumes",
+      "saving": "⏳ Saving...",
+      "updateBtn": "✅ Update",
+      "addBtn": "➕ Add",
+      "cancelBtn": "Cancel"
+    },
+    "list": {
+      "searchPh": "Search in {tabLabel}...",
+      "sortName": "By Name",
+      "sortCount": "By Content Count",
+      "all": "All ({count})",
+      "loadingMsg": "⏳ Loading...",
+      "noResults": "No results found matching your search",
+      "noRecords": "No records yet",
+      "usedInTitle": "Used in {count} content",
+      "contentCount": "{count} content",
+      "roleFallback": "Role #{id}",
+      "contentTypeId": "Content Type ID: {id}",
+      "edit": "Edit",
+      "delete": "Delete",
+      "loading": "Loading...",
+      "loadMore": "Load more..."
+    }
+  },
+  "AdminUsersPage": {
+    "roleUpdateFailed": "Role could not be updated",
+    "userDeleteFailed": "User could not be deleted",
+    "accessDenied": "Access Denied",
+    "accessDeniedDesc": "You do not have permission to view this page.",
+    "title": "User Management",
+    "stats": "{count} users · {admin} admin · {mod} moderator",
+    "backToAdmin": "← Admin Panel",
+    "searchPh": "Search by username or email...",
+    "searchBtn": "Search",
+    "noResults": "No user found matching your search.",
+    "noUsers": "No users yet.",
+    "deleteTitle": "Permanently Delete User",
+    "deleteWarning": "This action cannot be undone. {username} account and related data will be completely deleted.",
+    "deleteDataLabel": "Data to be deleted:",
+    "deleteData1": "Ratings, favorites, logs and watch/play records",
+    "deleteData2": "Comments, reviews, discussions and related replies",
+    "deleteData3": "Lists, list votes, saved lists and collaborations",
+    "deleteData4": "Follows, notifications, reports and request records",
+    "deleteConfirmLabel": "To confirm, type the username exactly: ",
+    "cancelBtn": "Cancel",
+    "deletingBtn": "Deleting...",
+    "deleteBtn": "Permanently Delete",
+    "deleteUserTitle": "Delete user"
+  },
+  "AdminContentRequestsPage": {
+    "rejectFailed": "Rejection failed",
+    "operationFailed": "Operation failed",
+    "types": {
+      "movie": "Movie",
+      "tv": "TV Series",
+      "game": "Game",
+      "book": "Book",
+      "unknown": "Unknown"
+    },
+    "accessDenied": "You do not have permission to access this page.",
+    "returnHome": "Return to home page",
+    "title": "Pending Requests",
+    "desc": "Content additions, edits, and reports",
+    "backToAdmin": "← Admin Panel",
+    "tabs": {
+      "newContent": "New Content ({count})",
+      "edits": "Edits ({count})",
+      "reports": "Content Reports ({count})"
+    },
+    "newContent": {
+      "empty": "No pending new content requests.",
+      "userNote": "💬 User note: {note}",
+      "review": "Review",
+      "reject": "Reject",
+      "rejectReasonPh": "Reason for rejection (optional)",
+      "cancel": "Cancel",
+      "confirmReject": "Confirm Rejection"
+    },
+    "edits": {
+      "empty": "No pending edit requests.",
+      "unknownContent": "Unknown Content",
+      "editBadge": "Edit",
+      "reviewApply": "Review and Apply",
+      "reject": "Reject",
+      "rejectReasonPh": "Reason for rejection (optional)",
+      "cancel": "Cancel",
+      "confirmReject": "Confirm Rejection"
+    },
+    "reports": {
+      "empty": "No pending content reports.",
+      "reported": "Reported:",
+      "unknownContent": "Unknown Content",
+      "reportedBy": "Reported by: ",
+      "approve": "Approve",
+      "reject": "Reject",
+      "goToContent": "Go to Content",
+      "rejectReasonPh": "Reason for rejection (optional)",
+      "cancel": "Cancel",
+      "confirmReject": "Confirm Rejection",
+      "approveMessagePh": "Message to user (optional)",
+      "confirmApprove": "Approve Report"
+    }
+  },
+  "AdminContentPage": {
+    "missingContentTypeId": "contentTypeId not found. Try opening the content again.",
+    "updateFailed": "Update failed",
+    "deleteConfirm": "Are you sure you want to delete this content?",
+    "loading": "Loading...",
+    "accessDenied": "Access Denied",
+    "accessDeniedDesc": "You do not have permission to view this page.",
+    "title": "Content Management",
+    "contentCount": "{count} contents registered",
+    "noContent": "No content added yet",
+    "backToAdmin": "← Admin Panel",
+    "resultsCount": "Showing {count} results",
+    "searchEmpty": "Content not found",
+    "searchEmptyDesc": "Try changing your search criteria.",
+    "historyTitle": "Edit History",
+    "close": "Close",
+    "noAuditRecord": "No audit record for this content yet.",
+    "fieldsCount": "{count} fields",
+    "detailJson": "Detail JSON",
+    "searchPh": "Search content (title)",
+    "searchBtn": "Search",
+    "types": {
+      "all": "All",
+      "movie": "Movie",
+      "tv": "TV Series",
+      "game": "Game",
+      "book": "Book",
+      "unknown": "Unknown"
+    },
+    "labels": {
+      "releaseDate": "Release Date",
+      "firstAir": "First Air",
+      "lastAir": "Last Air",
+      "added": "Added",
+      "runtime": "Runtime",
+      "avgRuntime": "Avg. Runtime",
+      "pages": "Pages",
+      "genres": "Genres",
+      "themes": "Themes",
+      "mood": "Mood",
+      "director": "Director",
+      "crew": "Crew",
+      "writer": "Writer",
+      "budget": "Budget",
+      "revenue": "Revenue",
+      "status": "Status",
+      "inProduction": "In Production",
+      "ageRating": "Age Rating",
+      "seasons": "Seasons",
+      "episodes": "Episodes",
+      "tvType": "TV Type",
+      "platforms": "Platforms",
+      "gameModes": "Game Modes",
+      "gameEngines": "Game Engines",
+      "perspective": "Perspective",
+      "companies": "Companies",
+      "franchise": "Franchise",
+      "tagline": "Tagline",
+      "trailer": "Trailer",
+      "review": "Review",
+      "gameplay": "Gameplay",
+      "languages": "Languages",
+      "isbn": "ISBN",
+      "cast": "Cast"
+    },
+    "yes": "Yes",
+    "no": "No",
+    "actions": {
+      "edit": "✨ Edit",
+      "history": "History",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "form": {
+      "title": "Title",
+      "desc": "Description",
+      "releaseDate": "Release Date",
+      "runtime": "Runtime (min)"
+    }
+  },
+  "AdminModerationPage": {
+    "date": {
+      "now": "Just now",
+      "hoursAgo": "{hours} hours ago",
+      "daysAgo": "{days} days ago"
+    },
+    "deleteConfirm": "Are you sure you want to delete this comment?",
+    "deleteFailed": "Failed to delete",
+    "dismissConfirm": "Are you sure you want to dismiss the reports for this comment?",
+    "dismissFailed": "Failed to dismiss reports",
+    "reports": "Reports",
+    "hide": "Hide",
+    "details": "Details",
+    "comment": "Comment",
+    "reply": "Reply",
+    "dismissReport": "Dismiss Report",
+    "delete": "Delete",
+    "accessDenied": "You do not have permission.",
+    "title": "Moderation",
+    "reportedCount": "{count} reported",
+    "showingCount": "Showing {count}",
+    "tabs": {
+      "all": "All",
+      "reported": "Reported ({count})",
+      "comments": "Comments",
+      "replies": "Replies"
+    },
+    "emptyReported": "No reported comments.",
+    "emptyComments": "No comments yet."
+  },
+  "AdminExpansionsPage": {
+    "accessDenied": "Access Denied",
+    "accessDeniedDesc": "You do not have permission to view this page.",
+    "title": "Expansions & DLC Management",
+    "editTitle": "✏️ Edit Expansion",
+    "newTitle": "➕ New Expansion",
+    "form": {
+      "content": "Content *",
+      "searchContent": "Search content...",
+      "searching": "Searching...",
+      "name": "Name *",
+      "namePh": "DLC / Expansion name",
+      "type": "Type",
+      "releaseDate": "Release Date",
+      "poster": "Poster Image",
+      "desc": "Description",
+      "descPh": "Expansion description..."
+    },
+    "actions": {
+      "saving": "Saving...",
+      "save": "Save",
+      "cancel": "Cancel",
+      "creating": "Creating...",
+      "create": "Create",
+      "search": "Search",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "list": {
+      "searchPh": "Search by name...",
+      "allTypes": "All Types",
+      "loading": "Loading...",
+      "count": "{count} expansions listed",
+      "empty": "No results found",
+      "users": "users"
+    },
+    "messages": {
+      "loadFailed": "Load failed",
+      "validation": "Content and name are required",
+      "posterFailed": "Failed to upload poster: {error}",
+      "createFailed": "Create failed",
+      "createSuccess": "Expansion created",
+      "updateFailed": "Update failed",
+      "updateSuccess": "Expansion updated",
+      "deleteConfirm": "Are you sure you want to delete this expansion?",
+      "deleteFailed": "Delete failed",
+      "deleteSuccess": "Expansion deleted"
+    }
+  },
+  "AdminQuizPage": {
+    "accessDenied": "Access Denied",
+    "accessDeniedDesc": "Admin privileges are required to access this page.",
+    "title": "Quiz Management",
+    "desc": "Manage screenshot quizzes",
+    "tabs": {
+      "settings": "Settings",
+      "content": "Contents ({enabledContentCount} contents, {enabledCount} photos)"
+    },
+    "contentTypes": {
+      "movie": "Movie",
+      "tv": "TV Series",
+      "game": "Game",
+      "book": "Book"
+    },
+    "difficulty": {
+      "veryEasy": "Very Easy",
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard",
+      "veryHard": "Very Hard",
+      "ve": "VE",
+      "e": "Easy",
+      "m": "Med",
+      "h": "Hard",
+      "vh": "VH"
+    },
+    "settingsTab": {
+      "statusTitle": "Quiz Status",
+      "statusDesc": "Enable/disable quiz for this content type",
+      "pointsTitle": "Points System",
+      "saving": "Saving...",
+      "save": "Save Settings"
+    },
+    "contentTab": {
+      "title": "Content Quiz Management",
+      "desc": "Contents with at least 1 active screenshot in each difficulty level are automatically included in the quiz.",
+      "searchPh": "Search content name...",
+      "filters": {
+        "all": "All",
+        "quiz": "In Quiz",
+        "hasImg": "Has Image",
+        "noImg": "No Image"
+      },
+      "loading": "Loading...",
+      "empty": "No results found",
+      "noCover": "No Cover",
+      "images": "{totalSS} images",
+      "activeInQuiz": "Active in quiz ({count} active images)",
+      "passiveInQuiz": "{count} active images — passive until all levels are covered",
+      "screenshots": "Screenshots",
+      "screenshotsCount": "{length} screenshots - {activeLength} active",
+      "missingLevels": "Missing levels",
+      "editContent": "Edit Content →",
+      "noScreenshots": "No screenshots for this content",
+      "addScreenshot": "Add Screenshot",
+      "difficultyLabel": "Difficulty: {label}",
+      "deleteConfirm": "Are you sure you want to delete this screenshot?"
+    }
+  },
+  "AdminDebugLogsPage": {
+    "title": "Debug Logs",
+    "accessDenied": "You do not have permission to view this page.",
+    "apiRequests": "API Requests (TMDB, IGDB, Books)",
+    "recentLogs": "Recent Logs",
+    "noLogs": "No logs yet",
+    "error": "Error: {message}",
+    "success": "Success",
+    "failed": "Failed"
+  },
+  "RecommendDialog": {
+    "title": "Recommend",
+    "desc": "Select from people you follow to recommend {title}.",
+    "searchPh": "Search users...",
+    "empty": "You are not following anyone (or search result is empty).",
+    "cancel": "Cancel",
+    "recommend": "Recommend",
+    "recommending": "Recommending...",
+    "selected": "Selected: {count}",
+    "toast": {
+      "loadFailed": "Failed to load follow list",
+      "selectAtLeastOne": "Select at least 1 person",
+      "recommendFailed": "Failed to send recommendation",
+      "recommendSuccess": "Recommended to {count} people"
+    }
+  },
+  "Explore_2": {
+    "title": {
+      "movie": "Explore Movies",
+      "tv": "Explore TV Shows",
+      "game": "Explore Games",
+      "book": "Explore Books"
+    },
+    "results": "{count} results",
+    "invalidType": "Invalid content type",
+    "invalidTypeDesc": "Please select a valid content type: movie, tv, game, book",
+    "lengthSort": {
+      "page": "Pages",
+      "runtime": "Runtime"
+    },
+    "FilterSidebar": {
+      "other": "Other",
+      "labels": {
+        "genre": "Genre",
+        "theme": "Theme",
+        "mood": "Mood",
+        "ageRating": "Age Rating",
+        "platform": "Platform",
+        "actor": "Actor",
+        "director": "Director",
+        "company": "Company",
+        "gameMode": "Game Mode",
+        "perspective": "Perspective",
+        "originalLanguage": "Original Language",
+        "language": "Language",
+        "publicationLanguage": "Publication Language",
+        "rating": "Rating",
+        "year": "Year"
+      },
+      "duration": {
+        "avgGame": "Average duration (min)",
+        "pages": "Page count",
+        "avgEpisode": "Average episode duration (min)",
+        "runtime": "Runtime (min)",
+        "avgGameChip": "Avg Duration",
+        "pagesChip": "Pages",
+        "avgEpisodeChip": "Avg Episode",
+        "runtimeChip": "Runtime",
+        "unitMin": "min",
+        "unitPage": "pages",
+        "noLimit": "no limit"
+      },
+      "title": "Filters",
+      "activeFilters": "active filters",
+      "clearAll": "Clear All",
+      "pin": "Pin Sidebar",
+      "unpin": "Unpin Sidebar",
+      "removeFilter": "Remove filter",
+      "loading": "Loading...",
+      "placeholders": {
+        "originalLanguage": "Search original language...",
+        "language": "Search language...",
+        "publicationLanguage": "Search publication language..."
+      },
+      "otherLabels": {
+        "noOriginalLanguage": "Other (No Original Language)",
+        "noLanguage": "Other (No Language)",
+        "noPublicationLanguage": "Other (No Publication Language)"
+      }
+    },
+    "SortingBar": {
+      "options": {
+        "custom": "Custom Order",
+        "popularity": "Popularity",
+        "rating": "Rating",
+        "title": "Title",
+        "releaseDate": "Release Date",
+        "userDate": "Date Added",
+        "createdAt": "System Date Added"
+      },
+      "tooltip": "{label} - Descending → Ascending → Off"
+    },
+    "HideToggles": {
+      "watched": {
+        "show": "Show Only Watched",
+        "hide": "Show Only Unwatched",
+        "passive": "Watch Status (Off)"
+      },
+      "watchlist": {
+        "show": "Show Only Watchlist",
+        "hide": "Show Excl. Watchlist",
+        "passive": "Watchlist Status (Off)"
+      },
+      "continuing": {
+        "show": "Show Only Continuing",
+        "hide": "Show Excl. Continuing",
+        "passive": "Continuing Status (Off)"
+      },
+      "favorites": {
+        "show": "Show Only Favorites",
+        "hide": "Show Excl. Favorites",
+        "passive": "Favorite Status (Off)"
+      },
+      "abandoned": {
+        "show": "Show Only Abandoned",
+        "hide": "Show Excl. Abandoned",
+        "passive": "Abandoned Status (Off)"
+      }
+    },
+    "ContentGrid": {
+      "notFound": "No content found",
+      "notFoundDesc": "Try different search terms or change filters.",
+      "requestContent": "➕ Request Content",
+      "addContent": "📝 Add Content"
+    },
+    "Person": {
+      "title": "Explore People",
+      "results": "results",
+      "searchPlaceholder": "Search actors, directors, writers...",
+      "activeFilters": "Active Filters:",
+      "clearAll": "Clear All",
+      "notFound": "No Results Found",
+      "notFoundDesc": "No person found matching your search criteria. Please change filters or search term.",
+      "filters": {
+        "gender": "Gender",
+        "status": "Status",
+        "birthYear": "Birth",
+        "roles": "Profession",
+        "genders": {
+          "Male": "Male",
+          "Female": "Female",
+          "Other": "Other"
+        },
+        "statuses": {
+          "alive": "Alive",
+          "deceased": "Deceased"
+        },
+        "roleLabels": {
+          "actor": "Actor",
+          "director": "Director",
+          "writer": "Writer / Screenwriter",
+          "producer": "Producer",
+          "crew": "Crew"
+        }
+      },
+      "sorting": {
+        "name": "Name",
+        "roleCount": "Number of Productions"
+      },
+      "sidebar": {
+        "title": "Filters",
+        "all": "All",
+        "birthYearRange": "Birth Year Range",
+        "minYear": "Min Year",
+        "maxYear": "Max Year",
+        "roles": "Profession / Role"
+      }
+    },
+    "Company": {
+      "title": "Explore Companies",
+      "results": "results",
+      "searchPlaceholder": "Search production company, studio...",
+      "activeFilters": "Active Filters:",
+      "clearAll": "Clear All",
+      "notFound": "No Results Found",
+      "notFoundDesc": "No company found matching your search criteria. Please change filters or search term.",
+      "filters": {
+        "foundingYear": "Founding",
+        "contentVolume": "Content",
+        "roles": "Role",
+        "volumes": {
+          "1-10": "1 - 10",
+          "11-50": "11 - 50",
+          "50+": "50+"
+        },
+        "roleLabels": {
+          "1": "Developer",
+          "2": "Publisher"
+        }
+      },
+      "sorting": {
+        "name": "Name",
+        "contentCount": "Content Count",
+        "foundingYear": "Founding Year"
+      },
+      "sidebar": {
+        "title": "Filters",
+        "all": "All",
+        "foundingYearRange": "Founding Year Range",
+        "minYear": "Min Year",
+        "maxYear": "Max Year",
+        "contentVolume": "Content Volume",
+        "roles": "Role"
+      }
+    }
+  },
+  "MovieFinder": {
+    "title": "Movie Finder",
+    "description": "Describe the movie you remember but can't name. Write about its scenes, characters, or plot, and let AI find it for you.",
+    "placeholder": "e.g. A guy was entering dreams, the environment was folding, at the end a spinning top was turning...",
+    "find": "Find",
+    "finding": "Finding...",
+    "possibleMatches": "Possible Matches",
+    "whyMatched": "Why did it match?",
+    "screenshots": "Scenes / Screenshots",
+    "largeScreenshotAlt": "Large screenshot",
+    "error": "An error occurred."
+  },
+  "ProfilePage": {
+    "loginRequired": "You need to log in to view this page.",
+    "login": "Log In",
+    "userNotFound": "User Not Found",
+    "userNotFoundDesc": "The user {username} could not be found.",
+    "backToExplore": "Back to Explore",
+    "loginToViewProfiles": "Log in to view profiles."
+  },
+  "ProfileHeader": {
+    "defaultUser": "User",
+    "coverPhoto": "Cover Photo",
+    "changeCover": "Change Cover",
+    "addCover": "Add Cover",
+    "loading": "Loading...",
+    "followers": "followers",
+    "following": "following",
+    "contributionScore": "Contribution Score",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "changeAvatar": "Change Avatar",
+    "editProfile": "Edit Profile",
+    "editFeatured": "Edit Featured",
+    "deleteAccount": "Delete Account",
+    "content": {
+      "movie": "Movie",
+      "tv": "TV Show",
+      "game": "Game",
+      "book": "Book"
+    },
+    "deleteConfirmTitle": "Delete Account",
+    "deleteConfirmDesc": "Are you sure you want to delete your account? This action cannot be undone.",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "yesDelete": "Yes, delete",
+    "errors": {
+      "deleteError": "An error occurred while deleting your account.",
+      "unexpected": "An unexpected error occurred.",
+      "avatarUpload": "Failed to upload avatar.",
+      "avatarUploadUnexpected": "An unexpected error occurred during avatar upload.",
+      "coverUpload": "Failed to upload cover photo.",
+      "coverUploadUnexpected": "An unexpected error occurred during cover photo upload."
+    }
+  },
+  "ProfileTabs": {
+    "Home": "Home",
+    "Movies": "Movies",
+    "TV": "TV Shows",
+    "Games": "Games",
+    "Books": "Books",
+    "Stats": "Stats",
+    "Lists": "Lists",
+    "Reviews": "Reviews",
+    "Discussions": "Discussions",
+    "Network": "Network",
+    "Activity": "Activity",
+    "Interactions": "Interactions",
+    "Contributions": "Contributions"
+  },
+  "ProfileHomeTab": {
+    "movie": {
+      "title": "Recent Movies",
+      "empty": "No movies watched yet.",
+      "explore": "Explore Movies"
+    },
+    "tv": {
+      "title": "Recent TV Shows",
+      "empty": "No TV shows watched yet.",
+      "explore": "Explore TV Shows"
+    },
+    "game": {
+      "title": "Recent Games",
+      "empty": "No games played yet.",
+      "explore": "Explore Games"
+    },
+    "book": {
+      "title": "Recent Books",
+      "empty": "No books read yet.",
+      "explore": "Explore Books"
+    },
+    "toasts": {
+      "loginRequired": "You must be logged in for this action",
+      "consumedAdded": "Content marked as consumed",
+      "consumedRemoved": "Content removed from consumed",
+      "consumedError": "Error updating consumed status",
+      "favoriteAdded": "Content added to favorites",
+      "favoriteRemoved": "Content removed from favorites",
+      "favoriteError": "Error updating favorite status",
+      "consumeLaterAdded": "Content added to consume later list",
+      "consumeLaterRemoved": "Content removed from consume later list",
+      "consumeLaterError": "Error updating consume later status",
+      "continuingAdded": "Content marked as continuing",
+      "continuingRemoved": "Continuing mark removed",
+      "continuingError": "Error updating continuing status",
+      "noChanges": "No changes made",
+      "featuredSaved": "Featured content saved",
+      "featuredSaveError": "Could not save featured content"
+    }
+  },
+  "ProfileReviewsTab": {
+    "errorLoading": "Error loading comments",
+    "emptyState": "No comments yet.",
+    "emptyStateDesc": "You can share your thoughts on content pages.",
+    "errorUpdating": "An error occurred while updating the comment.",
+    "errorDeleting": "An error occurred while deleting the comment. Please try again.",
+    "more": "More",
+    "areYouSure": "Are you sure?",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "report": "Report",
+    "generalComment": "General Comment",
+    "save": "Save",
+    "comments": "comments",
+    "pageInfo": "Page {current}/{total}",
+    "thisComment": "This Comment/Review"
+  },
+  "ProfileListsTab": {
+    "title": "Lists",
+    "loading": "Loading lists...",
+    "newList": "New List",
+    "createFirstList": "Create your first list",
+    "contentTypes": {
+      "movie": "Movies",
+      "tv": "TV Shows",
+      "game": "Games",
+      "book": "Books",
+      "general": "General"
+    },
+    "tabs": {
+      "myLists": "My Lists",
+      "savedLists": "Saved Lists"
+    },
+    "empty": {
+      "saved": "No saved lists found.",
+      "created": "You haven't created any lists yet.",
+      "otherUser": "This user hasn't created any lists yet.",
+      "helper": "Create lists to organize your favorite content."
+    },
+    "createModal": {
+      "title": "Create New List",
+      "nameLabel": "List Name",
+      "namePlaceholder": "e.g. My Favorite Sci-Fi Movies",
+      "descLabel": "Description (Optional)",
+      "descPlaceholder": "What is this list about?",
+      "typeLabel": "Content Type",
+      "public": "Public",
+      "ordered": "Ordered List",
+      "cancel": "Cancel",
+      "create": "Create List",
+      "creating": "Creating..."
+    },
+    "errors": {
+      "nameRequired": "List name is required.",
+      "createError": "An error occurred while creating the list."
+    }
+  },
+  "ProfileListCard": {
+    "contentTypes": {
+      "movie": "Movie",
+      "tv": "TV",
+      "game": "Game",
+      "book": "Book",
+      "general": "Mixed"
+    },
+    "time": {
+      "now": "Just now",
+      "minutes": "{count}m ago",
+      "hours": "{count}h ago",
+      "days": "{count}d ago",
+      "weeks": "{count}w ago"
+    },
+    "extraUsers": "+{count}",
+    "empty": "Empty List",
+    "emptyDesc": "No items added yet",
+    "deleteConfirm": "Are you sure you want to delete this list?",
+    "unsave": "Unsave",
+    "save": "Save",
+    "deleteList": "Delete List",
+    "items": "items",
+    "noDesc": "No description",
+    "visibility": {
+      "public": "Public",
+      "private": "Private"
+    },
+    "order": {
+      "ordered": "Ordered",
+      "unordered": "Unordered"
+    },
+    "contributors": "Contributors"
+  },
+  "ProfileEditDialog": {
+    "title": "Edit Profile",
+    "username": "Username",
+    "usernamePlaceholder": "username",
+    "bio": "Bio",
+    "bioPlaceholder": "Write something about yourself...",
+    "characters": "{length}/300",
+    "location": "Location",
+    "locationPlaceholder": "e.g., Istanbul, Turkey",
+    "website": "Website",
+    "websiteHelper": "Must start with http:// or https://",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "errors": {
+      "usernameLength": "Username must be at least 3 characters.",
+      "updateError": "Failed to update profile.",
+      "unexpected": "An unexpected error occurred."
+    }
+  },
+  "ProfileDiscussionsTab": {
+    "errorLoading": "Error loading discussions",
+    "emptyTitle": "No discussions started yet.",
+    "emptyDesc": "You can start a new discussion from content pages.",
+    "contentTypes": {
+      "movie": "Movie",
+      "tv": "TV Show",
+      "game": "Game",
+      "book": "Book",
+      "general": "General"
+    },
+    "generalDiscussion": "General Discussion",
+    "errorUpdating": "An error occurred while updating the discussion.",
+    "errorDeleting": "An error occurred while deleting the discussion.",
+    "stats": "discussions",
+    "more": "More",
+    "areYouSure": "Are you sure?",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "report": "Report",
+    "save": "Save",
+    "titlePlaceholder": "Discussion title...",
+    "thisDiscussion": "This Discussion"
+  },
+  "ProfileNetworkTab": {
+    "followers": "{count} Followers",
+    "following": "{count} Following",
+    "noFollowers": "No followers yet.",
+    "noFollowing": "Not following anyone yet."
+  },
+  "TvTracker": {
+    "title": "Episode Tracker",
+    "subtitle": "Upcoming episodes in your continuing TV shows",
+    "description": "Track missed episodes, this week's releases, and next week's schedule in one place.",
+    "loading": "Loading episodes...",
+    "loadError": "Failed to load episode tracker",
+    "summary": {
+      "continuing": "Continuing TV Show",
+      "pastDue": "Missed / Past Due",
+      "thisWeek": "This Week",
+      "nextWeek": "Next Week"
+    },
+    "sections": {
+      "episodesCount": "{count} episodes",
+      "pastDue": {
+        "title": "Past Due / Missed",
+        "emptyTitle": "No missed episodes",
+        "emptyDescription": "There are no unwatched past episodes for your continuing TV shows."
+      },
+      "thisWeek": {
+        "title": "This Week",
+        "emptyTitle": "No new episodes this week",
+        "emptyDescription": "There are no unwatched episodes scheduled from today until Sunday."
+      },
+      "nextWeek": {
+        "title": "Next Week",
+        "emptyTitle": "No new episodes next week",
+        "emptyDescription": "There are no unwatched episodes scheduled for next week."
+      }
+    },
+    "card": {
+      "episodesBehind": "+{count} more episodes behind",
+      "saving": "Saving...",
+      "watched": "Watched",
+      "watchedSuccess": "Episode marked as watched",
+      "watchedError": "Failed to mark episode"
+    }
+  },
+  "ListsPage": {
+    "title": "Lists",
+    "subtitle": "Lists created by the community",
+    "loading": "Loading lists...",
+    "newest": "Newest",
+    "topRated": "Top Rated",
+    "popular": "Popular",
+    "showMore": "Show More",
+    "loadingMore": "Loading...",
+    "myLists": "My Lists",
+    "newList": "New List",
+    "emptyState": {
+      "title": "No lists yet",
+      "all": "Public lists created by the community will appear here.",
+      "filtered": "There are no public lists in this category yet.",
+      "createFirst": "Create Your First List"
+    },
+    "createModal": {
+      "title": "Create New List",
+      "nameLabel": "List Name",
+      "namePlaceholder": "My Favorite Movies",
+      "descLabel": "Description",
+      "descPlaceholder": "A brief description of this list...",
+      "typeLabel": "Content Type",
+      "publicLabel": "Public list",
+      "cancel": "Cancel",
+      "create": "Create",
+      "creating": "Creating...",
+      "nameRequired": "List name is required",
+      "createError": "An error occurred while creating the list."
+    },
+    "filters": {
+      "all": "All",
+      "movie": "Movie",
+      "tv": "TV Show",
+      "game": "Game",
+      "book": "Book"
+    }
+  },
+  "DiscussionsPage": {
+    "discussionsTitle": "🗣️ Discussions",
+    "reviewsTitle": "⭐ Reviews",
+    "newDiscussion": "New Discussion",
+    "startDiscussionTitle": "Start a General Discussion",
+    "discussionTitlePlaceholder": "Discussion title",
+    "discussionDescPlaceholder": "Discussion description",
+    "cancel": "Cancel",
+    "sending": "Sending...",
+    "share": "Share",
+    "tabDiscussions": "Discussions",
+    "tabReviews": "Reviews",
+    "newest": "Newest",
+    "topRated": "Top Rated",
+    "loading": "Loading...",
+    "emptyState": {
+      "titleDiscussions": "No discussions yet",
+      "titleReviews": "No reviews yet",
+      "descDiscussions": "Start the first general discussion!",
+      "descReviews": "No reviews yet.",
+      "filtered": "There are no {postType} in this category yet."
+    },
+    "contentTypes": {
+      "general": "General",
+      "movie": "Movie",
+      "tv": "TV Show",
+      "game": "Game",
+      "book": "Book"
+    },
+    "badges": {
+      "generalDiscussion": "General Discussion"
+    },
+    "commentsCount": "{count} comments",
+    "timeFormats": {
+      "justNow": "just now",
+      "minutesAgo": "{count}m ago",
+      "hoursAgo": "{count}h ago",
+      "daysAgo": "{count}d ago"
+    },
+    "voters": {
+      "title": "Votes",
+      "loading": "Loading...",
+      "empty": "No votes yet",
+      "upvotes": "Upvotes ({count})",
+      "downvotes": "Downvotes ({count})"
+    }
+  },
+  "DiscussionDetailPage": {
+    "searchingUsers": "Searching users...",
+    "noMatchingUsers": "No matching users.",
+    "updateError": "An error occurred while updating discussion.",
+    "deleteError": "An error occurred while deleting discussion.",
+    "commentUpdateError": "An error occurred while updating comment.",
+    "commentDeleteError": "An error occurred while deleting comment.",
+    "repliesHidden": "{count} replies hidden",
+    "reply": "Reply",
+    "replyPlaceholder": "Write your reply...",
+    "cancel": "Cancel",
+    "notFound": "Discussion not found",
+    "goBack": "Go back",
+    "deleteConfirm": "Are you sure you want to delete this discussion?",
+    "editDiscussion": "Edit Discussion",
+    "deleteDiscussion": "Delete Discussion",
+    "titlePlaceholder": "Discussion Title",
+    "contentPlaceholder": "Discussion Content",
+    "playtime": "Playtime",
+    "sending": "Sending...",
+    "noComments": "No comments yet",
+    "noVotes": "No votes yet",
+    "more": "More",
+    "edit": "Edit",
+    "delete": "Delete",
+    "report": "Report",
+    "save": "Save",
+    "areYouSure": "Are you sure?",
+    "deleteCommentConfirm": "Are you sure you want to delete this comment?",
+    "watchLater": "Later",
+    "inWatchlist": "Saved",
+    "commentsTitle": "Comments ({count})",
+    "commentsCount": "{count} comments",
+    "timeFormats": {
+      "justNow": "just now",
+      "minutesAgo": "{count}m ago",
+      "hoursAgo": "{count}h ago",
+      "daysAgo": "{count}d ago"
+    },
+    "playtimeFormat": {
+      "hoursAndMins": "{hours}h {mins}m",
+      "hours": "{hours}h",
+      "mins": "{mins}m"
+    },
+    "voters": {
+      "title": "Votes",
+      "empty": "No votes yet",
+      "upvotes": "Upvotes ({count})",
+      "downvotes": "Downvotes ({count})"
+    }
+  },
+  "CompanyPage": {
+    "loading": "Loading company information...",
+    "notFound": "Company Not Found",
+    "notFoundDesc": "An unexpected error occurred",
+    "returnHome": "Return to Home",
+    "roles": {
+      "developer": "Developer",
+      "publisher": "Publisher",
+      "studio": "Studio",
+      "other": "Other"
+    },
+    "editTooltip": "Edit company information",
+    "edit": "Edit",
+    "founded": "Founded",
+    "headquarters": "Headquarters",
+    "website": "Website",
+    "projectCount": "involved in {count} project(s)",
+    "consumedStats": "{consumed} / {total} consumed",
+    "noContent": "No content found for this company."
+  },
+  "QuizPlay": {
+    "loading": "Preparing quiz...",
+    "errorTitle": "An Error Occurred",
+    "backToQuiz": "Back to Quiz",
+    "itemsCount": "{count} items",
+    "noTimeLimit": "No Time Limit",
+    "rulesTitle": "Rules:",
+    "rule1": "You will see a screenshot for each content",
+    "rule2": "Guess the content by searching for its name",
+    "rule3": "If you guess wrong, the next photo will be shown",
+    "rule4": "More points if you guess right on the first photo!",
+    "rule5": "You can pass, but you won't get any points",
+    "start": "Start!",
+    "completed": "Quiz Completed!",
+    "totalScore": "Total Score",
+    "correct": "Correct",
+    "accuracy": "Accuracy",
+    "time": "Time",
+    "playAgain": "Play Again",
+    "home": "Home",
+    "leaderboard": "Leaderboard",
+    "results": "Results",
+    "photoCount": "{count} photo",
+    "photoIndex": "Photo {current} / {total}",
+    "points": "{count} points",
+    "difficulty": {
+      "veryEasy": "Very Easy",
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard",
+      "veryHard": "Very Hard"
+    },
+    "searchPlaceholder": "Type content name...",
+    "searching": "Searching...",
+    "noResults": "No results found",
+    "pass": "Pass",
+    "correctAnswerTitle": "Correct!",
+    "correctAnswerDesc": "Correct answer:",
+    "wrong": "Wrong!",
+    "description": "Description",
+    "screenshots": "Screenshots",
+    "nextContent": "Next Content",
+    "showResults": "Show Results",
+    "resultsNotSaved": "Failed to save results",
+    "quizNotLoaded": "Failed to load quiz",
+    "pointsAdded": "+{points} points!"
+  },
+  "Recommended": {
+    "errorAction": "Action failed",
+    "addedToList": "Added to list",
+    "removedFromList": "Removed from list"
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "loginRequired": "Log in to see your notifications.",
+    "loading": "Loading...",
+    "refresh": "Refresh",
+    "settings": "Settings",
+    "markAllAsRead": "Mark all as read",
+    "loadingNotifications": "Loading notifications...",
+    "noNotifications": "You don't have any notifications yet.",
+    "userAvatar": "User avatar",
+    "labels": {
+      "reviewLiked": "Like",
+      "followedYou": "Follow",
+      "contentApproved": "Approval",
+      "contentRejected": "Rejection",
+      "commentRemoved": "Removal",
+      "commentLiked": "Like",
+      "commentDisliked": "Dislike",
+      "commentReplied": "Reply",
+      "recommendationThanked": "Thanks",
+      "discussionReply": "Discussion",
+      "discussionCommentReply": "Reply",
+      "newSeasonAdded": "Series Update",
+      "commentMention": "Mention",
+      "contentReleased": "Released",
+      "roleGranted": "Role",
+      "default": "Notification"
+    }
+  },
+  "ProfileStatsHeatmap": {
+    "title": "📅 Yearly Activity",
+    "subtitle": "Select a year, click a day, and see the content for that day",
+    "onlyConsumed": "Only Consumed",
+    "yearSummary": "{year} Summary",
+    "totalItems": "Total {count} items",
+    "dailyMax": "Daily max {count}",
+    "selectDay": "Select day",
+    "itemsCount": "{count} items",
+    "clickForDetails": "Click a square for details",
+    "noContentThisDay": "No content recorded for this day.",
+    "less": "Less",
+    "more": "More",
+    "contentTypes": {
+      "MOVIE": "Movie",
+      "TV": "TV Show",
+      "GAME": "Game",
+      "BOOK": "Book",
+      "DEFAULT": "Content"
+    },
+    "months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    "days": ["Sun", "", "Tue", "", "Thu", "", "Sat"]
+  },
+  "Settings": {
+    "sensitiveContent": "Sensitive Content",
+    "sensitiveContentDesc": "Show sensitive content"
+  },
+  "Explore_3": {
+    "description": "Discover movies, TV shows, games, and books.",
+    "actions": {
+      "startExploring": "Start Exploring"
+    },
+    "categories": {
+      "persons": "People",
+      "personsDesc": "Actors, directors, and creators",
+      "companies": "Companies",
+      "companiesDesc": "Studios, developers, and publishers"
+    },
+    "stats": {
+      "totalContent": "Total Content",
+      "activeUsers": "Active Users",
+      "reviews": "Reviews",
+      "lists": "Lists"
+    }
+  },
+  "ListsPage": {
+    "filters": {
+      "1": "Movies",
+      "2": "TV Shows",
+      "3": "Games",
+      "4": "Books"
+    }
+  },
+  "DiffUtils": {
+    "title": "Title",
+    "originalTitle": "Original Title",
+    "description": "Description",
+    "releaseDate": "Release Date",
+    "runtime": "Runtime",
+    "posterUrl": "Poster",
+    "genres": "Genres",
+    "ageRating": "Age Rating",
+    "budget": "Budget",
+    "revenue": "Revenue",
+    "inProduction": "In Production",
+    "firstAirDate": "First Air Date",
+    "lastAirDate": "Last Air Date",
+    "pageCount": "Page Count",
+    "bookPublications": "Publications",
+    "publisher": "Publisher",
+    "gameModes": "Game Modes",
+    "gameEngines": "Game Engines",
+    "perspectives": "Perspectives",
+    "developerCompanies": "Developers",
+    "publisherCompanies": "Publishers",
+    "studios": "Studios",
+    "expansions": "Expansions",
+    "screenshots": "Screenshots",
+    "gameplayVideoUrl": "Gameplay Video",
+    "similarContents": "Similar Contents",
+    "numberOfSeasons": "Number of Seasons",
+    "numberOfEpisodes": "Number of Episodes",
+    "averageDuration": "Average Duration",
+    "episodeFormat": "Episode {number}",
+    "image": "Image",
+    "yesToYes": "{old} → {new}",
+    "yes": "Yes",
+    "no": "No",
+    "detailsChanged": "{name} (details changed)",
+    "seasonAdded": "{name} added ({count} episodes)",
+    "seasonRemoved": "{name} removed",
+    "seasonDetailsChanged": "{name} details changed",
+    "itemAdded": "{name} added",
+    "itemRemoved": "{name} removed",
+    "itemChanged": "{name} changed",
+    "moreAdded": "{name}: +{count} more episodes added",
+    "moreRemoved": "{name}: -{count} more episodes removed",
+    "moreChanged": "{name}: {count} more episodes changed",
+    "andMore": "+{count} more...",
+    "itemsCountChanged": "{old} → {new} items",
+    "itemsDetailsChanged": "{count} items (details changed)",
+    "fetchError": "Could not load original content.",
+    "viewChanges": "View Changes",
+    "changes": "Changes",
+    "comparing": "Comparing...",
+    "noChanges": "No changes found.",
+    "empty": "Empty",
+    "added": "Added",
+    "removed": "Removed",
+    "modified": "Modified"
+  }
+}
