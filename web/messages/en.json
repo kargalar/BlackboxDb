@@ -103,6 +103,8 @@
     "activityLogs": "Activity Logs",
     "quiz": "Quiz",
     "movieFinder": "Movie Finder",
+    "leaderboard": "Leaderboard",
+    "dynamicLists": "Dynamic Lists",
     "sections": {
       "content": "Content",
       "other": "Other",
@@ -126,7 +128,7 @@
       "titlePart1": "Movies, TV Shows, Games",
       "titlePart2": "Track Your Experience",
       "subtitle": "Track the movies you watch, the games you play. Rate, take notes, and discover new content.",
-      "eyebrow": "Blackbox ? your personal media space"
+      "eyebrow": "Blackbox: your personal media space"
     },
     "actions": {
       "startExploring": "Start Exploring",

@@ -33,7 +33,6 @@ import { useUnreadNotificationsCount } from '@/features/notifications/hooks/useU
 import { useUnthankedRecommendationsCount } from '@/features/recommendations/hooks/useUnthankedRecommendationsCount';
 import { usePendingContentRequestsCount } from '@/features/admin/hooks/usePendingContentRequestsCount';
 import { useGlobalSettings } from '@/contexts/GlobalSettingsContext';
-import LanguageSwitcher from '../molecules/LanguageSwitcher';
 import { useSidebarCollapsed } from '@/hooks/useSidebarCollapsed';
 
 // Logout Icon
@@ -149,14 +148,14 @@ export default function Sidebar({ isOpen: isOpenProp = true, onClose }: SidebarP
           {
             href: '/admin/activity' as Route,
             icon: ClockIcon,
-            label: t('activityLogs') || 'Aktivite',
+            label: t('activityLogs') || 'Activity Logs',
           },
         ]
       : [];
 
   const otherNavItems = [
-    { href: '/leaderboard' as Route, icon: LeaderboardIcon, label: 'Liderlik Tablosu' },
-    { href: '/lists/dynamic' as Route, icon: TrendingUp as any, label: 'Dinamik Listeler' },
+    { href: '/leaderboard' as Route, icon: LeaderboardIcon, label: t('leaderboard') },
+    { href: '/lists/dynamic' as Route, icon: TrendingUp as any, label: 'Dynamic Lists' },
     { href: '/quiz' as Route, icon: TrophyIcon, label: t('quiz') },
     { href: '/movie-finder' as Route, icon: SearchIcon, label: t('movieFinder') },
     { href: '/citation-network' as Route, icon: Network as any, label: 'Film Citation Network' },
@@ -300,7 +299,6 @@ export default function Sidebar({ isOpen: isOpenProp = true, onClose }: SidebarP
         </nav>
 
         {/* Language Switcher */}
-        <LanguageSwitcher />
 
         {/* Footer - User Info & Logout */}
         <div className="sidebar-footer">

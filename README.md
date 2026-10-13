@@ -1,40 +1,54 @@
+<div align="center">
+  <img src="web/src/app/icon.svg" width="88" alt="Blackbox icon" />
+
 # BlackboxDB
 
-BlackboxDB is a self-hosted catalog for movies, TV series, and games. Browse, search, and organize a personal media collection with a modern web interface.
+**Your personal space for the stories you follow.**
+
+Catalog movies, shows, games, books, and more in a self-hosted media tracker.
+
+[![Web](https://img.shields.io/badge/Web-Next.js-111111?logo=nextdotjs)](https://github.com/kargalar/BlackboxDb) [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE) [![Issues](https://img.shields.io/github/issues/kargalar/BlackboxDb)](https://github.com/kargalar/BlackboxDb/issues)
+
+[Explore the project](https://github.com/kargalar/BlackboxDb) · [Build from source](#build-from-source) · [Report an issue](https://github.com/kargalar/BlackboxDb/issues)
+
+</div>
+
+![BlackboxDB landing page with media categories and account actions](docs/screenshots/blackbox-home.png)
+
+## Keep your media life in one place
+
+Search and organize the titles you watch, play, read, and listen to. Save ratings and notes, build lists, and discover what to explore next through a responsive web interface.
 
 ## Features
 
-- Search and browse media titles with detailed metadata.
-- Organize movies, series, and games in one catalog.
-- Responsive Next.js web interface with theme support.
-- GraphQL API backed by Prisma for catalog data.
+- Browse and search movies, TV shows, games, books, music, people, and companies.
+- Keep personal lists, ratings, reviews, and activity logs.
+- Explore recommendations, discussions, quizzes, and related content.
+- Use a responsive Next.js interface with theme support.
+- Run the GraphQL API and Prisma-backed catalog on your own infrastructure.
 
-## Project layout
-
-- `web/` — Next.js frontend.
-- `server/` — GraphQL API and Prisma schema.
-
-## Development
+## Run locally
 
 Requirements: Node.js 20 or later, npm, and a configured database.
 
-Copy the example environment files and provide your own database and API settings:
+Copy the sample environment files and set your local API and database values:
 
 ```sh
 cp web/.env.example web/.env.local
 cp server/.env.example server/.env
 ```
 
-Install dependencies and run the frontend:
+Install dependencies, then start the API and frontend using the project start scripts or run each service from its directory. The web app runs with:
 
 ```sh
-npm install
 cd web
 npm install
 npm run dev
 ```
 
-Run the checks from `web/`:
+## Build from source
+
+Run frontend checks from `web/`:
 
 ```sh
 npm run typecheck
@@ -43,7 +57,7 @@ npm test
 npm run build
 ```
 
-Never commit real environment files, database backups, private media catalogs, or API secrets. Keep real credentials in local environment files or a secrets manager.
+Keep real environment files, database backups, private media catalogs, and API secrets out of version control. Configure production credentials through your hosting provider's secret store.
 
 ## License
 
