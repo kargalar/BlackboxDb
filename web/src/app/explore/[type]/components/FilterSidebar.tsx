@@ -14,6 +14,7 @@ import {
   LIST_PLATFORMS,
   LIST_COMPANIES,
   LIST_GAME_MODES,
+  LIST_GAME_ENGINES,
   LIST_PERSPECTIVES,
 } from '@/services/graphql/admin';
 import { Filter, X, Pin, PinOff, ChevronLeft } from 'lucide-react';
@@ -26,6 +27,7 @@ import { RatingFilter } from './filters/RatingFilter';
 import { YearFilter } from './filters/YearFilter';
 import { DurationFilter } from './filters/DurationFilter';
 import { GameModeFilter } from './filters/GameModeFilter';
+import { GameEngineFilter } from './filters/GameEngineFilter';
 import { PerspectiveFilter } from './filters/PerspectiveFilter';
 import { LanguageFilter } from './filters/LanguageFilter';
 import { PersonFilter } from './filters/PersonFilter';
@@ -64,6 +66,7 @@ export interface FilterCounts {
   directors: Record<number | string, number>;
   companies: Record<number | string, number>;
   gameModes: Record<string, number>;
+  gameEngines?: Record<string, number>;
   perspectives: Record<string, number>;
 }
 
@@ -89,6 +92,7 @@ export interface FilterState {
   directors?: (number | string)[];
   companies?: (number | string)[];
   gameModes?: string[];
+  gameEngines?: string[];
   perspectives?: string[];
   language?: string[];
   publicationLanguage?: string[];
@@ -132,6 +136,7 @@ export function FilterSidebar({
     year: true,
     duration: true,
     gameModes: false,
+    gameEngines: false,
     perspectives: false,
     actors: false,
     directors: false,
@@ -151,6 +156,7 @@ export function FilterSidebar({
   const [companies, setCompanies] = useState<{ id: number; name: string }[]>([]);
   const [languages, setLanguages] = useState<LanguageData[]>([]);
   const [gameModesList, setGameModesList] = useState<GenreData[]>([]);
+  const [gameEnginesList, setGameEnginesList] = useState<GenreData[]>([]);
   const [perspectivesList, setPerspectivesList] = useState<GenreData[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
@@ -209,6 +215,7 @@ export function FilterSidebar({
           languagesData,
           companiesData,
           gameModesData,
+          gameEnginesData,
           perspectivesData,
         ] = await Promise.all([
           apolloClient.query<{ listGenres: GenreData[] }>({
@@ -255,6 +262,10 @@ export function FilterSidebar({
             query: LIST_GAME_MODES,
             variables: { limit: 1000 },
           }),
+          apolloClient.query<{ listGameEngines: GenreData[] }>({
+            query: LIST_GAME_ENGINES,
+            variables: { limit: 1000 },
+          }),
           apolloClient.query<{ listPerspectives: GenreData[] }>({
             query: LIST_PERSPECTIVES,
             variables: { limit: 1000 },
@@ -273,6 +284,7 @@ export function FilterSidebar({
         setLanguages(languagesData.data?.listLanguages || []);
         setCompanies(companiesData.data?.listCompanies || []);
         setGameModesList(gameModesData.data?.listGameModes || []);
+        setGameEnginesList(gameEnginesData.data?.listGameEngines || []);
         setPerspectivesList(perspectivesData.data?.listPerspectives || []);
       } catch (error) {
         if (!cancelled) {
@@ -369,6 +381,15 @@ export function FilterSidebar({
     onFilterChange(newFilters);
   };
 
+  const handleGameEngineToggle = (gameEngineId: string) => {
+    const currentGameEngines = filters.gameEngines || [];
+    const newGameEngines = currentGameEngines.includes(gameEngineId)
+      ? currentGameEngines.filter((g) => g !== gameEngineId)
+      : [...currentGameEngines, gameEngineId];
+    const newFilters = { ...filters, gameEngines: newGameEngines };
+    onFilterChange(newFilters);
+  };
+
   const handlePerspectiveToggle = (perspectiveId: string) => {
     const currentPerspectives = filters.perspectives || [];
     const newPerspectives = currentPerspectives.includes(perspectiveId)
@@ -435,6 +456,7 @@ export function FilterSidebar({
       year: { min: 1900, max: new Date().getFullYear() },
       duration: { min: '' as number | '', max: '' as number | '' },
       gameModes: [],
+      gameEngines: [],
       perspectives: [],
       actors: [],
       directors: [],
@@ -567,6 +589,7 @@ export function FilterSidebar({
     (isYearFiltered ? 1 : 0) +
     (isDurationFiltered ? 1 : 0) +
     (filters.gameModes?.length || 0) +
+    (filters.gameEngines?.length || 0) +
     (filters.perspectives?.length || 0) +
     (isLanguageFiltered ? 1 : 0) +
     (isPublicationLanguageFiltered ? 1 : 0);
@@ -634,6 +657,11 @@ export function FilterSidebar({
 
   const clearGameModes = () => {
     const newFilters = { ...filters, gameModes: [] };
+    onFilterChange(newFilters);
+  };
+
+  const clearGameEngines = () => {
+    const newFilters = { ...filters, gameEngines: [] };
     onFilterChange(newFilters);
   };
 
@@ -721,15 +749,23 @@ export function FilterSidebar({
   (filters.gameModes || []).forEach((id) => {
     activeFilterChips.push({
       key: `gamemode-${id}`,
-      label: `${t('labels.gameMode')}: ${id === OTHER_FILTER_ID ? t('other') : id}`,
+      label: `${t('labels.gameMode')}: ${getNameById(gameModesList, id, t('other'))}`,
       onRemove: () => handleGameModeToggle(id),
+    });
+  });
+
+  (filters.gameEngines || []).forEach((id) => {
+    activeFilterChips.push({
+      key: `gameengine-${id}`,
+      label: `${t('labels.gameEngine') || 'Oyun Motoru'}: ${getNameById(gameEnginesList, id, t('other'))}`,
+      onRemove: () => handleGameEngineToggle(id),
     });
   });
 
   (filters.perspectives || []).forEach((id) => {
     activeFilterChips.push({
       key: `perspective-${id}`,
-      label: `${t('labels.perspective')}: ${id === OTHER_FILTER_ID ? t('other') : id}`,
+      label: `${t('labels.perspective')}: ${getNameById(perspectivesList, id, t('other'))}`,
       onRemove: () => handlePerspectiveToggle(id),
     });
   });
@@ -1028,6 +1064,19 @@ export function FilterSidebar({
                     onToggleGameMode={handleGameModeToggle}
                     onClear={clearGameModes}
                     filterCounts={filterCounts?.gameModes}
+                    otherFilterId={OTHER_FILTER_ID}
+                  />
+                )}
+
+                {contentType === 'game' && (
+                  <GameEngineFilter
+                    gameEngines={gameEnginesList}
+                    selectedGameEngines={filters.gameEngines || []}
+                    isExpanded={isExpanded.gameEngines}
+                    onToggleSection={() => toggleSection('gameEngines')}
+                    onToggleGameEngine={handleGameEngineToggle}
+                    onClear={clearGameEngines}
+                    filterCounts={filterCounts?.gameEngines}
                     otherFilterId={OTHER_FILTER_ID}
                   />
                 )}

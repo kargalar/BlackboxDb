@@ -411,6 +411,7 @@ export function buildContentInput({
         name: p.name,
       }));
     }
+    input.fileSize = formData.fileSize?.trim() || (isEditMode ? null : undefined);
     // Expansions (DLC and Remakes) - boş array da gönderilmeli (silme için)
     if (isEditMode || (formData.expansions && formData.expansions.length > 0)) {
       input.expansions = (formData.expansions || []).map((e: any) => ({

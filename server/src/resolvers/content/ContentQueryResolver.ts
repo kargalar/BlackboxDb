@@ -376,6 +376,8 @@ export class ContentQueryResolver {
     durationMax: number | undefined,
     @Arg("gameModeIds", () => [Int], { nullable: true })
     gameModeIds: number[] | undefined,
+    @Arg("gameEngineIds", () => [Int], { nullable: true })
+    gameEngineIds: number[] | undefined,
     @Arg("perspectiveIds", () => [Int], { nullable: true })
     perspectiveIds: number[] | undefined,
     @Arg("emptyFilters", () => [String], { nullable: true })
@@ -549,6 +551,13 @@ export class ContentQueryResolver {
           "contentGameModes",
           "gameModeId",
           gameModeIds,
+        );
+        // Game engine filter
+        applyRelationFilter(
+          "gameEngine",
+          "contentGameEngines",
+          "gameEngineId",
+          gameEngineIds,
         );
         // Perspective filter
         applyRelationFilter(

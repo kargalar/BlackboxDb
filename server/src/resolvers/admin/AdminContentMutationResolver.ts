@@ -79,6 +79,7 @@ const contentAuditSelect = {
   lockedFields: true,
   autoSelectHighestVotedMedia: true,
   isEnabledForQuiz: true,
+  fileSize: true,
   spotifyUrl: true,
   musicReleaseType: true,
   explicit: true,
@@ -643,6 +644,7 @@ export class AdminContentMutationResolver {
           reviewVideoUrl: input.reviewVideoUrl || null,
           gameplayVideoUrl: input.gameplayVideoUrl || null,
           spotifyPlaylistUrl: input.spotifyPlaylistUrl || null,
+          fileSize: input.fileSize || null,
           awards: Array.from(new Set((input.awards || []).map((item) => item.trim()).filter(Boolean))),
           lockedFields: input.lockedFields || [],
           autoSelectHighestVotedMedia: input.autoSelectHighestVotedMedia ?? true,
@@ -954,6 +956,7 @@ export class AdminContentMutationResolver {
       setNullableString(contentData, input, "reviewVideoUrl");
       setNullableString(contentData, input, "gameplayVideoUrl");
       setNullableString(contentData, input, "spotifyPlaylistUrl");
+      setNullableString(contentData, input, "fileSize");
       setNullableString(contentData, input, "spotifyUrl");
       setNullableString(contentData, input, "label");
       if (hasField(input, "musicReleaseType")) {

@@ -230,6 +230,7 @@ export const GET_CONTENT_BY_ID = gql`
         id
         name
       }
+      fileSize
       themes {
         id
         name

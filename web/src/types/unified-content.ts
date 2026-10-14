@@ -297,6 +297,7 @@ export interface UnifiedContent {
   gameEngines?: Array<{ id: number; name: string }>;
   perspectives?: Array<{ id: number; name: string }>;
   platforms?: Array<{ id: number; name: string }>;
+  fileSize?: string;
   ageRating?: { id: number; name: string } | null;
   awards?: string[];
 

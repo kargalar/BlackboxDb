@@ -615,11 +615,12 @@ button:not([class~='rounded-full']) {
   background: rgb(var(--action-later) / 0.1);
 }
 
-.content-review-header,
-.content-review-list {
-  border: 0;
-  border-radius: var(--radius-panel);
+.content-review-panel {
   background: var(--surface-panel);
+}
+
+.content-review-list {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .content-review-counts span {

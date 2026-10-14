@@ -182,6 +182,9 @@ export class CreateContentInput {
   @Field(() => [PlatformInput], { nullable: true })
   platforms?: PlatformInput[];
 
+  @Field(() => String, { nullable: true })
+  fileSize?: string;
+
   @Field(() => [ContentCompanyInput], { nullable: true })
   companies?: ContentCompanyInput[];
 

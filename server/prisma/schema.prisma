@@ -398,6 +398,7 @@ model Content {
   musicReleaseType            MusicReleaseType?       @map("music_release_type")
   additionalRatingCategories  String[]                @default([]) @map("additional_rating_categories")
   autoSelectHighestVotedMedia Boolean                 @default(true) @map("auto_select_highest_voted_media")
+  fileSize                    String?                 @map("file_size") @db.VarChar(50)
   bookPublications            BookPublication[]
   ageRating                   AgeRating?              @relation(fields: [ageRatingId], references: [id])
   contentType                 ContentTypeLookup       @relation(fields: [contentTypeId], references: [id])
@@ -434,6 +435,7 @@ model Content {
   userContentLogs        UserContentLog[]
   userContentPreferences UserContentPreference[]
   featuredBy             UserFeaturedContent[]
+  editorPicks            EditorPick[]
   userListItems          UserListItem[]
 
   @@index([contentTypeId])
@@ -1189,6 +1191,21 @@ model UserFeaturedContent {
   @@index([userId])
   @@index([contentId])
   @@map("user_featured_content")
+}
+
+model EditorPick {
+  id            Int      @id @default(autoincrement())
+  contentId     String   @map("content_id") @db.VarChar(255)
+  contentTypeId Int      @map("content_type_id")
+  label         String?  @db.VarChar(100)
+  displayOrder  Int      @default(0) @map("display_order")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  content       Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([contentTypeId, contentId])
+  @@index([contentTypeId, displayOrder])
+  @@map("editor_pick")
 }
 
 model UserFavoritePerson {

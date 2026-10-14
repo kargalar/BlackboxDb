@@ -26,6 +26,7 @@ export interface ServerFilters {
   durationMin?: number;
   durationMax?: number;
   gameModeIds?: number[];
+  gameEngineIds?: number[];
   perspectiveIds?: number[];
   emptyFilters?: string[];
   sortBy?: string;
@@ -53,6 +54,7 @@ export interface FilterCounts {
   directors: Record<number | string, number>;
   companies: Record<number | string, number>;
   gameModes: Record<string, number>;
+  gameEngines?: Record<string, number>;
   perspectives: Record<string, number>;
 }
 
@@ -160,6 +162,7 @@ export async function searchContent(
           $durationMin: Int
           $durationMax: Int
           $gameModeIds: [Int!]
+          $gameEngineIds: [Int!]
           $perspectiveIds: [Int!]
           $emptyFilters: [String!]
           $sortBy: String
@@ -194,6 +197,7 @@ export async function searchContent(
             durationMin: $durationMin
             durationMax: $durationMax
             gameModeIds: $gameModeIds
+            gameEngineIds: $gameEngineIds
             perspectiveIds: $perspectiveIds
             emptyFilters: $emptyFilters
             sortBy: $sortBy
@@ -260,6 +264,7 @@ export async function searchContent(
         ...(filters?.durationMin != null ? { durationMin: filters.durationMin } : {}),
         ...(filters?.durationMax != null ? { durationMax: filters.durationMax } : {}),
         ...(filters?.gameModeIds?.length ? { gameModeIds: filters.gameModeIds } : {}),
+        ...(filters?.gameEngineIds?.length ? { gameEngineIds: filters.gameEngineIds } : {}),
         ...(filters?.perspectiveIds?.length ? { perspectiveIds: filters.perspectiveIds } : {}),
         ...(filters?.emptyFilters ? { emptyFilters: filters.emptyFilters } : {}),
       },

@@ -404,6 +404,9 @@ export class Content {
   @Field(() => [ContentPlatform], { nullable: true })
   platforms?: { id: number; name: string }[];
 
+  @Field(() => String, { nullable: true })
+  fileSize?: string;
+
   @Field(() => [ContentTheme], { nullable: true })
   themes?: { id: number; name: string }[];
 

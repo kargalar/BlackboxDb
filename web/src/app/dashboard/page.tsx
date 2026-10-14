@@ -78,9 +78,6 @@ export default function DashboardPage() {
     itemStates,
   };
 
-  const heroContent =
-    trendingMovies[0] || trendingTv[0] || trendingGames[0] || popularBooks[0] || popularMusic[0];
-
   return (
     <div className="dashboard-page dashboard-redesign">
       {/* Welcome Header */}
@@ -91,7 +88,18 @@ export default function DashboardPage() {
         <p className="text-white/50 text-lg">{t('header.subtitle')}</p>
       </div>
 
-      <DashboardHero content={heroContent} isLoading={loading} onAddToList={handleAddToList} />
+      <DashboardHero
+        fallbackContents={{
+          1: trendingMovies[0],
+          2: trendingTv[0],
+          3: trendingGames[0],
+          4: popularBooks[0],
+          5: popularMusic[0],
+        }}
+        preferredContentTypes={preferredContentTypes}
+        isLoading={loading}
+        onAddToList={handleAddToList}
+      />
 
       {user?.username && (
         <LibrarySummary
@@ -122,43 +130,7 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
-          <div className="dashboard-section dashboard-friends-activity-section">
-            <FriendsActivitySection
-              activities={statusActivities}
-              loading={friendsLoading}
-              error={friendsError}
-              onRefresh={friendsRefresh}
-              {...handlers}
-              itemStates={friendsItemStates}
-              preferredContentTypes={preferredContentTypes}
-              splitByContentType={splitHomePopularSections}
-            />
-          </div>
-
-          <div className="dashboard-section dashboard-friends-reviews-section">
-            <FriendsReviewsSection
-              reviews={reviewActivities}
-              loading={friendsLoading}
-              error={friendsError}
-              onRefresh={friendsRefresh}
-              preferredContentTypes={preferredContentTypes}
-              splitByContentType={splitHomePopularSections}
-            />
-          </div>
-
-          {/* Popular Reviews & Discussions - side by side */}
-          <div className="dashboard-section dashboard-community-section grid grid-cols-1 gap-6">
-            <PopularReviewsSection
-              preferredContentTypes={preferredContentTypes}
-              splitByContentType={splitHomePopularSections}
-            />
-            <PopularDiscussionsSection
-              preferredContentTypes={preferredContentTypes}
-              splitByContentType={splitHomePopularSections}
-            />
-          </div>
-
-          {/* Trending Games */}
+          {/* Popular Content */}
           {!splitHomePopularSections &&
             (showMovies || showTv || showGames || showBooks || showMusic) && (
               <div className="dashboard-section dashboard-popular-content-section">
@@ -195,7 +167,6 @@ export default function DashboardPage() {
             />
           )}
 
-          {/* Trending TV */}
           {splitHomePopularSections && showTv && (
             <ContentSection
               title={t('sections.popularTvShows')}
@@ -211,7 +182,6 @@ export default function DashboardPage() {
             />
           )}
 
-          {/* Trending Movies */}
           {splitHomePopularSections && showMovies && (
             <ContentSection
               title={t('sections.popularMovies')}
@@ -225,7 +195,6 @@ export default function DashboardPage() {
             />
           )}
 
-          {/* Popular Books */}
           {splitHomePopularSections && showBooks && (
             <ContentSection
               title={t('sections.popularBooks')}
@@ -258,7 +227,7 @@ export default function DashboardPage() {
             />
           )}
 
-          {/* Most Anticipated Upcoming Content */}
+          {/* Most Anticipated Upcoming Content (Compact) */}
           <UpcomingAnticipatedSection
             preferredContentTypes={preferredContentTypes}
             anticipatedMovies={anticipatedMovies}
@@ -270,6 +239,42 @@ export default function DashboardPage() {
             splitByContentType={splitHomePopularSections}
             {...handlers}
           />
+
+          <div className="dashboard-section dashboard-friends-activity-section">
+            <FriendsActivitySection
+              activities={statusActivities}
+              loading={friendsLoading}
+              error={friendsError}
+              onRefresh={friendsRefresh}
+              {...handlers}
+              itemStates={friendsItemStates}
+              preferredContentTypes={preferredContentTypes}
+              splitByContentType={splitHomePopularSections}
+            />
+          </div>
+
+          <div className="dashboard-section dashboard-friends-reviews-section">
+            <FriendsReviewsSection
+              reviews={reviewActivities}
+              loading={friendsLoading}
+              error={friendsError}
+              onRefresh={friendsRefresh}
+              preferredContentTypes={preferredContentTypes}
+              splitByContentType={splitHomePopularSections}
+            />
+          </div>
+
+          {/* Popular Reviews & Discussions - side by side */}
+          <div className="dashboard-section dashboard-community-section grid grid-cols-1 gap-6">
+            <PopularReviewsSection
+              preferredContentTypes={preferredContentTypes}
+              splitByContentType={splitHomePopularSections}
+            />
+            <PopularDiscussionsSection
+              preferredContentTypes={preferredContentTypes}
+              splitByContentType={splitHomePopularSections}
+            />
+          </div>
         </>
       )}
 

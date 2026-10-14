@@ -47,6 +47,9 @@ export class FilterCountsResult {
   @Field(() => GraphQLJSONObject)
   gameModes: Record<string, number>;
 
+  @Field(() => GraphQLJSONObject, { nullable: true })
+  gameEngines?: Record<string, number>;
+
   @Field(() => GraphQLJSONObject)
   perspectives: Record<string, number>;
 }
@@ -83,6 +86,7 @@ export class FilterResolver {
         directors: {},
         companies: {},
         gameModes: {},
+        gameEngines: {},
         perspectives: {},
       };
 
@@ -344,6 +348,31 @@ export class FilterResolver {
       });
       counts.gameModes[OTHER_FILTER_ID] =
         totalContentCount - contentsWithGameModeCount;
+
+      // 9.5. Game Engines
+      const gameEngineCounts = await prisma.contentGameEngine.groupBy({
+        by: ["gameEngineId"],
+        where: { content: contentWhere },
+        _count: { gameEngineId: true },
+      });
+      const gameEngines = await prisma.gameEngine.findMany({
+        where: { id: { in: gameEngineCounts.map((g) => g.gameEngineId) } },
+        select: { id: true, name: true },
+      });
+      const gameEngineNameMap = new Map(
+        gameEngines.map((g) => [g.id, g.name]),
+      );
+      for (const gec of gameEngineCounts) {
+        const name = gameEngineNameMap.get(gec.gameEngineId);
+        if (name && counts.gameEngines) counts.gameEngines[name] = gec._count.gameEngineId;
+      }
+      const contentsWithGameEngineCount = await prisma.content.count({
+        where: { ...contentWhere, contentGameEngines: { some: {} } },
+      });
+      if (counts.gameEngines) {
+        counts.gameEngines[OTHER_FILTER_ID] =
+          totalContentCount - contentsWithGameEngineCount;
+      }
 
       // 10. Perspectives
       const perspectiveCounts = await prisma.contentPerspective.groupBy({

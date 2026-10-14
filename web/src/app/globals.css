@@ -1135,7 +1135,7 @@ body {
 }
 
 .content-review-header {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018));
+  background: transparent;
 }
 
 .content-review-counts {
@@ -1155,7 +1155,7 @@ body {
 
 .content-review-list {
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.025);
+  background: transparent;
 }
 
 .content-review-item {

@@ -1,7 +1,7 @@
-﻿'use client';
+'use client';
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { ListPlus, Send } from 'lucide-react';
+import { History, ListPlus, Send } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLoginRequired } from '@/components/atoms/LoginRequiredDialog';
 import ActionButton from './ActionButton';
@@ -9,7 +9,6 @@ import Stars from './Stars';
 import LogHistoryModal from './LogHistoryModal';
 import AddLogDialog from './AddLogDialog';
 import RecommendDialog from './RecommendDialog';
-import { DetailedRatingDropdown } from '@/components/molecules/DetailedRatingDropdown';
 import AdminActions from './AdminActions';
 import AddToListModal from './AddToListModal';
 import { emitDebugEvent } from '@/lib/debug-events';
@@ -258,11 +257,8 @@ const UserContentActions: React.FC<UserContentActionsProps> = ({
       {isPrivileged && <AdminActions id={id} type={type} />}
 
       <div className="glass-card p-5">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold flex items-center gap-2">
-            <span className="text-neutral-100">{t('titles.yourActions')}</span>
-          </h3>
-          {type === 'game' && playtimeMinutes > 0 && (
+        {type === 'game' && playtimeMinutes > 0 && (
+          <div className="mb-5 flex justify-end">
             <div
               className="text-xs font-semibold bg-neutral-900 text-neutral-400 px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-neutral-800"
               title={t('labels.totalPlaytime')}
@@ -271,14 +267,11 @@ const UserContentActions: React.FC<UserContentActionsProps> = ({
               {Math.floor(playtimeMinutes / 60) > 0 ? `${Math.floor(playtimeMinutes / 60)}s ` : ''}
               {playtimeMinutes % 60}dk
             </div>
-          )}
-        </div>
+          </div>
+        )}
         <div className="space-y-6">
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">
-              {t('titles.quickActions')}
-            </h4>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 justify-items-center gap-2">
               <ActionButton
                 icon={
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -340,7 +333,7 @@ const UserContentActions: React.FC<UserContentActionsProps> = ({
                 onClick={handleLaterToggle}
               />
               {type !== 'movie' && type !== 'music' && (
-                <div className="col-span-2 grid grid-cols-2 gap-2">
+                <div className="col-span-3 grid grid-cols-2 gap-2">
                   <ActionButton
                     icon={
                       <svg
@@ -443,45 +436,6 @@ const UserContentActions: React.FC<UserContentActionsProps> = ({
                 </div>
               </button>
             )}
-            <div className="flex items-center gap-2.5 mt-4">
-              {user && (
-                <button
-                  type="button"
-                  aria-label={t('buttons.recommend')}
-                  title={t('buttons.recommend')}
-                  aria-haspopup="dialog"
-                  onClick={() => {
-                    emitDebugEvent({
-                      level: 'info',
-                      scope: 'Recommend',
-                      message: 'Öner dialog açıldı',
-                      data: { contentId: id },
-                    });
-                    setShowRecommendDialog(true);
-                  }}
-                  className="content-action-shortcut flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors"
-                >
-                  <Send size={20} aria-hidden="true" />
-                </button>
-              )}
-              <button
-                type="button"
-                aria-label={t('buttons.addToList')}
-                title={t('buttons.addToList')}
-                aria-haspopup="dialog"
-                data-active={isInAnyList}
-                onClick={() => {
-                  if (!user) {
-                    requireAuth(t('actions.list'));
-                    return;
-                  }
-                  setShowAddToListModal(true);
-                }}
-                className="content-action-shortcut flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors"
-              >
-                <ListPlus size={20} aria-hidden="true" />
-              </button>
-            </div>
           </div>
 
           {type === 'book' && (isConsumed || isContinuing || isAbandoned) && (
@@ -510,25 +464,12 @@ const UserContentActions: React.FC<UserContentActionsProps> = ({
           )}
 
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
               {t('titles.yourRating')}
             </h4>
             <div className="bg-neutral-900/50 rounded-2xl p-4 border border-neutral-800 flex items-center w-full">
-              <Stars size="sm" value={userRating} onChange={handleRatingChange} />
+              <Stars size="md" value={userRating} onChange={handleRatingChange} />
             </div>
-            <DetailedRatingDropdown
-              type={type}
-              additionalCategories={additionalRatingCategories}
-              ratingDetails={userRatingDetails}
-              onChange={(details) => {
-                if (setUserRatingDetails) {
-                  setUserRatingDetails(details);
-                  updateUserContentLog(id, { ratingDetails: details }).catch((e) => {
-                    console.error('Failed to update rating details', e);
-                  });
-                }
-              }}
-            />
 
             {((userTags && userTags.length > 0) ||
               (userTaggedUsers && userTaggedUsers.length > 0)) && (
@@ -600,9 +541,6 @@ const UserContentActions: React.FC<UserContentActionsProps> = ({
           </div>
 
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">
-              {t('titles.log')}
-            </h4>
             <button
               onClick={() => {
                 if (!user) {
@@ -625,25 +563,69 @@ const UserContentActions: React.FC<UserContentActionsProps> = ({
               </svg>
               {t('buttons.addNewLog')}
             </button>
-            <button
-              onClick={() => setShowLogModal(true)}
-              className="w-full mt-2 text-[13px] text-gray-500 hover:text-gray-300 transition-colors flex items-center justify-center gap-1.5 py-1.5"
-            >
-              <svg
-                className="w-3.5 h-3.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
+          </div>
+          <div className="mt-2 flex items-start justify-center gap-2 border-t border-neutral-800 pt-4">
+            {user && (
+              <div className="flex w-[78px] flex-col items-center gap-1">
+                <button
+                  type="button"
+                  aria-label={t('buttons.recommend')}
+                  title={t('buttons.recommend')}
+                  aria-haspopup="dialog"
+                  onClick={() => {
+                    emitDebugEvent({
+                      level: 'info',
+                      scope: 'Recommend',
+                      message: 'Öner dialog açıldı',
+                      data: { contentId: id },
+                    });
+                    setShowRecommendDialog(true);
+                  }}
+                  className="content-action-shortcut flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors"
+                >
+                  <Send size={20} aria-hidden="true" />
+                </button>
+                <span className="text-center text-[10px] leading-tight text-neutral-400">
+                  {t('buttons.recommend')}
+                </span>
+              </div>
+            )}
+            <div className="flex w-[78px] flex-col items-center gap-1">
+              <button
+                type="button"
+                aria-label={t('buttons.addToList')}
+                title={t('buttons.addToList')}
+                aria-haspopup="dialog"
+                data-active={isInAnyList}
+                onClick={() => {
+                  if (!user) {
+                    requireAuth(t('actions.list'));
+                    return;
+                  }
+                  setShowAddToListModal(true);
+                }}
+                className="content-action-shortcut flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              {t('buttons.viewLogHistory')}
-            </button>
+                <ListPlus size={20} aria-hidden="true" />
+              </button>
+              <span className="text-center text-[10px] leading-tight text-neutral-400">
+                {t('buttons.addToList')}
+              </span>
+            </div>
+            <div className="flex w-[78px] flex-col items-center gap-1">
+              <button
+                type="button"
+                aria-label={t('buttons.viewLogHistory')}
+                title={t('buttons.viewLogHistory')}
+                onClick={() => setShowLogModal(true)}
+                className="content-action-shortcut flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors"
+              >
+                <History size={20} aria-hidden="true" />
+              </button>
+              <span className="text-center text-[10px] leading-tight text-neutral-400">
+                {t('buttons.viewLogHistory')}
+              </span>
+            </div>
           </div>
           {Object.keys(actionErrors).length > 0 && (
             <div className="space-y-2">

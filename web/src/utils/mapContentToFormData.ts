@@ -150,6 +150,7 @@ export function mapContentToFormData(data: any): AddContentFormData {
     gameEngines: Array.isArray(data.gameEngines) ? data.gameEngines : [],
     perspectives: Array.isArray(data.perspectives) ? data.perspectives : [],
     platforms: Array.isArray(data.platforms) ? data.platforms : [],
+    fileSize: data.fileSize || '',
     // Game developer: companyRoleId = 5
     developerCompanies: Array.isArray(data.companies)
       ? data.companies

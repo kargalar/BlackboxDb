@@ -359,6 +359,7 @@ export class AdminAutoFillResolver {
       detail.esrbRating = data.esrbRating;
       detail.website = data.website;
       detail.trailerUrl = data.trailerUrl;
+      detail.fileSize = data.fileSize;
       detail.screenshots = data.screenshots;
 
       if (data.genres) {

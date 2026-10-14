@@ -190,7 +190,21 @@
       "noMusic": "No popular music yet"
     },
     "hero": {
-      "kicker": "Continue your journey",
+      "kicker": "Editor's Pick",
+      "defaultBadge": "Editor's Pick",
+      "featured": "Featured",
+      "showcase": "Weekly & Daily Picks",
+      "tabs": {
+        "all": "All",
+        "movie": "Movies",
+        "tv": "TV Shows",
+        "game": "Games",
+        "book": "Books",
+        "music": "Music"
+      },
+      "slideOf": "{current} of {total}",
+      "prev": "Previous",
+      "next": "Next",
       "contentType": {
         "movie": "Movie",
         "tvShow": "TV Show",
@@ -202,6 +216,25 @@
       "viewDetails": "View details",
       "addToList": "Add to list"
     }
+  },
+  "AdminShowcase": {
+    "title": "Editor's Picks (Showcase Management)",
+    "description": "Manage featured content displayed on the homepage showcase. You can select up to 5 items for each content type.",
+    "selectType": "Content Type",
+    "itemCount": "{count} / 5 Items Selected",
+    "searchPlaceholder": "Search content to add to showcase...",
+    "addContent": "Add Content",
+    "noItems": "No editor picks added for this category yet.",
+    "maxReached": "You can select up to 5 items.",
+    "badgePlaceholder": "Badge label (e.g. Movie of the Day, Pick of the Week)",
+    "quickBadges": "Quick Badges",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "savedSuccess": "Editor's picks saved successfully!",
+    "saveError": "An error occurred while saving.",
+    "moveUp": "Move Up",
+    "moveDown": "Move Down",
+    "remove": "Remove"
   },
   "Auth": {
     "brandSubtitle": "Discover movies and games",
@@ -430,6 +463,7 @@
       "production": "Production & Crew"
     },
     "videos": "Videos",
+    "soundtrack": "Soundtrack",
     "videoTypes": {
       "trailer": "Trailer",
       "review": "Review",
@@ -513,6 +547,7 @@
     "gameEngine": "Game Engine:",
     "perspective": "👁️ Perspective:",
     "platforms": "🖥️ Platforms:",
+    "fileSize": "💾 Storage / Size:",
     "themesWithEmoji": "🎨 Themes:",
     "publisherBook": "📚 Publisher:",
     "publisherGame": "🏢 Publisher:",

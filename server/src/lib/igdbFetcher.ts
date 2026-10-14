@@ -10,8 +10,14 @@ import { normalizeThemeName } from "./themeNormalizer";
  * API:  POST https://api.igdb.com/v4/{endpoint} (Apicalypse query body)
  */
 
-const IGDB_CLIENT_ID = process.env.IGDB_CLIENT_ID || "";
-const IGDB_CLIENT_SECRET = process.env.IGDB_CLIENT_SECRET || "";
+function getIgdbClientId(): string {
+  return process.env.IGDB_CLIENT_ID || "";
+}
+
+function getIgdbClientSecret(): string {
+  return process.env.IGDB_CLIENT_SECRET || "";
+}
+
 const TWITCH_TOKEN_URL = "https://id.twitch.tv/oauth2/token";
 const IGDB_BASE_URL = "https://api.igdb.com/v4";
 
@@ -29,7 +35,10 @@ async function getAccessToken(): Promise<string> {
     return cachedToken;
   }
 
-  if (!IGDB_CLIENT_ID || !IGDB_CLIENT_SECRET) {
+  const clientId = getIgdbClientId();
+  const clientSecret = getIgdbClientSecret();
+
+  if (!clientId || !clientSecret) {
     throw new Error(
       "IGDB_CLIENT_ID ve IGDB_CLIENT_SECRET env değişkenleri gerekli",
     );
@@ -38,8 +47,8 @@ async function getAccessToken(): Promise<string> {
   logger.debug("[IgdbFetcher] Requesting new Twitch OAuth token");
 
   const params = new URLSearchParams({
-    client_id: IGDB_CLIENT_ID,
-    client_secret: IGDB_CLIENT_SECRET,
+    client_id: clientId,
+    client_secret: clientSecret,
     grant_type: "client_credentials",
   });
 
@@ -72,7 +81,7 @@ async function igdbRequest<T>(endpoint: string, body: string): Promise<T> {
   const response = await fetch(`${IGDB_BASE_URL}/${endpoint}`, {
     method: "POST",
     headers: {
-      "Client-ID": IGDB_CLIENT_ID,
+      "Client-ID": getIgdbClientId(),
       Authorization: `Bearer ${token}`,
       "Content-Type": "text/plain",
     },
@@ -125,6 +134,7 @@ interface IgdbRawGame {
   }>;
   videos?: Array<{ id: number; video_id: string; name?: string }>;
   websites?: Array<{ id: number; category: number; url: string }>;
+  external_games?: Array<{ id: number; category: number; uid: string }>;
   artworks?: Array<{
     id: number;
     image_id: string;
@@ -203,6 +213,7 @@ export interface IgdbGameDetailData {
   esrbRating?: string;
   website?: string;
   trailerUrl?: string;
+  fileSize?: string;
   screenshots?: string[];
   playerPerspectives?: Array<{ id: number; name: string }>;
   gameModes?: Array<{ id: number; name: string }>;
@@ -248,6 +259,40 @@ const GAME_MODE_NAMES = [
 
 const IGDB_MAIN_GAME_CATEGORY = 0;
 
+/**
+ * Steam Store API'sinden sistem gereksinimlerinden disk/dosya boyutunu çeker
+ */
+async function fetchSteamStorageSize(appId: string | number): Promise<string | undefined> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appId}&l=english`, {
+      signal: controller.signal,
+      headers: { "Accept-Language": "en-US,en;q=0.9" },
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return undefined;
+    const data = (await res.json()) as Record<
+      string,
+      { success?: boolean; data?: { pc_requirements?: { minimum?: string; recommended?: string } } }
+    >;
+    const appData = data[String(appId)];
+    if (!appData?.success || !appData.data?.pc_requirements) return undefined;
+
+    const reqs =
+      (appData.data.pc_requirements.minimum || "") + " " + (appData.data.pc_requirements.recommended || "");
+    const match = reqs.match(
+      /(?:storage|hard drive|disk space|boş alan|depolama)[:\s]*(?:<[^>]*>\s*)*(?:ssd\s*)?(\d+(?:\.\d+)?)\s*(?:ssd\s*)?(GB|MB|TB)/i,
+    );
+    if (match) {
+      return `${match[1]} ${match[2].toUpperCase()}`;
+    }
+  } catch (error) {
+    logger.debug(`[IgdbFetcher] Failed to fetch Steam storage size for appId=${appId}: ${error}`);
+  }
+  return undefined;
+}
+
 // ─── Public API ───
 
 /**
@@ -260,7 +305,7 @@ export async function searchIgdbGames(
 ): Promise<IgdbSearchItem[]> {
   logger.info(`[IgdbFetcher] Searching games: "${query}" (limit=${limit}, offset=${offset})`);
 
-  if (!IGDB_CLIENT_ID || !IGDB_CLIENT_SECRET) {
+  if (!getIgdbClientId() || !getIgdbClientSecret()) {
     throw new Error("IGDB credentials not configured");
   }
 
@@ -300,7 +345,7 @@ export async function fetchIgdbGameDetails(
 ): Promise<IgdbGameDetailData> {
   logger.info(`[IgdbFetcher] Fetching game details: gameId=${gameId}`);
 
-  if (!IGDB_CLIENT_ID || !IGDB_CLIENT_SECRET) {
+  if (!getIgdbClientId() || !getIgdbClientSecret()) {
     throw new Error(
       "IGDB_CLIENT_ID ve IGDB_CLIENT_SECRET env değişkenleri gerekli",
     );
@@ -320,6 +365,7 @@ export async function fetchIgdbGameDetails(
              age_ratings.category, age_ratings.rating,
              videos.video_id, videos.name,
              websites.category, websites.url,
+             external_games.category, external_games.uid,
              player_perspectives.name,
              game_modes.name,
              collection.name,
@@ -377,6 +423,29 @@ export async function fetchIgdbGameDetails(
     let trailerUrl: string | undefined;
     if (game.videos && game.videos.length > 0) {
       trailerUrl = youtubeUrl(game.videos[0].video_id);
+    }
+
+    // Steam App ID for disk size (from external_games category 1 or websites store.steampowered.com/app/)
+    let steamAppId: string | undefined;
+    if (game.external_games) {
+      const steamExt = game.external_games.find((eg) => eg.category === 1);
+      if (steamExt?.uid) {
+        steamAppId = steamExt.uid;
+      }
+    }
+    if (!steamAppId && game.websites) {
+      for (const site of game.websites) {
+        const match = site.url?.match(/store\.steampowered\.com\/app\/(\d+)/i);
+        if (match) {
+          steamAppId = match[1];
+          break;
+        }
+      }
+    }
+
+    let fileSize: string | undefined;
+    if (steamAppId) {
+      fileSize = await fetchSteamStorageSize(steamAppId);
     }
 
     // Screenshots
@@ -463,6 +532,7 @@ export async function fetchIgdbGameDetails(
       esrbRating,
       website,
       trailerUrl,
+      fileSize,
       screenshots,
       playerPerspectives: game.player_perspectives
         ?.filter((pp) => !isGameMode(pp.name))
@@ -500,7 +570,7 @@ export async function fetchIgdbGameFranchise(
 ): Promise<{ name: string } | undefined> {
   logger.info(`[IgdbFetcher] Fetching game franchise: gameId=${gameId}`);
 
-  if (!IGDB_CLIENT_ID || !IGDB_CLIENT_SECRET) {
+  if (!getIgdbClientId() || !getIgdbClientSecret()) {
     throw new Error(
       "IGDB_CLIENT_ID ve IGDB_CLIENT_SECRET env değişkenleri gerekli",
     );
@@ -541,7 +611,7 @@ export async function fetchIgdbGameEngines(
 ): Promise<Array<{ id: number; name: string }>> {
   logger.info(`[IgdbFetcher] Fetching game engines: gameId=${gameId}`);
 
-  if (!IGDB_CLIENT_ID || !IGDB_CLIENT_SECRET) {
+  if (!getIgdbClientId() || !getIgdbClientSecret()) {
     throw new Error(
       "IGDB_CLIENT_ID ve IGDB_CLIENT_SECRET env değişkenleri gerekli",
     );
@@ -594,7 +664,7 @@ export async function fetchIgdbImages(
 ): Promise<ContentImagesResult> {
   logger.info(`[IgdbFetcher] Fetching images for gameId=${gameId}`);
 
-  if (!IGDB_CLIENT_ID || !IGDB_CLIENT_SECRET) {
+  if (!getIgdbClientId() || !getIgdbClientSecret()) {
     throw new Error("IGDB credentials not configured");
   }
 

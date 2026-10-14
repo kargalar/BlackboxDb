@@ -169,24 +169,24 @@ export default function UpcomingAnticipatedSection({
 
   if (splitByContentType) {
     return (
-      <section className="dashboard-upcoming-section space-y-8">
-        <h2 className="text-2xl font-bold flex items-center gap-3">
-          <span className="text-2xl">🚀</span>
+      <section className="dashboard-upcoming-section space-y-6">
+        <h2 className="text-xl font-bold flex items-center gap-2.5">
+          <span className="text-xl">🚀</span>
           <span className="gradient-text">Upcoming Releases</span>
         </h2>
         {activeTabs.map((tab) => {
           const typeItems = itemsByType[tab.type];
           if (!isLoading && typeItems.length === 0) return null;
           return (
-            <div key={tab.type} className="space-y-4">
-              <h3 className="text-sm font-semibold text-white/80 flex items-center gap-2">
+            <div key={tab.type} className="space-y-3">
+              <h3 className="text-xs font-semibold text-white/80 flex items-center gap-2">
                 <span>{tab.emoji}</span>
                 {tab.label}
               </h3>
               {isLoading ? (
                 <SkeletonGrid />
               ) : (
-                <div className="flex gap-4 overflow-x-auto pb-4 pr-1 scrollbar-hide">
+                <div className="flex gap-3 overflow-x-auto pb-2 pr-1 scrollbar-hide">
                   {typeItems.map((item) => {
                     const state = itemStates[item.id] || DEFAULT_ITEM_STATE;
                     const timeUntil = item.releaseDate
@@ -198,7 +198,7 @@ export default function UpcomingAnticipatedSection({
                       <div
                         key={`${contentType}-${item.id}`}
                         draggable={false}
-                        className="w-[148px] min-w-[148px] sm:w-[158px] sm:min-w-[158px] lg:w-[168px] lg:min-w-[168px] flex-none transition-transform duration-300 hover:scale-[1.02] flex flex-col"
+                        className="w-[120px] min-w-[120px] sm:w-[130px] sm:min-w-[130px] lg:w-[138px] lg:min-w-[138px] flex-none transition-transform duration-300 hover:scale-[1.02] flex flex-col"
                       >
                         <InteractivePoster
                           content={item}
@@ -218,9 +218,15 @@ export default function UpcomingAnticipatedSection({
                           context="dashboard"
                           useNextImage={contentType !== 'game'}
                         />
-                        <div className="mt-4 flex flex-col items-center justify-center gap-2 px-1">
+                        <div className="mt-2 flex items-center justify-between gap-1 px-1">
                           {timeUntil && (
-                            <span className="text-[10px] text-white/50">
+                            <span
+                              className={`text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded border ${
+                                timeUntil.isReleased
+                                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                                  : 'bg-white/[0.07] text-white/85 border-white/10'
+                              }`}
+                            >
                               {timeUntil.isReleased
                                 ? 'Released'
                                 : timeUntil.days === 0 && timeUntil.hours === 0
@@ -229,8 +235,12 @@ export default function UpcomingAnticipatedSection({
                             </span>
                           )}
                           {count > 0 && (
-                            <span className="text-white/70 text-[10px] font-medium">
-                              {count} waiting
+                            <span
+                              className="text-white/60 text-[10px] font-medium flex items-center gap-0.5 bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/5"
+                              title={`${count} waiting`}
+                            >
+                              <span className="opacity-70">👤</span>
+                              <span className="font-semibold text-white/80">{count}</span>
                             </span>
                           )}
                         </div>
@@ -247,24 +257,24 @@ export default function UpcomingAnticipatedSection({
   }
 
   return (
-    <section className="dashboard-upcoming-section space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-white/5">
-        <h2 className="text-2xl font-bold flex items-center gap-3">
-          <span className="text-2xl">🚀</span>
+    <section className="dashboard-upcoming-section space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-white/5">
+        <h2 className="text-xl font-bold flex items-center gap-2.5">
+          <span className="text-xl">🚀</span>
           <span className="gradient-text">Upcoming Releases</span>
         </h2>
 
         {/* Premium Tab Selectors */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {availableTabs.map(({ type, label, emoji }) => {
             const isActive = selectedTab === type;
             return (
               <button
                 key={type}
                 onClick={() => setActiveTab(type)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 transform active:scale-95 border ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 transform active:scale-95 border ${
                   isActive
-                    ? 'bg-blue-500/20 text-white border-blue-500/50 shadow-md shadow-blue-500/10'
+                    ? 'bg-blue-500/20 text-white border-blue-500/50 shadow-sm shadow-blue-500/10'
                     : 'bg-white/[0.02] text-white/60 border-white/5 hover:bg-white/[0.06] hover:text-white/90 hover:border-white/10'
                 }`}
               >
@@ -281,7 +291,7 @@ export default function UpcomingAnticipatedSection({
       ) : currentTypedItems.length > 0 ? (
         <div
           {...dragScrollProps}
-          className="flex gap-4 overflow-x-auto pb-4 pr-1 scrollbar-hide cursor-grab active:cursor-grabbing select-none"
+          className="flex gap-3 overflow-x-auto pb-2 pr-1 scrollbar-hide cursor-grab active:cursor-grabbing select-none"
         >
           {currentTypedItems.map((item) => {
             const state = itemStates[item.id] || DEFAULT_ITEM_STATE;
@@ -293,7 +303,7 @@ export default function UpcomingAnticipatedSection({
               <div
                 key={`${contentType}-${item.id}`}
                 draggable={false}
-                className="w-[148px] min-w-[148px] sm:w-[158px] sm:min-w-[158px] lg:w-[168px] lg:min-w-[168px] flex-none transition-transform duration-300 hover:scale-[1.02] flex flex-col"
+                className="w-[120px] min-w-[120px] sm:w-[130px] sm:min-w-[130px] lg:w-[138px] lg:min-w-[138px] flex-none transition-transform duration-300 hover:scale-[1.02] flex flex-col"
               >
                 <InteractivePoster
                   content={item}
@@ -314,63 +324,31 @@ export default function UpcomingAnticipatedSection({
                   useNextImage={contentType !== 'game'} // Match the main config
                 />
 
-                <div className="mt-4 flex flex-col items-center justify-center gap-2 px-1">
+                <div className="mt-2 flex items-center justify-between gap-1 px-1">
                   {timeUntil && (
-                    <div className="flex items-center gap-1.5">
-                      {timeUntil.isReleased ? (
-                        <div className="relative flex items-center justify-center bg-surface-panel rounded text-green-400 font-mono font-black text-xs px-4 h-9 shadow-lg border border-green-500/20">
-                          <div className="absolute top-1/2 left-0 right-0 h-[1.5px] bg-black/90 shadow-[0_1px_0_rgba(255,255,255,0.1)] z-10"></div>
-                          <div className="absolute top-0 left-0 right-0 bottom-1/2 bg-white/10 rounded-t"></div>
-                          <span className="relative z-0 leading-none tracking-widest">
-                            RELEASED
-                          </span>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex flex-col items-center gap-1">
-                            <div className="relative flex items-center justify-center bg-surface-raised rounded text-white font-mono font-black text-xl px-2 min-w-[36px] h-9 shadow-[0_4px_10px_rgba(0,0,0,0.5)] border border-white/5">
-                              <div className="absolute top-1/2 left-0 right-0 h-[1.5px] bg-black/90 shadow-[0_1px_0_rgba(255,255,255,0.05)] z-10"></div>
-                              <div className="absolute top-0 left-0 right-0 bottom-1/2 bg-white/5 rounded-t"></div>
-                              <span className="relative z-0 leading-none">
-                                {timeUntil.days.toString().padStart(2, '0')}
-                              </span>
-                            </div>
-                            <span className="text-[9px] text-white/40 uppercase tracking-widest font-medium">
-                              Days
-                            </span>
-                          </div>
-
-                          <span className="text-white/20 font-bold text-lg -mt-4">:</span>
-
-                          <div className="flex flex-col items-center gap-1">
-                            <div className="relative flex items-center justify-center bg-surface-raised rounded text-white font-mono font-black text-xl px-2 min-w-[36px] h-9 shadow-[0_4px_10px_rgba(0,0,0,0.5)] border border-white/5">
-                              <div className="absolute top-1/2 left-0 right-0 h-[1.5px] bg-black/90 shadow-[0_1px_0_rgba(255,255,255,0.05)] z-10"></div>
-                              <div className="absolute top-0 left-0 right-0 bottom-1/2 bg-white/5 rounded-t"></div>
-                              <span className="relative z-0 leading-none">
-                                {(timeUntil.days === 0 && timeUntil.hours === 0
-                                  ? timeUntil.minutes
-                                  : timeUntil.hours
-                                )
-                                  .toString()
-                                  .padStart(2, '0')}
-                              </span>
-                            </div>
-                            <span className="text-[9px] text-white/40 uppercase tracking-widest font-medium">
-                              {timeUntil.days === 0 && timeUntil.hours === 0 ? 'Minutes' : 'Hours'}
-                            </span>
-                          </div>
-                        </>
-                      )}
-                    </div>
+                    <span
+                      className={`text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded border ${
+                        timeUntil.isReleased
+                          ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                          : 'bg-white/[0.07] text-white/85 border-white/10'
+                      }`}
+                    >
+                      {timeUntil.isReleased
+                        ? 'Released'
+                        : timeUntil.days === 0 && timeUntil.hours === 0
+                          ? `${timeUntil.minutes}m`
+                          : `${timeUntil.days}d ${timeUntil.hours}h`}
+                    </span>
                   )}
 
                   {count > 0 && (
-                    <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-2.5 py-0.5 border border-white/10 mt-1">
-                      <span className="text-[10px]">👤</span>
-                      <span className="text-white/70 text-[10px] font-medium">
-                        <span className="text-white font-bold">{count}</span> waiting
-                      </span>
-                    </div>
+                    <span
+                      className="text-white/60 text-[10px] font-medium flex items-center gap-0.5 bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/5"
+                      title={`${count} waiting`}
+                    >
+                      <span className="opacity-70">👤</span>
+                      <span className="font-semibold text-white/80">{count}</span>
+                    </span>
                   )}
                 </div>
               </div>

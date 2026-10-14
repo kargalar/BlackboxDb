@@ -38,6 +38,7 @@ const FORM_TO_INPUT_KEYS: Record<string, string[]> = {
   gameEngines: ['gameEngines'],
   perspectives: ['perspectives'],
   platforms: ['platforms'],
+  fileSize: ['fileSize'],
   developerCompanies: ['companies'],
   publisherCompanies: ['companies'],
   studios: ['companies'],
@@ -102,6 +103,7 @@ const NULLABLE_SCALAR_INPUT_KEYS = new Set([
   'reviewVideoUrl',
   'gameplayVideoUrl',
   'spotifyPlaylistUrl',
+  'fileSize',
   'autoSelectHighestVotedMedia',
 ]);
 

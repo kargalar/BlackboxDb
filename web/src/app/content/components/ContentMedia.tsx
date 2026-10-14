@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import ContentScreenshots from './ContentScreenshots';
 import { UnifiedContent } from '@/types/unified-content';
-import { ImageIcon, Video } from 'lucide-react';
+import { ImageIcon, Music2, Video } from 'lucide-react';
+import { ContentSoundtrack } from './ContentSoundtrack';
 
 interface ContentMediaProps {
   content: UnifiedContent;
@@ -51,11 +52,14 @@ export default function ContentMedia({ content, isWatched }: ContentMediaProps) 
   ].filter((video) => video.url);
 
   const hasVideos = videos.length > 0;
+  const soundtrackUrl = content?.spotifyPlaylistUrl || content?.spotifyUrl;
+  const hasSoundtrack = Boolean(soundtrackUrl);
 
   // Tabs should be visible if we have more than one type of media
   const availableTabs = [
     ...(hasScreenshots ? ['screenshots'] : []),
     ...(hasVideos ? ['videos'] : []),
+    ...(hasSoundtrack ? ['soundtrack'] : []),
     ...(hasPosters ? ['posters'] : []),
     ...(hasBackdrops ? ['backdrops'] : []),
   ];
@@ -71,7 +75,7 @@ export default function ContentMedia({ content, isWatched }: ContentMediaProps) 
   return (
     <div className="mb-8">
       {/* Tabs */}
-      {availableTabs.length > 1 && (
+      {(availableTabs.length > 1 || hasSoundtrack) && (
         <div className="flex flex-wrap items-center gap-2 mb-6 border-b border-white/10 pb-4">
           {hasScreenshots && (
             <button
@@ -97,6 +101,19 @@ export default function ContentMedia({ content, isWatched }: ContentMediaProps) 
             >
               <Video className="w-4 h-4" />
               {tHeader('videos')} ({videos.length})
+            </button>
+          )}
+          {hasSoundtrack && (
+            <button
+              onClick={() => setActiveTab('soundtrack')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                activeTab === 'soundtrack'
+                  ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/25'
+                  : 'text-white/50 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Music2 className="w-4 h-4" />
+              {tHeader('soundtrack')}
             </button>
           )}
           {hasPosters && (
@@ -205,6 +222,12 @@ export default function ContentMedia({ content, isWatched }: ContentMediaProps) 
               );
             })}
           </div>
+        </div>
+      )}
+
+      {hasSoundtrack && activeTab === 'soundtrack' && (
+        <div className="animate-in fade-in duration-300">
+          <ContentSoundtrack spotifyPlaylistUrl={soundtrackUrl!} />
         </div>
       )}
     </div>

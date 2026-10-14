@@ -78,6 +78,7 @@ import {
   ContentImageFieldResolver,
   ContentScreenshotFieldResolver,
 } from "./resolvers/MediaVoteResolver";
+import { EditorPickResolver } from "./resolvers/EditorPickResolver";
 
 // Context
 import { basePrisma, createContext, GraphQLContext } from "./context";
@@ -245,6 +246,7 @@ async function bootstrap() {
       MediaVoteResolver,
       ContentImageFieldResolver,
       ContentScreenshotFieldResolver,
+      EditorPickResolver,
     ],
     validate: true,
     authChecker: ({ context, info }, roles) => {

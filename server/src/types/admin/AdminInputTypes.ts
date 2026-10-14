@@ -429,6 +429,9 @@ export class UpdateContentInput {
   @Field(() => [PlatformInput], { nullable: true })
   platforms?: PlatformInput[];
 
+  @Field(() => String, { nullable: true })
+  fileSize?: string;
+
   @Field(() => [ContentCompanyInput], { nullable: true })
   companies?: ContentCompanyInput[];
 

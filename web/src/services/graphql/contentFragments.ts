@@ -145,6 +145,7 @@ export const CONTENT_DETAIL_FIELDS = gql`
       id
       name
     }
+    fileSize
     themes {
       id
       name

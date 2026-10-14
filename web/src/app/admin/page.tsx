@@ -348,6 +348,13 @@ export default function AdminHome() {
       desc: t('links.requests.desc'),
     },
     {
+      href: '/admin/showcase',
+      icon: '✨',
+      title: 'Editörün Seçtikleri (Vitrin)',
+      desc: 'Ana sayfa üst vitrininde gösterilecek içerikleri (her tür için en fazla 5 adet) yönetin.',
+      highlight: true,
+    },
+    {
       href: '/admin/content',
       icon: '📁',
       title: t('links.content.title'),

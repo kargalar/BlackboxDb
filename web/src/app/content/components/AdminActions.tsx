@@ -55,10 +55,6 @@ const AdminActions: React.FC<AdminActionsProps> = ({ id, type }) => {
 
   return (
     <div className="glass-card p-5">
-      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
-        <span className="text-xl">⚙️</span>
-        <span className="gradient-text">{t('title')}</span>
-      </h3>
       <div className="flex flex-col gap-2">
         <button
           onClick={() => {

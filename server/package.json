@@ -30,6 +30,7 @@
     "script:repair-data-integrity": "tsx src/scripts/repairDataIntegrity.ts",
     "script:normalize-theme-decades": "tsx src/scripts/normalizeThemeDecades.ts",
     "script:simplify-lookup-catalogs": "tsx src/scripts/simplifyLookupCatalogs.ts",
+    "script:curate-lookups": "tsx src/scripts/curateLookups.ts",
     "script:fix-lists": "tsx src/scripts/fixLists.ts",
     "script:update-game-igdb": "tsx src/scripts/updateGameIgdbMetadata.ts",
     "script:fetch-popular-lists": "tsx src/scripts/fetchPopularContentLists.ts",

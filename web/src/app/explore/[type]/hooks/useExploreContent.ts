@@ -153,6 +153,16 @@ function buildServerFilters(
     if (ids.length > 0) serverFilters.gameModeIds = ids;
   }
 
+  // Game engine IDs
+  if (filters.gameEngines && filters.gameEngines.length > 0) {
+    if (filters.gameEngines.includes(OTHER_FILTER_ID)) emptyFilters.add('gameEngine');
+    const ids = filters.gameEngines
+      .filter((g) => g !== OTHER_FILTER_ID)
+      .map(Number)
+      .filter((n) => !isNaN(n));
+    if (ids.length > 0) serverFilters.gameEngineIds = ids;
+  }
+
   // Perspective IDs
   if (filters.perspectives && filters.perspectives.length > 0) {
     if (filters.perspectives.includes(OTHER_FILTER_ID)) emptyFilters.add('perspective');

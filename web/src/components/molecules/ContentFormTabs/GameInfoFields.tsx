@@ -54,6 +54,20 @@ export function GameInfoFields({ formData, setFormData }: GameInfoFieldsProps) {
         placeholder="Örn: 1942"
       />
 
+      <FormInput
+        label="Dosya Boyutu"
+        name="fileSize"
+        type="text"
+        value={formData.fileSize || ''}
+        onChange={(value) =>
+          setFormData({
+            ...formData,
+            fileSize: value,
+          })
+        }
+        placeholder="Örn: 70 GB, 500 MB"
+      />
+
       {/* Game Modes */}
       <CompactTagSelector
         label="Oyun Modları"

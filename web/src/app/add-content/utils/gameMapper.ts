@@ -72,6 +72,7 @@ export function mapGameToFormData(detail: AutoFillGameDetailData): Partial<AddCo
     ageRating: mapEsrbRating(detail.esrbRating),
     perspectives: mapSimpleItems(detail.playerPerspectives),
     gameModes: mapSimpleItems(detail.gameModes),
+    fileSize: detail.fileSize || '',
 
     // Expansions (DLC + Remake)
     expansions: detail.expansions

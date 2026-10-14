@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import type { Route } from 'next';
 import type { UnifiedContent, ContentPerson } from '@/types/unified-content';
 import { useTranslations } from 'next-intl';
 import AgeRatingBadge from '@/components/atoms/AgeRatingBadge';
@@ -13,6 +14,7 @@ interface ContentDetailTabProps {
   genres: any[];
   crew: ContentPerson[];
   getPublishers: () => { id: string; name: string; logoUrl?: string | null }[];
+  getDevelopers?: () => { id: string; name: string; logoUrl?: string | null }[];
   getProductionCompanies?: () => { id: string; name: string; logoUrl?: string | null }[];
   getNetworks: () => any[];
   formatDate: (dateString: string) => string;
@@ -26,6 +28,7 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
   genres,
   crew,
   getPublishers,
+  getDevelopers = () => [],
   getProductionCompanies = () => [],
   getNetworks,
   formatDate,
@@ -106,17 +109,39 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
         {/* GAME SPECIFIC DETAILS */}
         {type === 'game' && (
           <>
+            {getDevelopers().length > 0 && (
+              <div className="flex items-start gap-2">
+                <span className="text-gray-400 whitespace-nowrap mt-1">{t('studio')}</span>
+                <div className="flex flex-wrap gap-2">
+                  {getDevelopers().map((developer, index) => (
+                    <Link
+                      key={index}
+                      href={`/company/${developer.id}` as Route}
+                      className="border border-gray-300 bg-[#ffffff] px-3 py-1.5 rounded flex items-center justify-center transition-colors hover:bg-[#f3f4f6] text-sm text-gray-900 font-medium"
+                    >
+                      {developer.logoUrl ? (
+                        <CompanyLogo src={developer.logoUrl} name={developer.name} />
+                      ) : (
+                        developer.name
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {content?.gameModes && content.gameModes.length > 0 && (
               <div className="flex items-start gap-2">
                 <span className="text-gray-400 whitespace-nowrap">{t('gameModes')}</span>
                 <div className="flex flex-wrap gap-1">
                   {content.gameModes.map((mode, index) => (
-                    <span
-                      key={index}
-                      className="bg-green-900/50 border border-green-700 px-2 py-0.5 rounded text-sm text-green-300"
+                    <Link
+                      key={mode.id || index}
+                      href={`/explore/game?gameMode=${mode.id || mode.name}` as Route}
+                      className="bg-green-900/50 border border-green-700 hover:bg-green-800/80 hover:border-green-500 px-2 py-0.5 rounded text-sm text-green-300 transition-colors"
                     >
                       {mode.name}
-                    </span>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -127,12 +152,13 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
                 <span className="text-gray-400 whitespace-nowrap">{t('gameEngine')}</span>
                 <div className="flex flex-wrap gap-1">
                   {content.gameEngines.map((engine, index) => (
-                    <span
-                      key={index}
-                      className="bg-cyan-900/50 border border-cyan-700 px-2 py-0.5 rounded text-sm text-cyan-300"
+                    <Link
+                      key={engine.id || index}
+                      href={`/explore/game?gameEngine=${engine.id || engine.name}` as Route}
+                      className="bg-cyan-900/50 border border-cyan-700 hover:bg-cyan-800/80 hover:border-cyan-500 px-2 py-0.5 rounded text-sm text-cyan-300 transition-colors"
                     >
                       {engine.name}
-                    </span>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -143,12 +169,13 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
                 <span className="text-gray-400 whitespace-nowrap">{t('perspective')}</span>
                 <div className="flex flex-wrap gap-1">
                   {content.perspectives.map((perspective, index) => (
-                    <span
-                      key={index}
-                      className="bg-purple-900/50 border border-purple-700 px-2 py-0.5 rounded text-sm text-purple-300"
+                    <Link
+                      key={perspective.id || index}
+                      href={`/explore/game?perspective=${perspective.id || perspective.name}` as Route}
+                      className="bg-purple-900/50 border border-purple-700 hover:bg-purple-800/80 hover:border-purple-500 px-2 py-0.5 rounded text-sm text-purple-300 transition-colors"
                     >
                       {perspective.name}
-                    </span>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -159,14 +186,24 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
                 <span className="text-gray-400 whitespace-nowrap">{t('platforms')}</span>
                 <div className="flex flex-wrap gap-1">
                   {content.platforms.map((platform, index) => (
-                    <span
-                      key={index}
-                      className="bg-blue-900/50 border border-blue-700 px-2 py-0.5 rounded text-sm text-blue-300"
+                    <Link
+                      key={platform.id || index}
+                      href={`/explore/${type}?platform=${platform.id || platform.name}` as Route}
+                      className="bg-blue-900/50 border border-blue-700 hover:bg-blue-800/80 hover:border-blue-500 px-2 py-0.5 rounded text-sm text-blue-300 transition-colors"
                     >
                       {platform.name}
-                    </span>
+                    </Link>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {content?.fileSize && (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 whitespace-nowrap">{t('fileSize')}</span>
+                <span className="bg-gray-800 border border-gray-700 px-2 py-0.5 rounded text-sm text-gray-200 font-medium">
+                  {content.fileSize}
+                </span>
               </div>
             )}
 
@@ -175,12 +212,13 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
                 <span className="text-gray-400 whitespace-nowrap">{t('themesWithEmoji')}</span>
                 <div className="flex flex-wrap gap-1">
                   {content.themes.map((theme, index) => (
-                    <span
-                      key={index}
-                      className="bg-orange-900/50 border border-orange-700 px-2 py-0.5 rounded text-sm text-orange-300"
+                    <Link
+                      key={theme.id || index}
+                      href={`/explore/${type}?theme=${theme.id || theme.name}` as Route}
+                      className="bg-orange-900/50 border border-orange-700 hover:bg-orange-800/80 hover:border-orange-500 px-2 py-0.5 rounded text-sm text-orange-300 transition-colors"
                     >
                       {theme.name}
-                    </span>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -275,12 +313,13 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
                 <span className="text-gray-400 whitespace-nowrap">{t('categories')}</span>
                 <div className="flex flex-wrap gap-1">
                   {content.categories.map((category: string, index: number) => (
-                    <span
+                    <Link
                       key={index}
-                      className="bg-purple-900/50 border border-purple-700 px-2 py-0.5 rounded text-sm text-purple-300"
+                      href={`/explore/book?genre=${encodeURIComponent(category)}` as Route}
+                      className="bg-purple-900/50 border border-purple-700 hover:bg-purple-800/80 hover:border-purple-500 px-2 py-0.5 rounded text-sm text-purple-300 transition-colors"
                     >
                       {category}
-                    </span>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -396,12 +435,13 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
           <h3 className="text-lg font-medium text-gray-200">Awards</h3>
           <div className="flex flex-wrap gap-2">
             {content.awards.map((award, index) => (
-              <span
+              <Link
                 key={`${award}-${index}`}
-                className="bg-amber-900/30 border border-amber-600/40 px-3 py-1 rounded-full text-sm text-amber-200"
+                href={`/explore/${type}?hasAwards=true` as Route}
+                className="bg-amber-900/30 border border-amber-600/40 hover:bg-amber-800/60 hover:border-amber-500 px-3 py-1 rounded-full text-sm text-amber-200 transition-colors"
               >
                 {award}
-              </span>
+              </Link>
             ))}
           </div>
         </div>
@@ -472,9 +512,13 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
           <h3 className="text-lg font-medium text-gray-200">{t('network')}</h3>
           <div className="flex flex-wrap gap-2">
             {getNetworks().map((n) => (
-              <span key={n.id} className="bg-gray-700 px-3 py-1 rounded-full text-sm">
+              <Link
+                key={n.id}
+                href={`/company/${n.id}` as Route}
+                className="bg-gray-700 hover:bg-violet-600 px-3 py-1 rounded-full text-sm transition-colors text-white"
+              >
                 {n.name}
-              </span>
+              </Link>
             ))}
           </div>
         </div>

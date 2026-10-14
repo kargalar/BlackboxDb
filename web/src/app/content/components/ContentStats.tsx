@@ -105,8 +105,8 @@ const ContentStats = ({ stats, type, contentId }: StatsProps) => {
           </div>
         </div>
 
-        <div className="flex items-end gap-2 mt-4">
-          <div className="flex items-end justify-center gap-0.5 h-14 flex-1">
+        <div className="flex items-end justify-center gap-2 mt-4">
+          <div className="flex w-full max-w-[200px] flex-none items-end justify-center gap-0.5 h-14">
             {ratingScale.map((rating, index) => {
               const count = stats.rating_distribution?.[index] || 0;
               const maxCount = Math.max(...(stats.rating_distribution || [1]));

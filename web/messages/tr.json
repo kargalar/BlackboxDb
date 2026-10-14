@@ -188,7 +188,21 @@
       "noMusic": "Henüz popüler müzik yok"
     },
     "hero": {
-      "kicker": "Kaldığın yerden devam et",
+      "kicker": "Editörün Seçimi",
+      "defaultBadge": "Editörün Seçimi",
+      "featured": "Öne Çıkan",
+      "showcase": "Haftanın & Günün İçerikleri",
+      "tabs": {
+        "all": "Tümü",
+        "movie": "Filmler",
+        "tv": "Diziler",
+        "game": "Oyunlar",
+        "book": "Kitaplar",
+        "music": "Müzik"
+      },
+      "slideOf": "{current} / {total}",
+      "prev": "Önceki",
+      "next": "Sonraki",
       "contentType": {
         "movie": "Film",
         "tvShow": "Dizi",
@@ -200,6 +214,25 @@
       "viewDetails": "Detayları gör",
       "addToList": "Listeye ekle"
     }
+  },
+  "AdminShowcase": {
+    "title": "Editörün Seçtikleri (Vitrin Yönetimi)",
+    "description": "Ana sayfa üst vitrininde gösterilecek içerikleri yönetin. Her içerik türü için en fazla 5 içerik seçebilirsiniz.",
+    "selectType": "İçerik Türü",
+    "itemCount": "{count} / 5 İçerik Seçildi",
+    "searchPlaceholder": "Vitrine eklemek için içerik arayın...",
+    "addContent": "İçerik Ekle",
+    "noItems": "Bu tür için henüz editör seçimi eklenmemiş.",
+    "maxReached": "En fazla 5 içerik seçebilirsiniz.",
+    "badgePlaceholder": "Rozet metni (örn: Günün Filmi, Haftanın Oyunu)",
+    "quickBadges": "Hazır Rozetler",
+    "save": "Değişiklikleri Kaydet",
+    "saving": "Kaydediliyor...",
+    "savedSuccess": "Editör seçimleri başarıyla kaydedildi!",
+    "saveError": "Kaydedilirken bir hata oluştu.",
+    "moveUp": "Yukarı",
+    "moveDown": "Aşağı",
+    "remove": "Kaldır"
   },
   "Auth": {
     "brandSubtitle": "Film ve oyunları keşfet",
@@ -428,6 +461,7 @@
       "production": "Production & Crew"
     },
     "videos": "Videos",
+    "soundtrack": "Soundtrack",
     "videoTypes": {
       "trailer": "Trailer",
       "review": "Review",
@@ -511,6 +545,7 @@
     "gameEngine": "Game Engine:",
     "perspective": "👁️ Perspective:",
     "platforms": "🖥️ Platforms:",
+    "fileSize": "💾 Dosya Boyutu:",
     "themesWithEmoji": "🎨 Themes:",
     "publisherBook": "📚 Publisher:",
     "publisherGame": "🏢 Publisher:",

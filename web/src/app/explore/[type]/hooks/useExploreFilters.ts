@@ -28,6 +28,7 @@ export function useExploreFilters(contentType: string, contentTypeId: number) {
       directors: params.getAll('director'),
       companies: params.getAll('company'),
       gameModes: params.getAll('gameMode'),
+      gameEngines: params.getAll('gameEngine'),
       perspectives: params.getAll('perspective'),
       language: params.getAll('language'),
       publicationLanguage: params.getAll('publicationLanguage'),
@@ -118,6 +119,7 @@ export function useExploreFilters(contentType: string, contentTypeId: number) {
       'director',
       'company',
       'gameMode',
+      'gameEngine',
       'perspective',
       'language',
       'publicationLanguage',
@@ -150,6 +152,7 @@ export function useExploreFilters(contentType: string, contentTypeId: number) {
     newFilters.directors?.forEach((v) => params.append('director', String(v)));
     newFilters.companies?.forEach((v) => params.append('company', String(v)));
     newFilters.gameModes?.forEach((v) => params.append('gameMode', v));
+    newFilters.gameEngines?.forEach((v) => params.append('gameEngine', v));
     newFilters.perspectives?.forEach((v) => params.append('perspective', v));
     newFilters.language?.forEach((v) => params.append('language', v));
     newFilters.publicationLanguage?.forEach((v) => params.append('publicationLanguage', v));

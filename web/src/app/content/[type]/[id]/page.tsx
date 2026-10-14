@@ -15,7 +15,6 @@ import ContentMedia from '@/app/content/components/ContentMedia';
 import ContentFranchise from '@/app/content/components/ContentFranchise';
 import ContentExpansions from '@/app/content/components/ContentExpansions';
 import ContentBookPublications from '@/app/content/components/ContentBookPublications';
-import { ContentSoundtrack } from '@/app/content/components/ContentSoundtrack';
 import { PodcastProgramSection } from '@/app/content/components/PodcastProgramSection';
 import { MediaEventList } from '@/app/content/components/MediaEventList';
 import { MusicReleaseSection } from '@/app/content/components/MusicReleaseSection';
@@ -1290,15 +1289,6 @@ export default function ContentDetailPage() {
           {type !== 'book' && content && (
             <div className="content-detail-section content-media-section">
               <ContentMedia content={content} isWatched={isConsumed} />
-            </div>
-          )}
-
-          {/* Soundtrack */}
-          {type !== 'book' && (content?.spotifyPlaylistUrl || content?.spotifyUrl) && (
-            <div className="content-detail-section content-soundtrack-section">
-              <ContentSoundtrack
-                spotifyPlaylistUrl={content.spotifyPlaylistUrl || content.spotifyUrl!}
-              />
             </div>
           )}
 

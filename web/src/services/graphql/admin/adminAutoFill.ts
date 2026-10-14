@@ -109,6 +109,7 @@ const AUTO_FILL_GAME_DETAIL_FRAGMENT = gql`
     esrbRating
     website
     trailerUrl
+    fileSize
     reviewVideoUrl
     gameplayVideoUrl
     screenshots
@@ -266,6 +267,7 @@ export interface AutoFillGameDetailData {
   esrbRating?: string;
   website?: string;
   trailerUrl?: string;
+  fileSize?: string;
   reviewVideoUrl?: string;
   gameplayVideoUrl?: string;
   screenshots?: string[];

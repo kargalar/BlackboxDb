@@ -168,6 +168,7 @@ export interface AddContentFormData {
   publisherCompanies?: CompanyItem[];
   studios?: CompanyItem[];
   platforms: SimpleItem[];
+  fileSize: string;
   expansions: ExpansionItem[];
 
   // Screenshots
@@ -246,6 +247,7 @@ export const INITIAL_FORM_DATA: AddContentFormData = {
   gameEngines: [],
   perspectives: [],
   platforms: [],
+  fileSize: '',
   publisherCompanies: [],
   developerCompanies: [],
   studios: [],

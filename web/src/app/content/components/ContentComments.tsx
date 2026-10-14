@@ -600,14 +600,11 @@ export default function ContentComments({
 
   return (
     <div className="content-review-section mb-8">
-      <div className="content-review-header glass-card p-4 sm:p-5">
+      <div className="content-review-panel glass-card overflow-hidden">
+      <div className="content-review-header p-4 sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="content-review-eyebrow">Community</p>
-            <h2 className="mt-1 text-xl font-semibold text-white">Reviews &amp; discussions</h2>
-            <p className="mt-1 text-sm text-white/45">
-              Share your take, compare ratings, and join the conversation.
-            </p>
+            <h2 className="text-xl font-semibold text-white">Reviews &amp; discussions</h2>
           </div>
           <div className="content-review-counts">
             <span>{comments.length} reviews</span>
@@ -805,7 +802,7 @@ export default function ContentComments({
 
       {/* Comments List */}
       {!loading && comments.length > 0 && (
-        <div className="content-review-list glass-card divide-y divide-white/10">
+        <div className="content-review-list divide-y divide-white/10">
           {comments.map((comment) => (
             <div
               key={comment.id}
@@ -814,7 +811,7 @@ export default function ContentComments({
             >
               <div className="flex gap-4">
                 {/* Vote Buttons */}
-                <div className="flex flex-col items-center gap-1 w-8 pt-1">
+                <div className="flex flex-col items-center justify-center gap-1 self-stretch w-8">
                   {user?.id !== comment.authorId && (
                     <button
                       onClick={(e) => {
@@ -1186,6 +1183,8 @@ export default function ContentComments({
           ))}
         </div>
       )}
+
+      </div>
 
       {reportingComment && (
         <ReportModal

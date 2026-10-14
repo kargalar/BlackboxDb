@@ -219,6 +219,9 @@ export class AutoFillGameDetail {
   trailerUrl?: string;
 
   @Field(() => String, { nullable: true })
+  fileSize?: string;
+
+  @Field(() => String, { nullable: true })
   reviewVideoUrl?: string;
 
   @Field(() => String, { nullable: true })

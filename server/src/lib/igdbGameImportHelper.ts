@@ -95,6 +95,7 @@ async function buildGameData(
       releaseDate: details.releaseDate,
     }),
     trailerUrl: details.trailerUrl || null,
+    fileSize: details.fileSize || null,
     igdbId: details.sourceId,
     franchiseId,
   };

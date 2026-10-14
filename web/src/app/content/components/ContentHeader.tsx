@@ -12,7 +12,6 @@ import ContentAlternativeImages from '@/app/content/components/ContentAlternativ
 import ContentFranchise from '@/app/content/components/ContentFranchise';
 import ContentExpansions from '@/app/content/components/ContentExpansions';
 import ContentBookPublications from '@/app/content/components/ContentBookPublications';
-import { ContentSoundtrack } from '@/app/content/components/ContentSoundtrack';
 
 import ContentStats from './ContentStats';
 import { ContentCastTab } from './ContentCastTab';
@@ -356,9 +355,6 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
               <div className="min-w-0">
                 <h1 className="text-4xl font-bold text-white">
                   {title}
-                  {year && (
-                    <span className="ml-3 align-middle text-xl font-bold text-white">{year}</span>
-                  )}
                   {content?.status === 'ongoing' && (
                     <span className="ml-3 rounded-full bg-green-600 px-3 py-1 align-middle text-lg font-semibold text-white">
                       {t('ongoing')}
@@ -370,9 +366,12 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
                     </span>
                   )}
                 </h1>
-                {content?.originalTitle && content.originalTitle !== title && (
-                  <p className="mt-1 text-lg font-bold text-white" title={t('originalTitle')}>
-                    {content.originalTitle}
+                {(year || (content?.originalTitle && content.originalTitle !== title)) && (
+                  <p className="mt-1 flex flex-wrap items-center gap-x-3 text-sm text-white/65">
+                    {year && <span>{year}</span>}
+                    {content?.originalTitle && content.originalTitle !== title && (
+                      <span title={t('originalTitle')}>{content.originalTitle}</span>
+                    )}
                   </p>
                 )}
               </div>
@@ -477,7 +476,7 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
 
               {/* Duration/Runtime */}
               {type === 'movie' && content?.runtime && (
-                <span className="text-lg font-bold text-white">
+                <span className="text-base font-semibold text-white">
                   {formatRuntime(content.runtime)}
                 </span>
               )}
@@ -641,6 +640,7 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
                       genres={genres}
                       crew={crew}
                       getPublishers={getPublishers || (() => [])}
+                      getDevelopers={getDevelopers || (() => [])}
                       getNetworks={getNetworks || (() => [])}
                       getProductionCompanies={getProductionCompanies || (() => [])}
                       formatDate={formatDate}

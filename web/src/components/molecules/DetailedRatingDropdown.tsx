@@ -62,9 +62,8 @@ export const DetailedRatingDropdown: React.FC<DetailedRatingDropdownProps> = ({
         disabled={disabled}
         className="flex items-center justify-between w-full text-xs font-semibold uppercase tracking-wider text-gray-500 hover:text-gray-300 transition-colors"
       >
-        <span className="flex items-center gap-2">
-          {t('title')} {avg && <span className="text-purple-400">({avg})</span>}
-        </span>
+        <span className="sr-only">{t('title')}</span>
+        {avg && <span className="ml-auto mr-2 text-purple-400">{avg}</span>}
         <svg
           className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
