@@ -3,7 +3,7 @@
  * Shared types for the StatsTab feature (charts, hooks, utils).
  */
 
-export type ContentTypeLabel = 'Movies' | 'TV' | 'Games' | 'Books' | 'Music';
+export type ContentTypeLabel = 'Movies' | 'TV' | 'Games' | 'Books';
 
 export type SnakeCasedContentItem = {
   id?: string | number;
@@ -37,14 +37,12 @@ export interface ProfileStatsTabProps {
     tv: SnakeCasedContentItem[];
     games: SnakeCasedContentItem[];
     books: SnakeCasedContentItem[];
-    music: SnakeCasedContentItem[];
   };
   favorites: {
     movies: SnakeCasedContentItem[];
     tv: SnakeCasedContentItem[];
     games: SnakeCasedContentItem[];
     books: SnakeCasedContentItem[];
-    music: SnakeCasedContentItem[];
   };
   basicStats: {
     totalMovies: number;
@@ -56,7 +54,7 @@ export interface ProfileStatsTabProps {
 
 export type TimeRangeKey = '24h' | 'week' | 'month' | '6m' | 'year' | 'all';
 
-export type ContentTypeFilterKey = 'all' | 'movies' | 'tv' | 'games' | 'books' | 'music';
+export type ContentTypeFilterKey = 'all' | 'movies' | 'tv' | 'games' | 'books';
 
 export type DateBucket = {
   month: string; // YYYY-MM
@@ -89,7 +87,6 @@ export interface ComputedStats {
     tv: number;
     games: number;
     books: number;
-    music: number;
   };
 }
 

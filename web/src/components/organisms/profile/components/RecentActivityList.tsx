@@ -10,7 +10,7 @@ import React, { useMemo, useState, useCallback } from 'react';
 import type { SnakeCasedContentItem } from '../StatsTabTypes';
 import { getContentTypeName, normalizeTitle } from '../statsTabUtils';
 import { useTranslations, useLocale } from 'next-intl';
-import { Clapperboard, Tv2, Gamepad2, BookOpenText, Music, ChevronDown } from 'lucide-react';
+import { Clapperboard, Tv2, Gamepad2, BookOpenText, ChevronDown } from 'lucide-react';
 
 interface Props {
   watched: {
@@ -18,7 +18,6 @@ interface Props {
     tv: SnakeCasedContentItem[];
     games: SnakeCasedContentItem[];
     books: SnakeCasedContentItem[];
-    music: SnakeCasedContentItem[];
   };
   /** If set, only show items for this specific day. undefined = show all */
   selectedDay?: string | null | undefined;
@@ -40,7 +39,6 @@ export function RecentActivityList({ watched, selectedDay, onClearDay }: Props) 
       ...watched.tv,
       ...watched.games,
       ...watched.books,
-      ...watched.music,
     ];
     const consumed = all.filter((item) => item.is_consumed && item.user_date);
 
@@ -49,7 +47,7 @@ export function RecentActivityList({ watched, selectedDay, onClearDay }: Props) 
       const db = new Date(b.user_date!).getTime();
       return db - da;
     });
-  }, [watched.movies, watched.tv, watched.games, watched.books, watched.music]);
+  }, [watched.movies, watched.tv, watched.games, watched.books]);
 
   // Filter by selected day if provided
   const displayItems = useMemo(() => {
@@ -204,7 +202,6 @@ function contentTypeLabel(type: string, t: any): string {
   if (type === 'TV') return t('contentTypes.TV');
   if (type === 'GAME') return t('contentTypes.GAME');
   if (type === 'BOOK') return t('contentTypes.BOOK');
-  if (type === 'MUSIC') return t('contentTypes.MUSIC');
   return t('contentTypes.DEFAULT');
 }
 
@@ -213,6 +210,5 @@ function getContentTypeIcon(type: string) {
   if (type === 'TV') return <Tv2 className="w-3.5 h-3.5" />;
   if (type === 'GAME') return <Gamepad2 className="w-3.5 h-3.5" />;
   if (type === 'BOOK') return <BookOpenText className="w-3.5 h-3.5" />;
-  if (type === 'MUSIC') return <Music className="w-3.5 h-3.5" />;
   return <div className="w-3.5 h-3.5" />;
 }

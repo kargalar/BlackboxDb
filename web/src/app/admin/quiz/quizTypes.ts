@@ -5,7 +5,6 @@ export const CONTENT_TYPES = [
   { id: 2, name: 'Dizi', emoji: '📺' },
   { id: 3, name: 'Oyun', emoji: '🎮' },
   { id: 4, name: 'Kitap', emoji: '📚' },
-  { id: 5, name: 'Müzik', emoji: '🎵' },
 ];
 
 export const DIFFICULTY_LABELS = ['Çok Kolay', 'Kolay', 'Orta', 'Zor', 'Çok Zor'];

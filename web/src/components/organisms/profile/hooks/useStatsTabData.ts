@@ -41,11 +41,11 @@ interface UseStatsTabDataResult {
 }
 
 function filterByType<T>(
-  data: { movies: T[]; tv: T[]; games: T[]; books: T[]; music: T[] },
+  data: { movies: T[]; tv: T[]; games: T[]; books: T[] },
   filter: ContentTypeFilterKey
 ): T[] {
   if (filter === 'all')
-    return [...data.movies, ...data.tv, ...data.games, ...data.books, ...data.music];
+    return [...data.movies, ...data.tv, ...data.games, ...data.books];
   switch (filter) {
     case 'movies':
       return data.movies;
@@ -55,10 +55,8 @@ function filterByType<T>(
       return data.games;
     case 'books':
       return data.books;
-    case 'music':
-      return data.music;
     default:
-      return [...data.movies, ...data.tv, ...data.games, ...data.books, ...data.music];
+      return [...data.movies, ...data.tv, ...data.games, ...data.books];
   }
 }
 
@@ -101,21 +99,18 @@ export function useStatsTabData({
       tv: 0,
       games: 0,
       books: 0,
-      music: 0,
     };
     const typeCounts: Record<ContentTypeLabel, number> = {
       Movies: 0,
       TV: 0,
       Games: 0,
       Books: 0,
-      Music: 0,
     };
     const favoriteCounts: Record<ContentTypeLabel, number> = {
       Movies: 0,
       TV: 0,
       Games: 0,
       Books: 0,
-      Music: 0,
     };
     const releaseYearCounts = new Map<number, number>();
     const consumedYearCounts = new Map<number, { count: number; ratings: number[] }>();
@@ -144,12 +139,10 @@ export function useStatsTabData({
       if (typeName === 'TV') typeCounts.TV += 1;
       if (typeName === 'GAME') typeCounts.Games += 1;
       if (typeName === 'BOOK') typeCounts.Books += 1;
-      if (typeName === 'MUSIC') typeCounts.Music += 1;
       if (typeName === 'MOVIE') consumedTypeCounts.movies += 1;
       if (typeName === 'TV') consumedTypeCounts.tv += 1;
       if (typeName === 'GAME') consumedTypeCounts.games += 1;
       if (typeName === 'BOOK') consumedTypeCounts.books += 1;
-      if (typeName === 'MUSIC') consumedTypeCounts.music += 1;
 
       const userDate = item.user_date ? new Date(item.user_date) : null;
       if (userDate && !Number.isNaN(userDate.getTime())) {
@@ -206,7 +199,6 @@ export function useStatsTabData({
       if (typeName === 'TV') favoriteCounts.TV += 1;
       if (typeName === 'GAME') favoriteCounts.Games += 1;
       if (typeName === 'BOOK') favoriteCounts.Books += 1;
-      if (typeName === 'MUSIC') favoriteCounts.Music += 1;
     }
 
     const buckets: DateBucket[] = [];

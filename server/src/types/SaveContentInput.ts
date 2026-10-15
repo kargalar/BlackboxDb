@@ -40,17 +40,5 @@ export class SaveContentInput {
   rawData?: string;
 
   @Field(() => String, { nullable: true })
-  spotifyUrl?: string;
-
-  @Field(() => String, { nullable: true })
   spotifyPlaylistUrl?: string;
-
-  @Field(() => Boolean, { nullable: true })
-  explicit?: boolean;
-
-  @Field(() => String, { nullable: true })
-  label?: string;
-
-  @Field(() => Int, { nullable: true })
-  totalTracks?: number;
 }

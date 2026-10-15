@@ -14,10 +14,6 @@ const ICONS: Record<string, string> = {
   tv: '📺',
   game: '🎮',
   book: '📚',
-  music: '🎵',
-  podcast: '🎙️',
-  theater: '🎭',
-  concert: '🎤',
 };
 
 const LABEL_KEYS: Record<string, string> = {
@@ -25,7 +21,6 @@ const LABEL_KEYS: Record<string, string> = {
   tv: 'types.tv',
   game: 'types.game',
   book: 'types.book',
-  music: 'types.music',
 };
 
 export default function ContentTypeFilter({
@@ -35,13 +30,16 @@ export default function ContentTypeFilter({
   contentTypes,
 }: ContentTypeFilterProps) {
   const t = useTranslations('AdminContentPage');
+  const allowedSlugs = new Set(['movie', 'tv', 'game', 'book']);
   const types = [
     { id: 0, label: t('types.all'), icon: '📋' },
-    ...contentTypes.map((type) => ({
-      id: type.id,
-      label: LABEL_KEYS[type.slug] ? t(LABEL_KEYS[type.slug]) : type.name,
-      icon: ICONS[type.slug] || '📄',
-    })),
+    ...contentTypes
+      .filter((type) => allowedSlugs.has(type.slug))
+      .map((type) => ({
+        id: type.id,
+        label: LABEL_KEYS[type.slug] ? t(LABEL_KEYS[type.slug]) : type.name,
+        icon: ICONS[type.slug] || '📄',
+      })),
   ];
 
   return (

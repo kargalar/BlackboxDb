@@ -8,6 +8,7 @@ import * as dotenv from "dotenv";
 import { graphqlUploadExpress } from "graphql-upload-minimal";
 import { spawn } from "child_process";
 import fs from "fs";
+import path from "path";
 import jwt from "jsonwebtoken";
 import { createServer } from "http";
 
@@ -42,8 +43,6 @@ import { AdminTmdbResolver } from "./resolvers/admin/AdminTmdbResolver";
 import { AdminAutoFillResolver } from "./resolvers/admin/AdminAutoFillResolver";
 import { AppConfigResolver } from "./resolvers/admin/AppConfigResolver";
 import { EpisodeResolver } from "./resolvers/EpisodeResolver";
-import { MediaResolver } from "./resolvers/MediaResolver";
-import { MusicReleaseResolver } from "./resolvers/MusicReleaseResolver";
 import { PersonResolver } from "./resolvers/PersonResolver";
 import {
   QuizQueryResolver,
@@ -177,6 +176,17 @@ async function bootstrap() {
     }),
   );
 
+  const uploadsDir = path.resolve(process.cwd(), "uploads");
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  app.use(
+    "/uploads",
+    express.static(uploadsDir, {
+      maxAge: "7d",
+    }),
+  );
+
   // Base64 image uploads are sent as GraphQL JSON strings, so GraphQL needs a larger
   // body limit than the rest of the API.
   app.use("/graphql", express.json({ limit: MAX_GRAPHQL_JSON_BODY_SIZE }));
@@ -212,8 +222,6 @@ async function bootstrap() {
       AdminModerationResolver,
       AdminExpansionResolver,
       EpisodeResolver,
-      MediaResolver,
-      MusicReleaseResolver,
       PersonResolver,
       QuizQueryResolver,
       QuizMutationResolver,

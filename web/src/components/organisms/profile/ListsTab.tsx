@@ -8,7 +8,6 @@ import {
   Tv,
   Gamepad2,
   BookOpen,
-  Music,
   FolderOpen,
   ListOrdered,
 } from 'lucide-react';
@@ -58,13 +57,6 @@ const getContentTypeInfo = (contentTypeId: number, t: any) => {
         bg: 'bg-amber-500/15 text-amber-400',
         icon: <BookOpen size={16} />,
         accentColor: 'border-amber-500/30',
-      };
-    case 5:
-      return {
-        name: t('contentTypes.music'),
-        bg: 'bg-pink-500/15 text-pink-400',
-        icon: <Music size={16} />,
-        accentColor: 'border-pink-500/30',
       };
     default:
       return {
@@ -138,7 +130,6 @@ const CreateListModal = ({
     { id: 2, icon: <Tv size={16} />, label: t('contentTypes.tv') },
     { id: 3, icon: <Gamepad2 size={16} />, label: t('contentTypes.game') },
     { id: 4, icon: <BookOpen size={16} />, label: t('contentTypes.book') },
-    { id: 5, icon: <Music size={16} />, label: t('contentTypes.music') },
   ];
 
   return (

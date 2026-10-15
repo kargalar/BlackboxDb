@@ -37,7 +37,6 @@ export function useDashboardData() {
   const [trendingTv, setTrendingTv] = useState<UnifiedContent[]>([]);
   const [upcomingTv, setUpcomingTv] = useState<UnifiedContent[]>([]);
   const [popularBooks, setPopularBooks] = useState<UnifiedContent[]>([]);
-  const [popularMusic, setPopularMusic] = useState<UnifiedContent[]>([]);
   const [trendingGames, setTrendingGames] = useState<UnifiedContent[]>([]);
   const [upcomingGames, setUpcomingGames] = useState<UnifiedContent[]>([]);
 
@@ -46,7 +45,6 @@ export function useDashboardData() {
   const [anticipatedTv, setAnticipatedTv] = useState<UnifiedContent[]>([]);
   const [anticipatedGames, setAnticipatedGames] = useState<UnifiedContent[]>([]);
   const [anticipatedBooks, setAnticipatedBooks] = useState<UnifiedContent[]>([]);
-  const [anticipatedMusic, setAnticipatedMusic] = useState<UnifiedContent[]>([]);
   const [personalStats, setPersonalStats] = useState<UserStats | null>(null);
   const [personalStatsLoading, setPersonalStatsLoading] = useState(false);
 
@@ -67,7 +65,6 @@ export function useDashboardData() {
       tv: 'all',
       game: 'all',
       book: 'all',
-      music: 'all',
     };
 
     if (typeof window === 'undefined') {
@@ -239,18 +236,16 @@ export function useDashboardData() {
 
         console.log('🎬 Dashboard: Fetching popular and anticipated content from database…');
 
-        const [movies, tv, games, books, music, antMovies, antTv, antGames, antBooks, antMusic] =
+        const [movies, tv, games, books, antMovies, antTv, antGames, antBooks] =
           await Promise.all([
             fetchPopularContent('movie', contentTimeRanges.movie),
             fetchPopularContent('tv', contentTimeRanges.tv),
             fetchPopularContent('game', contentTimeRanges.game),
             fetchPopularContent('book', contentTimeRanges.book),
-            fetchPopularContent('music', contentTimeRanges.music),
             fetchMostAnticipatedUpcomingContent('movie', 10),
             fetchMostAnticipatedUpcomingContent('tv', 10),
             fetchMostAnticipatedUpcomingContent('game', 10),
             fetchMostAnticipatedUpcomingContent('book', 10),
-            fetchMostAnticipatedUpcomingContent('music', 10),
           ]);
 
         if (!isCurrentRequest) return;
@@ -260,12 +255,10 @@ export function useDashboardData() {
           tv: tv.length,
           games: games.length,
           books: books.length,
-          music: music.length,
           antMovies: antMovies.length,
           antTv: antTv.length,
           antGames: antGames.length,
           antBooks: antBooks.length,
-          antMusic: antMusic.length,
         });
 
         setTrendingMovies(movies);
@@ -275,13 +268,11 @@ export function useDashboardData() {
         setTrendingGames(games);
         setUpcomingGames(filterUpcoming(games));
         setPopularBooks(books);
-        setPopularMusic(music);
 
         setAnticipatedMovies(antMovies);
         setAnticipatedTv(antTv);
         setAnticipatedGames(antGames);
         setAnticipatedBooks(antBooks);
-        setAnticipatedMusic(antMusic);
 
         if (user) {
           await loadItemStates(
@@ -290,12 +281,10 @@ export function useDashboardData() {
               ...tv,
               ...games,
               ...books,
-              ...music,
               ...antMovies,
               ...antTv,
               ...antGames,
               ...antBooks,
-              ...antMusic,
             ],
             () => isCurrentRequest
           );
@@ -371,8 +360,6 @@ export function useDashboardData() {
             setUpcomingGames(filterUpcoming(items));
           } else if (type === 'book') {
             setPopularBooks(items);
-          } else if (type === 'music') {
-            setPopularMusic(items);
           }
 
           if (user) {
@@ -563,14 +550,12 @@ export function useDashboardData() {
     trendingTv,
     upcomingTv,
     popularBooks,
-    popularMusic,
     trendingGames,
     upcomingGames,
     anticipatedMovies,
     anticipatedTv,
     anticipatedGames,
     anticipatedBooks,
-    anticipatedMusic,
     personalStats,
     personalStatsLoading,
     // Loading & error

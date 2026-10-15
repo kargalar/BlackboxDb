@@ -6,7 +6,7 @@ import InteractivePoster from '@/components/organisms/InteractivePoster';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useTranslations } from 'next-intl';
 
-type ContentType = 'movie' | 'tv' | 'game' | 'book' | 'music' | 'podcast' | 'theater';
+type ContentType = 'movie' | 'tv' | 'game' | 'book';
 
 interface ContentGridProps {
   items: UnifiedContent[];

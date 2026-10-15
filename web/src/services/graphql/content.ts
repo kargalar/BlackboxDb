@@ -44,6 +44,7 @@ export const SEARCH_CONTENT_MINIMAL = gql`
         originalTitle
         releaseDate
         posterUrl
+        backdropUrl
         contentType {
           id
           name

@@ -4,7 +4,7 @@ import type { Content } from '@/types/content';
 import type { ItemStatesMap, ContentType, ContentActionHandlers } from '../HomeTabTypes';
 import { DEFAULT_ITEM_STATE } from '../HomeTabTypes';
 import InteractivePoster from '@/components/organisms/InteractivePoster';
-import { BookOpenText, Clapperboard, Gamepad2, Tv2, Music } from 'lucide-react';
+import { BookOpenText, Clapperboard, Gamepad2, Tv2 } from 'lucide-react';
 
 interface ActivitySectionProps {
   title: string;
@@ -15,11 +15,11 @@ interface ActivitySectionProps {
   exploreLink: string;
   exploreLinkText: string;
   /** Tab name for "show all" navigation */
-  showAllTabName?: 'Movies' | 'TV' | 'Games' | 'Books' | 'Music';
+  showAllTabName?: 'Movies' | 'TV' | 'Games' | 'Books';
   itemStates: ItemStatesMap;
   isOwnProfile: boolean;
   handlers: ContentActionHandlers;
-  onShowAll?: (tabName: 'Movies' | 'TV' | 'Games' | 'Books' | 'Music') => void;
+  onShowAll?: (tabName: 'Movies' | 'TV' | 'Games' | 'Books') => void;
   /** Optional subtitle shown above the grid */
   subtitle?: string;
 }
@@ -47,13 +47,9 @@ const SECTION_META: Record<
     icon: BookOpenText,
     accentLabel: 'Kitap akışı',
   },
-  music: {
-    icon: Music,
-    accentLabel: 'Music activity',
-  },
 };
 
-/** Reusable activity section for Movie/TV/Game/Book/Music content grids */
+/** Reusable activity section for Movie/TV/Game/Book content grids */
 export default function ActivitySection({
   title,
   items,

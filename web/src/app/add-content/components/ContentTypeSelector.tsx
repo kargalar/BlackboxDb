@@ -1,7 +1,7 @@
-﻿import { gql } from '@apollo/client';
+import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
-import { BookOpen, Film, Gamepad2, Mic2, Music2, Tv, Theater, type LucideIcon } from 'lucide-react';
+import { BookOpen, Film, Gamepad2, Tv, type LucideIcon } from 'lucide-react';
 import { AddContentFormData } from '../types';
 import { useGlobalSettings } from '@/contexts/GlobalSettingsContext';
 
@@ -26,9 +26,6 @@ const CONTENT_TYPE_ICONS: Record<string, LucideIcon> = {
   tv: Tv,
   game: Gamepad2,
   book: BookOpen,
-  music: Music2,
-  podcast: Mic2,
-  theater: Theater,
 };
 
 interface ContentTypeSelectorProps {
@@ -51,7 +48,6 @@ export function ContentTypeSelector({ formData, setFormData, errors }: ContentTy
       tv: 'tvShows',
       game: 'games',
       book: 'books',
-      music: 'music',
     };
     const sidebarKey = sidebarKeys[type.slug];
     if (sidebarKey) return tSidebar(sidebarKey);
@@ -59,7 +55,7 @@ export function ContentTypeSelector({ formData, setFormData, errors }: ContentTy
   };
 
   const options = (data?.contentTypes || [])
-    .filter((type) => type.slug !== 'concert')
+    .filter((type) => ['movie', 'tv', 'game', 'book'].includes(type.slug))
     .filter((type) => type.slug !== 'book' || settings?.isBookEnabled !== false);
 
   return (

@@ -1,6 +1,6 @@
 // ======================================
 // Image URL Utilities
-// Bunny CDN image URL helpers
+// Local and provider image URL helpers
 // ======================================
 // These functions replace tmdbImage() and igdbImageUrl()
 
@@ -44,7 +44,7 @@ export type ImageSize = number | 'original';
 export type ImageType = keyof typeof IMAGE_SIZES;
 
 /**
- * Get content image URL with optional Bunny Optimizer resizing.
+ * Resolve an image URL for display. Local images are served by the API proxy.
  *
  * @param url - Full CDN URL or relative path
  * @param size - Desired width in pixels or 'original'
@@ -58,7 +58,7 @@ export type ImageType = keyof typeof IMAGE_SIZES;
  */
 export function getContentImageUrl(
   url: string | null | undefined,
-  size: ImageSize = 'original',
+  _size: ImageSize = 'original',
   type: ImageType = 'poster',
 ): string {
   // Return placeholder if no URL provided
@@ -69,7 +69,7 @@ export function getContentImageUrl(
 
   // External image providers own their URL formats and transformation rules.
   if (url.startsWith('http')) {
-    return applyBunnyTransform(url, size);
+    return url;
   }
 
   // If relative path, convert to full URL
@@ -77,7 +77,7 @@ export function getContentImageUrl(
   const fullUrl = `${baseUrl}${url.startsWith('/') ? url : `/${url}`}`;
   console.debug(`🖼️ [ImageUtils] Relative path converted for ${type}`);
 
-  return applyBunnyTransform(fullUrl, size);
+  return fullUrl;
 }
 
 /**
@@ -114,32 +114,6 @@ export function getCompanyLogoUrl(url: string | null | undefined, size: ImageSiz
 }
 
 /**
- * Add Bunny Optimizer parameters when the Bunny CDN is configured for image optimization.
- *
- * @param url - Full CDN URL
- * @param size - Desired width in pixels
- * @returns Transformed URL with size parameter
- *
- */
-function applyBunnyTransform(url: string, size: ImageSize): string {
-  const optimizerEnabled = process.env.NEXT_PUBLIC_BUNNY_OPTIMIZER_ENABLED === 'true';
-  const cdnUrl = process.env.NEXT_PUBLIC_BUNNY_CDN_URL;
-  if (!optimizerEnabled || !cdnUrl || size === 'original') return url;
-
-  try {
-    const target = new URL(url);
-    const cdn = new URL(cdnUrl);
-    if (target.host !== cdn.host || typeof size !== 'number') return url;
-
-    target.searchParams.set('width', String(size));
-    target.searchParams.set('quality', '80');
-    target.searchParams.set('format', 'webp');
-    return target.toString();
-  } catch {
-    return url;
-  }
-}
-
 /**
  * Get placeholder image based on content type
  *

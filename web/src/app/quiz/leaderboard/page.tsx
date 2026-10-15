@@ -15,7 +15,6 @@ import {
   Tv,
   Gamepad2,
   BookOpen,
-  Music,
   User,
   Target,
   Percent,
@@ -85,7 +84,6 @@ const CONTENT_TYPES = [
   { id: 2, name: 'Dizi', icon: Tv, color: 'bg-blue-500 ', emoji: '📺' },
   { id: 3, name: 'Oyun', icon: Gamepad2, color: 'bg-green-500 ', emoji: '🎮' },
   { id: 4, name: 'Kitap', icon: BookOpen, color: 'bg-yellow-500 ', emoji: '📚' },
-  { id: 5, name: 'Müzik', icon: Music, color: 'bg-pink-500 ', emoji: '🎵' },
 ];
 
 export default function LeaderboardPage() {

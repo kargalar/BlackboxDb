@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, Film, Gamepad2, Globe, Music, Tv } from 'lucide-react';
+import { BookOpen, Film, Gamepad2, Globe, Tv } from 'lucide-react';
 import InteractivePoster from '@/components/organisms/InteractivePoster';
 import { useHorizontalDragScroll } from '@/hooks/useHorizontalDragScroll';
 import type { UnifiedContent } from '@/types/unified-content';
@@ -56,15 +56,6 @@ const CONTENT_TYPE_OPTIONS = [
     emoji: '📚',
     icon: BookOpen,
   },
-  {
-    id: 5,
-    label: 'Music',
-    title: 'Popular Music',
-    type: 'music',
-    href: '/explore/music',
-    emoji: '🎵',
-    icon: Music,
-  },
 ] as const;
 
 const TIME_RANGE_LABELS: Record<string, string> = {
@@ -84,7 +75,6 @@ function getContentTypeFromId(contentTypeId?: number): ContentType {
   if (contentTypeId === 2) return 'tv';
   if (contentTypeId === 3) return 'game';
   if (contentTypeId === 4) return 'book';
-  if (contentTypeId === 5) return 'music';
   return 'movie';
 }
 
@@ -196,7 +186,6 @@ export default function PopularContentSection({
   trendingTv,
   trendingGames,
   popularBooks,
-  popularMusic,
 
   itemStates,
   loading,
@@ -216,7 +205,6 @@ export default function PopularContentSection({
   trendingTv: UnifiedContent[];
   trendingGames: UnifiedContent[];
   popularBooks: UnifiedContent[];
-  popularMusic: UnifiedContent[];
 
   itemStates: Record<string | number, ItemState>;
   loading: boolean;
@@ -245,9 +233,8 @@ export default function PopularContentSection({
       2: toTypedItems(trendingTv, 'tv'),
       3: toTypedItems(trendingGames, 'game'),
       4: toTypedItems(popularBooks, 'book'),
-      5: toTypedItems(popularMusic, 'music'),
     }),
-    [popularBooks, popularMusic, trendingGames, trendingMovies, trendingTv]
+    [popularBooks, trendingGames, trendingMovies, trendingTv]
   );
 
   const selectedFilter =
@@ -274,7 +261,7 @@ export default function PopularContentSection({
     return (
       <section className="dashboard-popular-content-section space-y-8">
         {visibleTypeOptions.map((option) => {
-          const items = typedById[option.id as 1 | 2 | 3 | 4 | 5].slice(0, 20);
+          const items = typedById[option.id as 1 | 2 | 3 | 4].slice(0, 20);
           const range = contentTimeRanges[option.type as ContentType] || 'all';
           const isSectionLoading =
             loading ||
@@ -323,10 +310,10 @@ export default function PopularContentSection({
   const mixedItems =
     selectedFilter.id === 0
       ? interleaveTypedItems(
-          visibleTypeOptions.map((option) => typedById[option.id as 1 | 2 | 3 | 4 | 5]),
+          visibleTypeOptions.map((option) => typedById[option.id as 1 | 2 | 3 | 4]),
           20
         )
-      : typedById[selectedFilter.id as 1 | 2 | 3 | 4 | 5].slice(0, 20);
+      : typedById[selectedFilter.id as 1 | 2 | 3 | 4].slice(0, 20);
 
   return (
     <section className="dashboard-popular-content-section space-y-4">

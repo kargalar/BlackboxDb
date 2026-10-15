@@ -4,12 +4,12 @@ import { SaveContentInput } from "../types/SaveContentInput";
 import { inferNormalizedContentStatus } from "../lib/contentStatus";
 import { generateContentSlug, slugify } from "../lib/slugUtils";
 import { convertContentForGraphQL } from "../resolvers/content/ContentUtils";
+import { localizeContentImage, type ContentImageKind } from "../lib/localContentImage";
 
 const CONTENT_TYPE_MOVIE = 1;
 const CONTENT_TYPE_TV = 2;
 const CONTENT_TYPE_GAME = 3;
 const CONTENT_TYPE_BOOK = 4;
-const CONTENT_TYPE_MUSIC = 5;
 const MAX_RAW_DATA_LENGTH = 1_000_000;
 
 type DatabaseClient = PrismaClient | Prisma.TransactionClient;
@@ -134,8 +134,7 @@ async function findExistingContent(
     });
     if (directMatch) return directMatch;
 
-    const prefix = input.contentTypeId === CONTENT_TYPE_MUSIC ? "music" : "book";
-    where.id = `${prefix}-${slugify(input.id)}`;
+    where.id = `book-${slugify(input.id)}`;
   }
 
   return prisma.content.findFirst({ where, include: contentInclude });
@@ -145,9 +144,8 @@ async function generateStableId(
   prisma: PrismaClient,
   input: SaveContentInput,
 ): Promise<string> {
-  if (input.contentTypeId === CONTENT_TYPE_BOOK || input.contentTypeId === CONTENT_TYPE_MUSIC) {
-    const prefix = input.contentTypeId === CONTENT_TYPE_BOOK ? "book" : "music";
-    const stableId = `${prefix}-${slugify(input.id)}`;
+  if (input.contentTypeId === CONTENT_TYPE_BOOK) {
+    const stableId = `book-${slugify(input.id)}`;
     const existing = await prisma.content.findUnique({
       where: { id: stableId },
       select: { id: true, contentTypeId: true },
@@ -161,7 +159,6 @@ async function generateStableId(
 function normalizeExternalData(input: SaveContentInput, raw: RawContent) {
   const isTv = input.contentTypeId === CONTENT_TYPE_TV;
   const isBook = input.contentTypeId === CONTENT_TYPE_BOOK;
-  const isMusic = input.contentTypeId === CONTENT_TYPE_MUSIC;
   const releaseDate = asDate(
     firstValue(
       input.releaseDate,
@@ -218,11 +215,7 @@ function normalizeExternalData(input: SaveContentInput, raw: RawContent) {
     numberOfSeasons: isTv ? asPositiveInt(raw.number_of_seasons) : null,
     tvType: isTv ? asString(raw.type) : null,
     seasonsData: isTv && Array.isArray(raw.seasons) ? JSON.stringify(raw.seasons) : null,
-    spotifyUrl: isMusic ? asString(firstValue(input.spotifyUrl, raw.spotifyUrl, raw.external_urls?.spotify)) : null,
-    spotifyPlaylistUrl: isMusic ? asString(input.spotifyPlaylistUrl || raw.spotifyPlaylistUrl) : null,
-    explicit: isMusic ? (input.explicit ?? raw.explicit ?? null) : null,
-    label: isMusic ? asString(firstValue(input.label, raw.label)) : null,
-    totalTracks: isMusic ? asPositiveInt(firstValue(input.totalTracks, raw.total_tracks)) : null,
+    spotifyPlaylistUrl: asString(input.spotifyPlaylistUrl || raw.spotifyPlaylistUrl),
   };
 }
 
@@ -257,7 +250,7 @@ export async function saveExternalContent(
 ): Promise<Content> {
   const normalizedTitle = input.title.trim();
   if (!normalizedTitle) throw new Error("Content title is required");
-  if (![CONTENT_TYPE_MOVIE, CONTENT_TYPE_TV, CONTENT_TYPE_GAME, CONTENT_TYPE_BOOK, CONTENT_TYPE_MUSIC].includes(input.contentTypeId)) {
+  if (![CONTENT_TYPE_MOVIE, CONTENT_TYPE_TV, CONTENT_TYPE_GAME, CONTENT_TYPE_BOOK].includes(input.contentTypeId)) {
     throw new Error("Unsupported content type");
   }
 
@@ -268,7 +261,19 @@ export async function saveExternalContent(
   const normalized = normalizeExternalData(input, raw);
   const id = await generateStableId(prisma, input);
   const externalId = getExternalId(input);
-  const imageRecords = getImageRecords(input, raw);
+  const imageRecords = await Promise.all(
+    getImageRecords(input, raw).map(async (record) => ({
+      ...record,
+      filePath:
+        record.type === "poster" || record.type === "backdrop"
+          ? await localizeContentImage(
+              record.filePath,
+              id,
+              record.type as ContentImageKind,
+            )
+          : record.filePath,
+    })),
+  );
   const bookTitle = input.contentTypeId === CONTENT_TYPE_BOOK ? normalizedTitle : null;
 
   try {
@@ -303,11 +308,7 @@ export async function saveExternalContent(
           numberOfSeasons: normalized.numberOfSeasons,
           tvType: normalized.tvType,
           seasonsData: normalized.seasonsData,
-          spotifyUrl: normalized.spotifyUrl,
           spotifyPlaylistUrl: normalized.spotifyPlaylistUrl,
-          explicit: normalized.explicit,
-          label: normalized.label,
-          totalTracks: normalized.totalTracks,
           images: imageRecords.length ? { create: imageRecords } : undefined,
           bookPublications: bookTitle
             ? {

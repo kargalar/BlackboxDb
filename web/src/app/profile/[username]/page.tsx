@@ -47,7 +47,6 @@ const VALID_TABS = [
   'TV',
   'Games',
   'Books',
-  'Music',
   'Stats',
   'Lists',
   'Reviews',
@@ -63,7 +62,7 @@ const HOME_ACTIVITY_ITEMS_PER_TYPE = 10;
 const HOME_MOVIE_ACTIVITY_ITEMS = 15;
 const HOME_ACTIVITY_FEED_LIMIT = 60;
 const ACTIVITY_TAB_FEED_LIMIT = 500;
-const WIDE_CONTENT_TABS = new Set(['Movies', 'TV', 'Games', 'Books', 'Music']);
+const WIDE_CONTENT_TABS = new Set(['Movies', 'TV', 'Games', 'Books']);
 
 export default function UserProfilePage() {
   const t = useTranslations('ProfilePage');
@@ -81,17 +80,14 @@ export default function UserProfilePage() {
   const [allWatchedTV, setAllWatchedTV] = useState<any[]>([]);
   const [allWatchedGames, setAllWatchedGames] = useState<any[]>([]);
   const [allWatchedBooks, setAllWatchedBooks] = useState<any[]>([]);
-  const [allWatchedMusic, setAllWatchedMusic] = useState<any[]>([]);
   const [favoriteMovies, setFavoriteMovies] = useState<any[]>([]);
   const [favoriteTV, setFavoriteTV] = useState<any[]>([]);
   const [favoriteGames, setFavoriteGames] = useState<any[]>([]);
   const [favoriteBooks, setFavoriteBooks] = useState<any[]>([]);
-  const [favoriteMusic, setFavoriteMusic] = useState<any[]>([]);
   const [featuredMovies, setFeaturedMovies] = useState<any[]>([]);
   const [featuredTV, setFeaturedTV] = useState<any[]>([]);
   const [featuredGames, setFeaturedGames] = useState<any[]>([]);
   const [featuredBooks, setFeaturedBooks] = useState<any[]>([]);
-  const [featuredMusic, setFeaturedMusic] = useState<any[]>([]);
   const [favoritePeople, setFavoritePeople] = useState<PersonData[]>([]);
   const [followers, setFollowers] = useState<AppUser[]>([]);
   const [following, setFollowing] = useState<AppUser[]>([]);
@@ -116,7 +112,6 @@ export default function UserProfilePage() {
   const recentTv = allWatchedTV.filter(isRecentItem).slice(0, HOME_ACTIVITY_ITEMS_PER_TYPE);
   const recentGames = allWatchedGames.filter(isRecentItem).slice(0, HOME_ACTIVITY_ITEMS_PER_TYPE);
   const recentBooks = allWatchedBooks.filter(isRecentItem).slice(0, HOME_ACTIVITY_ITEMS_PER_TYPE);
-  const recentMusic = allWatchedMusic.filter(isRecentItem).slice(0, HOME_ACTIVITY_ITEMS_PER_TYPE);
 
   // Sync active tab with URL search params
   const tabFromUrl = searchParams.get('tab');
@@ -163,7 +158,6 @@ export default function UserProfilePage() {
     TV: false,
     Games: false,
     Books: false,
-    Music: false,
     Stats: false,
     Network: false,
     Activity: false,
@@ -209,16 +203,6 @@ export default function UserProfilePage() {
       prevBooks.map((book) => (book.id === bookId ? { ...book, ...updates } : book))
     );
   }, []);
-
-  const handleMusicUpdate = useCallback((musicId: number, updates: Partial<Content>) => {
-    console.log('🎵 Updating music:', musicId, updates);
-    setAllWatchedMusic((prevMusic) =>
-      prevMusic.map((music) => (music.id === musicId ? { ...music, ...updates } : music))
-    );
-    setFavoriteMusic((prevMusic) =>
-      prevMusic.map((music) => (music.id === musicId ? { ...music, ...updates } : music))
-    );
-  }, []);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -255,12 +239,10 @@ export default function UserProfilePage() {
     setAllWatchedTV(cachedData.allWatchedTV || []);
     setAllWatchedGames(cachedData.allWatchedGames || []);
     setAllWatchedBooks(cachedData.allWatchedBooks || []);
-    setAllWatchedMusic(cachedData.allWatchedMusic || []);
     setFavoriteMovies(cachedData.favoriteMovies || []);
     setFavoriteTV(cachedData.favoriteTV || []);
     setFavoriteGames(cachedData.favoriteGames || []);
     setFavoriteBooks(cachedData.favoriteBooks || []);
-    setFavoriteMusic(cachedData.favoriteMusic || []);
     setFollowers(cachedData.followers);
     setFollowing(cachedData.following);
     setActivityFeed(cachedData.activityFeed);
@@ -288,17 +270,14 @@ export default function UserProfilePage() {
           watchedTVResult,
           watchedGamesResult,
           watchedBooksResult,
-          watchedMusicResult,
           favoriteMoviesResult,
           favoriteTVResult,
           favoriteGamesResult,
           favoriteBooksResult,
-          favoriteMusicResult,
           featuredMoviesResult,
           featuredTVResult,
           featuredGamesResult,
           featuredBooksResult,
-          featuredMusicResult,
           favoritePeopleResult,
           userStats,
           followData,
@@ -308,17 +287,14 @@ export default function UserProfilePage() {
           getUserWatchedContent(profileUser.auth_user_id!, 'TV'),
           getUserWatchedContent(profileUser.auth_user_id!, 'GAME'),
           getUserWatchedContent(profileUser.auth_user_id!, 'BOOK'),
-          getUserWatchedContent(profileUser.auth_user_id!, 'MUSIC'),
           getUserFavoriteContent(profileUser.auth_user_id!, 'MOVIE'),
           getUserFavoriteContent(profileUser.auth_user_id!, 'TV'),
           getUserFavoriteContent(profileUser.auth_user_id!, 'GAME'),
           getUserFavoriteContent(profileUser.auth_user_id!, 'BOOK'),
-          getUserFavoriteContent(profileUser.auth_user_id!, 'MUSIC'),
           getUserFeaturedContent(profileUser.auth_user_id!, 'MOVIE'),
           getUserFeaturedContent(profileUser.auth_user_id!, 'TV'),
           getUserFeaturedContent(profileUser.auth_user_id!, 'GAME'),
           getUserFeaturedContent(profileUser.auth_user_id!, 'BOOK'),
-          getUserFeaturedContent(profileUser.auth_user_id!, 'MUSIC'),
           fetchUserFavoritePeople(profileUser.auth_user_id!, 12),
           getUserStats(profileUser.auth_user_id!),
           authenticatedUserId
@@ -343,7 +319,6 @@ export default function UserProfilePage() {
         let favoriteTVData: Content[] = [];
         let favoriteGamesData: Content[] = [];
         let favoriteBooksData: Content[] = [];
-        let favoriteMusicData: Content[] = [];
 
         if (favoriteMoviesResult?.data) {
           favoriteMoviesData = favoriteMoviesResult.data.slice(0, 5);
@@ -365,29 +340,22 @@ export default function UserProfilePage() {
           console.log(`⭐ [loadHomeData] Favorite books:`, favoriteBooksData.length);
         }
 
-        if (favoriteMusicResult?.data) {
-          favoriteMusicData = favoriteMusicResult.data.slice(0, 5);
-        }
-
         console.log(`🔄 [loadHomeData] Setting state with data...`);
         // recentMovies, recentTV, etc. are now derived from activityFeed, so no direct set here
         setFavoriteMovies(favoriteMoviesData);
         setFavoriteTV(favoriteTVData);
         setFavoriteGames(favoriteGamesData);
         setFavoriteBooks(favoriteBooksData);
-        setFavoriteMusic(favoriteMusicData);
         setFeaturedMovies(featuredMoviesResult?.data || []);
         setFeaturedTV(featuredTVResult?.data || []);
         setFeaturedGames(featuredGamesResult?.data || []);
         setFeaturedBooks(featuredBooksResult?.data || []);
-        setFeaturedMusic(featuredMusicResult?.data || []);
         setFavoritePeople(favoritePeopleResult || []);
         // Store all watched content for featured selection
         setAllWatchedMovies(watchedMoviesResult?.data || []);
         setAllWatchedTV(watchedTVResult?.data || []);
         setAllWatchedGames(watchedGamesResult?.data || []);
         setAllWatchedBooks(watchedBooksResult?.data || []);
-        setAllWatchedMusic(watchedMusicResult?.data || []);
         setStats(
           userStats.data || {
             totalMovies: 0,
@@ -474,20 +442,6 @@ export default function UserProfilePage() {
       console.error('Failed to load books tab data:', error);
     } finally {
       setTabLoading((prev) => ({ ...prev, Books: false }));
-    }
-  }, []);
-
-  const loadMusicData = useCallback(async (profileUser: AppUser) => {
-    try {
-      setTabLoading((prev) => ({ ...prev, Music: true }));
-      const result = await getUserWatchedContent(profileUser.auth_user_id!, 'MUSIC');
-      if (result?.data) {
-        setAllWatchedMusic(result.data);
-      }
-    } catch (error) {
-      console.error('Failed to load music tab data:', error);
-    } finally {
-      setTabLoading((prev) => ({ ...prev, Music: false }));
     }
   }, []);
 
@@ -694,11 +648,6 @@ export default function UserProfilePage() {
             await loadBooksData(appUser);
           }
           break;
-        case 'Music':
-          if (allWatchedMusic.length === 0) {
-            await loadMusicData(appUser);
-          }
-          break;
         case 'Network':
           if (followers.length === 0 && following.length === 0) {
             await loadNetworkData(appUser);
@@ -724,7 +673,6 @@ export default function UserProfilePage() {
     allWatchedTV.length,
     allWatchedGames.length,
     allWatchedBooks.length,
-    allWatchedMusic.length,
     followers.length,
     following.length,
     activityFeed.length,
@@ -735,7 +683,6 @@ export default function UserProfilePage() {
     loadTVData,
     loadGamesData,
     loadBooksData,
-    loadMusicData,
     loadNetworkData,
     loadActivityData,
     loadIncomingActivityData,
@@ -792,18 +739,15 @@ export default function UserProfilePage() {
             recentTv={recentTv}
             recentGames={recentGames}
             recentBooks={recentBooks}
-            recentMusic={recentMusic}
             featuredMovies={featuredMovies}
             featuredTv={featuredTV}
             featuredGames={featuredGames}
             featuredBooks={featuredBooks}
-            featuredMusic={featuredMusic}
             favoritePeople={favoritePeople}
             allConsumedMovies={allWatchedMovies}
             allConsumedTv={allWatchedTV}
             allConsumedGames={allWatchedGames}
             allConsumedBooks={allWatchedBooks}
-            allConsumedMusic={allWatchedMusic}
             activityFeed={activityFeed}
             stats={stats}
             isOwnProfile={isOwnProfile}
@@ -820,14 +764,12 @@ export default function UserProfilePage() {
               tv: allWatchedTV,
               games: allWatchedGames,
               books: allWatchedBooks,
-              music: allWatchedMusic,
             }}
             favorites={{
               movies: favoriteMovies,
               tv: favoriteTV,
               games: favoriteGames,
               books: favoriteBooks,
-              music: favoriteMusic,
             }}
             basicStats={stats}
           />
@@ -874,18 +816,6 @@ export default function UserProfilePage() {
             content={allWatchedBooks}
             contentType="book"
             onContentUpdate={handleBookUpdate}
-          />
-        );
-      case 'Music':
-        return tabLoading['Music'] ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white" />
-          </div>
-        ) : (
-          <ContentTab
-            content={allWatchedMusic}
-            contentType="music"
-            onContentUpdate={handleMusicUpdate}
           />
         );
       case 'Network':
@@ -1009,8 +939,6 @@ export default function UserProfilePage() {
             games: allWatchedGames.filter((item: any) => item.isConsumed || item.is_consumed)
               .length,
             books: allWatchedBooks.filter((item: any) => item.isConsumed || item.is_consumed)
-              .length,
-            music: allWatchedMusic.filter((item: any) => item.isConsumed || item.is_consumed)
               .length,
           }}
           onTabChange={setActiveTab}

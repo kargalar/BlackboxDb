@@ -26,7 +26,7 @@
     "script:recalculate-ratings": "tsx src/scripts/recalculateRatings.ts",
     "script:migrate-ratings-to-10": "tsx src/scripts/migrateRatingsToTenScale.ts",
     "script:cleanup-orphans": "tsx src/scripts/cleanupOrphans.ts",
-    "script:migrate-cloudinary-to-bunny": "tsx src/scripts/migrateCloudinaryImagesToBunny.ts",
+    "script:migrate-content-images-to-local": "tsx src/scripts/migrateContentImagesToLocal.ts",
     "script:repair-data-integrity": "tsx src/scripts/repairDataIntegrity.ts",
     "script:normalize-theme-decades": "tsx src/scripts/normalizeThemeDecades.ts",
     "script:simplify-lookup-catalogs": "tsx src/scripts/simplifyLookupCatalogs.ts",

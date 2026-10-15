@@ -88,7 +88,6 @@ export default function Header() {
       if (type === 'game') path = '/explore/game';
       else if (type === 'tv') path = '/explore/tv';
       else if (type === 'book') path = '/explore/book';
-      else if (type === 'music') path = '/explore/music';
       router.push(`${path}?search=${encodeURIComponent(searchQuery.trim())}` as any);
       setShowSearchInput(false);
       setSearchQuery('');
@@ -186,7 +185,6 @@ export default function Header() {
                   <option value="tv">TV Show</option>
                   <option value="game">Game</option>
                   <option value="book">Book</option>
-                  <option value="music">Music</option>
                 </select>
                 <input
                   id="search-input"

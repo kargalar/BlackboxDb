@@ -10,7 +10,6 @@ interface FeaturedContentSectionProps {
   featuredTv: Content[];
   featuredGames: Content[];
   featuredBooks: Content[];
-  featuredMusic: Content[];
   featuredType: FeaturedType;
   setFeaturedType: (type: FeaturedType) => void;
   itemStates: ItemStatesMap;
@@ -25,7 +24,6 @@ export default function FeaturedContentSection({
   featuredTv,
   featuredGames,
   featuredBooks,
-  featuredMusic,
   featuredType,
   setFeaturedType,
   itemStates,
@@ -37,8 +35,7 @@ export default function FeaturedContentSection({
     featuredMovies.length +
     featuredTv.length +
     featuredGames.length +
-    featuredBooks.length +
-    featuredMusic.length;
+    featuredBooks.length;
   const { gridClassName } = useUserPreferences();
 
   // Profil sahibiyse ve hiç eklenen içerik yoksa veya başkasının profiliyse ve hiç içerik yoksa gizle
@@ -52,7 +49,6 @@ export default function FeaturedContentSection({
     { key: 'tv' as FeaturedType, label: 'TV/Dizi', count: featuredTv.length },
     { key: 'games' as FeaturedType, label: 'Oyunlar', count: featuredGames.length },
     { key: 'books' as FeaturedType, label: 'Kitaplar', count: featuredBooks.length },
-    { key: 'music' as FeaturedType, label: 'Müzik', count: featuredMusic.length },
   ].filter((tab) => tab.count > 0);
 
   // We intentionally do not autoroute away from an empty tab here because
@@ -69,8 +65,6 @@ export default function FeaturedContentSection({
         return featuredGames;
       case 'books':
         return featuredBooks;
-      case 'music':
-        return featuredMusic;
       default:
         return [];
     }
@@ -82,8 +76,6 @@ export default function FeaturedContentSection({
         return 'game' as const;
       case 'books':
         return 'book' as const;
-      case 'music':
-        return 'music' as const;
       case 'tv':
         return 'tv' as const;
       default:

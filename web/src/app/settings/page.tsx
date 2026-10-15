@@ -21,7 +21,6 @@ const CONTENT_TYPE_OPTIONS = [
   { id: 2, label: 'TV Series', icon: '📺' },
   { id: 3, label: 'Games', icon: '🎮' },
   { id: 4, label: 'Books', icon: '📚' },
-  { id: 5, label: 'Music', icon: '🎵' },
 ];
 
 const GRID_COLUMN_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10];

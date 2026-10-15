@@ -7,6 +7,7 @@ import { uploadProfilePicture, uploadCoverPhoto } from '@/services/profileUpload
 import EditProfileDialog from './EditProfileDialog';
 import { ImageCropModal } from '@/components/molecules/ImageCropModal';
 import { useTranslations } from 'next-intl';
+import { BarChart3 } from 'lucide-react';
 
 interface ProfileHeaderProps {
   user?: { id: string; username: string; email: string; picturePath?: string | null } | null;
@@ -23,7 +24,6 @@ interface ProfileHeaderProps {
     tv: number;
     games: number;
     books: number;
-    music: number;
   };
   onTabChange?: (tab: string) => void;
   onEditFeatured?: () => void;
@@ -89,6 +89,13 @@ export default function ProfileHeader({
     appUser?.username || user?.username || user?.email?.split('@')[0] || t('defaultUser');
   const avatarUrl = appUser?.picturePath || (isOwnProfile ? user?.picturePath : null);
   const bannerUrl = appUser?.coverPhotoUrl || null;
+  const hasAnyConsumed = Boolean(
+    consumedCounts &&
+      (consumedCounts.movies > 0 ||
+        consumedCounts.tv > 0 ||
+        consumedCounts.games > 0 ||
+        consumedCounts.books > 0)
+  );
 
   return (
     <div className="profile-header relative">
@@ -377,7 +384,7 @@ export default function ProfileHeader({
             </div>
 
             {/* Consumed Counts */}
-            {consumedCounts && (
+            {consumedCounts && hasAnyConsumed && (
               <div className="flex flex-wrap gap-2 mt-4">
                 {consumedCounts.movies > 0 && (
                   <button
@@ -419,14 +426,13 @@ export default function ProfileHeader({
                     <span className="text-sm font-medium text-white/60">{t('content.book')}</span>
                   </button>
                 )}
-                {consumedCounts.music > 0 && (
+                {onTabChange && (
                   <button
-                    onClick={() => onTabChange?.('Music')}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl backdrop-blur-md transition-colors cursor-pointer"
+                    onClick={() => onTabChange('Stats')}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl backdrop-blur-md transition-colors cursor-pointer text-white/80 hover:text-white"
                   >
-                    <span className="text-sm drop-shadow-md">🎵</span>
-                    <span className="text-sm font-bold text-white">{consumedCounts.music}</span>
-                    <span className="text-sm font-medium text-white/60">{t('content.music')}</span>
+                    <BarChart3 className="w-4 h-4 text-violet-400" aria-hidden="true" />
+                    <span className="text-sm font-medium">{t('viewStats')}</span>
                   </button>
                 )}
               </div>

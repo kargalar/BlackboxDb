@@ -28,7 +28,6 @@ const CONTENT_TYPE_SLUGS: Record<string, string> = {
   TV: 'tv',
   GAME: 'game',
   BOOK: 'book',
-  MUSIC: 'music',
 };
 
 function getContentPath(item: PopularContent): string | null {

@@ -9,7 +9,6 @@ import { TvInfoFields } from '@/components/molecules/ContentFormTabs/TvInfoField
 import { CastCrewFields } from '@/components/molecules/ContentFormTabs/CastCrewFields';
 import { GameInfoFields } from '@/components/molecules/ContentFormTabs/GameInfoFields';
 import { GameExpansionFields } from '@/components/molecules/ContentFormTabs/GameExpansionFields';
-import { MusicInfoFields } from '@/components/molecules/ContentFormTabs/MusicInfoFields';
 
 import { SeasonsBuilder } from '@/components/molecules/ContentFormTabs/SeasonsBuilder';
 import { SoundtrackFields } from '@/components/molecules/ContentFormTabs/SoundtrackFields';
@@ -148,7 +147,7 @@ export function ContentFormLayout({
 
   const activeTab = tabSelection.tabId;
 
-  const tabs = getTabsForContentType(formData.contentTypeId, formData.contentTypeSlug);
+  const tabs = getTabsForContentType(formData.contentTypeId);
 
   // Auto-fill hook (TMDB / Google Books / IGDB — default source)
   const autoFill = useAutoFill({ formData, setFormData });
@@ -309,14 +308,6 @@ export function ContentFormLayout({
           </div>
         )}
 
-        {validTab === 'music-info' && formData.contentTypeId === '5' && (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Müzik Bilgileri</h3>
-            <DiffAlert diffs={getDiffForTab(allDiffs, 'basic')} onRevert={handleRevert} />
-            <MusicInfoFields formData={formData} setFormData={setFormData} errors={errors} />
-          </div>
-        )}
-
         {/* Dizi Bilgileri */}
         {validTab === 'tv-info' && formData.contentTypeId === '2' && (
           <div className="space-y-6">
@@ -340,8 +331,7 @@ export function ContentFormLayout({
         {/* Oyuncular & Ekip (Movie / TV) */}
         {validTab === 'cast-crew' &&
           (formData.contentTypeId === '1' ||
-            formData.contentTypeId === '2' ||
-            formData.contentTypeSlug === 'theater') && (
+            formData.contentTypeId === '2') && (
             <div className="space-y-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {t('castCrew')}

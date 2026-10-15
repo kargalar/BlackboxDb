@@ -81,7 +81,6 @@ export default function FeaturedContentDialog({
               ...(settings?.isBookEnabled !== false
                 ? [{ key: 'books' as FeaturedType, label: 'Kitaplar' }]
                 : []),
-              { key: 'music' as FeaturedType, label: 'Müzik' },
             ].map(({ key, label }) => (
               <button
                 key={key}

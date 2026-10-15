@@ -452,27 +452,9 @@ export class Content {
   @Field(() => String, { nullable: true })
   gameplayVideoUrl?: string;
 
-  // Soundtrack & Music
+  // Soundtrack
   @Field(() => String, { nullable: true })
   spotifyPlaylistUrl?: string;
-
-  @Field(() => Boolean, { nullable: true })
-  explicit?: boolean;
-
-  @Field(() => String, { nullable: true })
-  label?: string;
-
-  @Field(() => Int, { nullable: true })
-  totalTracks?: number;
-
-  @Field(() => String, { nullable: true })
-  spotifyUrl?: string;
-
-  @Field(() => String, { nullable: true })
-  musicReleaseType?: string;
-
-  @Field(() => String, { nullable: true })
-  previewUrl?: string;
 
   // Timestamps
   @Field(() => Date)

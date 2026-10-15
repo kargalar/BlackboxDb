@@ -11,9 +11,6 @@ export function getProfileContentTypeLabel(
       tv: 'Dizi',
       game: 'Oyun',
       book: 'Kitap',
-      music: 'Müzik',
-      podcast: 'Podcast',
-      theater: 'Tiyatro',
     };
     return labels[typeSlug] || typeSlug;
   }
@@ -27,8 +24,6 @@ export function getProfileContentTypeLabel(
         return 'Oyun';
       case 4:
         return 'Kitap';
-      case 5:
-        return 'Müzik';
     }
   }
 
@@ -44,8 +39,6 @@ export function getProfileContentTypeLabel(
         return 'Oyun';
       case 4:
         return 'Kitap';
-      case 5:
-        return 'Müzik';
     }
   }
 
@@ -68,8 +61,6 @@ export function getProfileContentRoute(
         return `/content/game/${contentId}` as Route;
       case 4:
         return `/content/book/${contentId}` as Route;
-      case 5:
-        return `/content/music/${contentId}` as Route;
     }
   }
 
@@ -84,8 +75,6 @@ export function getProfileContentRoute(
       return `/content/game/${contentId}` as Route;
     case 4:
       return `/content/book/${contentId}` as Route;
-    case 5:
-      return `/content/music/${contentId}` as Route;
     default:
       return '/discussions' as Route;
   }

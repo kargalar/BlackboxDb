@@ -156,6 +156,19 @@ export async function syncTvShowWatchState(
     orderBy: [{ date: "desc" }, { updatedAt: "desc" }],
   });
 
+  // If the user already marked this TV show as consumed (watched),
+  // do not downgrade it or force it to continuing just because some episodes are unwatched.
+  // The user explicitly controls the overall series watch state.
+  if (existingLog?.isConsumed) {
+    if (existingLog.isContinuing) {
+      await prisma.userContentLog.update({
+        where: { id: existingLog.id },
+        data: { isContinuing: false },
+      });
+    }
+    return;
+  }
+
   const airedSeasonNumbers = new Set(
     airedEpisodes.map((episode: any) => episode.seasonNumber),
   );
@@ -213,130 +226,27 @@ export async function syncTvShowWatchState(
 }
 
 export async function syncEpisodesOnTvShowConsumed(
-  prisma: any,
-  userId: string,
-  contentId: string,
+  _prisma: any,
+  _userId: string,
+  _contentId: string,
 ) {
-  try {
-    const content = await prisma.content.findUnique({
-      where: { id: contentId },
-      select: { contentTypeId: true },
-    });
-
-    if (content?.contentTypeId === 2) {
-      const now = new Date();
-      const episodes = await prisma.tvEpisode.findMany({
-        where: { tvShowId: contentId, seasonNumber: { gt: 0 } },
-        select: {
-          id: true,
-          airDate: true,
-          totalRatingScore: true,
-          totalRatingVotes: true,
-          season: { select: { airDate: true } },
-        },
-      });
-
-      // Upcoming seasons should not be counted as consumed yet. Once their
-      // premiere date passes, the tracker can move the show back to continuing.
-      const releasedEpisodes = episodes.filter((episode: any) => {
-        const releaseDate = episode.airDate ?? episode.season?.airDate;
-        return !releaseDate || releaseDate <= now;
-      });
-
-      if (releasedEpisodes.length > 0) {
-        const episodeIds = releasedEpisodes.map((ep: any) => ep.id);
-        const existingLogs = await prisma.userEpisodeLog.findMany({
-          where: { userId, episodeId: { in: episodeIds } },
-          select: { episodeId: true },
-        });
-
-        const existingIds = new Set(existingLogs.map((l: any) => l.episodeId));
-        const toCreate = releasedEpisodes
-          .filter((ep: any) => !existingIds.has(ep.id))
-          .map((ep: any) => ({
-            userId,
-            episodeId: ep.id,
-            watched: true,
-            watchedAt: new Date(),
-          }));
-
-        if (toCreate.length > 0) {
-          await prisma.userEpisodeLog.createMany({ data: toCreate });
-        }
-
-        const toUpdate = Array.from(existingIds);
-        if (toUpdate.length > 0) {
-          await prisma.userEpisodeLog.updateMany({
-            where: { userId, episodeId: { in: toUpdate }, watched: false },
-            data: { watched: true, watchedAt: new Date() },
-          });
-        }
-
-        logger.info(
-          `[syncEpisodesOnTvShowConsumed] Synced ${releasedEpisodes.length} released episodes as watched for TV Show ${contentId} and user ${userId}`,
-        );
-      }
-    }
-  } catch (error) {
-    logger.error(
-      "[syncEpisodesOnTvShowConsumed] Error during episode sync:",
-      error,
-    );
-  }
+  // Deliberate no-op: Marking a TV series as consumed should not automatically mark
+  // all seasons/episodes as watched. Users track individual seasons/episodes explicitly.
 }
 
 export async function syncConsumedTvShowEpisodes(
-  prisma: any,
-  contentId: string,
+  _prisma: any,
+  _contentId: string,
 ) {
-  const consumedLogs = await prisma.userContentLog.findMany({
-    where: { contentId, isConsumed: true },
-    select: { userId: true },
-  });
-
-  await Promise.all(
-    consumedLogs.map(async (log: { userId: string }) => {
-      await syncEpisodesOnTvShowConsumed(prisma, log.userId, contentId);
-      await syncTvShowWatchState(prisma, log.userId, contentId);
-    }),
-  );
+  // Deliberate no-op: New episodes/seasons added should not automatically mark as watched for consumed users.
 }
 
 export async function unsyncEpisodesOnTvShowUnmarked(
-  prisma: any,
-  userId: string,
-  contentId: string,
+  _prisma: any,
+  _userId: string,
+  _contentId: string,
 ) {
-  try {
-    const content = await prisma.content.findUnique({
-      where: { id: contentId },
-      select: { contentTypeId: true },
-    });
-
-    if (content?.contentTypeId === 2) {
-      const watchedEpisodes = await prisma.userEpisodeLog.findMany({
-        where: { userId, episode: { tvShowId: contentId }, watched: true },
-        select: { episodeId: true },
-      });
-
-      if (watchedEpisodes.length > 0) {
-        const toUpdate = watchedEpisodes.map((l: any) => l.episodeId);
-        await prisma.userEpisodeLog.updateMany({
-          where: { userId, episodeId: { in: toUpdate } },
-          data: { watched: false, watchedAt: null },
-        });
-
-        logger.info(
-          `[unsyncEpisodesOnTvShowUnmarked] Un-synced ${toUpdate.length} episodes for TV Show ${contentId} and user ${userId}`,
-        );
-      }
-    }
-  } catch (error) {
-    logger.error(
-      "[unsyncEpisodesOnTvShowUnmarked] Error during episode un-sync:",
-      error,
-    );
-  }
+  // Deliberate no-op: Unmarking a TV series should not erase the user's individually logged episode watch progress.
 }
 
 // ==========================================

@@ -12,10 +12,9 @@ import MovieCard from '@/components/organisms/MovieCard';
 import TvCard from '@/components/organisms/TvCard';
 import BookCard from '@/components/organisms/BookCard';
 import GameCard from '@/components/organisms/GameCard';
-import MusicCard from '@/components/organisms/MusicCard';
 
 // Types for different content
-type ContentType = 'movie' | 'tv' | 'game' | 'book' | 'music' | string;
+type ContentType = 'movie' | 'tv' | 'game' | 'book' | string;
 
 interface BaseContent {
   id: number | string;
@@ -251,43 +250,6 @@ export default function InteractivePoster({
       return (
         <BookCard
           book={bookContent}
-          size={size}
-          subtitleOverride={subtitleOverride}
-          isConsumed={isConsumed}
-          isFavorite={isFavorite}
-          isConsumeLater={isConsumeLater}
-          isContinuing={isContinuing}
-          isAbandoned={isAbandoned}
-          viewerIsConsumed={viewerIsConsumed}
-          viewerIsFavorite={viewerIsFavorite}
-          viewerIsConsumeLater={viewerIsConsumeLater}
-          viewerIsContinuing={viewerIsContinuing}
-          viewerIsAbandoned={viewerIsAbandoned}
-          userConsumeCount={userConsumeCount}
-          showRating={rating !== undefined && rating !== null}
-          rating={rating ?? undefined}
-          onWatch={onWatch ? () => onWatch() : undefined}
-          onToggleFavorite={onToggleFavorite ? () => onToggleFavorite() : undefined}
-          onToggleWatchlist={onToggleWatchlist ? () => onToggleWatchlist() : undefined}
-          onToggleContinuing={onToggleContinuing ? () => onToggleContinuing() : undefined}
-          onAddToList={onAddToList ? () => onAddToList() : undefined}
-          showActions={showActions}
-          hasReview={hasReview}
-        />
-      );
-    }
-
-    case 'music': {
-      return (
-        <MusicCard
-          music={{
-            id: String(content.id),
-            title: content.title || content.name || 'Unknown Music',
-            artist: content.artist,
-            label: content.label,
-            releaseDate: content.releaseDate || content.release_date,
-            posterUrl: content.posterUrl || content.poster_path,
-          }}
           size={size}
           subtitleOverride={subtitleOverride}
           isConsumed={isConsumed}

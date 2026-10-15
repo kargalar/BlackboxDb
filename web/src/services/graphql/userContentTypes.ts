@@ -125,12 +125,7 @@ export interface Content {
   };
   additionalRatingCategories?: string[];
   homepage?: string;
-  spotifyUrl?: string;
-  musicReleaseType?: string;
   spotifyPlaylistUrl?: string;
-  explicit?: boolean;
-  label?: string;
-  totalTracks?: number;
   isbn?: string;
   seriesId?: number;
   ratingDistribution?: number[];
@@ -163,12 +158,7 @@ export interface SaveContentInput {
   adult?: boolean;
   isbn?: string;
   rawData?: string; // Full API response - will be normalized by server
-  spotifyUrl?: string;
-  musicReleaseType?: string;
   spotifyPlaylistUrl?: string;
-  explicit?: boolean;
-  label?: string;
-  totalTracks?: number;
 }
 
 // ==========================================

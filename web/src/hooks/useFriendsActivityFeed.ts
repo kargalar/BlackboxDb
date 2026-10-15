@@ -11,6 +11,7 @@ interface UseFriendsActivityFeedOptions {
 }
 
 interface UseFriendsActivityFeedResult {
+  activities: FriendsActivityFeedItem[];
   statusActivities: FriendsActivityFeedItem[];
   reviewActivities: FriendsActivityFeedItem[];
   itemStates: Record<string, any>;
@@ -21,15 +22,15 @@ interface UseFriendsActivityFeedResult {
 
 /**
  * Fetches friends activity feed for the logged-in user.
- * Splits results into two groups:
- *   - statusActivities: consumed / continuing status updates
- *   - reviewActivities: items with reviews or standalone reviews
+ * Provides unified activities containing both status actions (watched/played/etc., ratings)
+ * and reviews.
  */
 export function useFriendsActivityFeed(
   options: UseFriendsActivityFeedOptions = {}
 ): UseFriendsActivityFeedResult {
   const { limit = 20, enabled = true } = options;
 
+  const [activities, setActivities] = useState<FriendsActivityFeedItem[]>([]);
   const [statusActivities, setStatusActivities] = useState<FriendsActivityFeedItem[]>([]);
   const [reviewActivities, setReviewActivities] = useState<FriendsActivityFeedItem[]>([]);
   const [itemStates, setItemStates] = useState<Record<string, any>>({});
@@ -56,6 +57,7 @@ export function useFriendsActivityFeed(
         console.error('❌ 👥📰 [FriendsActivityFeed] fetch error:', fetchError);
         logApiRequest('GraphQL:friendsActivityFeed', 'QUERY', false, message);
         setError(message);
+        setActivities([]);
         setStatusActivities([]);
         setReviewActivities([]);
         return;
@@ -64,26 +66,37 @@ export function useFriendsActivityFeed(
       logApiRequest('GraphQL:friendsActivityFeed', 'QUERY', true);
       const all = data || [];
 
-      // Split into status (consumed/continuing) and review activities
-      const status: FriendsActivityFeedItem[] = [];
+      // Collect all friend activities (status updates + reviews)
+      const feedItems: FriendsActivityFeedItem[] = [];
       const reviews: FriendsActivityFeedItem[] = [];
 
       for (const item of all) {
         const a = item as any;
+        if (
+          a.contentId &&
+          (a.isConsumed ||
+            a.isContinuing ||
+            a.isConsumeLater ||
+            a.isFavorite ||
+            a.rating ||
+            a.review ||
+            a.isStandaloneReview)
+        ) {
+          feedItems.push(item);
+        }
         if (a.review || a.isStandaloneReview) {
           reviews.push(item);
-        } else if (a.isConsumed || a.isContinuing || a.rating) {
-          status.push(item);
         }
       }
 
-      console.log('✅ 👥📰 [FriendsActivityFeed] split result:', {
+      console.log('✅ 👥📰 [FriendsActivityFeed] result:', {
         total: all.length,
-        statusCount: status.length,
+        feedCount: feedItems.length,
         reviewCount: reviews.length,
       });
 
-      setStatusActivities(status);
+      setActivities(feedItems);
+      setStatusActivities(feedItems);
       setReviewActivities(reviews);
 
       // Load item states for the logged-in user
@@ -101,6 +114,7 @@ export function useFriendsActivityFeed(
       console.error('❌ 👥📰 [FriendsActivityFeed] unexpected error:', e);
       logApiRequest('GraphQL:friendsActivityFeed', 'QUERY', false, message);
       setError(message);
+      setActivities([]);
       setStatusActivities([]);
       setReviewActivities([]);
     } finally {
@@ -114,6 +128,7 @@ export function useFriendsActivityFeed(
   }, [limit, enabled]);
 
   return {
+    activities,
     statusActivities,
     reviewActivities,
     itemStates,

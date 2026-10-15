@@ -17,7 +17,6 @@ const CONTENT_TYPE_SLUGS: Record<number, string> = {
   2: 'tv',
   3: 'game',
   4: 'book',
-  5: 'music',
 };
 
 const CATEGORIES = [
@@ -25,7 +24,6 @@ const CATEGORIES = [
   { id: 2, slug: 'tv', icon: '📺' },
   { id: 3, slug: 'game', icon: '🎮' },
   { id: 4, slug: 'book', icon: '📚' },
-  { id: 5, slug: 'music', icon: '🎵' },
 ];
 
 interface DashboardHeroProps {
@@ -99,6 +97,7 @@ export default function DashboardHero({
       return list.map((item) => ({
         content: item.content,
         label: item.label || t('hero.defaultBadge'),
+        imageUrl: item.imageUrl,
       }));
     }
 
@@ -109,6 +108,7 @@ export default function DashboardHero({
         {
           content: fallback,
           label: t('hero.featured'),
+          imageUrl: undefined,
         },
       ];
     }
@@ -174,8 +174,6 @@ export default function DashboardHero({
         return t('hero.contentType.game');
       case 4:
         return t('hero.contentType.book');
-      case 5:
-        return t('hero.contentType.music');
       default:
         return t('hero.contentType.content');
     }
@@ -185,8 +183,7 @@ export default function DashboardHero({
     typeSlug === 'movie' ||
     typeSlug === 'tv' ||
     typeSlug === 'game' ||
-    typeSlug === 'book' ||
-    typeSlug === 'music'
+    typeSlug === 'book'
       ? typeSlug
       : 'movie'
   ) as ContentType;
@@ -194,33 +191,70 @@ export default function DashboardHero({
   const href = `/content/${typeSlug}/${currentContent.id}`;
   const year = getYear(currentContent);
   const runtime = currentContent.runtime ? formatRuntime(currentContent.runtime) : '';
-  const badgeLabel = currentItem?.label || t('hero.defaultBadge');
+  const badgeLabel = (() => {
+    const rawLabel = currentItem?.label?.trim();
+    if (
+      !rawLabel ||
+      rawLabel.toLowerCase().includes('günün') ||
+      rawLabel.toLowerCase().includes('haftanın')
+    ) {
+      return t('hero.defaultBadge');
+    }
+    return rawLabel;
+  })();
+  const customHeroImage = currentItem?.imageUrl;
+  const hasHorizontalImage = Boolean(customHeroImage || currentContent.backdropUrl);
+  const backdropImage = customHeroImage || currentContent.backdropUrl || currentContent.posterUrl;
 
   return (
     <section
-      className="dashboard-hero group"
+      className="dashboard-hero group cursor-pointer relative"
       aria-labelledby="dashboard-hero-title"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Background Backdrop */}
-      {currentContent.backdropUrl ? (
+      {/* Background Backdrop - fills entire container */}
+      {backdropImage ? (
         <Image
-          key={currentContent.id}
-          src={currentContent.backdropUrl}
-          alt=""
+          key={`${currentContent.id}-${backdropImage}`}
+          src={backdropImage}
+          alt={currentContent.title || ''}
           fill
           priority
-          className="dashboard-hero-backdrop transition-all duration-700 ease-out"
-          sizes="(max-width: 1024px) 100vw, 1200px"
+          className={`dashboard-hero-backdrop object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${
+            !hasHorizontalImage ? 'blur-2xl scale-125 opacity-35' : 'object-center'
+          }`}
+          sizes="(max-width: 1024px) 100vw, 1400px"
         />
       ) : (
         <div className="dashboard-hero-fallback" aria-hidden="true" />
       )}
       <div className="dashboard-hero-scrim" aria-hidden="true" />
 
+      {/* Floating crisp poster when no horizontal image is available (e.g. books) */}
+      {!hasHorizontalImage && currentContent.posterUrl && (
+        <div className="hidden sm:block absolute right-8 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+          <div className="w-28 h-40 md:w-36 md:h-52 rounded-2xl overflow-hidden shadow-2xl border border-white/20 relative rotate-2 group-hover:rotate-0 transition-transform duration-500">
+            <Image
+              src={currentContent.posterUrl}
+              alt={currentContent.title || ''}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 112px, 144px"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Clickable Card Link for Entire Container */}
+      <Link
+        href={href as Route}
+        className="absolute inset-0 z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500/50 rounded-[inherit]"
+        aria-label={currentContent.title}
+      />
+
       {/* Top Header inside Hero: Category Tabs + Admin Link */}
-      <div className="absolute top-5 left-6 right-6 z-10 flex flex-wrap items-center justify-between gap-3 pointer-events-auto">
+      <div className="absolute top-5 left-6 right-6 z-20 flex flex-wrap items-center justify-between gap-3 pointer-events-auto">
         <div className="flex items-center gap-1.5 p-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 shadow-lg">
           {availableCategories.map((cat) => {
             const isActive = cat.id === activeTypeId;
@@ -229,7 +263,10 @@ export default function DashboardHero({
               <button
                 key={cat.id}
                 type="button"
-                onClick={() => setActiveTypeId(cat.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveTypeId(cat.id);
+                }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                   isActive
                     ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
@@ -249,7 +286,8 @@ export default function DashboardHero({
         {isPrivileged && (
           <Link
             href={'/admin/showcase' as Route}
-            className="px-3 py-1.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 hover:border-purple-500/50 text-xs font-medium text-white/70 hover:text-white transition-all flex items-center gap-1.5 shadow-lg group/admin"
+            onClick={(e) => e.stopPropagation()}
+            className="px-3 py-1.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 hover:border-purple-500/50 text-xs font-medium text-white/70 hover:text-white transition-all flex items-center gap-1.5 shadow-lg group/admin relative z-20 pointer-events-auto"
             title="Vitrin Yönetimi"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-400 group-hover/admin:rotate-12 transition-transform" />
@@ -259,8 +297,8 @@ export default function DashboardHero({
       </div>
 
       {/* Main Content Area */}
-      <div className="dashboard-hero-content pt-20 pb-8">
-        <div className="max-w-2xl relative z-10">
+      <div className="dashboard-hero-content pt-24 pb-8 pointer-events-none relative z-10">
+        <div className="max-w-2xl">
           {/* Dynamic Badge / Kicker */}
           <div className="dashboard-hero-kicker inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 backdrop-blur-sm">
             <span className="dashboard-hero-kicker-dot" />
@@ -275,7 +313,7 @@ export default function DashboardHero({
 
           <h2
             id="dashboard-hero-title"
-            className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl text-white drop-shadow-sm"
+            className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl text-white drop-shadow-sm group-hover:text-purple-200 transition-colors"
           >
             {currentContent.title}
           </h2>
@@ -285,36 +323,22 @@ export default function DashboardHero({
               {currentContent.description}
             </p>
           )}
-
-          {/* Action Buttons */}
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Link
-              href={href as Route}
-              className="btn-gradient inline-flex items-center gap-2 text-sm px-5 py-2.5 rounded-xl font-medium shadow-lg hover:shadow-purple-500/25 transition-all"
-            >
-              {t('hero.viewDetails')}
-            </Link>
-            <button
-              type="button"
-              className="btn-secondary inline-flex items-center gap-2 text-sm px-4 py-2.5 rounded-xl transition-all"
-              onClick={() => onAddToList?.(currentContent, contentType)}
-            >
-              {t('hero.addToList')}
-            </button>
-          </div>
         </div>
       </div>
 
       {/* Slide Navigation Controls (Only if more than 1 item) */}
       {activeItems.length > 1 && (
-        <div className="absolute bottom-5 right-6 z-10 flex items-center gap-3 pointer-events-auto">
+        <div className="absolute bottom-5 right-6 z-20 flex items-center gap-3 pointer-events-auto">
           {/* Numbered Dots / Indicators */}
           <div className="flex items-center gap-1.5 p-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
             {activeItems.map((_, idx) => (
               <button
                 key={idx}
                 type="button"
-                onClick={() => setSlideIndex(idx)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSlideIndex(idx);
+                }}
                 className={`h-2 rounded-full transition-all duration-300 ${
                   idx === currentIndex
                     ? 'w-6 bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.8)]'
@@ -329,7 +353,10 @@ export default function DashboardHero({
           <div className="flex items-center gap-1.5">
             <button
               type="button"
-              onClick={handlePrev}
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePrev();
+              }}
               className="p-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 hover:bg-white/15 text-white/70 hover:text-white transition-all"
               aria-label={t('hero.prev')}
             >
@@ -337,7 +364,10 @@ export default function DashboardHero({
             </button>
             <button
               type="button"
-              onClick={handleNext}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNext();
+              }}
               className="p-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 hover:bg-white/15 text-white/70 hover:text-white transition-all"
               aria-label={t('hero.next')}
             >

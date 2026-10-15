@@ -19,7 +19,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/quiz/leaderboard/', changeFrequency: 'daily', priority: 0.6 },
     { path: '/leaderboard/', changeFrequency: 'daily', priority: 0.6 },
     { path: '/movie-finder/', changeFrequency: 'weekly', priority: 0.6 },
-    { path: '/concerts/', changeFrequency: 'weekly', priority: 0.5 },
     { path: '/discussions/', changeFrequency: 'daily', priority: 0.6 },
   ];
 

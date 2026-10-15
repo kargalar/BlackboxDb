@@ -190,10 +190,10 @@
       "noMusic": "No popular music yet"
     },
     "hero": {
-      "kicker": "Editor's Pick",
-      "defaultBadge": "Editor's Pick",
-      "featured": "Featured",
-      "showcase": "Weekly & Daily Picks",
+      "kicker": "Editor's Picks",
+      "defaultBadge": "Editor's Picks",
+      "featured": "Editor's Picks",
+      "showcase": "Editor's Picks",
       "tabs": {
         "all": "All",
         "movie": "Movies",
@@ -234,7 +234,16 @@
     "saveError": "An error occurred while saving.",
     "moveUp": "Move Up",
     "moveDown": "Move Down",
-    "remove": "Remove"
+    "remove": "Remove",
+    "customImageTitle": "Custom Showcase Image (16:9 Landscape Banner)",
+    "customImageActive": "Custom Image Active",
+    "customImageDefault": "Default backdrop in use",
+    "customImageFallback": "No landscape image (Poster fallback)",
+    "customImagePlaceholder": "https://... (Custom landscape image URL)",
+    "customImageUpload": "Upload",
+    "customImageUploading": "Uploading...",
+    "customImageUploadTitle": "Upload landscape image from computer",
+    "customImageClearTitle": "Remove custom image and revert to default"
   },
   "Auth": {
     "brandSubtitle": "Discover movies and games",
@@ -927,6 +936,7 @@
     "editProfile": "Edit Profile",
     "editFeatured": "Edit Featured",
     "deleteAccount": "Delete Account",
+    "viewStats": "View all stats",
     "content": {
       "movie": "Movie",
       "tv": "TV Show",
@@ -2104,6 +2114,7 @@
     "less": "Less",
     "more": "More",
     "contentTypes": {
+      "ALL": "All",
       "MOVIE": "Movie",
       "TV": "TV Show",
       "GAME": "Game",
@@ -2119,7 +2130,16 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "bestMonth": "Best Month",
-    "activeDays": "Active Days"
+    "activeDays": "Active Days",
+    "longestStreak": "Longest Streak",
+    "currentStreak": "Current Streak",
+    "monthlyDistribution": "Monthly Distribution",
+    "selectedDayActivities": "{date} Activities",
+    "clearSelection": "Clear Selection",
+    "clickDayHint": "Click any day in the calendar to inspect its contents.",
+    "shareOfYear": "%{pct} of year",
+    "overview": "Overview",
+    "mediaBreakdown": "Media Breakdown"
   },
   "Settings": {
     "sensitiveContent": "Sensitive Content",

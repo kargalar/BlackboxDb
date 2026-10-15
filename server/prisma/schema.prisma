@@ -79,8 +79,6 @@ model AppUser {
   userContentLogs               UserContentLog[]
   userContentPreferences        UserContentPreference[]
   userEpisodeLogs               UserEpisodeLog[]
-  podcastListens                UserPodcastListen[]
-  eventAttendances              UserEventAttendance[]
   userExpansionLogs             UserExpansionLog[]
   favoritePeople                UserFavoritePerson[]
   featuredContent               UserFeaturedContent[]
@@ -132,9 +130,6 @@ model Person {
   contentRoles          ContentPerson[]
   translations          PersonTranslation[]
   favoritedBy           UserFavoritePerson[]
-  podcastProgramCredits PodcastProgramCredit[]
-  podcastEpisodeCredits PodcastEpisodeCredit[]
-  mediaEventCredits     MediaEventCredit[]
 
   @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "person_name_trgm_idx")
   @@index([isPending, name, id])
@@ -391,11 +386,6 @@ model Content {
   lockedFields                String[]                @default([]) @map("locked_fields")
   alternativeTitles           String[]                @default([]) @map("alternative_titles")
   awards                      String[]                @default([])
-  spotifyUrl                  String?                 @map("spotify_url")
-  explicit                    Boolean?                @map("explicit")
-  label                       String?                 @db.VarChar(255)
-  totalTracks                 Int?                    @map("total_tracks")
-  musicReleaseType            MusicReleaseType?       @map("music_release_type")
   additionalRatingCategories  String[]                @default([]) @map("additional_rating_categories")
   autoSelectHighestVotedMedia Boolean                 @default(true) @map("auto_select_highest_voted_media")
   fileSize                    String?                 @map("file_size") @db.VarChar(50)
@@ -428,10 +418,6 @@ model Content {
   notifications          Notification[]
   episodes               TvEpisode[]
   seasons                TvSeason[]
-  podcastProgram         PodcastProgram?
-  musicReleaseTracks     MusicReleaseTrack[]     @relation("MusicRelease")
-  musicTrackReleases     MusicReleaseTrack[]     @relation("MusicTrack")
-  theaterEvents          MediaEvent[]            @relation("TheaterProductionEvents")
   userContentLogs        UserContentLog[]
   userContentPreferences UserContentPreference[]
   featuredBy             UserFeaturedContent[]
@@ -514,166 +500,6 @@ model UserEpisodeLog {
   @@index([episodeId])
   @@index([watched])
   @@map("user_episode_log")
-}
-
-model PodcastProgram {
-  id                String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  contentId         String                 @unique @map("content_id") @db.VarChar(255)
-  publicationStatus String                 @default("ongoing") @map("publication_status") @db.VarChar(30)
-  languageCode      String?                @map("language_code") @db.VarChar(20)
-  releaseFrequency  String?                @map("release_frequency") @db.VarChar(30)
-  releaseInterval   Int?                   @map("release_interval")
-  releaseWeekdays   Int[]                  @default([]) @map("release_weekdays")
-  createdAt         DateTime               @default(now()) @map("created_at")
-  updatedAt         DateTime               @updatedAt @map("updated_at")
-  content           Content                @relation(fields: [contentId], references: [id], onDelete: Cascade)
-  episodes          PodcastEpisode[]
-  credits           PodcastProgramCredit[]
-
-  @@index([publicationStatus])
-  @@map("podcast_program")
-}
-
-model PodcastProgramCredit {
-  id        Int            @id @default(autoincrement())
-  programId String         @map("program_id") @db.Uuid
-  personId  String         @map("person_id") @db.VarChar(255)
-  role      String         @default("host") @db.VarChar(30)
-  position  Int            @default(0)
-  program   PodcastProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
-  person    Person         @relation(fields: [personId], references: [id], onDelete: Cascade)
-
-  @@unique([programId, personId, role])
-  @@index([personId])
-  @@map("podcast_program_credit")
-}
-
-model PodcastEpisode {
-  id              String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  programId       String                 @map("program_id") @db.Uuid
-  seasonNumber    Int                    @default(1) @map("season_number")
-  episodeNumber   Int                    @map("episode_number")
-  title           String                 @db.VarChar(255)
-  description     String?
-  publishedAt     DateTime?              @map("published_at")
-  durationSeconds Int?                   @map("duration_seconds")
-  audioUrl        String?                @map("audio_url") @db.VarChar(2000)
-  externalGuid    String?                @map("external_guid") @db.VarChar(500)
-  isExplicit      Boolean?               @map("is_explicit")
-  createdAt       DateTime               @default(now()) @map("created_at")
-  updatedAt       DateTime               @updatedAt @map("updated_at")
-  program         PodcastProgram         @relation(fields: [programId], references: [id], onDelete: Cascade)
-  credits         PodcastEpisodeCredit[]
-  listens         UserPodcastListen[]
-
-  @@unique([programId, seasonNumber, episodeNumber])
-  @@unique([programId, externalGuid])
-  @@index([programId, publishedAt])
-  @@map("podcast_episode")
-}
-
-model PodcastEpisodeCredit {
-  id        Int            @id @default(autoincrement())
-  episodeId String         @map("episode_id") @db.Uuid
-  personId  String         @map("person_id") @db.VarChar(255)
-  role      String         @default("guest") @db.VarChar(30)
-  position  Int            @default(0)
-  episode   PodcastEpisode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
-  person    Person         @relation(fields: [personId], references: [id], onDelete: Cascade)
-
-  @@unique([episodeId, personId, role])
-  @@index([personId])
-  @@map("podcast_episode_credit")
-}
-
-model UserPodcastListen {
-  id              Int            @id @default(autoincrement())
-  userId          String         @map("user_id") @db.Uuid
-  episodeId       String         @map("episode_id") @db.Uuid
-  listenedAt      DateTime       @default(now()) @map("listened_at")
-  secondsListened Int?           @map("seconds_listened")
-  completed       Boolean        @default(true)
-  createdAt       DateTime       @default(now()) @map("created_at")
-  episode         PodcastEpisode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
-  user            AppUser        @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, episodeId, listenedAt(sort: Desc)])
-  @@index([episodeId])
-  @@map("user_podcast_listen")
-}
-
-model MediaEvent {
-  id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  eventType           MediaEventType        @map("event_type")
-  theaterProductionId String?               @map("theater_production_id") @db.VarChar(255)
-  title               String?               @db.VarChar(255)
-  startsAt            DateTime              @map("starts_at")
-  timeZone            String                @default("Europe/Istanbul") @map("time_zone") @db.VarChar(100)
-  venueName           String                @map("venue_name") @db.VarChar(255)
-  city                String                @db.VarChar(150)
-  address             String?               @db.VarChar(500)
-  status              MediaEventStatus      @default(SCHEDULED)
-  rescheduledFromId   String?               @map("rescheduled_from_id") @db.Uuid
-  createdAt           DateTime              @default(now()) @map("created_at")
-  updatedAt           DateTime              @updatedAt @map("updated_at")
-  theaterProduction   Content?              @relation("TheaterProductionEvents", fields: [theaterProductionId], references: [id], onDelete: Restrict)
-  rescheduledFrom     MediaEvent?           @relation("MediaEventReschedule", fields: [rescheduledFromId], references: [id], onDelete: SetNull)
-  rescheduledAs       MediaEvent[]          @relation("MediaEventReschedule")
-  credits             MediaEventCredit[]
-  attendances         UserEventAttendance[]
-
-  @@index([eventType, startsAt])
-  @@index([city, startsAt])
-  @@index([theaterProductionId, startsAt])
-  @@index([status, startsAt])
-  @@map("media_event")
-}
-
-model MediaEventCredit {
-  id          Int        @id @default(autoincrement())
-  eventId     String     @map("event_id") @db.Uuid
-  personId    String?    @map("person_id") @db.VarChar(255)
-  displayName String     @map("display_name") @db.VarChar(255)
-  role        String?    @db.VarChar(100)
-  position    Int        @default(0)
-  event       MediaEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  person      Person?    @relation(fields: [personId], references: [id], onDelete: SetNull)
-
-  @@index([eventId, position])
-  @@index([personId])
-  @@map("media_event_credit")
-}
-
-model UserEventAttendance {
-  id           Int             @id @default(autoincrement())
-  userId       String          @map("user_id") @db.Uuid
-  eventId      String          @map("event_id") @db.Uuid
-  attendedAt   DateTime        @default(now()) @map("attended_at")
-  note         String?
-  contentLogId Int?            @unique @map("content_log_id")
-  createdAt    DateTime        @default(now()) @map("created_at")
-  user         AppUser         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event        MediaEvent      @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  contentLog   UserContentLog? @relation(fields: [contentLogId], references: [id], onDelete: SetNull)
-
-  @@unique([userId, eventId])
-  @@index([userId, attendedAt(sort: Desc)])
-  @@index([eventId])
-  @@map("user_event_attendance")
-}
-
-model MusicReleaseTrack {
-  id               Int     @id @default(autoincrement())
-  releaseContentId String  @map("release_content_id") @db.VarChar(255)
-  trackContentId   String  @map("track_content_id") @db.VarChar(255)
-  discNumber       Int     @default(1) @map("disc_number")
-  trackNumber      Int     @map("track_number")
-  release          Content @relation("MusicRelease", fields: [releaseContentId], references: [id], onDelete: Cascade)
-  track            Content @relation("MusicTrack", fields: [trackContentId], references: [id], onDelete: Cascade)
-
-  @@unique([releaseContentId, discNumber, trackNumber], map: "music_release_track_release_content_id_disc_number_track_number")
-  @@index([trackContentId])
-  @@map("music_release_track")
 }
 
 model ContentGenre {
@@ -851,7 +677,6 @@ model UserContentLog {
   platform          Platform?            @relation(fields: [platformId], references: [id])
   user              AppUser              @relation(fields: [userId], references: [id], onDelete: Cascade)
   taggedUsers       AppUser[]            @relation("TaggedUsers")
-  eventAttendance   UserEventAttendance?
 
   @@index([userId])
   @@index([contentId])
@@ -1198,6 +1023,7 @@ model EditorPick {
   contentId     String   @map("content_id") @db.VarChar(255)
   contentTypeId Int      @map("content_type_id")
   label         String?  @db.VarChar(100)
+  imageUrl      String?  @map("image_url") @db.VarChar(1000)
   displayOrder  Int      @default(0) @map("display_order")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
@@ -1482,22 +1308,4 @@ model UserScreenshotVote {
 enum SimilarityNodeType {
   content
   franchise
-}
-
-enum MediaEventType {
-  THEATER_PERFORMANCE
-  CONCERT
-}
-
-enum MediaEventStatus {
-  SCHEDULED
-  POSTPONED
-  COMPLETED
-  CANCELLED
-}
-
-enum MusicReleaseType {
-  ALBUM
-  SINGLE
-  TRACK
 }

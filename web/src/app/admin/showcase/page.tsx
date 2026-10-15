@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Sparkles, ChevronUp, ChevronDown, Trash2, Plus, Search, Check, Save } from 'lucide-react';
+import { ArrowLeft, Sparkles, ChevronUp, ChevronDown, Trash2, Plus, Search, Check, Save, Image as ImageIcon, Upload, X, AlertTriangle } from 'lucide-react';
 import { useQuery, useMutation, useLazyQuery } from '@apollo/client/react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from 'next-intl';
@@ -13,26 +13,28 @@ import {
   type EditorPick,
 } from '@/services/graphql/editorPicks';
 import { SEARCH_CONTENT_MINIMAL } from '@/services/graphql/content';
+import { uploadContentImage } from '@/services/admin/uploadService';
 
 const CONTENT_TYPES = [
   { id: 1, name: 'Film', icon: '🎬' },
   { id: 2, name: 'Dizi', icon: '📺' },
   { id: 3, name: 'Oyun', icon: '🎮' },
   { id: 4, name: 'Kitap', icon: '📚' },
-  { id: 5, name: 'Müzik', icon: '🎵' },
 ];
 
+const DEFAULT_BADGE = 'Editörün Seçtikleri';
+
 const QUICK_BADGES: Record<number, string[]> = {
-  1: ['Günün Filmi', 'Haftanın Filmi', 'Editörün Seçimi', 'Kült Klasik', 'Sinema Şaheseri'],
-  2: ['Günün Dizisi', 'Haftanın Dizisi', 'Editörün Seçimi', 'Hafta Sonu Maratonu', 'Mini Dizi'],
-  3: ['Günün Oyunu', 'Haftanın Oyunu', 'Editörün Seçimi', 'Bağımsız Cevher', 'Başyapıt'],
-  4: ['Günün Kitabı', 'Haftanın Kitabı', 'Editörün Seçimi', 'Başucu Kitabı', 'Modern Klasik'],
-  5: ['Günün Albümü', 'Haftanın Albümü', 'Editörün Seçimi', 'Günün Şarkısı', 'Keşif'],
+  1: ['Editörün Seçtikleri', 'Öne Çıkan', 'Kült Klasik', 'Sinema Şaheseri', 'Mutlaka İzle'],
+  2: ['Editörün Seçtikleri', 'Öne Çıkan', 'Mini Dizi', 'Maratonluk', 'Kült Dizi'],
+  3: ['Editörün Seçtikleri', 'Öne Çıkan', 'Bağımsız Cevher', 'Başyapıt', 'Kült Oyun'],
+  4: ['Editörün Seçtikleri', 'Öne Çıkan', 'Başucu Kitabı', 'Modern Klasik', 'Mutlaka Oku'],
 };
 
 interface LocalPickItem {
   contentId: string;
   label: string;
+  imageUrl?: string | null;
   displayOrder: number;
   content: {
     id: string;
@@ -52,6 +54,7 @@ export default function AdminShowcasePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
   // Load existing editor picks for active content type
   const { data, loading: picksLoading, refetch } = useQuery<{ editorPicks: EditorPick[] }>(GET_EDITOR_PICKS, {
@@ -80,7 +83,11 @@ export default function AdminShowcasePage() {
       setLocalPicks(
         data.editorPicks.map((pick, idx) => ({
           contentId: pick.contentId,
-          label: pick.label || QUICK_BADGES[activeTypeId]?.[0] || 'Editörün Seçimi',
+          label:
+            !pick.label || pick.label.includes('Günün') || pick.label.includes('Haftanın')
+              ? DEFAULT_BADGE
+              : pick.label,
+          imageUrl: pick.imageUrl || '',
           displayOrder: idx,
           content: pick.content || { id: pick.contentId, title: 'İçerik #' + pick.contentId },
         }))
@@ -125,7 +132,13 @@ export default function AdminShowcasePage() {
     );
   }
 
-  const handleAddPick = (item: { id: string; title: string; releaseDate?: string; posterUrl?: string }) => {
+  const handleAddPick = (item: {
+    id: string;
+    title: string;
+    releaseDate?: string;
+    posterUrl?: string;
+    backdropUrl?: string;
+  }) => {
     if (localPicks.length >= 5) {
       setSaveStatus({ type: 'error', message: t('maxReached') });
       return;
@@ -135,13 +148,14 @@ export default function AdminShowcasePage() {
     }
 
     const nextOrder = localPicks.length;
-    const defaultLabel = QUICK_BADGES[activeTypeId]?.[nextOrder] || 'Editörün Seçimi';
+    const defaultLabel = DEFAULT_BADGE;
 
     setLocalPicks([
       ...localPicks,
       {
         contentId: item.id,
         label: defaultLabel,
+        imageUrl: item.backdropUrl || '',
         displayOrder: nextOrder,
         content: item,
       },
@@ -178,6 +192,42 @@ export default function AdminShowcasePage() {
     setSaveStatus(null);
   };
 
+  const handleImageUrlChange = (index: number, imageUrl: string) => {
+    setLocalPicks((prev) =>
+      prev.map((item, idx) => (idx === index ? { ...item, imageUrl } : item))
+    );
+    setSaveStatus(null);
+  };
+
+  const handleFileUpload = async (index: number, file: File) => {
+    try {
+      setUploadingIndex(index);
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const base64 = reader.result as string;
+          const pick = localPicks[index];
+          const uploadedUrl = await uploadContentImage(
+            base64,
+            file.name,
+            'backdrop',
+            pick.contentId
+          );
+          handleImageUrlChange(index, uploadedUrl);
+        } catch (err: any) {
+          console.error('Failed to upload showcase image:', err);
+          setSaveStatus({ type: 'error', message: err.message || 'Görsel yüklenemedi' });
+        } finally {
+          setUploadingIndex(null);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (err: any) {
+      console.error(err);
+      setUploadingIndex(null);
+    }
+  };
+
   const handleSave = async () => {
     try {
       setSaveStatus(null);
@@ -186,7 +236,8 @@ export default function AdminShowcasePage() {
           contentTypeId: activeTypeId,
           picks: localPicks.map((p, idx) => ({
             contentId: p.contentId,
-            label: p.label.trim() || 'Editörün Seçimi',
+            label: p.label.trim() || DEFAULT_BADGE,
+            imageUrl: p.imageUrl?.trim() || null,
             displayOrder: idx,
           })),
         },
@@ -407,6 +458,96 @@ export default function AdminShowcasePage() {
                           {chip}
                         </button>
                       ))}
+                    </div>
+
+                    {/* Custom Showcase Image Field */}
+                    <div className="pt-2.5 border-t border-white/5 flex flex-col gap-2 pl-8">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <div className="flex items-center gap-1.5 text-white/70 font-medium">
+                          <ImageIcon className="w-3.5 h-3.5 text-purple-400" />
+                          <span>{t('customImageTitle')}</span>
+                        </div>
+                        {pick.imageUrl ? (
+                          <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-medium">
+                            {t('customImageActive')}
+                          </span>
+                        ) : pick.content.backdropUrl ? (
+                          <span className="text-[10px] text-white/40">
+                            {t('customImageDefault')}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 flex items-center gap-1">
+                            <AlertTriangle className="w-2.5 h-2.5" />
+                            {t('customImageFallback')}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2.5">
+                        {/* Banner Preview Thumbnail (16:9 Aspect Ratio) */}
+                        <div className="w-24 h-14 rounded-lg overflow-hidden bg-black/40 border border-white/10 relative flex-shrink-0 group/img">
+                          {(pick.imageUrl || pick.content.backdropUrl || pick.content.posterUrl) ? (
+                            <Image
+                              src={pick.imageUrl || pick.content.backdropUrl || pick.content.posterUrl!}
+                              alt="Showcase Banner"
+                              fill
+                              className="object-cover"
+                              sizes="96px"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[10px] text-white/20">
+                              Yok
+                            </div>
+                          )}
+                        </div>
+
+                        {/* URL Input & Upload Button */}
+                        <div className="flex-1 flex items-center gap-2">
+                          <input
+                            type="url"
+                            value={pick.imageUrl || ''}
+                            onChange={(e) => handleImageUrlChange(idx, e.target.value)}
+                            placeholder={t('customImagePlaceholder')}
+                            className="flex-1 bg-white/5 hover:bg-white/10 focus:bg-white/10 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-purple-500"
+                          />
+
+                          {/* Upload Button */}
+                          <label
+                            className={`px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white cursor-pointer transition-colors flex items-center gap-1.5 text-xs flex-shrink-0 ${
+                              uploadingIndex === idx ? 'opacity-50 pointer-events-none' : ''
+                            }`}
+                            title={t('customImageUploadTitle')}
+                          >
+                            <Upload className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">
+                              {uploadingIndex === idx ? t('customImageUploading') : t('customImageUpload')}
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              disabled={uploadingIndex === idx}
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload(idx, file);
+                                e.target.value = '';
+                              }}
+                            />
+                          </label>
+
+                          {/* Clear Button */}
+                          {pick.imageUrl && (
+                            <button
+                              type="button"
+                              onClick={() => handleImageUrlChange(idx, '')}
+                              className="p-1.5 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors flex-shrink-0"
+                              title={t('customImageClearTitle')}
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 );

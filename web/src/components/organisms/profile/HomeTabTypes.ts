@@ -21,8 +21,8 @@ export const DEFAULT_ITEM_STATE: ItemState = {
 };
 
 /** Content type strings used across HomeTab sub-components */
-export type FeaturedType = 'movies' | 'tv' | 'games' | 'books' | 'music';
-export type ContentType = 'movie' | 'tv' | 'game' | 'book' | 'music';
+export type FeaturedType = 'movies' | 'tv' | 'games' | 'books';
+export type ContentType = 'movie' | 'tv' | 'game' | 'book';
 
 /** Handlers passed from the hook to interactive components */
 export interface ContentActionHandlers {
@@ -39,18 +39,15 @@ export interface HomeTabProps {
   recentTv?: Content[];
   recentGames?: Content[];
   recentBooks?: Content[];
-  recentMusic?: Content[];
   featuredMovies: Content[];
   featuredTv?: Content[];
   featuredGames?: Content[];
   featuredBooks?: Content[];
-  featuredMusic?: Content[];
   favoritePeople?: PersonData[];
   allConsumedMovies?: Content[];
   allConsumedTv?: Content[];
   allConsumedGames?: Content[];
   allConsumedBooks?: Content[];
-  allConsumedMusic?: Content[];
   activityFeed?: any[];
   stats: {
     totalMovies: number;
@@ -60,5 +57,5 @@ export interface HomeTabProps {
   };
   isOwnProfile?: boolean;
   onFeaturedUpdate?: () => void;
-  onShowAll?: (tabName: 'Movies' | 'TV' | 'Games' | 'Books' | 'Music' | 'Stats') => void;
+  onShowAll?: (tabName: 'Movies' | 'TV' | 'Games' | 'Books' | 'Stats') => void;
 }

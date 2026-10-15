@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { createRouteMetadata } from '@/lib/route-metadata';
 
-const CONTENT_TYPES = ['movie', 'tv', 'game', 'book', 'music', 'podcast', 'theater'] as const;
+const CONTENT_TYPES = ['movie', 'tv', 'game', 'book'] as const;
 type ContentType = (typeof CONTENT_TYPES)[number];
 
 function isContentType(value: string): value is ContentType {

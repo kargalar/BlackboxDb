@@ -200,12 +200,6 @@ export function mapContentToFormData(data: any): AddContentFormData {
       : [],
 
     // Ekran görüntüleri - isSpoiler ve isSensitive alanı ile birlikte
-    explicit: data.explicit ?? false,
-    label: data.label || '',
-    totalTracks: data.totalTracks ?? undefined,
-    spotifyUrl: data.spotifyUrl || '',
-    musicReleaseType: data.musicReleaseType || '',
-
     screenshots: (data.screenshots || []).map((s: any) => ({
       ...s,
       isSpoiler: s.isSpoiler ?? false,

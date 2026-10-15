@@ -5,10 +5,21 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { apolloClient } from '@/lib/apollo-client';
 import { gql } from '@apollo/client';
-import { ChevronUp, MessageSquare, Film, Tv, Gamepad2, BookOpen, Music, Globe } from 'lucide-react';
+import {
+  ChevronUp,
+  MessageSquare,
+  Film,
+  Tv,
+  Gamepad2,
+  BookOpen,
+  Globe,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { getPosterUrl } from '@/lib/image-utils';
 import { useRouter } from 'next/navigation';
 import { formatRelativeTime } from '@/lib/date-utils';
+import { useHorizontalDragScroll } from '@/hooks/useHorizontalDragScroll';
 
 const GET_POPULAR_REVIEWS = gql`
   query GetPopularReviews($sortBy: String, $limit: Int, $timeRange: String, $contentType: String) {
@@ -70,8 +81,6 @@ function getContentTypeFromId(contentTypeId?: number): string {
       return 'game';
     case 4:
       return 'book';
-    case 5:
-      return 'music';
     default:
       return 'movie';
   }
@@ -87,8 +96,6 @@ function ContentTypeIcon({ contentTypeId }: { contentTypeId?: number }) {
       return <Gamepad2 size={12} className="text-purple-400" />;
     case 4:
       return <BookOpen size={12} className="text-amber-400" />;
-    case 5:
-      return <Music size={12} className="text-pink-400" />;
     default:
       return <Globe size={12} className="text-emerald-400" />;
   }
@@ -108,7 +115,6 @@ const CONTENT_TYPE_FILTERS = [
   { id: 2, label: 'TV Show', icon: Tv },
   { id: 3, label: 'Game', icon: Gamepad2 },
   { id: 4, label: 'Book', icon: BookOpen },
-  { id: 5, label: 'Music', icon: Music },
 ];
 
 const CONTENT_TYPE_META = [
@@ -116,21 +122,38 @@ const CONTENT_TYPE_META = [
   { id: 2, title: 'TV Show Reviews', slug: 'tv', icon: Tv },
   { id: 3, title: 'Game Reviews', slug: 'game', icon: Gamepad2 },
   { id: 4, title: 'Book Reviews', slug: 'book', icon: BookOpen },
-  { id: 5, title: 'Music Reviews', slug: 'music', icon: Music },
 ];
+
+interface PopularReviewsSectionProps {
+  preferredContentTypes?: number[];
+  splitByContentType?: boolean;
+  layout?: 'carousel' | 'grid';
+  showViewAll?: boolean;
+}
 
 export default function PopularReviewsSection({
   preferredContentTypes,
   splitByContentType = false,
-}: {
-  preferredContentTypes?: number[];
-  splitByContentType?: boolean;
-}) {
+  layout = 'carousel',
+  showViewAll = true,
+}: PopularReviewsSectionProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsByType, setReviewsByType] = useState<Record<number, Review[]>>({});
   const [loading, setLoading] = useState(true);
   const [timeRangeIndex, setTimeRangeIndex] = useState(4); // Default: 'all'
   const [selectedFilterId, setSelectedFilterId] = useState(0);
+  const { containerRef, dragScrollProps } = useHorizontalDragScroll();
+
+  const scrollReviews = (direction: 'left' | 'right') => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const amount = Math.max(container.clientWidth * 0.85, 280);
+    container.scrollBy({
+      left: direction === 'left' ? -amount : amount,
+      behavior: 'smooth',
+    });
+  };
 
   // Build available filters based on preferred content types
   const availableFilters = CONTENT_TYPE_FILTERS.filter(
@@ -163,14 +186,14 @@ export default function PopularReviewsSection({
       try {
         if (splitByContentType) {
           const entries = await Promise.all(
-          CONTENT_TYPE_META.filter(
-            (type) => preferredTypeIds.length === 0 || preferredTypeIds.includes(type.id)
-          ).map(async (type) => {
+            CONTENT_TYPE_META.filter(
+              (type) => preferredTypeIds.length === 0 || preferredTypeIds.includes(type.id)
+            ).map(async (type) => {
               const { data } = await apolloClient.query({
                 query: GET_POPULAR_REVIEWS,
                 variables: {
                   sortBy: 'top',
-                  limit: 5,
+                  limit: 10,
                   timeRange: TIME_RANGES[timeRangeIndex].id,
                   contentType: type.slug,
                 },
@@ -214,7 +237,7 @@ export default function PopularReviewsSection({
             return (r.content.contentTypeId || 0) === selectedFilter.id;
           });
         }
-        setReviews(allReviews.slice(0, 5));
+        setReviews(allReviews.slice(0, 12));
       } catch (e) {
         if (!cancelled) console.error('Error loading popular reviews:', e);
       } finally {
@@ -227,7 +250,6 @@ export default function PopularReviewsSection({
     };
   }, [timeRangeIndex, preferredContentTypeKey, selectedFilter.id, splitByContentType]);
 
-  // Sadece hiç filtre yokken ve tüm zamanlar boşsa tamamen gizle
   if (splitByContentType) {
     const hasAnyReview = activeContentTypes.some(
       (type) => (reviewsByType[type.id] || []).length > 0
@@ -235,15 +257,15 @@ export default function PopularReviewsSection({
     if (!loading && !hasAnyReview && timeRangeIndex === 4) return null;
 
     return (
-      <section className="space-y-5">
-        <div className="flex items-center justify-between">
+      <section className="space-y-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-xl font-bold">⭐ Popular Reviews</h2>
             <p className="text-sm text-white/50">Most liked reviews by content types</p>
           </div>
           <button
             onClick={() => setTimeRangeIndex((prev) => (prev + 1) % TIME_RANGES.length)}
-            className="text-xs px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 transition-colors border border-white/10"
+            className="text-xs px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 transition-colors border border-white/10 self-start lg:self-auto"
           >
             {TIME_RANGES[timeRangeIndex].label}
           </button>
@@ -270,9 +292,15 @@ export default function PopularReviewsSection({
               {loading ? (
                 <div className="glass-card p-4 text-sm text-white/60">Loading reviews...</div>
               ) : (
-                <div className="space-y-3">
+                <div className="flex gap-4 overflow-x-auto pb-2 pr-1 scrollbar-hide">
                   {typeReviews.map((review) => (
-                    <ReviewCard key={review.id} review={review} />
+                    <div
+                      key={review.id}
+                      draggable={false}
+                      className="w-[280px] min-w-[280px] sm:w-[320px] sm:min-w-[320px] lg:w-[calc((100%-48px)/4)] lg:min-w-[270px] flex-none"
+                    >
+                      <ReviewCard review={review} />
+                    </div>
                   ))}
                 </div>
               )}
@@ -288,12 +316,34 @@ export default function PopularReviewsSection({
 
   return (
     <section className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h2 className="text-xl font-bold">⭐ Popular Reviews</h2>
           <p className="text-sm text-white/50">Most liked reviews</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {layout === 'carousel' && reviews.length > 0 && (
+            <>
+              <button
+                type="button"
+                onClick={() => scrollReviews('left')}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
+                aria-label="Scroll left"
+                title="Scroll left"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollReviews('right')}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
+                aria-label="Scroll right"
+                title="Scroll right"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </>
+          )}
           {availableFilters.map((f) => {
             const Icon = f.icon;
             const isActive = selectedFilter.id === f.id;
@@ -319,9 +369,11 @@ export default function PopularReviewsSection({
           >
             {TIME_RANGES[timeRangeIndex].label}
           </button>
-          <Link href="/discussions?type=reviews" className="btn-secondary text-sm px-4 py-2">
-            See All
-          </Link>
+          {showViewAll && (
+            <Link href="/discussions?type=reviews" className="btn-secondary text-sm px-4 py-2">
+              See All
+            </Link>
+          )}
         </div>
       </div>
 
@@ -338,14 +390,47 @@ export default function PopularReviewsSection({
             ? `No reviews found in this content type.`
             : `No reviews found in this time period.`}
         </div>
-      ) : (
-        <div className="space-y-3">
+      ) : layout === 'grid' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {reviews.map((review) => (
             <ReviewCard key={review.id} review={review} />
           ))}
         </div>
+      ) : (
+        <div
+          {...dragScrollProps}
+          className="flex gap-4 overflow-x-auto pb-2 pr-1 scrollbar-hide cursor-grab active:cursor-grabbing select-none"
+        >
+          {reviews.map((review) => (
+            <div
+              key={review.id}
+              draggable={false}
+              className="w-[280px] min-w-[280px] sm:w-[320px] sm:min-w-[320px] lg:w-[calc((100%-48px)/4)] lg:min-w-[270px] flex-none"
+            >
+              <ReviewCard review={review} />
+            </div>
+          ))}
+          {showViewAll && <ReviewViewAllCard />}
+        </div>
       )}
     </section>
+  );
+}
+
+function ReviewViewAllCard() {
+  return (
+    <Link
+      href={'/discussions?type=reviews' as any}
+      draggable={false}
+      className="w-[280px] min-w-[280px] sm:w-[320px] sm:min-w-[320px] lg:w-[calc((100%-48px)/4)] lg:min-w-[270px] flex-none"
+    >
+      <div className="flex h-full min-h-[184px] w-full flex-col items-center justify-center gap-3 rounded-[22px] border border-white/10 bg-white/[0.03] px-5 py-6 text-center text-white/80 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-white/[0.05] text-lg font-black">
+          +
+        </span>
+        <span className="text-sm font-semibold leading-6">See All</span>
+      </div>
+    </Link>
   );
 }
 
@@ -353,7 +438,7 @@ function ReviewCard({ review }: { review: Review }) {
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
   const posterUrl = review.content?.posterUrl
-    ? getPosterUrl.original(review.content.posterUrl)
+    ? getPosterUrl.card(review.content.posterUrl)
     : null;
   const contentLink =
     review.contentId && review.content
@@ -371,18 +456,18 @@ function ReviewCard({ review }: { review: Review }) {
   return (
     <div
       onClick={handleCardClick}
-      className="glass-card p-4 hover:bg-white/5 transition-colors block cursor-pointer"
+      className="glass-card p-4 hover:bg-white/5 transition-colors flex flex-col justify-between min-h-[184px] h-full cursor-pointer gap-3"
     >
-      <div className="flex gap-3">
+      <div className="flex gap-4">
         {/* Poster */}
         {contentLink && posterUrl && !imageError ? (
           <Link href={contentLink as any} className="flex-shrink-0">
-            <div className="w-[84px] h-[126px] rounded-lg overflow-hidden bg-zinc-800 ring-1 ring-white/5 relative">
+            <div className="w-16 h-24 rounded-lg overflow-hidden relative ring-1 ring-white/10">
               <Image
                 src={posterUrl}
                 alt={review.content?.title || ''}
                 fill
-                sizes="84px"
+                sizes="64px"
                 className="object-cover"
                 unoptimized
                 onError={() => setImageError(true)}
@@ -390,36 +475,20 @@ function ReviewCard({ review }: { review: Review }) {
             </div>
           </Link>
         ) : (
-          <div className="w-[84px] h-[126px] rounded-lg bg-zinc-800 flex items-center justify-center flex-shrink-0 ring-1 ring-white/5">
+          <div className="w-16 h-24 rounded-lg bg-zinc-800/80 flex items-center justify-center ring-1 ring-white/10 flex-shrink-0">
             <ContentTypeIcon contentTypeId={review.content?.contentTypeId} />
           </div>
         )}
 
         {/* Content */}
-        <div className="flex-1 min-w-0">
-          {/* Content title */}
-          {review.content && contentLink && (
-            <Link
-              href={contentLink as any}
-              className="flex items-center gap-1.5 text-sm font-semibold text-white hover:text-violet-400 transition-colors truncate mb-1"
-            >
-              <ContentTypeIcon contentTypeId={review.content?.contentTypeId} />
-              <span className="truncate">{review.content.title}</span>
-            </Link>
-          )}
-
-          {/* Review text */}
-          <p className="text-sm text-white/60 line-clamp-2 leading-relaxed">
-            &quot;{review.description}&quot;
-          </p>
-
-          {/* Footer */}
-          <div className="flex items-center gap-3 mt-2 text-xs text-white/40">
+        <div className="flex-1 min-w-0 flex flex-col gap-1.5 py-0.5">
+          {/* Author Header */}
+          <div className="flex items-center gap-2">
             <Link
               href={`/profile/${review.author.username}` as any}
-              className="flex items-center gap-1.5 hover:text-white/60 transition-colors"
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0"
             >
-              <div className="w-6 h-6 rounded-full bg-violet-500 overflow-hidden flex-shrink-0">
+              <div className="w-6 h-6 rounded-full bg-violet-500 overflow-hidden flex-shrink-0 border border-white/10">
                 {review.author.picturePath ? (
                   <Image
                     src={review.author.picturePath}
@@ -434,22 +503,44 @@ function ReviewCard({ review }: { review: Review }) {
                   </span>
                 )}
               </div>
-              <span>{review.author.username}</span>
+              <span className="text-sm font-medium text-white/90 truncate">
+                {review.author.username}
+              </span>
             </Link>
-
-            <span className="flex items-center gap-1">
-              <ChevronUp size={12} />
-              {review.score}
+            <span className="text-xs text-white/40 shrink-0">&bull;</span>
+            <span className="text-xs text-white/40 shrink-0">
+              {formatRelativeTime(review.createdAt)}
             </span>
+          </div>
 
-            <span className="flex items-center gap-1">
-              <MessageSquare size={12} />
-              {review.commentCount}
-            </span>
+          {/* Content title */}
+          {review.content && contentLink && (
+            <Link
+              href={contentLink as any}
+              className="text-base font-bold text-white hover:text-violet-400 transition-colors line-clamp-1"
+            >
+              {review.content.title}
+            </Link>
+          )}
 
-            <span>{formatRelativeTime(review.createdAt)}</span>
+          {/* Review text */}
+          <div className="flex gap-2 text-xs text-white/70 italic mt-auto">
+            <MessageSquare size={13} className="text-violet-400 flex-shrink-0 mt-0.5" />
+            <p className="line-clamp-2 leading-relaxed">&quot;{review.description}&quot;</p>
           </div>
         </div>
+      </div>
+
+      {/* Footer stats */}
+      <div className="flex items-center gap-3 pt-1.5 border-t border-white/5 text-xs text-white/40">
+        <span className="flex items-center gap-1 text-violet-300 font-medium">
+          <ChevronUp size={12} />
+          {review.score}
+        </span>
+        <span className="flex items-center gap-1">
+          <MessageSquare size={12} />
+          {review.commentCount}
+        </span>
       </div>
     </div>
   );

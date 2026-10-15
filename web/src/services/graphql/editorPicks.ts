@@ -6,6 +6,7 @@ export interface EditorPick {
   contentId: string;
   contentTypeId: number;
   label?: string | null;
+  imageUrl?: string | null;
   displayOrder: number;
   createdAt?: string;
   updatedAt?: string;
@@ -15,6 +16,7 @@ export interface EditorPick {
 export interface EditorPickItemInput {
   contentId: string;
   label?: string | null;
+  imageUrl?: string | null;
   displayOrder: number;
 }
 
@@ -25,6 +27,7 @@ export const GET_EDITOR_PICKS = gql`
       contentId
       contentTypeId
       label
+      imageUrl
       displayOrder
       createdAt
       updatedAt
@@ -52,6 +55,7 @@ export const SET_EDITOR_PICKS = gql`
       contentId
       contentTypeId
       label
+      imageUrl
       displayOrder
       createdAt
       updatedAt

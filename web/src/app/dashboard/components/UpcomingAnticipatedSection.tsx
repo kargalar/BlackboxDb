@@ -15,7 +15,6 @@ interface UpcomingAnticipatedSectionProps {
   anticipatedTv: UnifiedContent[];
   anticipatedGames: UnifiedContent[];
   anticipatedBooks: UnifiedContent[];
-  anticipatedMusic: UnifiedContent[];
   itemStates: Record<string | number, ItemState>;
   onWatchToggle: (item: UnifiedContent, contentType: ContentType) => void;
   onFavoriteToggle: (item: UnifiedContent, contentType: ContentType) => void;
@@ -25,14 +24,13 @@ interface UpcomingAnticipatedSectionProps {
   splitByContentType?: boolean;
 }
 
-type TabType = 'movie' | 'tv' | 'game' | 'book' | 'music';
+type TabType = 'movie' | 'tv' | 'game' | 'book';
 
 const TAB_MAPPING: Record<number, { type: TabType; label: string; emoji: string }> = {
   1: { type: 'movie', label: 'Movies', emoji: '🎬' },
   2: { type: 'tv', label: 'TV Shows', emoji: '📺' },
   3: { type: 'game', label: 'Games', emoji: '🎮' },
   4: { type: 'book', label: 'Books', emoji: '📚' },
-  5: { type: 'music', label: 'Music', emoji: '🎵' },
 };
 
 const ALL_TAB = { type: 'all' as const, label: 'All', emoji: '✨' };
@@ -41,7 +39,6 @@ function getContentTypeFromItem(item: UnifiedContent): ContentType {
   if (item.contentTypeId === 2) return 'tv';
   if (item.contentTypeId === 3) return 'game';
   if (item.contentTypeId === 4) return 'book';
-  if (item.contentTypeId === 5) return 'music';
   return 'movie';
 }
 
@@ -66,7 +63,6 @@ export default function UpcomingAnticipatedSection({
   anticipatedTv,
   anticipatedGames,
   anticipatedBooks,
-  anticipatedMusic,
   itemStates,
   onWatchToggle,
   onFavoriteToggle,
@@ -105,7 +101,6 @@ export default function UpcomingAnticipatedSection({
   else if (selectedTab === 'tv') currentItems = anticipatedTv;
   else if (selectedTab === 'game') currentItems = anticipatedGames;
   else if (selectedTab === 'book') currentItems = anticipatedBooks;
-  else if (selectedTab === 'music') currentItems = anticipatedMusic;
 
   // Sadece çıkış tarihi null olmayanları ve çıkışının üzerinden en fazla 2 gün geçenleri göster
   currentItems = currentItems.filter((item) => {
@@ -152,10 +147,6 @@ export default function UpcomingAnticipatedSection({
     book: filterUpcomingItems(anticipatedBooks).map((item) => ({
       ...item,
       dashboardContentType: 'book',
-    })),
-    music: filterUpcomingItems(anticipatedMusic).map((item) => ({
-      ...item,
-      dashboardContentType: 'music',
     })),
   };
 

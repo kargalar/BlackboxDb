@@ -48,12 +48,6 @@ export interface AdminContent {
   lastAirDate?: string;
   authors?: string;
 
-  explicit?: boolean;
-  label?: string;
-  totalTracks?: number;
-  spotifyUrl?: string;
-  musicReleaseType?: string;
-
   previewLink?: string;
   infoLink?: string;
   primaryBookPublication?: AdminBookPublication | null;
@@ -208,12 +202,6 @@ export interface UpdateContentInput {
   releaseDate?: string;
   runtime?: number;
   autoSelectHighestVotedMedia?: boolean;
-
-  explicit?: boolean;
-  label?: string;
-  totalTracks?: number;
-  spotifyUrl?: string;
-  musicReleaseType?: string;
 
   images?: ImageInput[];
 }

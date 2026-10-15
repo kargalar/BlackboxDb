@@ -2,7 +2,6 @@
 
 import AddToListModal from '@/components/organisms/AddToListModal';
 import FriendsActivitySection from '@/components/organisms/dashboard/FriendsActivitySection';
-import FriendsReviewsSection from '@/components/organisms/dashboard/FriendsReviewsSection';
 import PopularReviewsSection from '@/components/organisms/dashboard/PopularReviewsSection';
 import PopularDiscussionsSection from '@/components/organisms/dashboard/PopularDiscussionsSection';
 import { SkeletonGrid } from './components/DashboardUI';
@@ -10,7 +9,6 @@ import ContentSection from './components/ContentSection';
 import PopularContentSection from './components/PopularContentSection';
 import UpcomingAnticipatedSection from './components/UpcomingAnticipatedSection';
 import DashboardHero from './components/DashboardHero';
-import LibrarySummary from './components/LibrarySummary';
 import TopContributorsSection from '@/components/organisms/dashboard/TopContributorsSection';
 import { useDashboardData } from './hooks/useDashboardData';
 import { useFriendsActivityFeed } from '@/hooks/useFriendsActivityFeed';
@@ -26,13 +24,9 @@ export default function DashboardPage() {
     trendingTv,
     anticipatedTv,
     popularBooks,
-    popularMusic,
     trendingGames,
     anticipatedGames,
     anticipatedBooks,
-    anticipatedMusic,
-    personalStats,
-    personalStatsLoading,
     loading,
     tvLoading,
     booksLoading,
@@ -53,16 +47,14 @@ export default function DashboardPage() {
   } = useDashboardData();
 
   const { preferredContentTypes, splitHomePopularSections } = useUserPreferences();
-  // Content type visibility helpers (1=movie, 2=tv, 3=game, 4=book, 5=music)
+  // Content type visibility helpers (1=movie, 2=tv, 3=game, 4=book)
   const showMovies = preferredContentTypes.includes(1);
   const showTv = preferredContentTypes.includes(2);
   const showGames = preferredContentTypes.includes(3);
   const showBooks = preferredContentTypes.includes(4);
-  const showMusic = preferredContentTypes.includes(5);
 
   const {
-    statusActivities,
-    reviewActivities,
+    activities: friendsActivities,
     itemStates: friendsItemStates,
     loading: friendsLoading,
     error: friendsError,
@@ -94,24 +86,11 @@ export default function DashboardPage() {
           2: trendingTv[0],
           3: trendingGames[0],
           4: popularBooks[0],
-          5: popularMusic[0],
         }}
         preferredContentTypes={preferredContentTypes}
         isLoading={loading}
         onAddToList={handleAddToList}
       />
-
-      {user?.username && (
-        <LibrarySummary
-          stats={personalStats}
-          loading={personalStatsLoading}
-          username={user.username}
-        />
-      )}
-
-      <div className="dashboard-section dashboard-contributors-section">
-        <TopContributorsSection />
-      </div>
 
       {loading ? (
         <div className="dashboard-loading-state space-y-12">
@@ -132,7 +111,7 @@ export default function DashboardPage() {
         <>
           {/* Popular Content */}
           {!splitHomePopularSections &&
-            (showMovies || showTv || showGames || showBooks || showMusic) && (
+            (showMovies || showTv || showGames || showBooks) && (
               <div className="dashboard-section dashboard-popular-content-section">
                 <PopularContentSection
                   preferredContentTypes={preferredContentTypes}
@@ -141,7 +120,6 @@ export default function DashboardPage() {
                   trendingTv={trendingTv}
                   trendingGames={trendingGames}
                   popularBooks={popularBooks}
-                  popularMusic={popularMusic}
                   loading={loading}
                   tvLoading={tvLoading}
                   booksLoading={booksLoading}
@@ -211,38 +189,9 @@ export default function DashboardPage() {
             />
           )}
 
-          {splitHomePopularSections && showMusic && (
-            <ContentSection
-              title={t('sections.popularMusic')}
-              emoji="🎵"
-              href="/explore/music"
-              items={popularMusic}
-              contentType="music"
-              hideWhenEmpty
-              isLoading={loading}
-              emptyMessage={t('sections.noMusic')}
-              timeRange={contentTimeRanges.music}
-              onTimeRangeChange={(r) => setContentTimeRange('music', r)}
-              {...handlers}
-            />
-          )}
-
-          {/* Most Anticipated Upcoming Content (Compact) */}
-          <UpcomingAnticipatedSection
-            preferredContentTypes={preferredContentTypes}
-            anticipatedMovies={anticipatedMovies}
-            anticipatedTv={anticipatedTv}
-            anticipatedGames={anticipatedGames}
-            anticipatedBooks={anticipatedBooks}
-            anticipatedMusic={anticipatedMusic}
-            isLoading={anticipatedLoading}
-            splitByContentType={splitHomePopularSections}
-            {...handlers}
-          />
-
           <div className="dashboard-section dashboard-friends-activity-section">
             <FriendsActivitySection
-              activities={statusActivities}
+              activities={friendsActivities}
               loading={friendsLoading}
               error={friendsError}
               onRefresh={friendsRefresh}
@@ -253,30 +202,37 @@ export default function DashboardPage() {
             />
           </div>
 
-          <div className="dashboard-section dashboard-friends-reviews-section">
-            <FriendsReviewsSection
-              reviews={reviewActivities}
-              loading={friendsLoading}
-              error={friendsError}
-              onRefresh={friendsRefresh}
+          <div className="dashboard-section dashboard-popular-reviews-section">
+            <PopularReviewsSection
               preferredContentTypes={preferredContentTypes}
               splitByContentType={splitHomePopularSections}
             />
           </div>
 
-          {/* Popular Reviews & Discussions - side by side */}
-          <div className="dashboard-section dashboard-community-section grid grid-cols-1 gap-6">
-            <PopularReviewsSection
-              preferredContentTypes={preferredContentTypes}
-              splitByContentType={splitHomePopularSections}
-            />
+          <div className="dashboard-section dashboard-popular-discussions-section">
             <PopularDiscussionsSection
               preferredContentTypes={preferredContentTypes}
               splitByContentType={splitHomePopularSections}
             />
           </div>
+
+          {/* Most Anticipated Upcoming Content (Compact) */}
+          <UpcomingAnticipatedSection
+            preferredContentTypes={preferredContentTypes}
+            anticipatedMovies={anticipatedMovies}
+            anticipatedTv={anticipatedTv}
+            anticipatedGames={anticipatedGames}
+            anticipatedBooks={anticipatedBooks}
+            isLoading={anticipatedLoading}
+            splitByContentType={splitHomePopularSections}
+            {...handlers}
+          />
         </>
       )}
+
+      <div className="dashboard-section dashboard-contributors-section">
+        <TopContributorsSection />
+      </div>
 
       {/* Add to List Modal */}
       {selectedContentForList && (

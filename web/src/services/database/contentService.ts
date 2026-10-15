@@ -78,7 +78,7 @@ function adaptContentForComponents(content: Content): any {
 // Get user's watched content by type
 export async function getUserWatchedContent(
   userId: string,
-  contentType: 'MOVIE' | 'TV' | 'GAME' | 'BOOK' | 'MUSIC'
+  contentType: 'MOVIE' | 'TV' | 'GAME' | 'BOOK'
 ): Promise<{ data: any[]; error?: any }> {
   try {
     console.log(
@@ -137,7 +137,7 @@ export async function getUserWatchedContent(
 // Get user's favorite content by type
 export async function getUserFavoriteContent(
   userId: string,
-  contentType: 'MOVIE' | 'TV' | 'GAME' | 'BOOK' | 'MUSIC'
+  contentType: 'MOVIE' | 'TV' | 'GAME' | 'BOOK'
 ): Promise<{ data: any[]; error?: any }> {
   try {
     console.log(
@@ -200,7 +200,7 @@ export async function getUserFavoriteContent(
 // Get user's featured content by type
 export async function getUserFeaturedContent(
   userId: string,
-  contentType: 'MOVIE' | 'TV' | 'GAME' | 'BOOK' | 'MUSIC'
+  contentType: 'MOVIE' | 'TV' | 'GAME' | 'BOOK'
 ): Promise<{ data: any[]; error?: any }> {
   try {
     console.log(
@@ -240,7 +240,7 @@ export async function getUserFeaturedContent(
 // Set featured content for a content type
 export async function setFeaturedContent(
   contentIds: string[],
-  contentType: 'MOVIE' | 'TV' | 'GAME' | 'BOOK' | 'MUSIC'
+  contentType: 'MOVIE' | 'TV' | 'GAME' | 'BOOK'
 ): Promise<{ data: boolean; error?: any }> {
   try {
     console.log(`🔄 [GraphQL - setFeaturedContent] Setting featured ${contentType}:`, contentIds);
@@ -295,12 +295,11 @@ export async function getUserStats(
 
 // Get all watched content for a user (all types)
 export async function getAllWatchedContent(userId: string) {
-  const [movies, tv, games, books, music] = await Promise.all([
+  const [movies, tv, games, books] = await Promise.all([
     getUserWatchedContent(userId, 'MOVIE'),
     getUserWatchedContent(userId, 'TV'),
     getUserWatchedContent(userId, 'GAME'),
     getUserWatchedContent(userId, 'BOOK'),
-    getUserWatchedContent(userId, 'MUSIC'),
   ]);
 
   return {
@@ -308,18 +307,16 @@ export async function getAllWatchedContent(userId: string) {
     tv: tv.data,
     games: games.data,
     books: books.data,
-    music: music.data,
   };
 }
 
 // Get all favorite content for a user (all types)
 export async function getAllFavoriteContent(userId: string) {
-  const [movies, tv, games, books, music] = await Promise.all([
+  const [movies, tv, games, books] = await Promise.all([
     getUserFavoriteContent(userId, 'MOVIE'),
     getUserFavoriteContent(userId, 'TV'),
     getUserFavoriteContent(userId, 'GAME'),
     getUserFavoriteContent(userId, 'BOOK'),
-    getUserFavoriteContent(userId, 'MUSIC'),
   ]);
 
   return {
@@ -327,7 +324,6 @@ export async function getAllFavoriteContent(userId: string) {
     tv: tv.data,
     games: games.data,
     books: books.data,
-    music: music.data,
   };
 }
 

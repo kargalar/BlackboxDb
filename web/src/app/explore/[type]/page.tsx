@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Suspense, useEffect, useState, useMemo, use } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -18,7 +18,7 @@ import { useGlobalSettings } from '@/contexts/GlobalSettingsContext';
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 
-type ContentType = 'movie' | 'tv' | 'game' | 'book' | 'music' | 'podcast' | 'theater';
+type ContentType = 'movie' | 'tv' | 'game' | 'book';
 const GET_CONTENT_TYPE_BY_SLUG = gql`
   query ExploreContentType($slug: String!) {
     contentTypeBySlug(slug: $slug) {

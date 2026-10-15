@@ -152,14 +152,6 @@ export interface AddContentFormData {
   previewLink?: string;
   infoLink?: string;
 
-  // Music-specific
-
-  explicit?: boolean;
-  label?: string;
-  totalTracks?: number;
-  spotifyUrl?: string;
-  musicReleaseType?: 'ALBUM' | 'SINGLE' | 'TRACK' | '';
-
   // Game-specific
   gameModes: SimpleItem[];
   gameEngines: SimpleItem[];
@@ -238,11 +230,6 @@ export const INITIAL_FORM_DATA: AddContentFormData = {
   bookPublications: [],
   previewLink: '',
   infoLink: '',
-  explicit: false,
-  label: '',
-  totalTracks: undefined,
-  spotifyUrl: '',
-  musicReleaseType: '',
   gameModes: [],
   gameEngines: [],
   perspectives: [],

@@ -5,7 +5,6 @@ const TYPE_RATING_CATEGORIES: Record<string, readonly string[]> = {
   tv: ['acting', 'cinematography'],
   game: ['graphics', 'gameplay'],
   book: ['writing', 'character'],
-  music: ['vocals', 'lyrics', 'production'],
 };
 
 export const ADDITIONAL_RATING_CATEGORIES = [

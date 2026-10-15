@@ -19,18 +19,15 @@ interface UseHomeTabStateParams {
   recentTv: Content[];
   recentGames: Content[];
   recentBooks: Content[];
-  recentMusic: Content[];
   continuingItems: Content[];
   featuredMovies: Content[];
   featuredTv: Content[];
   featuredGames: Content[];
   featuredBooks: Content[];
-  featuredMusic: Content[];
   allConsumedMovies: Content[];
   allConsumedTv: Content[];
   allConsumedGames: Content[];
   allConsumedBooks: Content[];
-  allConsumedMusic: Content[];
   isOwnProfile: boolean;
   onFeaturedUpdate?: () => void;
 }
@@ -44,18 +41,15 @@ export function useHomeTabState({
   recentTv,
   recentGames,
   recentBooks,
-  recentMusic,
   continuingItems,
   featuredMovies,
   featuredTv,
   featuredGames,
   featuredBooks,
-  featuredMusic,
   allConsumedMovies,
   allConsumedTv,
   allConsumedGames,
   allConsumedBooks,
-  allConsumedMusic,
   isOwnProfile,
   onFeaturedUpdate,
 }: UseHomeTabStateParams) {
@@ -70,7 +64,6 @@ export function useHomeTabState({
     tv: [],
     games: [],
     books: [],
-    music: [],
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [featuredType, setFeaturedType] = useState<FeaturedType>('movies');
@@ -91,7 +84,6 @@ export function useHomeTabState({
       { key: 'tv', items: featuredTv },
       { key: 'games', items: featuredGames },
       { key: 'books', items: featuredBooks },
-      { key: 'music', items: featuredMusic },
     ];
     const firstNonEmpty = tabOrder.find((t) => t.items.length > 0);
     if (firstNonEmpty && firstNonEmpty.key !== featuredType) {
@@ -100,7 +92,7 @@ export function useHomeTabState({
     if (firstNonEmpty) {
       setHasAutoSelected(true);
     }
-  }, [featuredMovies, featuredTv, featuredGames, featuredBooks, featuredMusic, featuredType, hasAutoSelected]);
+  }, [featuredMovies, featuredTv, featuredGames, featuredBooks, featuredType, hasAutoSelected]);
 
   // Add to list modal state
   const [showAddToListModal, setShowAddToListModal] = useState(false);
@@ -119,8 +111,6 @@ export function useHomeTabState({
         return allConsumedGames;
       case 'books':
         return allConsumedBooks;
-      case 'music':
-        return allConsumedMusic;
       default:
         return [];
     }
@@ -130,7 +120,6 @@ export function useHomeTabState({
     allConsumedTv,
     allConsumedGames,
     allConsumedBooks,
-    allConsumedMusic,
   ]);
 
   const getFeaturedContent = useCallback((): Content[] => {
@@ -143,12 +132,10 @@ export function useHomeTabState({
         return featuredGames;
       case 'books':
         return featuredBooks;
-      case 'music':
-        return featuredMusic;
       default:
         return [];
     }
-  }, [featuredType, featuredMovies, featuredTv, featuredGames, featuredBooks, featuredMusic]);
+  }, [featuredType, featuredMovies, featuredTv, featuredGames, featuredBooks]);
 
   const filteredContent = getConsumedContent().filter((content) =>
     content.title?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -162,13 +149,11 @@ export function useHomeTabState({
       ...recentTv,
       ...recentGames,
       ...recentBooks,
-      ...recentMusic,
       ...continuingItems,
       ...featuredMovies,
       ...featuredTv,
       ...featuredGames,
       ...featuredBooks,
-      ...featuredMusic,
     ].forEach((item) => {
       if (item?.id !== undefined && item?.id !== null) {
         uniqueIds.add(item.id.toString());
@@ -181,13 +166,11 @@ export function useHomeTabState({
     recentTv,
     recentGames,
     recentBooks,
-    recentMusic,
     continuingItems,
     featuredMovies,
     featuredTv,
     featuredGames,
     featuredBooks,
-    featuredMusic,
   ]);
 
   // ─── Effects ───────────────────────────────────────────────
@@ -200,7 +183,6 @@ export function useHomeTabState({
         tv: featuredTv.map((c) => c.id.toString()),
         games: featuredGames.map((c) => c.id.toString()),
         books: featuredBooks.map((c) => c.id.toString()),
-        music: featuredMusic.map((c) => c.id.toString()),
       };
       setPendingSelections(initialSelections);
       setSelectedContentIds(initialSelections[featuredType]);
@@ -531,7 +513,6 @@ export function useHomeTabState({
         tv: 'TV',
         games: 'GAME',
         books: 'BOOK',
-        music: 'MUSIC',
       } as const;
 
       // Save current tab's selection to pendingSelections before saving
@@ -546,7 +527,6 @@ export function useHomeTabState({
         tv: featuredTv.map((c) => c.id.toString()),
         games: featuredGames.map((c) => c.id.toString()),
         books: featuredBooks.map((c) => c.id.toString()),
-        music: featuredMusic.map((c) => c.id.toString()),
       };
 
       // Find which types have changed

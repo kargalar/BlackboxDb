@@ -6,7 +6,6 @@ import MovieCard from '@/components/organisms/MovieCard';
 import TvCard from '@/components/organisms/TvCard';
 import GameCard from '@/components/organisms/GameCard';
 import BookCard from '@/components/organisms/BookCard';
-import MusicCard from '@/components/organisms/MusicCard';
 import type { UnifiedContent } from '@/types/unified-content';
 
 // Content type display config
@@ -15,7 +14,6 @@ const CONTENT_TYPE_CONFIG: Record<number, { label: string; emoji: string; order:
   2: { label: 'Diziler', emoji: '📺', order: 2 },
   3: { label: 'Oyunlar', emoji: '🎮', order: 3 },
   4: { label: 'Kitaplar', emoji: '📚', order: 4 },
-  5: { label: 'Müzikler', emoji: '🎵', order: 5 },
 };
 
 function getContentTypeConfig(typeId: number) {
@@ -40,7 +38,6 @@ function resolveContentTypeId(item: UnifiedContent, fallbackType: string): numbe
   if (contentTypeName === 'tv show' || contentTypeName === 'tv') return 2;
   if (contentTypeName === 'game') return 3;
   if (contentTypeName === 'book') return 4;
-  if (contentTypeName === 'music') return 5;
 
   // Fallback to parent type
   switch (fallbackType) {
@@ -52,8 +49,6 @@ function resolveContentTypeId(item: UnifiedContent, fallbackType: string): numbe
       return 3;
     case 'book':
       return 4;
-    case 'music':
-      return 5;
     default:
       return 1;
   }
@@ -85,13 +80,11 @@ export default function ContentSimilar({
     if (contentTypeName === 'tv show' || contentTypeName === 'tv') return 'tv';
     if (contentTypeName === 'game') return 'game';
     if (contentTypeName === 'book') return 'book';
-    if (contentTypeName === 'music') return 'music';
 
     if (item?.contentTypeId === 1) return 'movie';
     if (item?.contentTypeId === 2) return 'tv';
     if (item?.contentTypeId === 3) return 'game';
     if (item?.contentTypeId === 4) return 'book';
-    if (item?.contentTypeId === 5) return 'music';
 
     return type;
   };
@@ -278,25 +271,6 @@ export default function ContentSimilar({
           <BookCard
             key={item.id || index}
             book={cardItem}
-            size="medium"
-            showRating={false}
-            showActions={false}
-            className="flex-shrink-0 w-48"
-            subtitleOverride={subtitleOverride}
-          />
-        );
-      case 'music':
-        return (
-          <MusicCard
-            key={item.id || index}
-            music={{
-              id: cardItem.id,
-              title: cardItem.title,
-              artist: (cardItem as any).artist,
-              label: cardItem.label,
-              releaseDate: cardItem.releaseDate,
-              posterUrl: cardItem.posterUrl,
-            }}
             size="medium"
             showRating={false}
             showActions={false}

@@ -21,7 +21,7 @@ export default function FriendsActivityPage() {
     selectedContentType,
   } = useDashboardData();
 
-  const { statusActivities, itemStates, loading, error, refresh } = useFriendsActivityFeed({
+  const { activities, itemStates, loading, error, refresh } = useFriendsActivityFeed({
     limit: 100,
     enabled: true,
   });
@@ -38,13 +38,13 @@ export default function FriendsActivityPage() {
           </Link>
           <h1 className="mt-2 text-3xl font-bold">Arkadaş Aktiviteleri</h1>
           <p className="text-white/50">
-            Takip ettiğin kişilerin tüm son durum güncellemeleri tek sayfada.
+            Takip ettiğin kişilerin tüm son aktiviteleri ve yorumları tek sayfada.
           </p>
         </div>
       </div>
 
       <FriendsActivitySection
-        activities={statusActivities}
+        activities={activities}
         itemStates={itemStates}
         loading={loading}
         error={error}

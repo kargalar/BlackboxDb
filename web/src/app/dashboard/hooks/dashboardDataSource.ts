@@ -65,7 +65,7 @@ export async function fetchMostAnticipatedUpcomingContent(
   limit: number = 5
 ): Promise<UnifiedContent[]> {
   const graphqlEndpoint = process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:4000/graphql';
-  const typeMap: Record<string, number> = { movie: 1, tv: 2, game: 3, book: 4, music: 5 };
+  const typeMap: Record<string, number> = { movie: 1, tv: 2, game: 3, book: 4 };
   const contentTypeId = typeMap[type] || 1;
 
   try {

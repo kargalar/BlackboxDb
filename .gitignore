@@ -7,6 +7,8 @@ node_modules/
 **/node_modules/
 output/
 build/
+uploads/
+server/uploads/
 web/.next/
 
 # Local configuration and credentials

@@ -477,22 +477,6 @@ export class UpdateContentInput {
   @Field(() => [String], { nullable: true })
   similarContentIds?: string[];
 
-  // Music-specific
-  @Field(() => Boolean, { nullable: true })
-  explicit?: boolean;
-
-  @Field(() => String, { nullable: true })
-  label?: string;
-
-  @Field(() => Int, { nullable: true })
-  totalTracks?: number;
-
-  @Field(() => String, { nullable: true })
-  spotifyUrl?: string;
-
-  @Field(() => String, { nullable: true })
-  musicReleaseType?: string;
-
   @Field(() => [ContentCitationInput], { nullable: true })
   citationsReceived?: ContentCitationInput[];
 

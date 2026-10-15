@@ -11,7 +11,7 @@ import { GraphQLContext } from "../../context";
 import { requireAdminOrModerator } from "../../lib/authGuard";
 import { logger } from "../../lib/logger";
 import { Expansion } from "../../types/Expansion";
-import { deleteBunnyFile, isBunnyUrl } from "../../lib/bunny";
+import { localizeContentImage } from "../../lib/localContentImage";
 
 // Helper function to calculate average rating from distribution
 function calculateAverageRating(distribution: number[]): number | null {
@@ -187,22 +187,14 @@ export class AdminExpansionResolver {
     const existing = await prisma.expansion.findUnique({ where: { id } });
     if (!existing) throw new Error("Expansion not found");
 
-    // Remove the previous Bunny image when the poster is replaced.
-    if (
-      posterUrl !== undefined &&
-      existing.posterUrl &&
-      existing.posterUrl !== posterUrl &&
-      isBunnyUrl(existing.posterUrl)
-    ) {
-      await deleteBunnyFile(existing.posterUrl).catch((err) =>
-        logger.warn(`Failed to delete old expansion poster: ${err}`),
-      );
-    }
-
     const updateData: any = {};
     if (name !== null && name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
-    if (posterUrl !== undefined) updateData.posterUrl = posterUrl;
+    if (posterUrl !== undefined) {
+      updateData.posterUrl = posterUrl
+        ? await localizeContentImage(posterUrl, `expansion-${id}`, "expansion")
+        : null;
+    }
     if (releaseDate !== undefined) {
       updateData.releaseDate = releaseDate ? new Date(releaseDate) : null;
     }
@@ -240,13 +232,6 @@ export class AdminExpansionResolver {
 
     const expansion = await prisma.expansion.findUnique({ where: { id } });
     if (!expansion) throw new Error("Expansion not found");
-
-    // Clean up the Bunny poster.
-    if (expansion.posterUrl && isBunnyUrl(expansion.posterUrl)) {
-      await deleteBunnyFile(expansion.posterUrl).catch((err) =>
-        logger.warn(`Failed to delete expansion poster: ${err}`),
-      );
-    }
 
     await prisma.expansion.delete({ where: { id } });
 

@@ -3,12 +3,8 @@ import { GraphQLUpload, FileUpload } from 'graphql-upload-minimal';
 import { GraphQLContext } from '../context';
 import { requireAuth, requireAdminOrModerator } from '../lib/authGuard';
 import { ContentImage } from '../types/ContentImage';
-import {
-  deleteBunnyFile,
-  generateUniqueFileId,
-  uploadToBunny,
-  type UploadPreset,
-} from '../lib/bunny';
+import { saveLocalScreenshot } from '../lib/localScreenshot';
+import { saveLocalContentImage, type ContentImageKind } from '../lib/localContentImage';
 
 @Resolver()
 export class UploadResolver {
@@ -38,8 +34,14 @@ export class UploadResolver {
         throw new Error('Content not found');
       }
 
-      const publicId = generateUniqueFileId();
-      const uploadResult = await uploadToBunny(file, type as UploadPreset, publicId, contentId);
+      if (type !== 'poster' && type !== 'backdrop') {
+        throw new Error('Alternative content images must be posters or backdrops');
+      }
+      const uploadResult = await saveLocalContentImage(
+        file,
+        contentId,
+        type as ContentImageKind,
+      );
 
       const contentImage = await prisma.contentImage.create({
         data: {
@@ -80,16 +82,7 @@ export class UploadResolver {
         select: { picturePath: true },
       });
 
-      // Delete old profile picture if exists
-      if (currentUser?.picturePath) {
-        await deleteBunnyFile(currentUser.picturePath).catch((err) =>
-          console.warn('Failed to delete old image:', err)
-        );
-      }
-
-      // Upload the client-cropped profile image to Bunny Storage.
-      const publicId = generateUniqueFileId();
-      const uploadResult = await uploadToBunny(file, 'profile', publicId);
+      const uploadResult = await saveLocalContentImage(file, user.id, 'profile');
       const imageUrl = uploadResult.url;
 
       // Update user in database
@@ -127,16 +120,7 @@ export class UploadResolver {
         select: { coverPhotoUrl: true },
       });
 
-      // Delete old cover photo if exists
-      if (currentUser?.coverPhotoUrl) {
-        await deleteBunnyFile(currentUser.coverPhotoUrl).catch((err) =>
-          console.warn('Failed to delete old cover photo:', err)
-        );
-      }
-
-      // Upload the client-cropped cover image to Bunny Storage.
-      const publicId = generateUniqueFileId();
-      const uploadResult = await uploadToBunny(file, 'covers', publicId);
+      const uploadResult = await saveLocalContentImage(file, user.id, 'cover');
       const imageUrl = uploadResult.url;
 
       // Update user in database
@@ -181,10 +165,7 @@ export class UploadResolver {
         throw new Error('Content not found');
       }
 
-      // Upload the client-cropped poster to Bunny Storage.
-      const publicId = generateUniqueFileId();
-
-      const uploadResult = await uploadToBunny(file, 'poster', publicId, contentId);
+      const uploadResult = await saveLocalContentImage(file, contentId, 'poster');
 
       // Save to ContentImage table
 
@@ -240,10 +221,7 @@ export class UploadResolver {
         throw new Error('Content not found');
       }
 
-      // Upload the client-cropped backdrop to Bunny Storage.
-      const publicId = generateUniqueFileId();
-
-      const uploadResult = await uploadToBunny(file, 'backdrop', publicId, contentId);
+      const uploadResult = await saveLocalContentImage(file, contentId, 'backdrop');
 
       // Save to ContentImage table
 
@@ -296,9 +274,14 @@ export class UploadResolver {
       const hash = hashMatch ? hashMatch[1] : '';
       const cleanBase64 = fileBase64.replace(/(#focus=[\d.,]+)/, '');
 
-      // Upload to Bunny Storage using the preset according to imageType
-      const preset = imageType as UploadPreset;
-      const uploadResult = await uploadToBunny(cleanBase64, preset, undefined, contentId || undefined);
+      const imageKind = imageType === 'screenshot' ? 'screenshot' : imageType;
+      const uploadResult = imageKind === 'screenshot'
+        ? await saveLocalScreenshot(cleanBase64, contentId, fileName)
+        : await saveLocalContentImage(
+            cleanBase64,
+            contentId || user.id,
+            imageKind as ContentImageKind,
+          );
 
       if (!uploadResult) {
         throw new Error('Upload failed: No result returned');

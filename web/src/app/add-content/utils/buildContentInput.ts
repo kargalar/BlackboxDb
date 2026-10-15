@@ -261,14 +261,6 @@ export function buildContentInput({
     });
   }
 
-  if (formData.contentTypeSlug === 'theater') {
-    const castWithOrder = assignCreditOrder(formData.cast as any);
-    input.cast =
-      castWithOrder.length > 0 ? JSON.stringify(castWithOrder) : isEditMode ? '[]' : undefined;
-    input.crew =
-      formData.crew.length > 0 ? JSON.stringify(formData.crew) : isEditMode ? '[]' : undefined;
-  }
-
   if (contentType === 4) {
     const firstPublication = originalBookPublication || bookPublications[0];
 
@@ -362,20 +354,6 @@ export function buildContentInput({
       crew: input.crew,
       publications: input.bookPublications?.length || 0,
     });
-  }
-
-  // --- Müzik-spesifik alanlar (contentTypeId = 5) ---
-  if (contentType === 5) {
-    input.musicReleaseType = formData.musicReleaseType || (isEditMode ? null : undefined);
-    input.explicit = formData.explicit ?? false;
-    input.label = formData.label?.trim() || (isEditMode ? null : undefined);
-    input.totalTracks =
-      formData.totalTracks !== undefined && Number.isFinite(Number(formData.totalTracks))
-        ? Number(formData.totalTracks)
-        : isEditMode
-          ? null
-          : undefined;
-    input.spotifyUrl = formData.spotifyUrl?.trim() || (isEditMode ? null : undefined);
   }
 
   // --- Oyun-spesifik alanlar (contentTypeId = 3) ---

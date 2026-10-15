@@ -212,7 +212,7 @@ export interface UnifiedContent {
   title: string;
   alternativeTitles?: string[];
   originalTitle?: string; // Orijinal dildeki başlık (ör: Japonca, Arapça)
-  contentTypeId: number; // 1=Movie, 2=TV, 3=Game, 4=Book, 5=Music
+  contentTypeId: number; // 1=Movie, 2=TV, 3=Game, 4=Book
   additionalRatingCategories?: string[];
   contentType?: {
     id: number;
@@ -245,11 +245,6 @@ export interface UnifiedContent {
   previewLink?: string; // For books - Google Books preview URL
   infoLink?: string; // For books - Google Books info URL
   publishedDate?: string; // For books - publication date
-  explicit?: boolean;
-  label?: string;
-  totalTracks?: number;
-  musicReleaseType?: 'ALBUM' | 'SINGLE' | 'TRACK' | null;
-  spotifyUrl?: string;
   primaryBookPublication?: BookPublication | null;
   bookPublications?: BookPublication[];
 
@@ -336,7 +331,6 @@ export enum ContentType {
   TV = 2,
   GAME = 3,
   BOOK = 4,
-  MUSIC = 5,
 }
 
 export const CONTENT_TYPE_NAMES: Record<ContentType, string> = {
@@ -344,7 +338,6 @@ export const CONTENT_TYPE_NAMES: Record<ContentType, string> = {
   [ContentType.TV]: 'TV Show',
   [ContentType.GAME]: 'Game',
   [ContentType.BOOK]: 'Book',
-  [ContentType.MUSIC]: 'Music',
 };
 
 // ======================================

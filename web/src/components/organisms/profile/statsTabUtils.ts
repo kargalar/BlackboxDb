@@ -108,8 +108,6 @@ export function getContentTypeName(item: SnakeCasedContentItem): string {
       return 'GAME';
     case 4:
       return 'BOOK';
-    case 5:
-      return 'MUSIC';
     default:
       return 'UNKNOWN';
   }
@@ -286,7 +284,6 @@ export function filterToExploreSlug(contentTypeFilter: string): string {
     tv: 'tv',
     games: 'game',
     books: 'book',
-    music: 'music',
     all: 'movie',
   };
   return map[contentTypeFilter] ?? 'movie';

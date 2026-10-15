@@ -1,6 +1,7 @@
 import type { PrismaClient } from "@prisma/client";
 import { notifyUsersOfNewSeason } from "./newSeasonNotificationHelper";
 import { generatePersonSlug, generateCompanySlug } from "./slugUtils";
+import { localizeContentImage, type ContentImageKind } from "./localContentImage";
 
 /**
  * Content Save Helper
@@ -541,12 +542,15 @@ export class ContentSaveHelper {
     for (let i = 0; i < topImages.length; i++) {
       const imgData = topImages[i];
       try {
+        const filePath = type === "poster" || type === "backdrop"
+          ? await localizeContentImage(imgData.file_path, contentId, type as ContentImageKind)
+          : imgData.file_path;
         // width, height, aspectRatio, language, isPrimary alanları kaldırıldı
         await this.prisma.contentImage.create({
           data: {
             contentId,
             type,
-            filePath: imgData.file_path,
+            filePath,
           },
         });
         console.log(`  ✅ ${type} kaydedildi: ${imgData.file_path} `);

@@ -3,7 +3,6 @@ export const CONTENT_TYPE_IDS = {
   tv: 2,
   game: 3,
   book: 4,
-  music: 5,
 } as const;
 
 export function isMissingBookPublicationTableError(error: unknown): boolean {

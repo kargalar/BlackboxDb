@@ -282,7 +282,7 @@ button:not([class~='rounded-full']) {
 .dashboard-hero,
 .dashboard-hero-skeleton,
 .dashboard-hero-content {
-  min-height: 17rem;
+  min-height: 24rem;
 }
 
 .dashboard-hero {
@@ -295,8 +295,8 @@ button:not([class~='rounded-full']) {
 .dashboard-hero-content {
   flex-direction: column;
   align-items: flex-start;
-  justify-content: center;
-  padding: clamp(1.25rem, 3vw, 2rem);
+  justify-content: flex-end;
+  padding: clamp(1.25rem, 3vw, 2.5rem);
 }
 
 .dashboard-hero-fallback {

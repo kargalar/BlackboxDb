@@ -54,7 +54,7 @@ interface ItemState {
 
 interface ContentTabProps {
   content: ContentItem[];
-  contentType: 'movie' | 'tv' | 'game' | 'book' | 'music';
+  contentType: 'movie' | 'tv' | 'game' | 'book';
   onContentUpdate?: (contentId: number, updates: any) => void;
 }
 

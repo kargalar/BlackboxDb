@@ -15,12 +15,11 @@ type FilterMode = 'all' | 'quiz' | 'has-screenshot' | 'no-screenshot';
 
 const SHORT_DIFFICULTY_LABELS = ['ÇK', 'Kolay', 'Orta', 'Zor', 'ÇZ'];
 const ALL_DIFFICULTIES = [1, 2, 3, 4, 5];
-const CONTENT_TYPE_SLUGS: Record<number, 'movie' | 'tv' | 'game' | 'book' | 'music'> = {
+const CONTENT_TYPE_SLUGS: Record<number, 'movie' | 'tv' | 'game' | 'book'> = {
   1: 'movie',
   2: 'tv',
   3: 'game',
   4: 'book',
-  5: 'music',
 };
 
 interface QuizContentTabProps {

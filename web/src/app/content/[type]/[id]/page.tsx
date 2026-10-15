@@ -15,9 +15,6 @@ import ContentMedia from '@/app/content/components/ContentMedia';
 import ContentFranchise from '@/app/content/components/ContentFranchise';
 import ContentExpansions from '@/app/content/components/ContentExpansions';
 import ContentBookPublications from '@/app/content/components/ContentBookPublications';
-import { PodcastProgramSection } from '@/app/content/components/PodcastProgramSection';
-import { MediaEventList } from '@/app/content/components/MediaEventList';
-import { MusicReleaseSection } from '@/app/content/components/MusicReleaseSection';
 
 import ContentDiscussions from '@/app/content/components/ContentDiscussions';
 import ContentComments from '@/app/content/components/ContentComments';
@@ -56,7 +53,7 @@ const GET_DISCUSSIONS_COUNT = gql`
   }
 `;
 
-type ContentType = 'movie' | 'tv' | 'game' | 'book' | 'music' | 'podcast' | 'theater';
+type ContentType = 'movie' | 'tv' | 'game' | 'book';
 
 interface ContentStats {
   consume_count?: number;
@@ -1252,16 +1249,6 @@ export default function ContentDetailPage() {
 
       <div className="mx-auto w-full max-w-[100rem]">
         <div className="content-detail-sections w-full py-4">
-          {type === 'podcast' && <PodcastProgramSection key={id} contentId={id} />}
-          {type === 'music' && <MusicReleaseSection contentId={id} />}
-          {type === 'theater' && (
-            <MediaEventList
-              eventType="THEATER_PERFORMANCE"
-              theaterProductionId={id}
-              heading="Performances"
-            />
-          )}
-
           {/* Friends Activity */}
           <div className="content-detail-section content-social-section">
             <ContentFriendsActivity contentId={id} />

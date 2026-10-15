@@ -54,12 +54,6 @@ export const getContentTypeInfo = (contentTypeId: number, t: any) => {
         badgeClassName: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
         glowClassName: 'bg-amber-500/16  ',
       };
-    case 5:
-      return {
-        name: t('contentTypes.music'),
-        badgeClassName: 'bg-pink-500/15 text-pink-300 border-pink-500/30',
-        glowClassName: 'bg-pink-500/16  ',
-      };
     default:
       return {
         name: t('contentTypes.general'),

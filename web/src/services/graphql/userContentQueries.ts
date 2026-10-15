@@ -298,11 +298,6 @@ export const GET_USER_WATCHED_CONTENT = gql`
       consumeCount
       favoriteCount
       releaseDate
-      spotifyUrl
-      musicReleaseType
-      explicit
-      label
-      totalTracks
       contentTypeId
       contentType {
         id
@@ -333,11 +328,6 @@ export const GET_USER_FAVORITE_CONTENT = gql`
       consumeCount
       favoriteCount
       releaseDate
-      spotifyUrl
-      musicReleaseType
-      explicit
-      label
-      totalTracks
       contentTypeId
       contentType {
         id
@@ -377,11 +367,6 @@ export const GET_USER_FEATURED_CONTENT = gql`
       title
       posterUrl
       releaseDate
-      spotifyUrl
-      musicReleaseType
-      explicit
-      label
-      totalTracks
       contentType {
         id
         name

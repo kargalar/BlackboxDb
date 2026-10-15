@@ -21,10 +21,10 @@ import { BookmarkIcon } from '@/components/atoms/icons/BookmarkIcon';
 type SizeVariant = 'small' | 'medium' | 'large';
 
 // Action type - içerik tipine göre farklı etiketler
-type ActionType = 'watch' | 'read' | 'play' | 'listen';
+type ActionType = 'watch' | 'read' | 'play';
 
 // Content type - filmler için devam ediyor butonu gizlenecek
-type ContentType = 'movie' | 'tv' | 'game' | 'book' | 'music';
+type ContentType = 'movie' | 'tv' | 'game' | 'book';
 
 interface ContentActionButtonsProps {
   size?: SizeVariant;
@@ -59,7 +59,6 @@ const actionLabels: Record<ActionType, { watched: string; notWatched: string }> 
   watch: { watched: 'İzlendi', notWatched: 'İzle' },
   read: { watched: 'Okundu', notWatched: 'Oku' },
   play: { watched: 'Oynandı', notWatched: 'Oyna' },
-  listen: { watched: 'Dinlendi', notWatched: 'Dinle' },
 };
 
 /**

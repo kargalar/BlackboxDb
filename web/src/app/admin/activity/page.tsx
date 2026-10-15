@@ -25,7 +25,6 @@ const CONTENT_TYPE_SLUGS: Record<number, string> = {
   2: 'tv',
   3: 'game',
   4: 'book',
-  5: 'music',
 };
 
 export default function AdminActivityPage() {

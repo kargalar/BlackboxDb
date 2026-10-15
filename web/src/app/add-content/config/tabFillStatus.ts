@@ -97,22 +97,11 @@ export function isTabFilled(tabId: string, formData: AddContentFormData): boolea
       return !!((formData.authors?.length ?? 0) > 0 || hasBookPublication);
     }
 
-    case 'music-info':
-      return !!(
-        formData.label?.trim() ||
-        formData.spotifyUrl?.trim() ||
-        (formData.totalTracks ?? 0) > 0 ||
-        formData.explicit
-      );
-
     case 'screenshots':
       return (formData.screenshots?.length ?? 0) > 0;
 
     case 'soundtrack':
-      return !!(
-        formData.spotifyPlaylistUrl?.trim() ||
-        (formData.contentTypeId === '5' && formData.spotifyUrl?.trim())
-      );
+      return !!formData.spotifyPlaylistUrl?.trim();
 
     case 'similar-contents':
       return (formData.similarContents?.length ?? 0) > 0;

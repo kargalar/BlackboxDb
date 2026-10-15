@@ -28,6 +28,9 @@ export class EditorPickType {
   @Field(() => String, { nullable: true })
   label?: string | null;
 
+  @Field(() => String, { nullable: true })
+  imageUrl?: string | null;
+
   @Field(() => Int)
   displayOrder!: number;
 
@@ -48,6 +51,9 @@ export class EditorPickItemInput {
 
   @Field(() => String, { nullable: true })
   label?: string;
+
+  @Field(() => String, { nullable: true })
+  imageUrl?: string;
 
   @Field(() => Int, { defaultValue: 0 })
   displayOrder!: number;
@@ -118,6 +124,7 @@ export class EditorPickResolver {
             contentId: item.contentId,
             contentTypeId,
             label: item.label?.trim() || null,
+            imageUrl: item.imageUrl?.trim() || null,
             displayOrder: item.displayOrder ?? i,
           },
         });

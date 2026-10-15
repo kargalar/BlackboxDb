@@ -194,7 +194,7 @@ export default function StatsTab({
       </div>
 
       {/* ── ACTIVITY HEATMAP ── */}
-      <StatsHeatmapSection watched={watched} />
+      <StatsHeatmapSection watched={watched} variant="detailed" />
 
       {/* Charts row 1: Activity + Rating */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -366,7 +366,6 @@ function ContentTypeFilterBar({
     { key: 'tv', label: t('filters.tv') },
     { key: 'games', label: t('filters.games') },
     { key: 'books', label: t('filters.books') },
-    { key: 'music', label: t('filters.music') },
   ];
 
   return (

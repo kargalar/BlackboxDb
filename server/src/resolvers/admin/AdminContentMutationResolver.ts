@@ -1,7 +1,6 @@
 import { Resolver, Mutation, Arg, Ctx, Authorized, Int } from "type-graphql";
 import { GraphQLContext } from "../../context";
 import { requireAdmin, requireAdminOrModerator } from "../../lib/authGuard";
-import { deleteBunnyFile, isBunnyUrl } from "../../lib/bunny";
 import { logger } from "../../lib/logger";
 import {
   didContentBecomeReleased,
@@ -80,11 +79,6 @@ const contentAuditSelect = {
   autoSelectHighestVotedMedia: true,
   isEnabledForQuiz: true,
   fileSize: true,
-  spotifyUrl: true,
-  musicReleaseType: true,
-  explicit: true,
-  label: true,
-  totalTracks: true,
   additionalRatingCategories: true,
   isDeleted: true,
   deletedAt: true,
@@ -148,22 +142,6 @@ function setNullableNumber(data: any, input: any, field: string) {
   if (hasField(input, field)) {
     data[field] = input[field] ?? null;
   }
-}
-
-async function resolveMusicReleaseType(prisma: any, contentTypeId: number, value?: string | null) {
-  if (!value) return null;
-  const normalized = value.trim().toUpperCase();
-  if (!["ALBUM", "SINGLE", "TRACK"].includes(normalized)) {
-    throw new Error("Music release type must be ALBUM, SINGLE, or TRACK");
-  }
-  const contentType = await prisma.contentTypeLookup.findUnique({
-    where: { id: contentTypeId },
-    select: { slug: true },
-  });
-  if (contentType?.slug !== "music") {
-    throw new Error("Music release type can only be assigned to music content");
-  }
-  return normalized as "ALBUM" | "SINGLE" | "TRACK";
 }
 
 function comparableAuditValue(field: string, value: any): string {
@@ -589,11 +567,6 @@ export class AdminContentMutationResolver {
         await ensureLanguagesExist(prisma, input.languages);
       }
       const resolvedAgeRatingId = await resolveAgeRatingId(prisma, input);
-      const musicReleaseType = await resolveMusicReleaseType(
-        prisma,
-        input.contentTypeId,
-        input.musicReleaseType,
-      );
 
       // 1. Create main content record
       await prisma.content.create({
@@ -627,11 +600,6 @@ export class AdminContentMutationResolver {
           pageCount: input.pageCount || null,
           previewLink: input.previewLink || null,
           infoLink: input.infoLink || null,
-          spotifyUrl: input.spotifyUrl || null,
-          explicit: input.explicit ?? null,
-          label: input.label || null,
-          totalTracks: input.totalTracks ?? null,
-          musicReleaseType,
           additionalRatingCategories: input.additionalRatingCategories || [],
 
           authors: parseAuthors(input.authors),
@@ -957,24 +925,12 @@ export class AdminContentMutationResolver {
       setNullableString(contentData, input, "gameplayVideoUrl");
       setNullableString(contentData, input, "spotifyPlaylistUrl");
       setNullableString(contentData, input, "fileSize");
-      setNullableString(contentData, input, "spotifyUrl");
-      setNullableString(contentData, input, "label");
-      if (hasField(input, "musicReleaseType")) {
-        contentData.musicReleaseType = await resolveMusicReleaseType(
-          prisma,
-          effectiveContentTypeId,
-          input.musicReleaseType,
-        );
-      }
-
-      if (hasField(input, "explicit")) contentData.explicit = input.explicit ?? null;
 
       setNullableNumber(contentData, input, "runtime");
       setNullableNumber(contentData, input, "averageDuration");
       setNullableNumber(contentData, input, "numberOfEpisodes");
       setNullableNumber(contentData, input, "numberOfSeasons");
       setNullableNumber(contentData, input, "pageCount");
-      setNullableNumber(contentData, input, "totalTracks");
       if (hasField(input, "authors")) contentData.authors = parseAuthors(input.authors);
       if (hasField(input, "languages")) {
         contentData.languages = input.languages?.map((l) => l.name) || [];
@@ -1368,31 +1324,6 @@ export class AdminContentMutationResolver {
     const mediaAuditFields = ["images", "screenshots", "expansions"];
     const mediaBefore = await getContentRelationAuditSnapshot(prisma, id, mediaAuditFields);
 
-    const contentImages = await prisma.contentImage.findMany({
-      where: { contentId: id },
-      select: { filePath: true },
-    });
-
-    const screenshots = await prisma.contentScreenshot.findMany({
-      where: { contentId: id },
-      select: { imageUrl: true },
-    });
-
-    const expansions = await prisma.expansion.findMany({
-      where: { contentId: id },
-      select: { posterUrl: true },
-    });
-
-    const seasons = await prisma.tvSeason.findMany({
-      where: { tvShowId: id },
-      select: { posterUrl: true },
-    });
-
-    const episodes = await prisma.tvEpisode.findMany({
-      where: { tvShowId: id },
-      select: { stillUrl: true },
-    });
-
     // Clean up all user-related data before soft delete
     logger.info(`[Admin] Cleaning up user data for content: ${id}`);
 
@@ -1468,53 +1399,7 @@ export class AdminContentMutationResolver {
       },
     });
 
-    const imageUrlsToDelete = new Set<string>();
-    const addBunnyUrl = (url?: string | null) => {
-      if (url && isBunnyUrl(url)) imageUrlsToDelete.add(url);
-    };
-
-    for (const image of contentImages) addBunnyUrl(image.filePath);
-    for (const screenshot of screenshots) addBunnyUrl(screenshot.imageUrl);
-    for (const expansion of expansions) addBunnyUrl(expansion.posterUrl);
-    for (const season of seasons) addBunnyUrl(season.posterUrl);
-    for (const episode of episodes) addBunnyUrl(episode.stillUrl);
-
-    const deletedAssetUrls = new Set<string>();
-    for (const imageUrl of imageUrlsToDelete) {
-      logger.info(`[Admin] Deleting Bunny Storage image: ${imageUrl}`);
-      try {
-        await deleteBunnyFile(imageUrl);
-        deletedAssetUrls.add(imageUrl);
-      } catch (error) {
-        logger.warn(`[Admin] Could not delete Bunny Storage image ${imageUrl}: ${error}`);
-      }
-    }
-
-    const deletedAssetUrl = (url?: string | null) => {
-      return !!url && deletedAssetUrls.has(url);
-    };
     const mediaAfter = await getContentRelationAuditSnapshot(prisma, id, mediaAuditFields);
-    if (mediaAfter.images?.rows) {
-      const retainedRows = mediaAfter.images.rows.filter(
-        (image: any) => !deletedAssetUrl(image.filePath),
-      );
-      mediaAfter.images = {
-        ...mediaAfter.images,
-        posterImageId: retainedRows.some((image: any) => image.id === mediaAfter.images.posterImageId)
-          ? mediaAfter.images.posterImageId
-          : null,
-        backdropImageId: retainedRows.some((image: any) => image.id === mediaAfter.images.backdropImageId)
-          ? mediaAfter.images.backdropImageId
-          : null,
-        rows: retainedRows,
-      };
-    }
-    mediaAfter.screenshots = mediaAfter.screenshots?.filter(
-      (screenshot: any) => !deletedAssetUrl(screenshot.imageUrl),
-    );
-    mediaAfter.expansions = mediaAfter.expansions?.filter(
-      (expansion: any) => !deletedAssetUrl(expansion.posterUrl),
-    );
     const changedMediaFields = mediaAuditFields.filter((field) =>
       comparableAuditValue(field, mediaBefore[field]) !==
       comparableAuditValue(field, mediaAfter[field]),
@@ -1544,7 +1429,7 @@ export class AdminContentMutationResolver {
     }
 
     logger.success(
-      `Content soft-deleted, ${deletedAssetUrls.size} images removed from Bunny Storage`,
+      "Content soft-deleted",
     );
     return true;
   }

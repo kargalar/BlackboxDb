@@ -990,24 +990,30 @@ body {
 
 .dashboard-hero {
   position: relative;
-  min-height: 360px;
+  min-height: 380px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1.5rem;
   background: #10131a;
   isolation: isolate;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-hero:hover {
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45), 0 0 25px rgba(168, 85, 247, 0.12);
 }
 
 .dashboard-hero-skeleton {
-  min-height: 360px;
+  min-height: 380px;
 }
 
 .dashboard-hero-backdrop {
   z-index: -3;
   object-fit: cover;
-  object-position: center 28%;
-  transform: scale(1.02);
+  object-position: center 25%;
+  transform: scale(1.01);
 }
 
 .dashboard-hero-fallback {
@@ -1023,21 +1029,28 @@ body {
   position: absolute;
   inset: 0;
   z-index: -2;
+  pointer-events: none;
   background:
     linear-gradient(
-      90deg,
-      rgb(var(--surface-page-rgb) / 0.94) 0%,
-      rgb(var(--surface-page-rgb) / 0.78) 38%,
-      rgb(var(--surface-page-rgb) / 0.25) 78%,
-      rgb(var(--surface-page-rgb) / 0.42) 100%
+      180deg,
+      rgba(10, 14, 23, 0.35) 0%,
+      rgba(10, 14, 23, 0.1) 30%,
+      rgba(10, 14, 23, 0.7) 70%,
+      rgba(10, 14, 23, 0.95) 100%
     ),
-    linear-gradient(0deg, rgb(var(--surface-page-rgb) / 0.88) 0%, transparent 42%);
+    linear-gradient(
+      90deg,
+      rgba(10, 14, 23, 0.85) 0%,
+      rgba(10, 14, 23, 0.5) 40%,
+      rgba(10, 14, 23, 0.15) 75%,
+      rgba(10, 14, 23, 0.35) 100%
+    );
 }
 
 .dashboard-hero-content {
   display: flex;
-  min-height: 360px;
-  align-items: center;
+  min-height: 380px;
+  align-items: flex-end;
   padding: 2.5rem;
 }
 

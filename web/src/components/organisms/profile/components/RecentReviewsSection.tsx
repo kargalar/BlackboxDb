@@ -98,8 +98,6 @@ const ReviewItem = ({ activity }: { activity: any }) => {
         return `/content/game/${contentId}`;
       case 4:
         return `/content/book/${contentId}`;
-      case 5:
-        return `/content/music/${contentId}`;
       default:
         return `/content/movie/${contentId}`;
     }

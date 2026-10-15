@@ -39,13 +39,6 @@ export const LIST_CONTENT = gql`
       firstAirDate
       lastAirDate
       authors
-
-      explicit
-      label
-      totalTracks
-      spotifyUrl
-      musicReleaseType
-
       languages
       gameModes {
         id
@@ -148,13 +141,6 @@ export const GET_CONTENT_BY_ID = gql`
       lastAirDate
       subtitle
       authors
-
-      explicit
-      label
-      totalTracks
-      spotifyUrl
-      musicReleaseType
-
       previewLink
       infoLink
       primaryBookPublication {

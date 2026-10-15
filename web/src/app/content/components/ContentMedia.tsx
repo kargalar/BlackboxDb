@@ -52,7 +52,7 @@ export default function ContentMedia({ content, isWatched }: ContentMediaProps) 
   ].filter((video) => video.url);
 
   const hasVideos = videos.length > 0;
-  const soundtrackUrl = content?.spotifyPlaylistUrl || content?.spotifyUrl;
+  const soundtrackUrl = content?.spotifyPlaylistUrl;
   const hasSoundtrack = Boolean(soundtrackUrl);
 
   // Tabs should be visible if we have more than one type of media

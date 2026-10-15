@@ -15,8 +15,6 @@ import { SaveContentInput } from "../../types/SaveContentInput";
 import {
   resolveBookPublicationIdForLog,
   syncBookPublicationConsumeCount,
-  syncEpisodesOnTvShowConsumed,
-  unsyncEpisodesOnTvShowUnmarked,
   syncBookPublicationRatingStats,
   adjustContentRatingStats,
   cleanupReviewOnContentRemoval,
@@ -96,6 +94,9 @@ export class UserContentMutationResolver {
             contentId,
             bookPublicationId: nextBookPublicationId,
             isConsumed: true,
+            isContinuing: false,
+            isAbandoned: false,
+            isConsumeLater: false,
             date: new Date(),
           },
         });
@@ -111,6 +112,9 @@ export class UserContentMutationResolver {
           where: { id: existing.id },
           data: {
             isConsumed: true,
+            isContinuing: false,
+            isAbandoned: false,
+            isConsumeLater: false,
             bookPublicationId: nextBookPublicationId,
             date: new Date(),
           },
@@ -129,6 +133,9 @@ export class UserContentMutationResolver {
             contentId,
             bookPublicationId: nextBookPublicationId,
             isConsumed: true,
+            isContinuing: false,
+            isAbandoned: false,
+            isConsumeLater: false,
             date: new Date(),
           },
         });
@@ -145,8 +152,6 @@ export class UserContentMutationResolver {
         where: { id: contentId },
         data: { consumeCount: { increment: 1 } },
       });
-
-      await syncEpisodesOnTvShowConsumed(prisma, user.id, contentId);
 
       logger.success(`[logContentWatch] Success`);
       return true;
@@ -275,19 +280,6 @@ export class UserContentMutationResolver {
 
       await cleanupReviewOnContentRemoval(prisma, user.id, contentId);
 
-      const resultingLog = await prisma.userContentLog.findFirst({
-        where: { userId: user.id, contentId },
-        orderBy: { date: "desc" },
-      });
-      if (
-        !resultingLog ||
-        (!resultingLog.isConsumed &&
-          !resultingLog.isContinuing &&
-          !resultingLog.isAbandoned)
-      ) {
-        await unsyncEpisodesOnTvShowUnmarked(prisma, user.id, contentId);
-      }
-
       logger.success(`[unlogContentWatch] Success`);
       return true;
     } catch (error) {
@@ -335,6 +327,9 @@ export class UserContentMutationResolver {
           data: {
             isFavorite: newFavoriteState,
             isConsumed: newFavoriteState ? true : existing.isConsumed,
+            ...(newFavoriteState && !existing.isConsumed
+              ? { isContinuing: false, isAbandoned: false, isConsumeLater: false }
+              : {}),
             bookPublicationId: nextBookPublicationId,
             date: new Date(),
           },
@@ -352,6 +347,9 @@ export class UserContentMutationResolver {
             bookPublicationId: nextBookPublicationId,
             isFavorite: true,
             isConsumed: true,
+            isContinuing: false,
+            isAbandoned: false,
+            isConsumeLater: false,
             date: new Date(),
           },
         });
@@ -379,10 +377,6 @@ export class UserContentMutationResolver {
         where: { id: contentId, favoriteCount: { lt: 0 } },
         data: { favoriteCount: 0 },
       });
-
-      if (newFavoriteState) {
-        await syncEpisodesOnTvShowConsumed(prisma, user.id, contentId);
-      }
 
       logger.success(`[toggleContentFavorite] Favorite = ${newFavoriteState}`);
       return newFavoriteState;
@@ -541,10 +535,6 @@ export class UserContentMutationResolver {
           where: { id: contentId },
           data: { consumeCount: { increment: 1 } },
         });
-      }
-
-      if (willConsume) {
-        await syncEpisodesOnTvShowConsumed(prisma, user.id, contentId);
       }
 
       logger.success(`[rateContent] Success`);
@@ -770,19 +760,6 @@ export class UserContentMutationResolver {
 
       await cleanupReviewOnContentRemoval(prisma, user.id, contentId);
 
-      const resultingLog = await prisma.userContentLog.findFirst({
-        where: { userId: user.id, contentId },
-        orderBy: { date: "desc" },
-      });
-      if (
-        !resultingLog ||
-        (!resultingLog.isConsumed &&
-          !resultingLog.isContinuing &&
-          !resultingLog.isAbandoned)
-      ) {
-        await unsyncEpisodesOnTvShowUnmarked(prisma, user.id, contentId);
-      }
-
       logger.success(`[toggleContentContinuing] Continuing = ${newState}`);
       return newState;
     } catch (error) {
@@ -902,19 +879,6 @@ export class UserContentMutationResolver {
       }
 
       await cleanupReviewOnContentRemoval(prisma, user.id, contentId);
-
-      const resultingLog = await prisma.userContentLog.findFirst({
-        where: { userId: user.id, contentId },
-        orderBy: { date: "desc" },
-      });
-      if (
-        !resultingLog ||
-        (!resultingLog.isConsumed &&
-          !resultingLog.isContinuing &&
-          !resultingLog.isAbandoned)
-      ) {
-        await unsyncEpisodesOnTvShowUnmarked(prisma, user.id, contentId);
-      }
 
       logger.success(`[toggleContentAbandoned] Abandoned = ${newState}`);
       return newState;
@@ -1473,7 +1437,6 @@ export class UserContentMutationResolver {
           where: { id: contentId },
           data: { consumeCount: { increment: 1 } },
         });
-        await syncEpisodesOnTvShowConsumed(prisma, user.id, contentId);
       }
 
       if (shouldCreateLog && normalizedLogData.rating) {
@@ -1603,6 +1566,11 @@ export class UserContentMutationResolver {
         updateData.notifyOnRelease = false;
       }
 
+      if (updates.isConsumed === true) {
+        if (updates.isContinuing === undefined) updateData.isContinuing = false;
+        if (updates.isAbandoned === undefined) updateData.isAbandoned = false;
+      }
+
       if (updates.isConsumeLater === true) {
         updateData.notifyOnRelease = await shouldEnableNotifyOnRelease(
           prisma,
@@ -1708,10 +1676,6 @@ export class UserContentMutationResolver {
                 : { decrement: 1 },
             },
           });
-
-          if (updates.isConsumed) {
-            await syncEpisodesOnTvShowConsumed(prisma, user.id, contentId);
-          }
         }
         if (
           updates.isFavorite !== undefined &&
@@ -1984,19 +1948,6 @@ export class UserContentMutationResolver {
       await updateGameMedianPlaytime(prisma, contentId);
 
       await cleanupReviewOnContentRemoval(prisma, user.id, contentId);
-
-      const resultingLog = await prisma.userContentLog.findFirst({
-        where: { userId: user.id, contentId },
-        orderBy: { date: "desc" },
-      });
-      if (
-        !resultingLog ||
-        (!resultingLog.isConsumed &&
-          !resultingLog.isContinuing &&
-          !resultingLog.isAbandoned)
-      ) {
-        await unsyncEpisodesOnTvShowUnmarked(prisma, user.id, contentId);
-      }
 
       logger.success(
         `[updateUserContentLog] Updated log for content ${contentId}`,

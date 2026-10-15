@@ -144,7 +144,6 @@ export function getNotificationHref(notification: Notification, username?: strin
       2: 'tv',
       3: 'game',
       4: 'book',
-      5: 'music',
     };
     const contentId = notification.content?.id || notification.contentId;
     const contentType = notification.content?.contentTypeId;

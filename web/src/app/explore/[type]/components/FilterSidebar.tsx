@@ -71,7 +71,7 @@ export interface FilterCounts {
 }
 
 interface FilterSidebarProps {
-  contentType: 'movie' | 'tv' | 'game' | 'book' | 'music' | 'podcast' | 'theater';
+  contentType: 'movie' | 'tv' | 'game' | 'book';
   filters: FilterState;
   onFilterChange: (filters: FilterState) => void;
   filterCounts?: FilterCounts;

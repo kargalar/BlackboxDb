@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Link from 'next/link';
 import type { Route } from 'next';
@@ -10,23 +10,12 @@ import {
   UserIcon,
   BuildingIcon,
 } from '@/components/atoms/icons/SidebarIcons';
-import { Music, Mic2, Drama } from 'lucide-react';
-import { gql } from '@apollo/client';
-import { useQuery } from '@apollo/client/react';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useTranslations } from 'next-intl';
 
 export default function ExplorePage() {
   const { preferredContentTypes } = useUserPreferences();
   const t = useTranslations('Explore');
-  const { data: typeData } = useQuery<{ contentTypes: Array<{ id: number; slug: string }> }>(gql`
-    query ExploreContentTypes {
-      contentTypes {
-        id
-        slug
-      }
-    }
-  `);
 
   const allContentTypes = [
     {
@@ -61,14 +50,6 @@ export default function ExplorePage() {
       href: '/explore/book' as Route,
       icon: BookIcon,
     },
-    {
-      id: 'music',
-      typeId: 5,
-      title: t('categories.music'),
-      description: t('categories.musicDesc'),
-      href: '/explore/music' as Route,
-      icon: Music,
-    },
   ];
 
   const entityTypes = [
@@ -86,29 +67,10 @@ export default function ExplorePage() {
       href: '/explore/company' as Route,
       icon: BuildingIcon,
     },
-    {
-      id: 'concerts',
-      title: t('categories.concerts'),
-      description: t('categories.concertsDesc'),
-      href: '/concerts' as Route,
-      icon: Music,
-    },
   ];
 
-  // Filter by user content type preferences
-  const dynamicContentTypes = (typeData?.contentTypes || [])
-    .filter((type) => type.slug === 'podcast' || type.slug === 'theater')
-    .map((type) => ({
-      id: type.slug,
-      typeId: type.id,
-      title: t(`categories.${type.slug}`),
-      description: t(`categories.${type.slug}Desc`),
-      href: `/explore/${type.slug}` as Route,
-      icon: type.slug === 'podcast' ? Mic2 : Drama,
-    }));
-  const contentTypes = [...allContentTypes, ...dynamicContentTypes].filter(
-    (type) =>
-      preferredContentTypes.includes(type.typeId) || type.id === 'podcast' || type.id === 'theater'
+  const contentTypes = allContentTypes.filter(
+    (type) => preferredContentTypes.includes(type.typeId)
   );
 
   // Combine filtered content types with entity types

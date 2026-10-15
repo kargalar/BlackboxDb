@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from 'next-intl';
 import type { Route } from 'next';
-import { Music, TrendingUp, Network } from 'lucide-react';
+import { TrendingUp, Network } from 'lucide-react';
 import {
   FilmIcon,
   TvIcon,
@@ -96,7 +96,7 @@ export default function Sidebar({ isOpen: isOpenProp = true, onClose }: SidebarP
     label: string;
   }> = [];
 
-  // Content type items filtered by user preferences (id: 1=movie, 2=tv, 3=game, 4=book, 5=music)
+  // Content type items filtered by user preferences (id: 1=movie, 2=tv, 3=game, 4=book)
   const allContentItems: {
     href: Route;
     icon: ComponentType<SVGProps<SVGSVGElement>>;
@@ -109,7 +109,6 @@ export default function Sidebar({ isOpen: isOpenProp = true, onClose }: SidebarP
     ...(settings?.isBookEnabled !== false
       ? [{ href: '/explore/book' as Route, icon: BookIcon, label: t('books'), typeId: 4 }]
       : []),
-    { href: '/explore/music' as Route, icon: Music, label: t('music'), typeId: 5 },
     { href: '/explore/person' as Route, icon: UserIcon, label: t('people') },
     { href: '/explore/company' as Route, icon: BuildingIcon, label: t('companies') },
   ];

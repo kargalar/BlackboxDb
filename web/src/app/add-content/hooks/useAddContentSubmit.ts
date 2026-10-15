@@ -548,7 +548,6 @@ export function useAddContentSubmit({
         '2': 'tv',
         '3': 'game',
         '4': 'book',
-        '5': 'music',
       };
       const typeSlug = typeSlugMap[formData.contentTypeId] || 'movie';
 

@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { gql } from '@apollo/client';
 import { apolloClient } from '@/lib/apollo-client';
-import { MoreVertical, Edit2, Trash2, Flag, Music } from 'lucide-react';
+import { MoreVertical, Edit2, Trash2, Flag } from 'lucide-react';
 import { getCommentCountClass, getCommentCountWeight } from '@/lib/comment-count-utils';
 import type { Route } from 'next';
 import MentionText from '@/components/atoms/MentionText';
@@ -208,8 +208,6 @@ export default function DiscussionsTab({ userId, username }: DiscussionsTabProps
           return t('contentTypes.game');
         case 4:
           return t('contentTypes.book');
-        case 5:
-          return t('contentTypes.music');
       }
     }
     // Fallback: try to extract from contentId (format: "1-xxx" where 1 is contentTypeId)
@@ -224,8 +222,6 @@ export default function DiscussionsTab({ userId, username }: DiscussionsTabProps
           return t('contentTypes.game');
         case 4:
           return t('contentTypes.book');
-        case 5:
-          return t('contentTypes.music');
       }
     }
     return t('contentTypes.general');
@@ -244,8 +240,6 @@ export default function DiscussionsTab({ userId, username }: DiscussionsTabProps
           return `/content/game/${contentId}` as Route;
         case 4:
           return `/content/book/${contentId}` as Route;
-        case 5:
-          return `/content/music/${contentId}` as Route;
       }
     }
     // Fallback: try to extract from contentId
@@ -259,8 +253,6 @@ export default function DiscussionsTab({ userId, username }: DiscussionsTabProps
         return `/content/game/${contentId}` as Route;
       case 4:
         return `/content/book/${contentId}` as Route;
-      case 5:
-        return `/content/music/${contentId}` as Route;
       default:
         return `/discussions` as Route;
     }

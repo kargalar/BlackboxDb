@@ -710,7 +710,6 @@ export class UserContentStatsResolver {
             2: "tv",
             3: "game",
             4: "book",
-            5: "music",
           };
           const _ctSlug = _typeIdToSlug[c.contentTypeId as number] ?? "movie";
           ratingCompMap.set(c.id, {

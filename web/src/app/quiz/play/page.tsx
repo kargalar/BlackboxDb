@@ -159,8 +159,6 @@ function QuizPlayPageInner() {
         return 'game';
       case 4:
         return 'book';
-      case 5:
-        return 'music';
       default:
         return 'movie';
     }

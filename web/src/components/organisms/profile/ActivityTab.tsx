@@ -479,8 +479,6 @@ const ActivityItem = ({
         return `/content/game/${contentId}`;
       case 4:
         return `/content/book/${contentId}`;
-      case 5:
-        return `/content/music/${contentId}`;
       default:
         return `/content/movie/${contentId}`;
     }
@@ -492,7 +490,6 @@ const ActivityItem = ({
   let consumedLabel = t('badges.watched');
   if (contentType === 4) consumedLabel = t('badges.read');
   if (contentType === 3) consumedLabel = t('badges.played');
-  if (contentType === 5) consumedLabel = t('badges.listened');
 
   const badges = [];
   if (activity.rating)

@@ -28,7 +28,6 @@ const CONTENT_TYPE_ID_MAP: Record<ContentTypeFilterKey, number | undefined> = {
   tv: 2,
   games: 3,
   books: 4,
-  music: 5,
 };
 
 interface DeepStatsResult {

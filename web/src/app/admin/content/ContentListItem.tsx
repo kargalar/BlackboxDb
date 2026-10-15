@@ -13,7 +13,6 @@ const TYPE_META: Record<number, { icon: string; slug: string }> = {
   2: { icon: '📺', slug: 'tv' },
   3: { icon: '🎮', slug: 'game' },
   4: { icon: '📚', slug: 'book' },
-  5: { icon: '🎵', slug: 'music' },
 };
 
 interface ContentListItemProps {

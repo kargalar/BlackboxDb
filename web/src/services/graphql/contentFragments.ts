@@ -18,7 +18,6 @@ export const CONTENT_BASIC_FIELDS = gql`
     favoriteCount
     consumeCount
     additionalRatingCategories
-    musicReleaseType
     contentType {
       id
       name
@@ -163,10 +162,6 @@ export const CONTENT_DETAIL_FIELDS = gql`
     gameplayVideoUrl
     spotifyPlaylistUrl
 
-    spotifyUrl
-    explicit
-    label
-    totalTracks
     createdAt
     updatedAt
     people {

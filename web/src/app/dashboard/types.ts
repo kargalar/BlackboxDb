@@ -1,7 +1,7 @@
 import type { UnifiedContent } from '@/types/unified-content';
 
 // ─── Content type identifier ─────────────────────────────────
-export type ContentType = 'movie' | 'tv' | 'game' | 'book' | 'music';
+export type ContentType = 'movie' | 'tv' | 'game' | 'book';
 
 // ─── Per-item interaction state ──────────────────────────────
 export interface ItemState {

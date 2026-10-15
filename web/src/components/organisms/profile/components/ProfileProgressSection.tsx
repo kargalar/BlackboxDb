@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart3, BookOpen, Clapperboard, Gamepad2, Tv2, Music } from 'lucide-react';
+import { BarChart3, BookOpen, Clapperboard, Gamepad2, Tv2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 type ProfileItem = {
@@ -19,7 +19,6 @@ interface ProfileProgressSectionProps {
   tv: ProfileItem[];
   games: ProfileItem[];
   books: ProfileItem[];
-  music: ProfileItem[];
   onViewStats?: () => void;
 }
 
@@ -28,7 +27,6 @@ export default function ProfileProgressSection({
   tv,
   games,
   books,
-  music,
   onViewStats,
 }: ProfileProgressSectionProps) {
   const t = useTranslations('ProfileHomeTab.librarySummary');
@@ -37,7 +35,6 @@ export default function ProfileProgressSection({
     { key: 'tv', items: tv, icon: Tv2 },
     { key: 'games', items: games, icon: Gamepad2 },
     { key: 'books', items: books, icon: BookOpen },
-    { key: 'music', items: music, icon: Music },
   ] as const;
 
   return (
@@ -56,7 +53,7 @@ export default function ProfileProgressSection({
           </button>
         )}
       </div>
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {cards.map(({ key, items, icon: Icon }) => (
           <div key={key} className="profile-progress-card">
             <dt className="flex items-center gap-2 text-xs text-white/60">

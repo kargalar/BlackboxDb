@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import InteractivePoster from '@/components/organisms/InteractivePoster';
 import { useHorizontalDragScroll } from '@/hooks/useHorizontalDragScroll';
 import type { Content } from '@/types/content';
-import { BookOpenText, Clapperboard, Gamepad2, Activity, Tv2, Music } from 'lucide-react';
+import { BookOpenText, Clapperboard, Gamepad2, Activity, Tv2 } from 'lucide-react';
 import type { ContentActionHandlers, ContentType, ItemStatesMap } from '../HomeTabTypes';
 import { DEFAULT_ITEM_STATE } from '../HomeTabTypes';
 
@@ -11,7 +11,7 @@ type ContinuingFilter = 'all' | ContentType;
 interface ContinuingContentItem {
   content: Content;
   contentType: ContentType;
-  tabName: 'Movies' | 'TV' | 'Games' | 'Books' | 'Music';
+  tabName: 'Movies' | 'TV' | 'Games' | 'Books';
 }
 
 interface ContinuingContentSectionProps {
@@ -19,15 +19,14 @@ interface ContinuingContentSectionProps {
   itemStates: ItemStatesMap;
   isOwnProfile: boolean;
   handlers: ContentActionHandlers;
-  onShowAll?: (tabName: 'Movies' | 'TV' | 'Games' | 'Books' | 'Music') => void;
+  onShowAll?: (tabName: 'Movies' | 'TV' | 'Games' | 'Books') => void;
 }
 
-const FILTER_TAB_NAME_MAP: Record<ContentType, 'Movies' | 'TV' | 'Games' | 'Books' | 'Music'> = {
+const FILTER_TAB_NAME_MAP: Record<ContentType, 'Movies' | 'TV' | 'Games' | 'Books'> = {
   movie: 'Movies',
   tv: 'TV',
   game: 'Games',
   book: 'Books',
-  music: 'Music',
 };
 
 const TYPE_META: Record<
@@ -63,12 +62,6 @@ const TYPE_META: Record<
     summaryClassName: 'border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06]',
     icon: BookOpenText,
   },
-  music: {
-    label: 'Müzik',
-    pillClassName: 'border-white/10 bg-white/5 text-white/80',
-    summaryClassName: 'border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06]',
-    icon: Music,
-  },
 };
 
 const getBaseItemState = (content: Content) => ({
@@ -97,7 +90,7 @@ export default function ContinuingContentSection({
           acc[item.contentType] += 1;
           return acc;
         },
-        { movie: 0, tv: 0, game: 0, book: 0, music: 0 } as Record<ContentType, number>
+        { movie: 0, tv: 0, game: 0, book: 0 } as Record<ContentType, number>
       ),
     [items]
   );

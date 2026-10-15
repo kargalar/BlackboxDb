@@ -36,8 +36,7 @@ function parseSpotifyUrl(url: string): { type: string; id: string } | null {
  */
 export function SoundtrackFields({ formData, setFormData, errors }: SoundtrackFieldsProps) {
   const [isFocused, setIsFocused] = useState(false);
-  const isMusic = formData.contentTypeId === '5';
-  const spotifyInput = isMusic ? formData.spotifyUrl || '' : formData.spotifyPlaylistUrl || '';
+  const spotifyInput = formData.spotifyPlaylistUrl || '';
 
   const spotifyData = useMemo(() => parseSpotifyUrl(spotifyInput), [spotifyInput]);
 
@@ -51,14 +50,14 @@ export function SoundtrackFields({ formData, setFormData, errors }: SoundtrackFi
   const handleChange = (value: string) => {
     setFormData((prev) => ({
       ...prev,
-      ...(isMusic ? { spotifyUrl: value } : { spotifyPlaylistUrl: value }),
+      spotifyPlaylistUrl: value,
     }));
   };
 
   const handleClear = () => {
     setFormData((prev) => ({
       ...prev,
-      ...(isMusic ? { spotifyUrl: '' } : { spotifyPlaylistUrl: '' }),
+      spotifyPlaylistUrl: '',
     }));
   };
 
@@ -67,14 +66,14 @@ export function SoundtrackFields({ formData, setFormData, errors }: SoundtrackFi
       {/* URL Input */}
       <div>
         <label
-          htmlFor={isMusic ? 'spotifyUrl' : 'spotifyPlaylistUrl'}
+          htmlFor="spotifyPlaylistUrl"
           className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
         >
           🎵 Spotify Playlist / Album / Track URL
         </label>
         <div className="relative">
           <input
-            id={isMusic ? 'spotifyUrl' : 'spotifyPlaylistUrl'}
+            id="spotifyPlaylistUrl"
             type="url"
             value={spotifyInput}
             onChange={(e) => handleChange(e.target.value)}
@@ -134,9 +133,9 @@ export function SoundtrackFields({ formData, setFormData, errors }: SoundtrackFi
         <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
           Spotify&apos;dan playlist, albüm veya şarkı linkini yapıştırın
         </p>
-        {errors[isMusic ? 'spotifyUrl' : 'spotifyPlaylistUrl'] && (
+        {errors['spotifyPlaylistUrl'] && (
           <p className="mt-1 text-sm text-red-500">
-            {errors[isMusic ? 'spotifyUrl' : 'spotifyPlaylistUrl']}
+            {errors['spotifyPlaylistUrl']}
           </p>
         )}
       </div>

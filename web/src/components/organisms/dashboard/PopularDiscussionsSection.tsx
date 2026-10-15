@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { apolloClient } from '@/lib/apollo-client';
 import { gql } from '@apollo/client';
-import { ChevronUp, MessageSquare, Film, Tv, Gamepad2, BookOpen, Music, Globe } from 'lucide-react';
+import { ChevronUp, MessageSquare, Film, Tv, Gamepad2, BookOpen, Globe } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/date-utils';
 
 const GET_POPULAR_DISCUSSIONS = gql`
@@ -78,8 +78,6 @@ function getContentTypeSlug(contentTypeId?: number): string {
       return 'game';
     case 4:
       return 'book';
-    case 5:
-      return 'music';
     default:
       return 'movie';
   }
@@ -95,8 +93,6 @@ function ContentTypeIcon({ contentTypeId }: { contentTypeId?: number }) {
       return <Gamepad2 size={12} className="text-purple-400" />;
     case 4:
       return <BookOpen size={12} className="text-amber-400" />;
-    case 5:
-      return <Music size={12} className="text-pink-400" />;
     default:
       return <Globe size={12} className="text-emerald-400" />;
   }
@@ -116,7 +112,6 @@ const CONTENT_TYPE_FILTERS = [
   { id: 2, label: 'TV Show', icon: Tv },
   { id: 3, label: 'Game', icon: Gamepad2 },
   { id: 4, label: 'Book', icon: BookOpen },
-  { id: 5, label: 'Music', icon: Music },
 ];
 
 const CONTENT_TYPE_META = [
@@ -124,7 +119,6 @@ const CONTENT_TYPE_META = [
   { id: 2, title: 'TV Show Discussions', slug: 'tv', icon: Tv },
   { id: 3, title: 'Game Discussions', slug: 'game', icon: Gamepad2 },
   { id: 4, title: 'Book Discussions', slug: 'book', icon: BookOpen },
-  { id: 5, title: 'Music Discussions', slug: 'music', icon: Music },
 ];
 
 export default function PopularDiscussionsSection({

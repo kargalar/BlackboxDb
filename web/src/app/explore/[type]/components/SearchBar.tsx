@@ -8,9 +8,6 @@ type ContentType =
   | 'tv'
   | 'game'
   | 'book'
-  | 'music'
-  | 'podcast'
-  | 'theater'
   | 'person'
   | 'company';
 

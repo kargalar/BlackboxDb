@@ -3,20 +3,14 @@ import { getImageSource } from "../../lib/imageFocus";
 import { fetchTmdbPersonDetails } from "../../lib/tmdbFetcher";
 import { normalizeThemeName } from "../../lib/themeNormalizer";
 
-import {
-  moveImageToContentFolder,
-  getContentFolderImageUrlIfPresent,
-  isBase64Image,
-  uploadToBunny,
-  UPLOAD_PRESETS,
-} from "../../lib/bunny";
+import { isLocalScreenshotUrl, moveLocalScreenshotToContentFolder } from "../../lib/localScreenshot";
+import { localizeContentImage, type ContentImageKind } from "../../lib/localContentImage";
 import { generatePersonSlug, generateCompanySlug } from "../../lib/slugUtils";
 import { saveSimilarityGroupForContent } from "../../lib/similarContentHelper";
 import {
   notifyUsersOfNewEpisodes,
   notifyUsersOfNewSeason,
 } from "../../lib/newSeasonNotificationHelper";
-import { syncConsumedTvShowEpisodes } from "../../services/UserContentService";
 
 /**
  * Canonical list of roles considered as "cast" (actors).
@@ -698,13 +692,16 @@ export async function linkCompanies(
         });
     if (!company) {
       const companySlug = await generateCompanySlug(prisma, c.name);
+      const companyLogoUrl = c.logoUrl
+        ? await localizeContentImage(c.logoUrl, companySlug, "company")
+        : null;
       company = await prisma.company.create({
         data: {
           id: companySlug,
           name: c.name,
           description: c.description,
           headquarters: c.headquarters,
-          logoUrl: c.logoUrl,
+          logoUrl: companyLogoUrl,
           website: c.website,
           foundingYear: c.foundingYear,
           defaultRoleIds: [validRoleId],
@@ -1255,9 +1252,6 @@ export async function processSeasons(
       await notifyUsersOfNewEpisodes(prisma, contentId, seasonNumber, episodeNumbers);
     }
 
-    if (newSeasonNumbers.length > 0 || newEpisodesBySeason.size > 0) {
-      await syncConsumedTvShowEpisodes(prisma, contentId);
-    }
   } catch (e) {
     logger.error(`[processSeasons] Failed to parse seasons JSON:`, e);
     throw e;
@@ -1377,9 +1371,12 @@ export async function saveImages(
     clearPosterId = true;
     logger.info(`[saveImages] Primary poster unset for content ${contentId}`);
   } else if (posterUrl) {
+    const finalPosterUrl = mediaPrepared
+      ? posterUrl
+      : await localizeContentImage(posterUrl, contentId, "poster");
     // If the image already exists in DB (we can find it by filePath)
     const existingPoster = await prisma.contentImage.findFirst({
-      where: { contentId, filePath: posterUrl, type: "poster" },
+      where: { contentId, filePath: finalPosterUrl, type: "poster" },
       orderBy: { id: "asc" },
     });
 
@@ -1387,26 +1384,15 @@ export async function saveImages(
       // Re-use existing image
       posterImageId = existingPoster.id;
     } else {
-      let cleanPosterUrl = posterUrl;
-      if (!mediaPrepared && isBase64Image(cleanPosterUrl)) {
-        const uploadResult = await uploadToBunny(cleanPosterUrl, "poster");
-        cleanPosterUrl = uploadResult.url;
-      }
-
-    const finalPosterUrl = mediaPrepared ? cleanPosterUrl : await moveImageToContentFolder(
-      cleanPosterUrl,
-      "blackbox/posters",
-      contentId,
-    );
       const posterImage = await prisma.contentImage.create({
-      data: {
-        contentId,
-        type: "poster",
-        version: "500x750",
-        filePath: finalPosterUrl,
-      },
-    });
-    posterImageId = posterImage.id;
+        data: {
+          contentId,
+          type: "poster",
+          version: "500x750",
+          filePath: finalPosterUrl,
+        },
+      });
+      posterImageId = posterImage.id;
     }
   }
 
@@ -1415,7 +1401,10 @@ export async function saveImages(
     clearBackdropId = true;
     logger.info(`[saveImages] Primary backdrop unset for content ${contentId}`);
   } else if (backdropUrl) {
-    const backdropSource = getImageSource(backdropUrl);
+    const finalBackdropUrl = mediaPrepared
+      ? getImageSource(backdropUrl)
+      : await localizeContentImage(backdropUrl, contentId, "backdrop");
+    const backdropSource = getImageSource(finalBackdropUrl);
     const existingBackdrop = await prisma.contentImage.findFirst({
       where: {
         contentId,
@@ -1429,33 +1418,20 @@ export async function saveImages(
     });
 
     if (existingBackdrop) {
-      if (existingBackdrop.filePath !== backdropUrl) {
+      if (existingBackdrop.filePath !== finalBackdropUrl) {
         await prisma.contentImage.update({
           where: { id: existingBackdrop.id },
-          data: { filePath: backdropUrl },
+          data: { filePath: finalBackdropUrl },
         });
       }
       backdropImageId = existingBackdrop.id;
     } else {
-      // Keep alignment metadata separate from the physical file.
-      const hashMatch = backdropUrl.match(/(#focus=[\d.,]+)/);
-      const hash = hashMatch ? hashMatch[1] : "";
-      let cleanBackdropUrl = getImageSource(backdropUrl);
-
-      if (!mediaPrepared && isBase64Image(cleanBackdropUrl)) {
-        const uploadResult = await uploadToBunny(cleanBackdropUrl, "backdrop");
-        cleanBackdropUrl = uploadResult.url;
-      }
-
-      const finalBackdropUrl = mediaPrepared
-        ? cleanBackdropUrl
-        : await moveImageToContentFolder(cleanBackdropUrl, "blackbox/backdrops", contentId);
       const backdropImage = await prisma.contentImage.create({
         data: {
           contentId,
           type: "backdrop",
           version: "original",
-          filePath: finalBackdropUrl + hash,
+          filePath: finalBackdropUrl,
         },
       });
       backdropImageId = backdropImage.id;
@@ -1510,15 +1486,22 @@ export async function saveImages(
       ) continue;
 
       let cleanUrl = img.filePath;
-      if (!mediaPrepared && isBase64Image(cleanUrl)) {
-        const uploadResult = await uploadToBunny(cleanUrl, img.type as keyof typeof UPLOAD_PRESETS, undefined, contentId);
-        cleanUrl = uploadResult.url;
+      if (!mediaPrepared && (img.type === "poster" || img.type === "backdrop")) {
+        cleanUrl = await localizeContentImage(
+          cleanUrl,
+          contentId,
+          img.type as ContentImageKind,
+        );
       }
-      const finalUrl = mediaPrepared ? cleanUrl : await moveImageToContentFolder(
-        cleanUrl,
-        `blackbox/${img.type}s`,
-        contentId,
-      );
+      const finalUrl = mediaPrepared
+        ? cleanUrl
+        : img.type === "screenshot"
+          ? await localizeContentImage(cleanUrl, contentId, "screenshot")
+          : await localizeContentImage(
+              cleanUrl,
+              contentId,
+              img.type as ContentImageKind,
+            );
 
       if (img.id) {
         const existing = await prisma.contentImage.findFirst({ where: { id: img.id, contentId } });
@@ -1613,20 +1596,11 @@ export async function saveScreenshots(
       const existing = isUpdate
         ? oldScreenshots.find(old => s.id ? old.id === s.id : old.imageUrl === s.imageUrl)
         : undefined;
-      const recoveredImageUrl = !mediaPrepared && existing
-        ? await getContentFolderImageUrlIfPresent(
-            s.imageUrl,
-            "blackbox/screenshots",
-            contentId,
-          )
-        : null;
-      const finalImageUrl = mediaPrepared ? s.imageUrl : existing
-        ? recoveredImageUrl || s.imageUrl
-        : await moveImageToContentFolder(
-            s.imageUrl,
-            "blackbox/screenshots",
-            contentId,
-          );
+      const finalImageUrl = isLocalScreenshotUrl(s.imageUrl)
+        ? moveLocalScreenshotToContentFolder(s.imageUrl, contentId)
+        : mediaPrepared
+          ? s.imageUrl
+          : await localizeContentImage(s.imageUrl, contentId, "screenshot");
       const screenshotData = {
         imageUrl: finalImageUrl,
         difficulty: s.difficulty ?? 1,
@@ -1723,10 +1697,10 @@ export async function saveExpansions(
   for (const e of expansions) {
     let finalPosterUrl = e.posterUrl || null;
     if (finalPosterUrl && !mediaPrepared) {
-      finalPosterUrl = await moveImageToContentFolder(
+      finalPosterUrl = await localizeContentImage(
         finalPosterUrl,
-        "blackbox/expansions",
-        contentId,
+        `${contentId}-expansion-${e.id ?? e.name}`,
+        "expansion",
       );
     }
     const data = {

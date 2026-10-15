@@ -8,7 +8,6 @@ import {
   Tv,
   Gamepad2,
   BookOpen,
-  Music,
   Globe,
   MessageSquare,
   Star,
@@ -41,8 +40,6 @@ function getContentTypeIcon(contentTypeId?: number) {
       return <Gamepad2 size={14} className="text-purple-400" />;
     case 4:
       return <BookOpen size={14} className="text-amber-400" />;
-    case 5:
-      return <Music size={14} className="text-pink-400" />;
     default:
       return <Globe size={14} className="text-emerald-400" />;
   }
@@ -58,8 +55,6 @@ function getContentTypeSlug(contentTypeId?: number) {
       return 'game';
     case 4:
       return 'book';
-    case 5:
-      return 'music';
     default:
       return 'movie';
   }
@@ -71,7 +66,6 @@ const CONTENT_TYPE_FILTERS = [
   { id: 2, label: 'TV Show', title: 'TV Show Reviews', icon: Tv },
   { id: 3, label: 'Game', title: 'Game Reviews', icon: Gamepad2 },
   { id: 4, label: 'Book', title: 'Book Reviews', icon: BookOpen },
-  { id: 5, label: 'Music', title: 'Music Reviews', icon: Music },
 ];
 
 function getActivityContentTypeId(act: any): number {

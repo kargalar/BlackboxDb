@@ -240,8 +240,6 @@ export default function AdminContentRequestsPage() {
         return t('types.game');
       case 4:
         return t('types.book');
-      case 5:
-        return t('types.music');
       default:
         return t('types.unknown');
     }
@@ -257,8 +255,6 @@ export default function AdminContentRequestsPage() {
         return '🎮';
       case 4:
         return '📚';
-      case 5:
-        return '🎵';
       default:
         return '📄';
     }

@@ -54,50 +54,6 @@ export class EpisodeResolver {
     const startOfNextWeekKey = addDaysToDateKey(endOfCurrentWeekKey, 1);
     const endOfNextWeekKey = addDaysToDateKey(startOfNextWeekKey, 6);
 
-    // A consumed series becomes continuing only when an episode's season is no
-    // longer upcoming and it still has an unwatched episode.
-    const staleConsumedShowsRaw = await prisma.$queryRaw`
-      SELECT ucl.content_id as "contentId"
-      FROM "user_content_log" ucl
-      JOIN "content" c ON c.id = ucl.content_id
-      WHERE ucl.user_id = ${user.id}::uuid 
-        AND ucl.is_consumed = true 
-        AND c.content_type_id = 2
-        AND EXISTS (
-          SELECT 1 FROM "tv_episode" te
-          LEFT JOIN "tv_season" ts ON ts.id = te.season_id
-          WHERE te.tv_show_id = ucl.content_id
-            AND te.season_number > 0
-            AND COALESCE(te.air_date, ts.air_date) <= ${now}
-            AND NOT EXISTS (
-              SELECT 1 FROM "user_episode_log" uel
-              WHERE uel.user_id = ${user.id}::uuid
-                AND uel.episode_id = te.id
-                AND uel.watched = true
-                AND uel.watched_at >= COALESCE(te.air_date, ts.air_date)
-            )
-        )
-    `;
-    const staleConsumedShows = staleConsumedShowsRaw as { contentId: string }[];
-
-    if (staleConsumedShows.length > 0) {
-      const staleIds = staleConsumedShows.map(s => s.contentId);
-      await prisma.userContentLog.updateMany({
-        where: { userId: user.id, contentId: { in: staleIds } },
-        data: { isConsumed: false, isContinuing: true }
-      });
-      for (const contentId of staleIds) {
-        await prisma.content.update({
-          where: { id: contentId },
-          data: { consumeCount: { decrement: 1 } }
-        });
-      }
-      await prisma.content.updateMany({
-        where: { id: { in: staleIds }, consumeCount: { lt: 0 } },
-        data: { consumeCount: 0 }
-      });
-    }
-
     // Fetch consumed TV show IDs for this user so we can exclude them
     const consumedTvShows = await prisma.userContentLog.findMany({
       where: {

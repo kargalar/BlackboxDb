@@ -13,10 +13,6 @@ async function seedData() {
       { id: 2, name: "TV", slug: "tv" },
       { id: 3, name: "GAME", slug: "game" },
       { id: 4, name: "BOOK", slug: "book" },
-      { id: 5, name: "MUSIC", slug: "music" },
-      { name: "PODCAST", slug: "podcast" },
-      { name: "THEATER", slug: "theater" },
-      { name: "CONCERT", slug: "concert" },
     ];
 
     for (const type of contentTypes) {

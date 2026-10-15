@@ -15,20 +15,8 @@ const TARGET_URL = `${CDN_URL}/blackbox/screenshots/${CONTENT_ID}/source.jpg`;
 
 test("content media preparation", async (t) => {
   const originalFetch = globalThis.fetch;
-  const environment = {
-    BUNNY_CDN_URL: process.env.BUNNY_CDN_URL,
-    BUNNY_STORAGE_ZONE: process.env.BUNNY_STORAGE_ZONE,
-    BUNNY_STORAGE_PASSWORD: process.env.BUNNY_STORAGE_PASSWORD,
-  };
-  process.env.BUNNY_CDN_URL = CDN_URL;
-  process.env.BUNNY_STORAGE_ZONE = "test-zone";
-  process.env.BUNNY_STORAGE_PASSWORD = "test-password";
   t.after(() => {
     globalThis.fetch = originalFetch;
-    for (const [key, value] of Object.entries(environment)) {
-      if (value === undefined) delete process.env[key];
-      else process.env[key] = value;
-    }
   });
 
   function database(screenshots: Array<{ id: number; imageUrl: string }> = []) {
@@ -37,43 +25,6 @@ test("content media preparation", async (t) => {
       contentImage: { findMany: async (): Promise<never[]> => [] },
     } as unknown as PrismaClient;
   }
-
-  await t.test("copies new images without deleting the source and leaves input untouched", async () => {
-    const methods: string[] = [];
-    globalThis.fetch = async (url, options) => {
-      const method = options?.method ?? "GET";
-      methods.push(method);
-      if (method === "GET" && options?.headers) {
-        return new Response(null, { status: String(url).includes(CONTENT_ID) ? 404 : 200 });
-      }
-      if (method === "GET") {
-        return new Response("image", { headers: { "content-type": "image/jpeg" } });
-      }
-      assert.equal(method, "PUT");
-      return new Response(null, { status: 201 });
-    };
-    const input = { screenshots: [{ imageUrl: SOURCE_URL }] };
-    const prepared = await prepareContentMedia(database(), CONTENT_ID, input, true);
-    assert.equal(prepared.screenshots[0].imageUrl, TARGET_URL);
-    assert.equal(input.screenshots[0].imageUrl, SOURCE_URL);
-    assert.deepEqual(methods, ["GET", "GET", "GET", "PUT"]);
-  });
-
-  await t.test("recovers a previous copy while retaining the existing screenshot ID", async () => {
-    let requests = 0;
-    globalThis.fetch = async (_url, options) => {
-      requests++;
-      assert.equal(options?.method, "GET");
-      return new Response(null, { status: 200 });
-    };
-    const prepared = await prepareContentMedia(
-      database([{ id: 42, imageUrl: SOURCE_URL }]), CONTENT_ID,
-      { screenshots: [{ imageUrl: SOURCE_URL }] } as UpdateContentInput, true,
-    );
-    assert.equal(prepared.screenshots[0].imageUrl, TARGET_URL);
-    assert.equal(prepared.screenshots[0].id, 42);
-    assert.equal(requests, 1);
-  });
 
   await t.test("performs no requests for unchanged images already in the content folder", async () => {
     globalThis.fetch = async () => { throw new Error("Unexpected storage request"); };

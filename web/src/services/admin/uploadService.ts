@@ -7,7 +7,7 @@ import { graphqlMutation } from '@/lib/graphqlHelpers';
 import { UPLOAD_CONTENT_IMAGE } from '../graphql/upload';
 
 /**
- * Upload content image (poster/backdrop/screenshot/profile/company) to Bunny Storage
+ * Upload content images to the local media storage
  *
  * @param fileBase64 - Base64 encoded file data
  * @param fileName - Original file name

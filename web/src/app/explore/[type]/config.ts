@@ -40,26 +40,4 @@ export const CONTENT_CONFIG: Record<string, ContentTypeConfig> = {
     itemsPerPage: 48,
     icon: '🎮',
   },
-  music: {
-    title: 'Müzik',
-    subtitle: 'Müzik albümlerini ve parçalarını keşfedin',
-    contentTypeId: 5,
-    defaultQuery: 'popular music',
-    itemsPerPage: 24,
-    icon: '🎵',
-  },
-  podcast: {
-    title: 'Podcast Programs',
-    subtitle: 'Browse podcast programs and episodes',
-    defaultQuery: 'podcast',
-    itemsPerPage: 24,
-    icon: '🎙️',
-  },
-  theater: {
-    title: 'Theater Productions',
-    subtitle: 'Browse theater productions and performances',
-    defaultQuery: 'theater',
-    itemsPerPage: 24,
-    icon: '🎭',
-  },
 };

@@ -130,8 +130,7 @@ export const EditHistoryDiff: React.FC<EditHistoryDiffProps> = ({ history }) => 
     }
 
     if (
-      value.match(/\.(jpeg|jpg|gif|png|webp)(\?.*)?$/i) ||
-      value.includes('.b-cdn.net/')
+      value.match(/\.(jpeg|jpg|gif|png|webp|avif)(\?.*)?$/i)
     ) {
       return true;
     }

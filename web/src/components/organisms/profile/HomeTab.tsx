@@ -10,30 +10,28 @@ import RecentReviewsSection from './components/RecentReviewsSection';
 import { StatsHeatmapSection } from './components/StatsHeatmapSection';
 import { RecentActivityList } from './components/RecentActivityList';
 import { FavoritePeopleSection } from './components/FavoritePeopleSection';
-import ProfileProgressSection from './components/ProfileProgressSection';
 import { useTranslations } from 'next-intl';
 import { useGlobalSettings } from '@/contexts/GlobalSettingsContext';
 
-type ProfileContentType = 'movie' | 'tv' | 'game' | 'book' | 'music';
+type ProfileContentType = 'movie' | 'tv' | 'game' | 'book';
 
 type ContinuingHomeItem = {
   content: any;
   contentType: ProfileContentType;
-  tabName: 'Movies' | 'TV' | 'Games' | 'Books' | 'Music';
+  tabName: 'Movies' | 'TV' | 'Games' | 'Books';
 };
 
 const CONTENT_TYPE_CONFIG: Record<
   number,
   {
     contentType: ProfileContentType;
-    tabName: 'Movies' | 'TV' | 'Games' | 'Books' | 'Music';
+    tabName: 'Movies' | 'TV' | 'Games' | 'Books';
   }
 > = {
   1: { contentType: 'movie', tabName: 'Movies' },
   2: { contentType: 'tv', tabName: 'TV' },
   3: { contentType: 'game', tabName: 'Games' },
   4: { contentType: 'book', tabName: 'Books' },
-  5: { contentType: 'music', tabName: 'Music' },
 };
 
 const getContinuingFlag = (item: any) => Boolean(item?.isContinuing ?? item?.is_continuing);
@@ -55,18 +53,15 @@ export default function HomeTab({
   recentTv = [],
   recentGames = [],
   recentBooks = [],
-  recentMusic = [],
   featuredMovies,
   featuredTv = [],
   featuredGames = [],
   featuredBooks = [],
-  featuredMusic = [],
   favoritePeople = [],
   allConsumedMovies = [],
   allConsumedTv = [],
   allConsumedGames = [],
   allConsumedBooks = [],
-  allConsumedMusic = [],
   activityFeed = [],
   stats,
   isOwnProfile = false,
@@ -83,12 +78,11 @@ export default function HomeTab({
           { items: allConsumedTv, contentType: 'tv', tabName: 'TV' },
           { items: allConsumedGames, contentType: 'game', tabName: 'Games' },
           { items: allConsumedBooks, contentType: 'book', tabName: 'Books' },
-          { items: allConsumedMusic, contentType: 'music', tabName: 'Music' },
         ] as const
       ).flatMap(({ items, contentType, tabName }) =>
         items.map((content) => ({ content, contentType, tabName }))
       ),
-    [allConsumedMovies, allConsumedTv, allConsumedGames, allConsumedBooks, allConsumedMusic]
+    [allConsumedMovies, allConsumedTv, allConsumedGames, allConsumedBooks]
   );
 
   const continuingSourceItems = useMemo(
@@ -147,12 +141,10 @@ export default function HomeTab({
     recentTv: recentTv.length,
     recentGames: recentGames.length,
     recentBooks: recentBooks.length,
-    recentMusic: recentMusic.length,
     featuredMovies: featuredMovies.length,
     featuredTv: featuredTv.length,
     featuredGames: featuredGames.length,
     featuredBooks: featuredBooks.length,
-    featuredMusic: featuredMusic.length,
     stats,
     isOwnProfile,
   });
@@ -162,7 +154,6 @@ export default function HomeTab({
     recentTv,
     recentGames,
     recentBooks,
-    recentMusic,
     continuingItems: [
       ...continuingSourceItems,
       ...continuingItemsFromActivity.map(({ content }) => content),
@@ -171,12 +162,10 @@ export default function HomeTab({
     featuredTv,
     featuredGames,
     featuredBooks,
-    featuredMusic,
     allConsumedMovies,
     allConsumedTv,
     allConsumedGames,
     allConsumedBooks,
-    allConsumedMusic,
     isOwnProfile,
     onFeaturedUpdate,
   });
@@ -253,15 +242,6 @@ export default function HomeTab({
         />
       </div>
 
-      <ProfileProgressSection
-        movies={allConsumedMovies}
-        tv={allConsumedTv}
-        games={allConsumedGames}
-        books={allConsumedBooks}
-        music={allConsumedMusic}
-        onViewStats={() => onShowAll?.('Stats')}
-      />
-
       {/* Three-column layout: Featured | Calendar | Recent Activity */}
       <div className="profile-home-block profile-insights-grid flex flex-col 2xl:flex-row gap-6 items-stretch">
         {/* Left: Featured Content */}
@@ -271,7 +251,6 @@ export default function HomeTab({
             featuredTv={featuredTv}
             featuredGames={featuredGames}
             featuredBooks={featuredBooks}
-            featuredMusic={featuredMusic}
             featuredType={state.featuredType}
             setFeaturedType={state.setFeaturedType}
             itemStates={state.itemStates}
@@ -292,10 +271,10 @@ export default function HomeTab({
               tv: allConsumedTv,
               games: allConsumedGames,
               books: allConsumedBooks,
-              music: allConsumedMusic,
             }}
             selectedDay={state.heatmapSelectedDay}
             onSelectDay={state.setHeatmapSelectedDay}
+            variant="compact"
           />
         </div>
 
@@ -307,7 +286,6 @@ export default function HomeTab({
               tv: allConsumedTv,
               games: allConsumedGames,
               books: allConsumedBooks,
-              music: allConsumedMusic,
             }}
             selectedDay={state.heatmapSelectedDay}
             onClearDay={() => state.setHeatmapSelectedDay(undefined)}
@@ -381,23 +359,6 @@ export default function HomeTab({
             exploreLink="/explore/game"
             exploreLinkText={t('game.explore')}
             showAllTabName="Games"
-            itemStates={state.itemStates}
-            isOwnProfile={isOwnProfile}
-            handlers={state.handlers}
-            onShowAll={onShowAll}
-          />
-        )}
-
-        {recentMusic.length > 0 && (
-          <ActivitySection
-            title={t('music.title')}
-            items={recentMusic}
-            contentType="music"
-            maxItems={6}
-            emptyMessage={t('music.empty')}
-            exploreLink="/explore/music"
-            exploreLinkText={t('music.explore')}
-            showAllTabName="Music"
             itemStates={state.itemStates}
             isOwnProfile={isOwnProfile}
             handlers={state.handlers}

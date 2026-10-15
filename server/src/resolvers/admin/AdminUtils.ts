@@ -1,11 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { ContentCompanyInput } from "../../types/admin";
-import {
-  uploadImageIfBase64,
-  deleteBunnyFile,
-  isBunnyUrl,
-  moveImageToContentFolder,
-} from "../../lib/bunny";
+import { localizeContentImage } from "../../lib/localContentImage";
 import { generatePersonSlug, generateCompanySlug } from "../../lib/slugUtils";
 
 export async function processCompanies(
@@ -108,16 +103,16 @@ export async function processCast(
     for (const actor of cast) {
       if (!actor.name) continue;
 
-      // Store uploaded profile images in Bunny Storage.
       let profileUrl = actor.profileUrl;
-      if (profileUrl) {
-        profileUrl = await uploadImageIfBase64(profileUrl, "person");
-      }
 
       // Find or create Person
       let person = await prisma.person.findFirst({
         where: { name: actor.name },
       });
+      if (profileUrl) {
+        const personId = person?.id ?? await generatePersonSlug(prisma, actor.name);
+        profileUrl = await localizeContentImage(profileUrl, personId, "person");
+      }
 
       if (!person) {
         const personSlug = await generatePersonSlug(prisma, actor.name);
@@ -182,16 +177,16 @@ export async function processCrew(
     for (const crewMember of crew) {
       if (!crewMember.name) continue;
 
-      // Store uploaded profile images in Bunny Storage.
       let profileUrl = crewMember.profileUrl;
-      if (profileUrl) {
-        profileUrl = await uploadImageIfBase64(profileUrl, "person");
-      }
 
       // Find or create Person
       let person = await prisma.person.findFirst({
         where: { name: crewMember.name },
       });
+      if (profileUrl) {
+        const personId = person?.id ?? await generatePersonSlug(prisma, crewMember.name);
+        profileUrl = await localizeContentImage(profileUrl, personId, "person");
+      }
 
       if (!person) {
         const personSlug = await generatePersonSlug(prisma, crewMember.name);
@@ -272,36 +267,13 @@ export async function processSeasons(
       let seasonPosterUrl = season.posterUrl;
 
       if (seasonPosterUrl === null || seasonPosterUrl === "") {
-        // Remove the stored poster when it belongs to Bunny Storage.
-        if (
-          existingSeason?.posterUrl &&
-          isBunnyUrl(existingSeason.posterUrl)
-        ) {
-          await deleteBunnyFile(existingSeason.posterUrl);
-        }
         seasonPosterUrl = null;
       } else if (seasonPosterUrl) {
-        // Delete the previous Bunny image when it is replaced.
-        if (
-          existingSeason?.posterUrl &&
-          isBunnyUrl(existingSeason.posterUrl) &&
-          seasonPosterUrl !== existingSeason.posterUrl &&
-          !seasonPosterUrl.startsWith("data:")
-        ) {
-          await deleteBunnyFile(existingSeason.posterUrl);
-        }
-        // Upload a new base64 image to Bunny Storage.
-        seasonPosterUrl = await uploadImageIfBase64(
+        seasonPosterUrl = await localizeContentImage(
           seasonPosterUrl,
-          "seasonPoster",
+          `${contentId}-season-${season.seasonNumber}`,
+          "season",
         );
-        if (seasonPosterUrl) {
-          seasonPosterUrl = await moveImageToContentFolder(
-            seasonPosterUrl,
-            "blackbox/seasons",
-            contentId,
-          );
-        }
       }
 
       // Create or update TvSeason
@@ -360,36 +332,13 @@ export async function processSeasons(
           let episodeStillUrl = episode.stillUrl;
 
           if (episodeStillUrl === null || episodeStillUrl === "") {
-            // Remove the stored still when it belongs to Bunny Storage.
-            if (
-              existingEpisode?.stillUrl &&
-              isBunnyUrl(existingEpisode.stillUrl)
-            ) {
-              await deleteBunnyFile(existingEpisode.stillUrl);
-            }
             episodeStillUrl = null;
           } else if (episodeStillUrl) {
-            // Delete the previous Bunny image when it is replaced.
-            if (
-              existingEpisode?.stillUrl &&
-              isBunnyUrl(existingEpisode.stillUrl) &&
-              episodeStillUrl !== existingEpisode.stillUrl &&
-              !episodeStillUrl.startsWith("data:")
-            ) {
-              await deleteBunnyFile(existingEpisode.stillUrl);
-            }
-            // Upload a new base64 image to Bunny Storage.
-            episodeStillUrl = await uploadImageIfBase64(
+            episodeStillUrl = await localizeContentImage(
               episodeStillUrl,
-              "episodeStill",
+              `${contentId}-season-${season.seasonNumber}-episode-${episode.episodeNumber}`,
+              "episode",
             );
-            if (episodeStillUrl) {
-              episodeStillUrl = await moveImageToContentFolder(
-                episodeStillUrl,
-                "blackbox/episodes",
-                contentId,
-              );
-            }
           }
 
           await prisma.tvEpisode.upsert({

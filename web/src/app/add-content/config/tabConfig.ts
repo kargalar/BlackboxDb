@@ -53,39 +53,15 @@ const BOOK_TABS: TabDefinition[] = [
   { id: 'similar-contents', label: 'Benzer Icerikler', icon: 'Link' },
 ];
 
-const MUSIC_TABS: TabDefinition[] = [
-  { id: 'basic', label: 'Temel Bilgiler', icon: 'Info' },
-  { id: 'music-info', label: 'Müzik Bilgileri', icon: 'Music' },
-  { id: 'media', label: 'Kapak & Poster', icon: 'Image' },
-  { id: 'soundtrack', label: 'Spotify', icon: 'Music' },
-  { id: 'similar-contents', label: 'Benzer İçerikler', icon: 'Link' },
-];
-
-const PODCAST_TABS: TabDefinition[] = [
-  { id: 'basic', label: 'Program Details', icon: 'Info' },
-  { id: 'cast-crew', label: 'Hosts', icon: 'Users' },
-  { id: 'media', label: 'Cover Art', icon: 'Image' },
-];
-
-const THEATER_TABS: TabDefinition[] = [
-  { id: 'basic', label: 'Production Details', icon: 'Info' },
-  { id: 'cast-crew', label: 'Cast & Crew', icon: 'Users' },
-  { id: 'media', label: 'Production Images', icon: 'Image' },
-];
-
 const TAB_CONFIG: Record<string, TabDefinition[]> = {
   '1': MOVIE_TABS,
   '2': TV_TABS,
   '3': GAME_TABS,
   '4': BOOK_TABS,
-  '5': MUSIC_TABS,
 };
 
 export function getTabsForContentType(
-  contentTypeId: string,
-  contentTypeSlug?: string
+  contentTypeId: string
 ): TabDefinition[] {
-  if (contentTypeSlug === 'podcast') return PODCAST_TABS;
-  if (contentTypeSlug === 'theater') return THEATER_TABS;
   return TAB_CONFIG[contentTypeId] ?? [];
 }

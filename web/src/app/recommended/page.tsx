@@ -18,7 +18,7 @@ import { refreshNotificationBadge } from '@/features/notifications/hooks/useUnre
 import type { Route } from 'next';
 import { useTranslations, useLocale } from 'next-intl';
 
-function getContentTypePath(contentTypeId: number): 'movie' | 'tv' | 'game' | 'book' | 'music' {
+function getContentTypePath(contentTypeId: number): 'movie' | 'tv' | 'game' | 'book' {
   switch (contentTypeId) {
     case 1:
       return 'movie';
@@ -28,8 +28,6 @@ function getContentTypePath(contentTypeId: number): 'movie' | 'tv' | 'game' | 'b
       return 'game';
     case 4:
       return 'book';
-    case 5:
-      return 'music';
     default:
       return 'movie';
   }

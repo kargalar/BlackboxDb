@@ -59,12 +59,9 @@ export async function GET(request: NextRequest) {
 
   try {
     const parsedUrl = new URL(url);
-    const isBunnyCdnHost =
-      parsedUrl.hostname.endsWith('.b-cdn.net') ||
-      parsedUrl.hostname === process.env.NEXT_PUBLIC_BUNNY_CDN_HOSTNAME;
     if (
       parsedUrl.protocol !== 'https:' ||
-      (!ALLOWED_IMAGE_HOSTS.has(parsedUrl.hostname) && !isBunnyCdnHost)
+      !ALLOWED_IMAGE_HOSTS.has(parsedUrl.hostname)
     ) {
       return new NextResponse('Unauthorized image source', { status: 403 });
     }

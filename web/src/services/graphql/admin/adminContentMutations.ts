@@ -39,13 +39,6 @@ export const UPDATE_CONTENT = gql`
       lastAirDate
       subtitle
       authors
-
-      explicit
-      label
-      totalTracks
-      spotifyUrl
-      musicReleaseType
-
       previewLink
       infoLink
       publisher
@@ -65,6 +58,7 @@ export const UPDATE_CONTENT = gql`
         id
         name
       }
+      fileSize
       themes {
         id
         name
@@ -117,13 +111,6 @@ export const CREATE_CONTENT = gql`
       lastAirDate
       subtitle
       authors
-
-      explicit
-      label
-      totalTracks
-      spotifyUrl
-      musicReleaseType
-
       previewLink
       infoLink
       publisher
@@ -143,6 +130,7 @@ export const CREATE_CONTENT = gql`
         id
         name
       }
+      fileSize
       themes {
         id
         name
