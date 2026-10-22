@@ -184,6 +184,8 @@ export interface AddContentFormData {
   // Au metadata (görsel seçimi için)
   autoFillSourceId?: string;
   autoFillSource?: string; // tmdb_movie | tmdb_tv | igdb | googlebooks
+  // Preserve admin field locks when saving an explicit edit.
+  lockedFields?: string[];
 }
 
 // --- Default initial values ---
@@ -248,5 +250,6 @@ export const INITIAL_FORM_DATA: AddContentFormData = {
   citationsReceived: [],
   citationsMade: [],
   autoFillSourceId: '',
+  lockedFields: [],
   autoFillSource: '',
 };

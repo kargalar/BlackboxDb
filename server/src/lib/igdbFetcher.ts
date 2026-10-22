@@ -52,8 +52,12 @@ async function getAccessToken(): Promise<string> {
     grant_type: "client_credentials",
   });
 
-  const response = await fetch(`${TWITCH_TOKEN_URL}?${params}`, {
+  const response = await fetch(TWITCH_TOKEN_URL, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: params.toString(),
   });
 
   if (!response.ok) {
@@ -109,7 +113,7 @@ interface IgdbRawGame {
   total_rating?: number;
   total_rating_count?: number;
   aggregated_rating?: number;
-  category?: number; // 0=Main Game, 3=Bundle, etc.
+  game_type?: { id: number; type: string };
   cover?: { id: number; image_id: string; width?: number; height?: number };
   screenshots?: Array<{
     id: number;
@@ -129,12 +133,20 @@ interface IgdbRawGame {
   }>;
   age_ratings?: Array<{
     id: number;
-    category: number; // 1=ESRB, 2=PEGI
-    rating: number;
+    organization?: { id: number; name: string };
+    rating_category?: { id: number; rating: string };
   }>;
   videos?: Array<{ id: number; video_id: string; name?: string }>;
-  websites?: Array<{ id: number; category: number; url: string }>;
-  external_games?: Array<{ id: number; category: number; uid: string }>;
+  websites?: Array<{
+    id: number;
+    type?: { id: number; type: string };
+    url: string;
+  }>;
+  external_games?: Array<{
+    id: number;
+    external_game_source?: { id: number; name: string };
+    uid: string;
+  }>;
   artworks?: Array<{
     id: number;
     image_id: string;
@@ -162,24 +174,30 @@ interface IgdbRawGame {
   }>;
 }
 
+interface IgdbRawGameType {
+  id: number;
+  type: string;
+}
+
 // ─── ESRB rating mapping ───
 
-const ESRB_RATING_MAP: Record<number, string> = {
-  6: "RP",
-  7: "EC",
-  8: "E",
-  9: "E10+",
-  10: "T",
-  11: "M",
-  12: "AO",
+const ESRB_RATING_MAP: Record<string, string> = {
+  RP: "RP",
+  EC: "EC",
+  E: "E",
+  E10: "E10+",
+  "E10+": "E10+",
+  T: "T",
+  M: "M",
+  AO: "AO",
 };
 
-const PEGI_RATING_MAP: Record<number, string> = {
-  1: "PEGI 3",
-  2: "PEGI 7",
-  3: "PEGI 12",
-  4: "PEGI 16",
-  5: "PEGI 18",
+const PEGI_RATING_MAP: Record<string, string> = {
+  "3": "PEGI 3",
+  "7": "PEGI 7",
+  "12": "PEGI 12",
+  "16": "PEGI 16",
+  "18": "PEGI 18",
 };
 
 // ─── Normalized Result Interfaces ───
@@ -257,30 +275,77 @@ const GAME_MODE_NAMES = [
   "Battle Royale",
 ];
 
-const IGDB_MAIN_GAME_CATEGORY = 0;
+const SEARCHABLE_GAME_TYPE_NAMES = new Set([
+  "main game",
+  "remake",
+  "remaster",
+  "port",
+]);
+const IGDB_GAME_TYPE_LOOKUP_LIMIT = 500;
+const IGDB_MAX_SEARCH_LIMIT = 50;
+
+let searchableGameTypeIdsPromise: Promise<number[]> | null = null;
+
+async function getSearchableGameTypeIds(): Promise<number[]> {
+  if (!searchableGameTypeIdsPromise) {
+    searchableGameTypeIdsPromise = igdbRequest<IgdbRawGameType[]>(
+      "game_types",
+      `fields id,type; limit ${IGDB_GAME_TYPE_LOOKUP_LIMIT};`,
+    )
+      .then((gameTypes) => {
+        const ids = gameTypes
+          .filter((gameType) =>
+            SEARCHABLE_GAME_TYPE_NAMES.has(gameType.type.toLowerCase()),
+          )
+          .map((gameType) => gameType.id);
+
+        if (ids.length === 0) {
+          throw new Error("IGDB returned no searchable game types");
+        }
+
+        return ids;
+      })
+      .catch((error) => {
+        searchableGameTypeIdsPromise = null;
+        throw error;
+      });
+  }
+
+  return searchableGameTypeIdsPromise;
+}
 
 /**
  * Steam Store API'sinden sistem gereksinimlerinden disk/dosya boyutunu çeker
  */
-async function fetchSteamStorageSize(appId: string | number): Promise<string | undefined> {
+async function fetchSteamStorageSize(
+  appId: string | number,
+): Promise<string | undefined> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 4000);
-    const res = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appId}&l=english`, {
-      signal: controller.signal,
-      headers: { "Accept-Language": "en-US,en;q=0.9" },
-    });
+    const res = await fetch(
+      `https://store.steampowered.com/api/appdetails?appids=${appId}&l=english`,
+      {
+        signal: controller.signal,
+        headers: { "Accept-Language": "en-US,en;q=0.9" },
+      },
+    );
     clearTimeout(timeout);
     if (!res.ok) return undefined;
     const data = (await res.json()) as Record<
       string,
-      { success?: boolean; data?: { pc_requirements?: { minimum?: string; recommended?: string } } }
+      {
+        success?: boolean;
+        data?: { pc_requirements?: { minimum?: string; recommended?: string } };
+      }
     >;
     const appData = data[String(appId)];
     if (!appData?.success || !appData.data?.pc_requirements) return undefined;
 
     const reqs =
-      (appData.data.pc_requirements.minimum || "") + " " + (appData.data.pc_requirements.recommended || "");
+      (appData.data.pc_requirements.minimum || "") +
+      " " +
+      (appData.data.pc_requirements.recommended || "");
     const match = reqs.match(
       /(?:storage|hard drive|disk space|boş alan|depolama)[:\s]*(?:<[^>]*>\s*)*(?:ssd\s*)?(\d+(?:\.\d+)?)\s*(?:ssd\s*)?(GB|MB|TB)/i,
     );
@@ -288,7 +353,9 @@ async function fetchSteamStorageSize(appId: string | number): Promise<string | u
       return `${match[1]} ${match[2].toUpperCase()}`;
     }
   } catch (error) {
-    logger.debug(`[IgdbFetcher] Failed to fetch Steam storage size for appId=${appId}: ${error}`);
+    logger.debug(
+      `[IgdbFetcher] Failed to fetch Steam storage size for appId=${appId}: ${error}`,
+    );
   }
   return undefined;
 }
@@ -303,18 +370,22 @@ export async function searchIgdbGames(
   limit = 20,
   offset = 0,
 ): Promise<IgdbSearchItem[]> {
-  logger.info(`[IgdbFetcher] Searching games: "${query}" (limit=${limit}, offset=${offset})`);
+  logger.info(
+    `[IgdbFetcher] Searching games: "${query}" (limit=${limit}, offset=${offset})`,
+  );
 
   if (!getIgdbClientId() || !getIgdbClientSecret()) {
     throw new Error("IGDB credentials not configured");
   }
 
   try {
+    const escapedQuery = query.replace(/\\/g, "\\\\").replace(/\"/g, '\\"');
+    const gameTypeIds = await getSearchableGameTypeIds();
     const body = `
-      search "${query}";
+      search "${escapedQuery}";
       fields name, summary, first_release_date, total_rating, cover.image_id, platforms.name;
-      where category = (0, 8, 9, 11);
-      limit ${Math.min(Math.max(limit, 1), 50)};
+      where game_type = (${gameTypeIds.join(",")});
+      limit ${Math.min(Math.max(limit, 1), IGDB_MAX_SEARCH_LIMIT)};
       offset ${Math.max(offset, 0)};
     `;
 
@@ -362,10 +433,10 @@ export async function fetchIgdbGameDetails(
              game_engines.name,
              involved_companies.company.name,
              involved_companies.developer, involved_companies.publisher,
-             age_ratings.category, age_ratings.rating,
+             age_ratings.organization.name, age_ratings.rating_category.rating,
              videos.video_id, videos.name,
-             websites.category, websites.url,
-             external_games.category, external_games.uid,
+             websites.type.type, websites.url,
+             external_games.external_game_source.name, external_games.uid,
              player_perspectives.name,
              game_modes.name,
              collection.name,
@@ -401,21 +472,29 @@ export async function fetchIgdbGameDetails(
     // ESRB rating
     let esrbRating: string | undefined;
     if (game.age_ratings) {
-      const esrb = game.age_ratings.find((ar) => ar.category === 1);
+      const esrb = game.age_ratings.find(
+        (ar) => ar.organization?.name.toLowerCase() === "esrb",
+      );
       if (esrb) {
-        esrbRating = ESRB_RATING_MAP[esrb.rating] || undefined;
+        const rating = esrb.rating_category?.rating.toUpperCase();
+        esrbRating = rating ? ESRB_RATING_MAP[rating] : undefined;
       } else {
-        const pegi = game.age_ratings.find((ar) => ar.category === 2);
+        const pegi = game.age_ratings.find(
+          (ar) => ar.organization?.name.toLowerCase() === "pegi",
+        );
         if (pegi) {
-          esrbRating = PEGI_RATING_MAP[pegi.rating] || undefined;
+          const rating = pegi.rating_category?.rating;
+          esrbRating = rating ? PEGI_RATING_MAP[rating] : undefined;
         }
       }
     }
 
-    // Official website (category 1 = official)
+    // Official website
     let website: string | undefined;
     if (game.websites) {
-      const official = game.websites.find((w) => w.category === 1);
+      const official = game.websites.find(
+        (w) => w.type?.type.toLowerCase() === "official website",
+      );
       website = official?.url;
     }
 
@@ -425,10 +504,12 @@ export async function fetchIgdbGameDetails(
       trailerUrl = youtubeUrl(game.videos[0].video_id);
     }
 
-    // Steam App ID for disk size (from external_games category 1 or websites store.steampowered.com/app/)
+    // Steam App ID for disk size (from Steam external games or Steam website URLs)
     let steamAppId: string | undefined;
     if (game.external_games) {
-      const steamExt = game.external_games.find((eg) => eg.category === 1);
+      const steamExt = game.external_games.find(
+        (eg) => eg.external_game_source?.name.toLowerCase() === "steam",
+      );
       if (steamExt?.uid) {
         steamAppId = steamExt.uid;
       }
@@ -467,7 +548,10 @@ export async function fetchIgdbGameDetails(
     const isGameMode = (name: string) => {
       const normalized = name.toLowerCase().trim();
       return GAME_MODE_NAMES.some(
-        (gm) => gm.toLowerCase().trim() === normalized || normalized === "singleplayer" || normalized === "multiplayer"
+        (gm) =>
+          gm.toLowerCase().trim() === normalized ||
+          normalized === "singleplayer" ||
+          normalized === "multiplayer",
       );
     };
 

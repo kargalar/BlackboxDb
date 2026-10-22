@@ -349,6 +349,12 @@ export function useAddContentSubmit({
           : [];
       const patchInput = isEditMode && originalData ? buildPatchInput(input, changedKeys) : input;
 
+      // Explicit admin edits may update values protected from external API imports.
+      // Send the current lock list to preserve it while marking this as a manual edit.
+      if (isEditMode && canDirectCreate && originalData?.lockedFields?.length) {
+        patchInput.lockedFields = originalData.lockedFields;
+      }
+
       if (isEditMode && originalData) {
         console.log('PATCH INPUT TO SEND:', JSON.stringify(patchInput, null, 2));
       }

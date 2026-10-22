@@ -112,6 +112,7 @@ export function mapContentToFormData(data: any): AddContentFormData {
     posterUrl: data.posterUrl || '',
     backdropUrl: data.backdropUrl || '',
     autoSelectHighestVotedMedia: data.autoSelectHighestVotedMedia ?? true,
+    lockedFields: Array.isArray(data.lockedFields) ? data.lockedFields : [],
     images: data.images || [],
     status: data.status || 'finished',
     isContinuing: data.isContinuing || false,
