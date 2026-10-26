@@ -11,6 +11,7 @@ export interface TmdbRawSearchResult {
   release_date?: string;
   first_air_date?: string;
   vote_average?: number;
+  vote_count?: number;
   media_type?: string;
 }
 
@@ -25,6 +26,7 @@ export interface TmdbRawMovieDetail {
   backdrop_path?: string;
   status?: string;
   vote_average?: number;
+  vote_count?: number;
   budget?: number;
   revenue?: number;
   genres?: Array<{ id: number; name: string }>;
@@ -183,6 +185,7 @@ export interface TmdbSearchItem {
   posterPath?: string;
   releaseDate?: string;
   voteAverage?: number;
+  voteCount?: number;
   mediaType?: string;
 }
 
@@ -310,6 +313,7 @@ export interface TmdbDetailData {
   backdropPath?: string;
   status?: string;
   voteAverage?: number;
+  voteCount?: number;
   budget?: number;
   revenue?: number;
   mediaType?: string;

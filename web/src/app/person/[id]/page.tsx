@@ -21,6 +21,7 @@ import {
 import ReportModal from '@/components/organisms/ReportModal';
 import { Flag } from 'lucide-react';
 import InteractivePoster from '@/components/organisms/InteractivePoster';
+import { getPosterRating } from '@/lib/poster-rating';
 import {
   logContentWatch,
   unlogContentWatch,
@@ -250,9 +251,15 @@ export default function PersonPage() {
             valA = a.popularity || 0;
             valB = b.popularity || 0;
             break;
-          case 'rating': // system average rating? The interface does not include this right now, so we fall back to user rating
-            valA = itemStates[String(a.contentId)]?.rating ?? (a.userStatus?.rating || 0);
-            valB = itemStates[String(b.contentId)]?.rating ?? (b.userStatus?.rating || 0);
+          case 'rating':
+            valA =
+              getPosterRating(a)?.value ??
+              itemStates[String(a.contentId)]?.rating ??
+              (a.userStatus?.rating || 0);
+            valB =
+              getPosterRating(b)?.value ??
+              itemStates[String(b.contentId)]?.rating ??
+              (b.userStatus?.rating || 0);
             break;
           case 'title':
             valA = a.contentTitle?.toLowerCase() || '';

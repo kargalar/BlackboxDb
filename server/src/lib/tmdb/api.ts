@@ -74,7 +74,11 @@ export async function searchTmdb(
           ? `https://image.tmdb.org/t/p/w185${item.poster_path}`
           : undefined,
         releaseDate: item.release_date || item.first_air_date,
-        voteAverage: item.vote_average,
+        voteAverage:
+          typeof item.vote_count === "number" && item.vote_count > 20
+            ? item.vote_average
+            : undefined,
+        voteCount: item.vote_count,
         mediaType: type === "tv" ? "tv" : "movie",
       }));
 
@@ -219,7 +223,11 @@ export async function fetchTmdbMovieDetails(
         ? `https://image.tmdb.org/t/p/w1280${data.backdrop_path}`
         : undefined,
       status: data.status,
-      voteAverage: data.vote_average,
+      voteAverage:
+        typeof data.vote_count === "number" && data.vote_count > 20
+          ? data.vote_average
+          : undefined,
+      voteCount: data.vote_count,
       budget: data.budget,
       revenue: data.revenue,
       mediaType: "movie",
@@ -513,7 +521,11 @@ export async function fetchTmdbTvDetails(
         ? `https://image.tmdb.org/t/p/w1280${data.backdrop_path}`
         : undefined,
       status: data.status,
-      voteAverage: data.vote_average,
+      voteAverage:
+        typeof data.vote_count === "number" && data.vote_count > 20
+          ? data.vote_average
+          : undefined,
+      voteCount: data.vote_count,
       mediaType: "tv",
       genres: data.genres,
       spokenLanguages: data.spoken_languages?.map((l) => ({
@@ -625,6 +637,8 @@ export async function fetchTmdbProductionCompanies(
   }
 }
 
+export const MIN_TMDB_VOTE_COUNT = 20;
+
 export async function fetchTmdbRating(
   tmdbId: number,
   type: "movie" | "tv",
@@ -633,10 +647,15 @@ export async function fetchTmdbRating(
   logger.info(`[TmdbFetcher] Fetching rating for ${endpoint} tmdbId=${tmdbId}`);
 
   try {
-    const data = await tmdbFetch<{ vote_average?: number }>(
+    const data = await tmdbFetch<{ vote_average?: number; vote_count?: number }>(
       `/${endpoint}/${tmdbId}?language=en-US`,
     );
-    if (typeof data.vote_average === "number" && data.vote_average > 0) {
+    if (
+      typeof data.vote_count === "number" &&
+      data.vote_count > MIN_TMDB_VOTE_COUNT &&
+      typeof data.vote_average === "number" &&
+      data.vote_average > 0
+    ) {
       return Math.round(data.vote_average * 10) / 10;
     }
     return null;
@@ -661,12 +680,17 @@ export async function resolveAndCacheTmdbRating(
     releaseDate?: Date | null;
     firstAirDate?: Date | null;
   },
+  options?: { forceRefresh?: boolean },
 ): Promise<number | null> {
   if (content.contentTypeId !== 1 && content.contentTypeId !== 2) {
     return null;
   }
 
-  if (typeof content.tmdbRating === "number" && content.tmdbRating > 0) {
+  if (
+    !options?.forceRefresh &&
+    typeof content.tmdbRating === "number" &&
+    content.tmdbRating > 0
+  ) {
     return Math.round(content.tmdbRating * 10) / 10;
   }
 
@@ -707,32 +731,42 @@ export async function resolveAndCacheTmdbRating(
 
         if (bestMatch?.tmdbId) {
           resolvedTmdbId = bestMatch.tmdbId;
-          resolvedRating =
-            typeof bestMatch.voteAverage === "number" && bestMatch.voteAverage > 0
-              ? Math.round(bestMatch.voteAverage * 10) / 10
-              : await fetchTmdbRating(bestMatch.tmdbId, type);
+          if (typeof bestMatch.voteCount === "number") {
+            resolvedRating =
+              bestMatch.voteCount > MIN_TMDB_VOTE_COUNT &&
+              typeof bestMatch.voteAverage === "number" &&
+              bestMatch.voteAverage > 0
+                ? Math.round(bestMatch.voteAverage * 10) / 10
+                : null;
+          } else {
+            resolvedRating = await fetchTmdbRating(bestMatch.tmdbId, type);
+          }
         }
       }
     }
 
-    if (resolvedRating !== null) {
-      const updateData: Record<string, any> = { tmdbRating: resolvedRating };
+    const updateData: Record<string, any> = {};
+    const currentRating = content.tmdbRating ?? null;
+    if (resolvedRating !== currentRating) {
+      updateData.tmdbRating = resolvedRating;
+    }
 
-      if (!content.tmdbId && resolvedTmdbId) {
-        const existingWithTmdbId = await prisma.content.findFirst({
-          where: {
-            tmdbId: resolvedTmdbId,
-            contentTypeId: content.contentTypeId,
-            isDeleted: false,
-            id: { not: content.id },
-          },
-          select: { id: true },
-        });
-        if (!existingWithTmdbId) {
-          updateData.tmdbId = resolvedTmdbId;
-        }
+    if (!content.tmdbId && resolvedTmdbId) {
+      const existingWithTmdbId = await prisma.content.findFirst({
+        where: {
+          tmdbId: resolvedTmdbId,
+          contentTypeId: content.contentTypeId,
+          isDeleted: false,
+          id: { not: content.id },
+        },
+        select: { id: true },
+      });
+      if (!existingWithTmdbId) {
+        updateData.tmdbId = resolvedTmdbId;
       }
+    }
 
+    if (Object.keys(updateData).length > 0) {
       await prisma.content.update({
         where: { id: content.id },
         data: updateData,

@@ -139,15 +139,20 @@ const getContentTypeInfo = (contentTypeId: number) => {
   }
 };
 
-const calculateAverageRating = (distribution?: number[]) => {
-  if (!distribution?.length) return 0;
+const calculateAverageRating = (distribution?: number[], tmdbRating?: number | null) => {
+  if (distribution?.length) {
+    const totalVotes = distribution.reduce((sum, count) => sum + count, 0);
+    if (totalVotes > 0) {
+      const weightedSum = distribution.reduce((sum, count, index) => sum + count * (index + 1), 0);
+      return weightedSum / totalVotes;
+    }
+  }
 
-  const totalVotes = distribution.reduce((sum, count) => sum + count, 0);
-  if (totalVotes === 0) return 0;
+  if (tmdbRating != null && Number.isFinite(tmdbRating) && tmdbRating > 0) {
+    return tmdbRating;
+  }
 
-  const weightedSum = distribution.reduce((sum, count, index) => sum + count * (index + 1), 0);
-
-  return weightedSum / totalVotes;
+  return 0;
 };
 
 const compareNumberValues = (valueA: number, valueB: number, order: 'asc' | 'desc') => {
@@ -1277,8 +1282,8 @@ export default function ListDetailPage() {
 
         case 'rating': {
           const ratingComparison = compareNumberValues(
-            calculateAverageRating(a.content.ratingDistribution),
-            calculateAverageRating(b.content.ratingDistribution),
+            calculateAverageRating(a.content.ratingDistribution, a.content.tmdbRating),
+            calculateAverageRating(b.content.ratingDistribution, b.content.tmdbRating),
             sortOrder
           );
           if (ratingComparison !== 0) return ratingComparison;

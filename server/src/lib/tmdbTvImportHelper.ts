@@ -54,7 +54,10 @@ function buildTvUpdateData(details: TmdbDetailData) {
     }),
     tmdbId: details.tmdbId,
     tmdbRating:
-      typeof details.voteAverage === "number" && details.voteAverage > 0
+      typeof details.voteCount === "number" &&
+      details.voteCount > 20 &&
+      typeof details.voteAverage === "number" &&
+      details.voteAverage > 0
         ? Math.round(details.voteAverage * 10) / 10
         : null,
     languages:

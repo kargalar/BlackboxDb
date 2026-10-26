@@ -18,6 +18,7 @@ import { CompanyEditDialog, CompanyEditData } from '@/components/molecules/Compa
 import ReportModal from '@/components/organisms/ReportModal';
 import { Flag } from 'lucide-react';
 import InteractivePoster from '@/components/organisms/InteractivePoster';
+import { getPosterRating } from '@/lib/poster-rating';
 import {
   logContentWatch,
   unlogContentWatch,
@@ -144,8 +145,14 @@ export default function CompanyPage() {
             valB = b.popularity || 0;
             break;
           case 'rating':
-            valA = itemStates[String(a.contentId)]?.rating ?? (a.userStatus?.rating || 0);
-            valB = itemStates[String(b.contentId)]?.rating ?? (b.userStatus?.rating || 0);
+            valA =
+              getPosterRating(a)?.value ??
+              itemStates[String(a.contentId)]?.rating ??
+              (a.userStatus?.rating || 0);
+            valB =
+              getPosterRating(b)?.value ??
+              itemStates[String(b.contentId)]?.rating ??
+              (b.userStatus?.rating || 0);
             break;
           case 'title':
             valA = a.contentTitle?.toLowerCase() || '';

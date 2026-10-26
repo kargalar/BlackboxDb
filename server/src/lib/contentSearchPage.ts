@@ -116,7 +116,7 @@ export async function getContentSearchPage(
     );
   }
 
-  const averageRating = Prisma.sql`CASE WHEN c.total_rating_votes > 0 THEN COALESCE(c.total_rating_score, 0) / c.total_rating_votes ELSE 0 END`;
+  const averageRating = Prisma.sql`CASE WHEN c.total_rating_votes > 0 THEN COALESCE(c.total_rating_score, 0) / c.total_rating_votes ELSE COALESCE(c.tmdb_rating, 0) END`;
   if (options.ratingMin !== undefined)
     conditions.push(Prisma.sql`${averageRating} >= ${options.ratingMin}`);
   if (options.ratingMax !== undefined)
