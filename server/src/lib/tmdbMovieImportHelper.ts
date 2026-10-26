@@ -58,6 +58,10 @@ function buildMovieUpdateData(details: TmdbDetailData, franchiseId: string | nul
       releaseDate: details.releaseDate,
     }),
     tmdbId: details.tmdbId,
+    tmdbRating:
+      typeof details.voteAverage === "number" && details.voteAverage > 0
+        ? Math.round(details.voteAverage * 10) / 10
+        : null,
     franchiseId,
     languages:
       details.spokenLanguages

@@ -8,6 +8,7 @@
  * Artık tüm logic ortak component'lerde (ContentActionButtons, ContentBadges, useContentActions)
  */
 
+import type { PosterRatingData } from '@/lib/poster-rating';
 import MovieCard from '@/components/organisms/MovieCard';
 import TvCard from '@/components/organisms/TvCard';
 import BookCard from '@/components/organisms/BookCard';
@@ -16,7 +17,7 @@ import GameCard from '@/components/organisms/GameCard';
 // Types for different content
 type ContentType = 'movie' | 'tv' | 'game' | 'book' | string;
 
-interface BaseContent {
+interface BaseContent extends PosterRatingData {
   id: number | string;
   title?: string;
   name?: string;
@@ -46,6 +47,8 @@ interface InteractivePosterProps {
   isConsumed?: boolean;
   isFavorite?: boolean;
   isConsumeLater?: boolean;
+  watchLater?: boolean;
+  isWatchLater?: boolean;
   isContinuing?: boolean;
   isAbandoned?: boolean;
   viewerIsConsumed?: boolean;
@@ -80,6 +83,8 @@ export default function InteractivePoster({
   isConsumed = false,
   isFavorite = false,
   isConsumeLater = false,
+  watchLater,
+  isWatchLater,
   isContinuing = false,
   isAbandoned = false,
   viewerIsConsumed,
@@ -100,11 +105,17 @@ export default function InteractivePoster({
   context, // Ignore edilir, geriye dönük uyumluluk için
   hasReview = false,
 }: InteractivePosterProps) {
+  const activeConsumeLater = Boolean(
+    viewerIsConsumeLater || isConsumeLater || watchLater || isWatchLater
+  );
+
   // Content type'a göre doğru card component'ini kullan
   switch (contentType) {
     case 'movie': {
       // Movie için uygun formatı hazırla
       const movieContent = {
+        ratingDistribution: content.ratingDistribution,
+        tmdbRating: content.tmdbRating,
         id: String(content.id),
         title: content.title,
         name: content.name,
@@ -119,12 +130,12 @@ export default function InteractivePoster({
           subtitleOverride={subtitleOverride}
           isConsumed={isConsumed}
           isFavorite={isFavorite}
-          isConsumeLater={isConsumeLater}
+          isConsumeLater={activeConsumeLater}
           isContinuing={isContinuing}
           isAbandoned={isAbandoned}
           viewerIsConsumed={viewerIsConsumed}
           viewerIsFavorite={viewerIsFavorite}
-          viewerIsConsumeLater={viewerIsConsumeLater}
+          viewerIsConsumeLater={activeConsumeLater}
           viewerIsContinuing={viewerIsContinuing}
           viewerIsAbandoned={viewerIsAbandoned}
           userConsumeCount={userConsumeCount}
@@ -144,6 +155,8 @@ export default function InteractivePoster({
     case 'tv': {
       // TV için uygun formatı hazırla
       const tvContent = {
+        ratingDistribution: content.ratingDistribution,
+        tmdbRating: content.tmdbRating,
         id: String(content.id),
         name: content.name,
         title: content.title,
@@ -162,12 +175,12 @@ export default function InteractivePoster({
           subtitleOverride={subtitleOverride}
           isConsumed={isConsumed}
           isFavorite={isFavorite}
-          isConsumeLater={isConsumeLater}
+          isConsumeLater={activeConsumeLater}
           isContinuing={isContinuing}
           isAbandoned={isAbandoned}
           viewerIsConsumed={viewerIsConsumed}
           viewerIsFavorite={viewerIsFavorite}
-          viewerIsConsumeLater={viewerIsConsumeLater}
+          viewerIsConsumeLater={activeConsumeLater}
           viewerIsContinuing={viewerIsContinuing}
           viewerIsAbandoned={viewerIsAbandoned}
           userConsumeCount={userConsumeCount}
@@ -193,6 +206,8 @@ export default function InteractivePoster({
 
       // ID'yi string olarak koru - Number dönüşümü NaN'a yol açabilir
       const gameContent = {
+        ratingDistribution: content.ratingDistribution,
+        tmdbRating: content.tmdbRating,
         id: String(content.id),
         name: content.name || content.title || 'Unknown Game',
         posterUrl,
@@ -208,12 +223,12 @@ export default function InteractivePoster({
           subtitleOverride={subtitleOverride}
           isConsumed={isConsumed}
           isFavorite={isFavorite}
-          isConsumeLater={isConsumeLater}
+          isConsumeLater={activeConsumeLater}
           isContinuing={isContinuing}
           isAbandoned={isAbandoned}
           viewerIsConsumed={viewerIsConsumed}
           viewerIsFavorite={viewerIsFavorite}
-          viewerIsConsumeLater={viewerIsConsumeLater}
+          viewerIsConsumeLater={activeConsumeLater}
           viewerIsContinuing={viewerIsContinuing}
           viewerIsAbandoned={viewerIsAbandoned}
           userConsumeCount={userConsumeCount}
@@ -239,6 +254,8 @@ export default function InteractivePoster({
         content.poster_path;
 
       const bookContent = {
+        ratingDistribution: content.ratingDistribution,
+        tmdbRating: content.tmdbRating,
         id: String(content.id),
         title: content.volumeInfo?.title || content.title || content.name || 'Unknown Book',
         authors: content.authors,
@@ -254,12 +271,12 @@ export default function InteractivePoster({
           subtitleOverride={subtitleOverride}
           isConsumed={isConsumed}
           isFavorite={isFavorite}
-          isConsumeLater={isConsumeLater}
+          isConsumeLater={activeConsumeLater}
           isContinuing={isContinuing}
           isAbandoned={isAbandoned}
           viewerIsConsumed={viewerIsConsumed}
           viewerIsFavorite={viewerIsFavorite}
-          viewerIsConsumeLater={viewerIsConsumeLater}
+          viewerIsConsumeLater={activeConsumeLater}
           viewerIsContinuing={viewerIsContinuing}
           viewerIsAbandoned={viewerIsAbandoned}
           userConsumeCount={userConsumeCount}

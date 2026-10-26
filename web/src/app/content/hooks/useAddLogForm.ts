@@ -1,4 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
+import {
+  getRecentTags,
+  getRecentTaggedUsers,
+  rememberTags,
+  rememberTaggedUsers,
+  type TaggedUserSuggestion,
+} from '@/lib/log-suggestions';
 
 const EMPTY_SUPPORTED_PLATFORMS: Array<{ id: number; name: string }> = [];
 
@@ -31,8 +38,9 @@ export function useAddLogForm({
 
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [availableTags, setAvailableTags] = useState<string[]>([]);
-  const [previousTaggedUsers, setPreviousTaggedUsers] = useState<any[]>([]);
+  const [availableTags, setAvailableTags] = useState<string[]>(getRecentTags);
+  const [previousTaggedUsers, setPreviousTaggedUsers] =
+    useState<TaggedUserSuggestion[]>(getRecentTaggedUsers);
   const platforms = useMemo<Array<{ id: number; name: string }>>(
     () => supportedPlatforms ?? EMPTY_SUPPORTED_PLATFORMS,
     [supportedPlatforms]
@@ -120,7 +128,7 @@ export function useAddLogForm({
     try {
       const { getAllUserContentLogs } = await import('@/services/userContentService');
       const { data } = await getAllUserContentLogs(undefined, 1000);
-      const tags = new Set<string>();
+      const tags = new Set<string>(getRecentTags());
       if (data) {
         data.forEach((log: any) => {
           if (log.tags && Array.isArray(log.tags)) {
@@ -130,7 +138,8 @@ export function useAddLogForm({
           }
         });
       }
-      setAvailableTags(Array.from(tags).sort());
+      const sortedTags = Array.from(tags).filter(Boolean).sort();
+      setAvailableTags(rememberTags(sortedTags));
     } catch (err) {}
   };
 
@@ -139,6 +148,9 @@ export function useAddLogForm({
       const { getAllUserContentLogs } = await import('@/services/userContentService');
       const { data } = await getAllUserContentLogs(undefined, 1000);
       const usersMap = new Map<string, any>();
+      getRecentTaggedUsers().forEach((u: any) => {
+        if (u.id || u.username) usersMap.set(u.id || u.username, u);
+      });
       if (data) {
         data.forEach((log: any) => {
           if (log.taggedUsers && Array.isArray(log.taggedUsers)) {
@@ -166,7 +178,8 @@ export function useAddLogForm({
           }
         });
       }
-      setPreviousTaggedUsers(Array.from(usersMap.values()));
+      const userList = Array.from(usersMap.values());
+      setPreviousTaggedUsers(rememberTaggedUsers(userList));
     } catch (err) {}
   };
 
@@ -233,11 +246,24 @@ export function useAddLogForm({
       taggedUsersObj: [...data.taggedUsers, ...initialCustomUsers],
     });
     setError(null);
-    if (contentId) {
+    if (isOpen) {
       loadAvailableTags();
       loadPreviousTaggedUsers();
     }
   }, [contentId, initialDataKey, isOpen]);
+
+  const handleTagsChange = (tags: string) => {
+    setFormData((previous) => ({ ...previous, tags }));
+    setAvailableTags(rememberTags(tags.split(',')));
+  };
+
+  const handleTaggedUserAdd = (user: TaggedUserSuggestion) => {
+    setFormData((previous) => ({
+      ...previous,
+      taggedUsersObj: [...previous.taggedUsersObj, user],
+    }));
+    setPreviousTaggedUsers(rememberTaggedUsers([user]));
+  };
 
   const handleSave = async () => {
     const hasStatus =
@@ -294,6 +320,10 @@ export function useAddLogForm({
           .filter((u: any) => !u.isCustom)
           .map((u: any) => u.id),
       };
+
+      setAvailableTags(rememberTags(existingTags));
+      setPreviousTaggedUsers(rememberTaggedUsers(formData.taggedUsersObj));
+
       await onSave(finalData);
       onClose();
       setFormData({
@@ -339,5 +369,7 @@ export function useAddLogForm({
     handleToggleFavorite,
     handleRatingChange,
     handleSave,
+    handleTagsChange,
+    handleTaggedUserAdd,
   };
 }

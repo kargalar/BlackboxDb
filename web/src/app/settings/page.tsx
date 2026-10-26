@@ -78,7 +78,7 @@ const NOTIFICATION_OPTIONS = [
 export default function SettingsPage() {
   const letterboxdExportT = useTranslations('LetterboxdExport');
   const settingsT = useTranslations('Settings');
-  const { user } = useAuth();
+  const { user, updateUserPreferences } = useAuth();
   const [activeTab, setActiveTab] = useState<SettingsTab>('data');
   const [isExporting, setIsExporting] = useState(false);
   const [isLetterboxdExporting, setIsLetterboxdExporting] = useState(false);
@@ -94,6 +94,7 @@ export default function SettingsPage() {
   const [gridRows, setGridRows] = useState(4);
   const [posterZoomEnabled, setPosterZoomEnabled] = useState(true);
   const [posterIconsBelow, setPosterIconsBelow] = useState(true);
+  const [posterRatingEnabled, setPosterRatingEnabled] = useState(false);
   const [showSensitiveContent, setShowSensitiveContent] = useState(false);
   const [preferredGamePlatformIds, setPreferredGamePlatformIds] = useState<number[]>([]);
   const [splitHomePopularSections, setSplitHomePopularSections] = useState(false);
@@ -146,6 +147,7 @@ export default function SettingsPage() {
       setGridRows(user.gridRows || 4);
       setPosterZoomEnabled(user.posterZoomEnabled !== false);
       setPosterIconsBelow(user.posterIconsBelow !== false);
+      setPosterRatingEnabled(user.posterRatingEnabled === true);
       setShowSensitiveContent(user.showSensitiveContent === true);
       setPreferredGamePlatformIds(
         user.preferredGamePlatformIds?.length
@@ -175,7 +177,9 @@ export default function SettingsPage() {
   const savePreferences = useCallback(async () => {
     if (!user) return;
     try {
-      await apolloClient.mutate({
+      const { data } = await apolloClient.mutate<{
+        updatePreferences: { posterRatingEnabled: boolean };
+      }>({
         mutation: UPDATE_PREFERENCES,
         variables: {
           preferredContentTypes: selectedContentTypes,
@@ -183,6 +187,7 @@ export default function SettingsPage() {
           gridRows,
           posterZoomEnabled,
           posterIconsBelow,
+          posterRatingEnabled,
           showSensitiveContent,
           preferredGamePlatformId: preferredGamePlatformIds[0] ?? null,
           preferredGamePlatformIds,
@@ -198,6 +203,10 @@ export default function SettingsPage() {
           notifyOnRoleUpdates,
         },
       });
+      if (posterRatingEnabled !== (user.posterRatingEnabled === true)) {
+        hasLoadedPrefs.current = false;
+        if (data?.updatePreferences) updateUserPreferences(data.updatePreferences);
+      }
       toast.success('Preferences saved');
     } catch (error) {
       toast.error('Failed to save preferences');
@@ -210,6 +219,8 @@ export default function SettingsPage() {
     gridRows,
     posterZoomEnabled,
     posterIconsBelow,
+    posterRatingEnabled,
+    updateUserPreferences,
     showSensitiveContent,
     preferredGamePlatformIds,
     splitHomePopularSections,
@@ -691,6 +702,36 @@ export default function SettingsPage() {
                     {row}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            <div className="glass-card p-6">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h2 id="poster-rating-label" className="text-xl font-semibold mb-1">
+                    {settingsT('posterRating')}
+                  </h2>
+                  <p id="poster-rating-description" className="text-white/50 text-sm">
+                    {settingsT('posterRatingDesc')}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={posterRatingEnabled}
+                  aria-labelledby="poster-rating-label"
+                  aria-describedby="poster-rating-description"
+                  onClick={() => setPosterRatingEnabled((previous) => !previous)}
+                  className={`relative w-14 h-7 shrink-0 rounded-full transition-colors duration-200 ${
+                    posterRatingEnabled ? 'bg-blue-500' : 'bg-white/20'
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform duration-200 ${
+                      posterRatingEnabled ? 'translate-x-7' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
               </div>
             </div>
 

@@ -78,6 +78,7 @@ const CONTENT_FIELDS = `
   pageCount
   languages
   ratingDistribution
+  tmdbRating
   discussionCount
   consumeCount
   favoriteCount

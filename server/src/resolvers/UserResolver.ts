@@ -278,6 +278,8 @@ export class UserResolver {
     posterZoomEnabled?: boolean,
     @Arg("posterIconsBelow", () => Boolean, { nullable: true })
     posterIconsBelow?: boolean,
+    @Arg("posterRatingEnabled", () => Boolean, { nullable: true })
+    posterRatingEnabled?: boolean,
     @Arg("showSensitiveContent", () => Boolean, { nullable: true })
     showSensitiveContent?: boolean,
     @Arg("preferredGamePlatformId", () => Int, { nullable: true })
@@ -325,6 +327,8 @@ export class UserResolver {
       data.posterZoomEnabled = posterZoomEnabled;
     if (posterIconsBelow !== undefined)
       data.posterIconsBelow = posterIconsBelow;
+    if (posterRatingEnabled !== undefined)
+      data.posterRatingEnabled = posterRatingEnabled;
     if (showSensitiveContent !== undefined)
       data.showSensitiveContent = showSensitiveContent;
     if (preferredGamePlatformId !== undefined)

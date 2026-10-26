@@ -286,6 +286,9 @@ export class Content {
   @Field(() => [Int], { nullable: true })
   ratingDistribution?: number[]; // [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
 
+  @Field(() => Float, { nullable: true })
+  tmdbRating?: number;
+
   // Images - posterUrl and backdropUrl are computed from ContentImage via FieldResolver
   @Field(() => String, { nullable: true })
   posterUrl?: string;

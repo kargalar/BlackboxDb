@@ -625,6 +625,129 @@ export async function fetchTmdbProductionCompanies(
   }
 }
 
+export async function fetchTmdbRating(
+  tmdbId: number,
+  type: "movie" | "tv",
+): Promise<number | null> {
+  const endpoint = type === "tv" ? "tv" : "movie";
+  logger.info(`[TmdbFetcher] Fetching rating for ${endpoint} tmdbId=${tmdbId}`);
+
+  try {
+    const data = await tmdbFetch<{ vote_average?: number }>(
+      `/${endpoint}/${tmdbId}?language=en-US`,
+    );
+    if (typeof data.vote_average === "number" && data.vote_average > 0) {
+      return Math.round(data.vote_average * 10) / 10;
+    }
+    return null;
+  } catch (error) {
+    logger.error(
+      `[TmdbFetcher] Rating fetch failed for ${endpoint} tmdbId=${tmdbId}`,
+      error,
+    );
+    return null;
+  }
+}
+
+export async function resolveAndCacheTmdbRating(
+  prisma: any,
+  content: {
+    id: string;
+    contentTypeId: number;
+    tmdbId?: number | null;
+    tmdbRating?: number | null;
+    title: string;
+    originalTitle?: string | null;
+    releaseDate?: Date | null;
+    firstAirDate?: Date | null;
+  },
+): Promise<number | null> {
+  if (content.contentTypeId !== 1 && content.contentTypeId !== 2) {
+    return null;
+  }
+
+  if (typeof content.tmdbRating === "number" && content.tmdbRating > 0) {
+    return Math.round(content.tmdbRating * 10) / 10;
+  }
+
+  const type = content.contentTypeId === 2 ? "tv" : "movie";
+  let resolvedTmdbId: number | null = content.tmdbId ?? null;
+  let resolvedRating: number | null = null;
+
+  try {
+    if (resolvedTmdbId) {
+      resolvedRating = await fetchTmdbRating(resolvedTmdbId, type);
+    } else {
+      const rawDate = content.firstAirDate || content.releaseDate;
+      const year = rawDate ? new Date(rawDate).getFullYear() : undefined;
+      const validYear = year && !Number.isNaN(year) ? year : undefined;
+      const searchTitle = (content.originalTitle || content.title || "").trim();
+
+      if (searchTitle) {
+        let results = await searchTmdb(searchTitle, type, validYear);
+        if (
+          results.length === 0 &&
+          content.originalTitle &&
+          content.title &&
+          content.originalTitle !== content.title
+        ) {
+          results = await searchTmdb(content.title.trim(), type, validYear);
+        }
+        if (results.length === 0 && validYear) {
+          results = await searchTmdb(searchTitle, type);
+        }
+
+        const normalizedTarget = searchTitle.toLowerCase();
+        const bestMatch =
+          results.find(
+            (r) =>
+              r.title?.toLowerCase() === normalizedTarget ||
+              r.originalTitle?.toLowerCase() === normalizedTarget,
+          ) || results[0];
+
+        if (bestMatch?.tmdbId) {
+          resolvedTmdbId = bestMatch.tmdbId;
+          resolvedRating =
+            typeof bestMatch.voteAverage === "number" && bestMatch.voteAverage > 0
+              ? Math.round(bestMatch.voteAverage * 10) / 10
+              : await fetchTmdbRating(bestMatch.tmdbId, type);
+        }
+      }
+    }
+
+    if (resolvedRating !== null) {
+      const updateData: Record<string, any> = { tmdbRating: resolvedRating };
+
+      if (!content.tmdbId && resolvedTmdbId) {
+        const existingWithTmdbId = await prisma.content.findFirst({
+          where: {
+            tmdbId: resolvedTmdbId,
+            contentTypeId: content.contentTypeId,
+            isDeleted: false,
+            id: { not: content.id },
+          },
+          select: { id: true },
+        });
+        if (!existingWithTmdbId) {
+          updateData.tmdbId = resolvedTmdbId;
+        }
+      }
+
+      await prisma.content.update({
+        where: { id: content.id },
+        data: updateData,
+      });
+    }
+  } catch (error) {
+    logger.warn(
+      `[TmdbFetcher] Failed to resolve/cache TMDB rating for content ${content.id}`,
+      error,
+    );
+  }
+
+  return resolvedRating;
+}
+
 // ─── Image browsing ───
 
 interface TmdbRawImagesResponse {

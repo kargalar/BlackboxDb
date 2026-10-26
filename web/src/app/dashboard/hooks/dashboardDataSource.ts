@@ -29,6 +29,8 @@ export async function fetchPopularContent(
             releaseDate
             description
             posterUrl
+            ratingDistribution
+            tmdbRating
             backdropUrl
             runtime
             status
@@ -83,6 +85,8 @@ export async function fetchMostAnticipatedUpcomingContent(
               releaseDate
               description
               posterUrl
+              ratingDistribution
+              tmdbRating
               backdropUrl
               runtime
               status

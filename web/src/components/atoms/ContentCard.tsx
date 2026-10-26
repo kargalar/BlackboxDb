@@ -3,6 +3,8 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { cn } from '@/lib/utils';
 import PosterCard from './PosterCard';
+import { getPosterRating, type PosterRatingData } from '@/lib/poster-rating';
+import { formatRating } from '@/lib/formatRating';
 import PosterZoomPreview from '@/components/molecules/PosterZoomPreview';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 
@@ -22,6 +24,7 @@ export type ContentCardProps = {
   size?: Size;
   className?: string;
   overlay?: React.ReactNode; // actions overlay shown on hover
+  communityRating?: PosterRatingData;
   rightTop?: React.ReactNode; // badges at top-right
   useNextImage?: boolean; // pass to PosterCard
   aspectClassName?: string; // e.g. 'aspect-square' or 'aspect-[2/3]'
@@ -40,11 +43,14 @@ export function ContentCard({
   className,
   overlay,
   rightTop,
+  communityRating,
   useNextImage = true,
   aspectClassName,
 }: ContentCardProps) {
   const sz = sizeMap[size];
-  const { posterZoomEnabled, posterIconsBelow } = useUserPreferences();
+  const { posterZoomEnabled, posterIconsBelow, posterRatingEnabled } = useUserPreferences();
+  const posterRating =
+    posterRatingEnabled && communityRating ? getPosterRating(communityRating) : null;
 
   return (
     <PosterZoomPreview src={posterSrc} alt={title} enabled={posterZoomEnabled}>
@@ -70,6 +76,16 @@ export function ContentCard({
               </div>
             }
           />
+
+          {posterRating && (
+            <div
+              className="pointer-events-none absolute right-2 top-2 z-10 flex items-center gap-1 rounded-md bg-black/80 px-2 py-1 text-xs font-semibold text-white shadow"
+              aria-label={`${posterRating.source}: ${formatRating(posterRating.value)}/10`}
+            >
+              <span className="text-[10px] text-white/70">{posterRating.source}</span>
+              <span>{formatRating(posterRating.value)}</span>
+            </div>
+          )}
 
           {/* Badges ON poster (when posterIconsBelow is false) */}
           {!posterIconsBelow && rightTop && <div className="content-card-rating">{rightTop}</div>}

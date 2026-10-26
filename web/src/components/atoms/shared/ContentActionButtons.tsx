@@ -12,7 +12,6 @@
 
 import React from 'react';
 import { EyeIconSolid } from '@/components/atoms/icons/EyeIcon';
-import { CheckIcon } from '@/components/atoms/icons/CheckIcon';
 import { HeartIcon } from '@/components/atoms/icons/HeartIcon';
 import { ListIcon } from '@/components/atoms/icons/SidebarIcons';
 import { BookmarkIcon } from '@/components/atoms/icons/BookmarkIcon';
@@ -35,6 +34,8 @@ interface ContentActionButtonsProps {
   isConsumed?: boolean;
   isFavorite?: boolean;
   isConsumeLater?: boolean;
+  watchLater?: boolean;
+  isWatchLater?: boolean;
   isContinuing?: boolean;
   isAbandoned?: boolean;
   isInList?: boolean; // True if content is in any user list
@@ -74,6 +75,8 @@ export function ContentActionButtons({
   isConsumed = false,
   isFavorite = false,
   isConsumeLater = false,
+  watchLater,
+  isWatchLater,
   isContinuing = false,
   isAbandoned = false,
   isInList = false,
@@ -85,29 +88,16 @@ export function ContentActionButtons({
 }: ContentActionButtonsProps) {
   const sizeClass = sizeClasses[size];
   const labels = actionLabels[actionType];
+  const isWatchLaterActive = Boolean(isConsumeLater || watchLater || isWatchLater);
 
-  // Debug: Component render edildiğinde log
-  React.useEffect(() => {
-    console.log('🎬 ContentActionButtons render edildi:', {
-      size,
-      actionType,
-      contentType,
-      isConsumed,
-      isFavorite,
-      isConsumeLater,
-    });
-  }, [size, actionType, contentType, isConsumed, isFavorite, isConsumeLater]);
-
+  const inactiveButtonClass = 'bg-black/60 text-white';
   return (
-    <div
-      className="flex gap-2"
-      onMouseEnter={() => console.log('🖱️ Action buttons üzerine gelindi')}
-    >
+    <div className="flex gap-2">
       {/* Watch/Read/Play Button */}
       <button
         onClick={onWatch}
-        className={`${sizeClass.buttons} flex items-center justify-center rounded-full backdrop-blur-sm text-white ${
-          isConsumed ? 'bg-green-600 hover:bg-green-700' : 'bg-black/60 hover:bg-black/70'
+        className={`${sizeClass.buttons} flex items-center justify-center rounded-full backdrop-blur-sm poster-action-button ${
+          isConsumed ? 'bg-green-600 text-white' : inactiveButtonClass
         } transition-colors`}
         title={isConsumed ? labels.watched : labels.notWatched}
       >
@@ -117,8 +107,8 @@ export function ContentActionButtons({
       {/* Favorite Button */}
       <button
         onClick={onToggleFavorite}
-        className={`${sizeClass.buttons} flex items-center justify-center rounded-full backdrop-blur-sm text-white ${
-          isFavorite ? 'bg-red-600 hover:bg-red-700' : 'bg-black/60 hover:bg-black/70'
+        className={`${sizeClass.buttons} flex items-center justify-center rounded-full backdrop-blur-sm poster-action-button ${
+          isFavorite ? 'bg-red-600 text-white' : inactiveButtonClass
         } transition-colors`}
         title={isFavorite ? 'Favoriden Çıkar' : 'Favori'}
       >
@@ -127,21 +117,22 @@ export function ContentActionButtons({
 
       {/* Watchlist Button */}
       <button
+        aria-pressed={isWatchLaterActive}
         onClick={onToggleWatchlist}
-        className={`${sizeClass.buttons} flex items-center justify-center rounded-full backdrop-blur-sm text-white ${
-          isConsumeLater ? 'bg-blue-600 hover:bg-blue-700' : 'bg-black/60 hover:bg-black/70'
+        className={`${sizeClass.buttons} flex items-center justify-center rounded-full backdrop-blur-sm poster-action-button ${
+          isWatchLaterActive ? 'poster-watch-later-active text-white' : inactiveButtonClass
         } transition-colors`}
-        title={isConsumeLater ? 'Sonra İzle Listesinden Çıkar' : 'Sonra İzle'}
+        title={isWatchLaterActive ? 'Sonra İzle Listesinden Çıkar' : 'Sonra İzle'}
       >
-        <BookmarkIcon className={sizeClass.icons} />
+        <BookmarkIcon className={sizeClass.icons} solid={isWatchLaterActive} />
       </button>
 
       {/* Add to List Button */}
       {onAddToList && (
         <button
           onClick={onAddToList}
-          className={`${sizeClass.buttons} flex items-center justify-center rounded-full backdrop-blur-sm text-white ${
-            isInList ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-black/60 hover:bg-black/70'
+          className={`${sizeClass.buttons} flex items-center justify-center rounded-full backdrop-blur-sm poster-action-button ${
+            isInList ? 'bg-yellow-600 text-white' : inactiveButtonClass
           } transition-colors`}
           title={isInList ? 'Listede' : 'Listeye Ekle'}
         >

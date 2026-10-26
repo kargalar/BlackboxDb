@@ -80,6 +80,8 @@ export const GET_FRANCHISE_CONTENT = gql`
       releaseDate
       posterUrl
       runtime
+      ratingDistribution
+      tmdbRating
       contentTypeId
       contentType {
         id

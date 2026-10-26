@@ -61,6 +61,9 @@ export class AppUser {
   posterIconsBelow?: boolean;
 
   @Field(() => Boolean, { nullable: true })
+  posterRatingEnabled?: boolean;
+
+  @Field(() => Boolean, { nullable: true })
   showSensitiveContent?: boolean;
 
   @Field(() => Boolean, { nullable: true })

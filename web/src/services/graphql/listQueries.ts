@@ -58,6 +58,7 @@ export const LIST_ITEM_FIELDS = gql`
       consumeCount
       favoriteCount
       ratingDistribution
+      tmdbRating
       contentType {
         id
         name

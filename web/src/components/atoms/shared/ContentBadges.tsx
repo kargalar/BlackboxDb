@@ -53,6 +53,8 @@ interface StatusBadgesProps {
   isConsumed?: boolean;
   isFavorite?: boolean;
   isConsumeLater?: boolean;
+  watchLater?: boolean;
+  isWatchLater?: boolean;
   isContinuing?: boolean;
   isAbandoned?: boolean;
   hasReview?: boolean;
@@ -77,14 +79,18 @@ export function StatusBadges({
   isConsumed = false,
   isFavorite = false,
   isConsumeLater = false,
+  watchLater,
+  isWatchLater,
   isContinuing = false,
   isAbandoned = false,
   hasReview = false,
   userConsumeCount,
   transparent = false,
 }: StatusBadgesProps) {
+  const isWatchLaterActive = Boolean(isConsumeLater || watchLater || isWatchLater);
+
   // Hiç badge yoksa null döndür
-  if (!isConsumed && !isFavorite && !isConsumeLater && !isContinuing && !isAbandoned && !hasReview)
+  if (!isConsumed && !isFavorite && !isWatchLaterActive && !isContinuing && !isAbandoned && !hasReview)
     return null;
 
   const iconSize = iconSizeClasses[size];
@@ -159,9 +165,14 @@ export function StatusBadges({
       )}
 
       {/* Watchlist Badge */}
-      {isConsumeLater && (
-        <div className={`rounded-full flex items-center justify-center ${bgClass}`}>
-          <BookmarkIcon className={`${iconSize} ${textClass}`} />
+      {isWatchLaterActive && (
+        <div
+          className={`rounded-full flex items-center justify-center ${
+            transparent ? 'text-blue-400' : 'bg-blue-600/80 backdrop-blur-sm p-1 text-white'
+          }`}
+          title="Sonra İzle"
+        >
+          <BookmarkIcon className={iconSize} solid />
         </div>
       )}
 
@@ -185,6 +196,8 @@ interface ContentBadgesContainerProps {
   isConsumed?: boolean;
   isFavorite?: boolean;
   isConsumeLater?: boolean;
+  watchLater?: boolean;
+  isWatchLater?: boolean;
   isContinuing?: boolean;
   isAbandoned?: boolean;
   hasReview?: boolean;
@@ -204,6 +217,8 @@ export function ContentBadgesContainer({
   isConsumed = false,
   isFavorite = false,
   isConsumeLater = false,
+  watchLater,
+  isWatchLater,
   isContinuing = false,
   isAbandoned = false,
   hasReview = false,
@@ -222,6 +237,8 @@ export function ContentBadgesContainer({
       isConsumed={isConsumed}
       isFavorite={isFavorite}
       isConsumeLater={isConsumeLater}
+      watchLater={watchLater}
+      isWatchLater={isWatchLater}
       isContinuing={isContinuing}
       isAbandoned={isAbandoned}
       hasReview={hasReview}

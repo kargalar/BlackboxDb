@@ -471,7 +471,7 @@ body {
 }
 
 .content-card-action-btn:hover {
-  background: rgb(var(--accent-purple));
+  background: rgba(59, 130, 246, 0.4);
   transform: scale(1.1);
 }
 
@@ -997,12 +997,16 @@ body {
   background: #10131a;
   isolation: isolate;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .dashboard-hero:hover {
   border-color: rgba(168, 85, 247, 0.35);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45), 0 0 25px rgba(168, 85, 247, 0.12);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.45),
+    0 0 25px rgba(168, 85, 247, 0.12);
 }
 
 .dashboard-hero-skeleton {
@@ -1524,4 +1528,15 @@ body {
   .landing-hero p:not(.landing-eyebrow) {
     font-size: 1rem;
   }
+}
+
+/* Poster actions retain their blue feedback across every theme. */
+.poster-watch-later-active {
+  background-color: #2563eb;
+}
+
+.poster-action-button:hover,
+.poster-action-button:focus-visible {
+  background-color: #bfdbfe;
+  color: #1e3a8a;
 }

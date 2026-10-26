@@ -53,6 +53,10 @@ function buildTvUpdateData(details: TmdbDetailData) {
       inProduction: details.inProduction,
     }),
     tmdbId: details.tmdbId,
+    tmdbRating:
+      typeof details.voteAverage === "number" && details.voteAverage > 0
+        ? Math.round(details.voteAverage * 10) / 10
+        : null,
     languages:
       details.spokenLanguages
         ?.map((language) => language.englishName || language.name || "")

@@ -101,6 +101,7 @@ export const GET_ME = gql`
       gridRows
       posterZoomEnabled
       posterIconsBelow
+      posterRatingEnabled
       showSensitiveContent
       preferredGamePlatformId
       preferredGamePlatformIds
@@ -247,6 +248,7 @@ export const UPDATE_PREFERENCES = gql`
     $gridRows: Int
     $posterZoomEnabled: Boolean
     $posterIconsBelow: Boolean
+    $posterRatingEnabled: Boolean
     $showSensitiveContent: Boolean
     $preferredGamePlatformId: Int
     $preferredGamePlatformIds: [Int!]
@@ -267,6 +269,7 @@ export const UPDATE_PREFERENCES = gql`
       gridRows: $gridRows
       posterZoomEnabled: $posterZoomEnabled
       posterIconsBelow: $posterIconsBelow
+      posterRatingEnabled: $posterRatingEnabled
       showSensitiveContent: $showSensitiveContent
       preferredGamePlatformId: $preferredGamePlatformId
       preferredGamePlatformIds: $preferredGamePlatformIds
@@ -287,6 +290,7 @@ export const UPDATE_PREFERENCES = gql`
       gridRows
       posterZoomEnabled
       posterIconsBelow
+      posterRatingEnabled
       showSensitiveContent
       preferredGamePlatformId
       preferredGamePlatformIds

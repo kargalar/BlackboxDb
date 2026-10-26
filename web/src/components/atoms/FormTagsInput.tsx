@@ -45,20 +45,17 @@ export function FormTagsInput({
     .map((t) => t.trim())
     .filter(Boolean);
 
-  const filteredSuggestions = useMemo(() => {
-    const currentTags = value
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean);
+  const suggestedChips = useMemo(() => {
     const visibleSuggestedTags = suggestedTags.filter((tag) => !hiddenTags.includes(tag));
-    const normalizedInput = currentInput.toLowerCase();
+    return visibleSuggestedTags.filter((tag) => !parsedTags.includes(tag));
+  }, [suggestedTags, hiddenTags, parsedTags]);
 
-    return visibleSuggestedTags.filter(
-      (tag) =>
-        !currentTags.includes(tag) &&
-        (normalizedInput.length === 0 || tag.toLowerCase().includes(normalizedInput))
-    );
-  }, [currentInput, value, suggestedTags, hiddenTags]);
+  const filteredSuggestions = useMemo(() => {
+    const normalizedInput = currentInput.trim().toLowerCase();
+    if (normalizedInput.length === 0) return [];
+
+    return suggestedChips.filter((tag) => tag.toLowerCase().includes(normalizedInput));
+  }, [currentInput, suggestedChips]);
 
   // Click outside
   useEffect(() => {
@@ -91,6 +88,7 @@ export function FormTagsInput({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
+    setShowSuggestions(true);
     // Virgül yazıldığında, yeni etiketi otomatik ekle
     if (val.includes(',')) {
       const parts = val.split(',');
@@ -187,11 +185,11 @@ export function FormTagsInput({
           }`}
         />
 
-        {/* Önceki Etiketler Dropdown */}
-        {showSuggestions && filteredSuggestions.length > 0 && (
+        {/* Yazarken Eşleşen Etiketler Dropdown */}
+        {showSuggestions && currentInput.trim().length > 0 && filteredSuggestions.length > 0 && (
           <div className="absolute z-50 w-full mt-1 bg-surface-raised border border-[#2d323b] rounded-lg shadow-xl overflow-hidden shadow-black/50">
             <div className="px-4 py-2 text-xs font-semibold text-neutral-500 bg-neutral-900/50 border-b border-[#2d323b]">
-              Daha Önce Kullanılan Etiketler
+              Eşleşen Etiketler
             </div>
             <ul className="max-h-48 overflow-y-auto">
               {filteredSuggestions.map((tag, index) => (
@@ -207,6 +205,7 @@ export function FormTagsInput({
                     <span className="text-sm font-medium text-neutral-200">{tag}</span>
                   </div>
                   <button
+                    type="button"
                     onClick={(e) => handleHideTag(e, tag)}
                     title="Etiketi tamamen sil"
                     className="opacity-0 group-hover:opacity-100 p-1.5 text-[#ef4444] hover:bg-[#ef4444]/10 rounded transition-all"
@@ -223,6 +222,34 @@ export function FormTagsInput({
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {/* Textfield Altında Gösterilen Öneri Chip'leri */}
+        {suggestedChips.length > 0 && (
+          <div className="mt-2.5">
+            <span className="block text-xs text-neutral-400 font-medium mb-1.5">
+              Önerilen Etiketler:
+            </span>
+            <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+              {suggestedChips.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => addTag(tag)}
+                  className="group inline-flex items-center gap-1.5 bg-surface-raised hover:bg-violet-950/40 border border-[#2d323b] hover:border-violet-500/40 rounded-full px-2.5 py-1 text-xs text-neutral-300 hover:text-violet-200 transition-all cursor-pointer"
+                  title={`"${tag}" etiketini ekle`}
+                >
+                  <span className="w-3.5 h-3.5 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center text-[9px] font-bold">
+                    #
+                  </span>
+                  <span>{tag}</span>
+                  <span className="text-[10px] text-neutral-500 group-hover:text-violet-300 font-bold">
+                    +
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>

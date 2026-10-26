@@ -798,6 +798,7 @@
       "old": "Old",
       "noUsers": "No user found who gave this rating",
       "average": "avg.",
+      "tmdb": "TMDB",
       "points": "{count} points"
     }
   },
@@ -2140,6 +2141,8 @@
     "mediaBreakdown": "Medyaya Göre Dağılım"
   },
   "Settings": {
+    "posterRating": "Poster Puanlarını Göster",
+    "posterRatingDesc": "Posterlerin sağ üstünde AVG puanını göster. AVG puanı yoksa otomatik olarak TMDB puanı gösterilir.",
     "sensitiveContent": "Sensitive Content",
     "sensitiveContentDesc": "Show sensitive content",
     "resetTrackingData": "Takip Verilerini Sıfırla",

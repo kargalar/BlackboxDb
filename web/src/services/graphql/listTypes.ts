@@ -36,6 +36,7 @@ export interface UserListItem {
     consumeCount: number;
     favoriteCount: number;
     ratingDistribution?: number[];
+    tmdbRating?: number | null;
     contentType: UserListContentType;
   };
 }

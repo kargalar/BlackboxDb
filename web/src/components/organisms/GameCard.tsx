@@ -7,11 +7,12 @@
 
 import type { Route } from 'next';
 import ContentCard from '@/components/atoms/ContentCard';
+import type { PosterRatingData } from '@/lib/poster-rating';
 import ContentActionButtons from '@/components/atoms/shared/ContentActionButtons';
 import ContentBadgesContainer from '@/components/atoms/shared/ContentBadges';
 import { useContentActions } from '@/hooks/useContentActions';
 
-type Game = {
+type Game = PosterRatingData & {
   id: string | number;
   name: string;
   title?: string;
@@ -29,6 +30,8 @@ interface GameCardProps {
   isConsumed?: boolean;
   isFavorite?: boolean;
   isConsumeLater?: boolean;
+  watchLater?: boolean;
+  isWatchLater?: boolean;
   isContinuing?: boolean;
   isAbandoned?: boolean;
   viewerIsConsumed?: boolean;
@@ -57,6 +60,8 @@ export default function GameCard({
   isConsumed = false,
   isFavorite = false,
   isConsumeLater = false,
+  watchLater,
+  isWatchLater,
   isContinuing = false,
   isAbandoned = false,
   viewerIsConsumed,
@@ -76,6 +81,9 @@ export default function GameCard({
   subtitleOverride = null,
   hasReview = false,
 }: GameCardProps) {
+  const activeConsumeLater = Boolean(
+    viewerIsConsumeLater || isConsumeLater || watchLater || isWatchLater
+  );
   const gameName = game.name || game.title || 'Bilinmeyen Oyun';
 
   // Handle date formatting - support both IGDB timestamp and ISO string
@@ -133,7 +141,7 @@ export default function GameCard({
       contentType="game"
       isConsumed={viewerIsConsumed ?? isConsumed}
       isFavorite={viewerIsFavorite ?? isFavorite}
-      isConsumeLater={viewerIsConsumeLater ?? isConsumeLater}
+      isConsumeLater={activeConsumeLater}
       isContinuing={viewerIsContinuing ?? isContinuing}
       isAbandoned={viewerIsAbandoned ?? isAbandoned}
       onWatch={handleWatch}
@@ -153,7 +161,7 @@ export default function GameCard({
       size={size}
       isConsumed={isConsumed}
       isFavorite={isFavorite}
-      isConsumeLater={isConsumeLater}
+      isConsumeLater={activeConsumeLater}
       isContinuing={isContinuing}
       isAbandoned={isAbandoned}
       hasReview={hasReview}
@@ -171,6 +179,7 @@ export default function GameCard({
       className={className}
       overlay={overlay}
       rightTop={badges}
+      communityRating={game}
       useNextImage={false}
     />
   );

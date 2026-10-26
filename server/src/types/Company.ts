@@ -71,6 +71,12 @@ export class CompanyContentType {
     @Field(() => String, { nullable: true })
     posterUrl?: string;
 
+    @Field(() => [Int], { nullable: true })
+    ratingDistribution?: number[];
+
+    @Field(() => Number, { nullable: true })
+    tmdbRating?: number;
+
     @Field(() => String, { nullable: true })
     releaseDate?: string;
 

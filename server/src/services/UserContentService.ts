@@ -278,6 +278,9 @@ export class ContentStats {
 
   @Field(() => Float, { nullable: true })
   averagePlaytimeMinutes?: number;
+
+  @Field(() => Float, { nullable: true })
+  tmdbRating?: number;
 }
 
 @ObjectType()

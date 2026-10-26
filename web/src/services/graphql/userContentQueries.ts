@@ -178,6 +178,8 @@ export const GET_ACTIVITY_FEED = gql`
         id
         title
         posterUrl
+        ratingDistribution
+        tmdbRating
         backdropUrl
         releaseDate
         description
@@ -201,6 +203,8 @@ export const GET_INCOMING_ACTIVITY_FEED = gql`
         id
         title
         posterUrl
+        ratingDistribution
+        tmdbRating
         backdropUrl
         releaseDate
         description
@@ -225,6 +229,8 @@ export const GET_FRIENDS_ACTIVITY_FEED = gql`
         id
         title
         posterUrl
+        ratingDistribution
+        tmdbRating
         backdropUrl
         releaseDate
         description
@@ -295,6 +301,8 @@ export const GET_USER_WATCHED_CONTENT = gql`
       id
       title
       posterUrl
+      ratingDistribution
+      tmdbRating
       consumeCount
       favoriteCount
       releaseDate
@@ -325,6 +333,8 @@ export const GET_USER_FAVORITE_CONTENT = gql`
       id
       title
       posterUrl
+      ratingDistribution
+      tmdbRating
       consumeCount
       favoriteCount
       releaseDate
@@ -366,6 +376,8 @@ export const GET_USER_FEATURED_CONTENT = gql`
       id
       title
       posterUrl
+      ratingDistribution
+      tmdbRating
       releaseDate
       contentType {
         id
@@ -386,6 +398,7 @@ export const GET_CONTENT_STATS = gql`
       ratingCount
       ratingDistribution
       averagePlaytimeMinutes
+      tmdbRating
     }
   }
 `;

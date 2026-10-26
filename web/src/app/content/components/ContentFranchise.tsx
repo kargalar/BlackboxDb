@@ -24,6 +24,8 @@ interface FranchiseContent {
   title: string;
   releaseDate: string | null;
   posterUrl: string | null;
+  ratingDistribution?: number[];
+  tmdbRating?: number | null;
   runtime: number | null;
   contentTypeId: number;
   contentType?: {
@@ -346,6 +348,8 @@ export default function ContentFranchise({
                   id: item.id,
                   title: item.title,
                   posterUrl: item.posterUrl,
+                  ratingDistribution: item.ratingDistribution,
+                  tmdbRating: item.tmdbRating,
                   releaseDate: item.releaseDate ?? undefined,
                 }}
                 contentType={itemContentType}

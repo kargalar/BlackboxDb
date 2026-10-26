@@ -63,6 +63,7 @@ interface ContentStats {
   average_rating?: number;
   rating_count?: number;
   rating_distribution?: number[];
+  tmdb_rating?: number;
 }
 
 export default function ContentDetailPage() {
@@ -137,6 +138,7 @@ export default function ContentDetailPage() {
           average_rating: data.averageRating || undefined,
           rating_count: data.ratingCount,
           rating_distribution: data.ratingDistribution,
+          tmdb_rating: data.tmdbRating || undefined,
         });
         console.log('✅ [ContentDetail] Stats updated:', data);
       }

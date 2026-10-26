@@ -24,6 +24,8 @@ export const COMPANY_CONTENT_FIELDS = gql`
     contentTitle
     contentType
     posterUrl
+    ratingDistribution
+    tmdbRating
     releaseDate
     companyRoleId
     userStatus {
@@ -133,6 +135,8 @@ export interface CompanyContentData {
   contentTitle: string;
   contentType?: string;
   posterUrl?: string;
+  ratingDistribution?: number[];
+  tmdbRating?: number | null;
   releaseDate?: string;
   companyRoleId?: number;
   userStatus?: {

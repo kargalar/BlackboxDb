@@ -9,6 +9,7 @@ const DEFAULTS = {
   gridRows: 4,
   posterZoomEnabled: false,
   posterIconsBelow: true,
+  posterRatingEnabled: false,
   showSensitiveContent: false,
   splitHomePopularSections: false,
 };
@@ -62,6 +63,7 @@ export function useUserPreferences() {
     gridRows,
     posterZoomEnabled,
     posterIconsBelow,
+    posterRatingEnabled: user?.posterRatingEnabled ?? DEFAULTS.posterRatingEnabled,
     showSensitiveContent,
     preferredGamePlatformIds,
     splitHomePopularSections,

@@ -190,6 +190,8 @@ export class CompanyResolver {
       contentTitle: cc.content.title,
       contentType: (cc.content as any).contentType?.name?.toLowerCase() || "movie",
       posterUrl: cc.content.images[0]?.filePath || undefined,
+      ratingDistribution: cc.content.ratingDistribution,
+      tmdbRating: cc.content.tmdbRating == null ? undefined : Number(cc.content.tmdbRating),
       releaseDate: cc.content.releaseDate?.toISOString() || undefined,
       popularity: 0,
       companyRoleId: cc.companyRoleId,

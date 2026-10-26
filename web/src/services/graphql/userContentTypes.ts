@@ -97,6 +97,7 @@ export interface ContentStats {
   ratingCount: number;
   ratingDistribution: number[];
   averagePlaytimeMinutes?: number | null;
+  tmdbRating?: number | null;
 }
 
 export interface RatingUser {
@@ -129,6 +130,7 @@ export interface Content {
   isbn?: string;
   seriesId?: number;
   ratingDistribution?: number[];
+  tmdbRating?: number | null;
   createdAt?: string;
   updatedAt?: string;
   similarDisplayTitle?: string;

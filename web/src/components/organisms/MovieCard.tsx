@@ -6,13 +6,14 @@
  */
 
 import ContentCard from '@/components/atoms/ContentCard';
+import type { PosterRatingData } from '@/lib/poster-rating';
 import ContentActionButtons from '@/components/atoms/shared/ContentActionButtons';
 import ContentBadgesContainer from '@/components/atoms/shared/ContentBadges';
 import { useContentActions } from '@/hooks/useContentActions';
 import type { Route } from 'next';
 
 interface MovieCardProps {
-  movie: {
+  movie: PosterRatingData & {
     id: string | number;
     title?: string;
     name?: string;
@@ -30,6 +31,8 @@ interface MovieCardProps {
   isConsumed?: boolean;
   isFavorite?: boolean;
   isConsumeLater?: boolean;
+  watchLater?: boolean;
+  isWatchLater?: boolean;
   isContinuing?: boolean;
   isAbandoned?: boolean;
   viewerIsConsumed?: boolean;
@@ -58,6 +61,8 @@ export default function MovieCard({
   isConsumed = false,
   isFavorite = false,
   isConsumeLater = false,
+  watchLater,
+  isWatchLater,
   isContinuing = false,
   isAbandoned = false,
   viewerIsConsumed,
@@ -74,6 +79,9 @@ export default function MovieCard({
   className = '',
   hasReview = false,
 }: MovieCardProps) {
+  const activeConsumeLater = Boolean(
+    viewerIsConsumeLater || isConsumeLater || watchLater || isWatchLater
+  );
   const movieTitle = movie.title || movie.name || 'Bilinmeyen Film';
   const releaseDate = movie.releaseDate || movie.release_date;
   const posterUrl = movie.posterUrl || movie.poster_path;
@@ -110,7 +118,7 @@ export default function MovieCard({
       contentType="movie"
       isConsumed={viewerIsConsumed ?? isConsumed}
       isFavorite={viewerIsFavorite ?? isFavorite}
-      isConsumeLater={viewerIsConsumeLater ?? isConsumeLater}
+      isConsumeLater={activeConsumeLater}
       isContinuing={viewerIsContinuing ?? isContinuing}
       isAbandoned={viewerIsAbandoned ?? isAbandoned}
       onWatch={handleWatch}
@@ -130,7 +138,7 @@ export default function MovieCard({
       size={size}
       isConsumed={isConsumed}
       isFavorite={isFavorite}
-      isConsumeLater={isConsumeLater}
+      isConsumeLater={activeConsumeLater}
       isContinuing={isContinuing}
       isAbandoned={isAbandoned}
       hasReview={hasReview}
@@ -150,6 +158,7 @@ export default function MovieCard({
       className={className}
       overlay={overlay}
       rightTop={badges}
+      communityRating={movie}
       useNextImage={false}
     />
   );

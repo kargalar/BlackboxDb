@@ -106,6 +106,8 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
     handleToggleFavorite,
     handleRatingChange,
     handleSave,
+    handleTagsChange,
+    handleTaggedUserAdd,
   } = useAddLogForm({
     isOpen,
     initialData,
@@ -886,7 +888,7 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
                 label={t('tags')}
                 name="tags"
                 value={formData.tags}
-                onChange={(val) => setFormData((prev) => ({ ...prev, tags: val }))}
+                onChange={handleTagsChange}
                 placeholder={t('tagsPlaceholder')}
                 suggestedTags={availableTags}
                 onGlobalDelete={onGlobalUpdate}
@@ -904,12 +906,7 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
                 previousTaggedUsers={previousTaggedUsers}
                 allowCustom={true}
                 onGlobalDelete={onGlobalUpdate}
-                onUserAdd={(user) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    taggedUsersObj: [...prev.taggedUsersObj, user],
-                  }));
-                }}
+                onUserAdd={handleTaggedUserAdd}
                 onUserRemove={(userId) => {
                   setFormData((prev) => ({
                     ...prev,

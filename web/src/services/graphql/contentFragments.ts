@@ -18,6 +18,8 @@ export const CONTENT_BASIC_FIELDS = gql`
     favoriteCount
     consumeCount
     additionalRatingCategories
+    ratingDistribution
+    tmdbRating
     contentType {
       id
       name
@@ -35,7 +37,6 @@ export const CONTENT_DETAIL_FIELDS = gql`
     pageCount
     isContinuing
     runtime
-    ratingDistribution
     posterUrl
     backdropUrl
     franchiseId

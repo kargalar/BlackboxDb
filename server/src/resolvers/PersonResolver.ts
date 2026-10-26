@@ -67,6 +67,12 @@ export class PersonContentResult {
   @Field(() => String, { nullable: true })
   posterUrl: string;
 
+  @Field(() => [Int], { nullable: true })
+  ratingDistribution?: number[];
+
+  @Field(() => Number, { nullable: true })
+  tmdbRating?: number;
+
   @Field(() => Number, { nullable: true })
   popularity?: number;
 
@@ -360,6 +366,8 @@ export class PersonResolver {
       character: cp.character || null,
       releaseDate: cp.content.releaseDate?.toISOString().split("T")[0] || null,
       posterUrl: (cp.content as any).images?.[0]?.filePath || null,
+      ratingDistribution: cp.content.ratingDistribution,
+      tmdbRating: cp.content.tmdbRating == null ? undefined : Number(cp.content.tmdbRating),
     })) as PersonContentResult[];
   }
 
@@ -436,6 +444,8 @@ export class PersonResolver {
           cp.content.releaseDate?.toISOString().split("T")[0] || null,
         popularity: 0,
         posterUrl: (cp.content as any).images?.[0]?.filePath || null,
+        ratingDistribution: cp.content.ratingDistribution,
+        tmdbRating: cp.content.tmdbRating == null ? undefined : Number(cp.content.tmdbRating),
         userStatus: log
           ? {
               isConsumed: log.isConsumed,
@@ -538,6 +548,8 @@ export class PersonResolver {
           cp.content.releaseDate?.toISOString().split("T")[0] || null,
         popularity: 0,
         posterUrl: (cp.content as any).images?.[0]?.filePath || null,
+        ratingDistribution: cp.content.ratingDistribution,
+        tmdbRating: cp.content.tmdbRating == null ? undefined : Number(cp.content.tmdbRating),
         userStatus: log
           ? {
               isConsumed: log.isConsumed,

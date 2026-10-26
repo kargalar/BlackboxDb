@@ -800,6 +800,7 @@
       "old": "Old",
       "noUsers": "No user found who gave this rating",
       "average": "avg.",
+      "tmdb": "TMDB",
       "points": "{count} points"
     }
   },
@@ -2142,6 +2143,8 @@
     "mediaBreakdown": "Media Breakdown"
   },
   "Settings": {
+    "posterRating": "Show Poster Ratings",
+    "posterRatingDesc": "Show the AVG score at the top right of posters. If no AVG score exists, the TMDB score is shown automatically.",
     "sensitiveContent": "Sensitive Content",
     "sensitiveContentDesc": "Show sensitive content",
     "resetTrackingData": "Reset Tracking Data",

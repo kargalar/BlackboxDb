@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useRef, useEffect, useId } from 'react';
+import React, { useState, useRef, useEffect, useId, useMemo } from 'react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 import { useQuery } from '@apollo/client/react';
@@ -70,24 +70,69 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
       )
   );
 
-  // Boş input ve focus'ta previousTaggedUsers'ı göster (gizlenenleri hariç tut)
-  const suggestedUsers =
-    inputValue.trim().length === 0
-      ? (previousTaggedUsers || []).filter(
-          (u) =>
-            !selectedUsers.some(
-              (su) => su.id === u.id || su.username.toLowerCase() === u.username.toLowerCase()
-            ) && !hiddenUsers.includes(u.username)
-        )
-      : searchResults;
-
   const trimmedInput = inputValue.trim();
+
+  // Daha önce eklenenlerden input ile eşleşenler
+  const matchingPrevious = useMemo(() => {
+    if (trimmedInput.length === 0) return [];
+    const query = trimmedInput.toLowerCase();
+    return (previousTaggedUsers || []).filter(
+      (u: UserSearchResult) =>
+        !selectedUsers.some(
+          (su) => su.id === u.id || su.username.toLowerCase() === u.username.toLowerCase()
+        ) &&
+        !hiddenUsers.includes(u.username) &&
+        u.username.toLowerCase().includes(query)
+    );
+  }, [trimmedInput, previousTaggedUsers, selectedUsers, hiddenUsers]);
+
+  // Arama dropdown için birleşik liste (Önce geçmiş eşleşmeler, sonra arama sonuçları)
+  const combinedSuggestions = useMemo(() => {
+    if (trimmedInput.length === 0) return [];
+    const seen = new Set<string>();
+    const list: UserSearchResult[] = [];
+
+    matchingPrevious.forEach((u: UserSearchResult) => {
+      const key = u.username.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        list.push(u);
+      }
+    });
+
+    searchResults.forEach((u: UserSearchResult) => {
+      const key = u.username.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        list.push(u);
+      }
+    });
+
+    return list;
+  }, [trimmedInput, matchingPrevious, searchResults]);
+
+  // Textfield altında gösterilecek öneri chip'leri (seçilmemiş geçmiş kişiler)
+  const suggestedUserChips = useMemo(() => {
+    return (previousTaggedUsers || []).filter(
+      (u: UserSearchResult) =>
+        !selectedUsers.some(
+          (su) => su.id === u.id || su.username.toLowerCase() === u.username.toLowerCase()
+        ) && !hiddenUsers.includes(u.username)
+    );
+  }, [previousTaggedUsers, selectedUsers, hiddenUsers]);
+
   const showCustomOption =
     allowCustom &&
     trimmedInput.length > 0 &&
-    !selectedUsers.some((u) => u.username.toLowerCase() === trimmedInput.toLowerCase());
+    !selectedUsers.some((u) => u.username.toLowerCase() === trimmedInput.toLowerCase()) &&
+    !combinedSuggestions.some(
+      (u: UserSearchResult) => u.username.toLowerCase() === trimmedInput.toLowerCase()
+    );
+
   const shouldShowResults =
-    showResults && (trimmedInput.length > 1 || trimmedInput.length === 0 || showCustomOption);
+    showResults &&
+    trimmedInput.length > 0 &&
+    (combinedSuggestions.length > 0 || showCustomOption || loading);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -199,9 +244,15 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
           if (e.key === 'Enter' && inputValue.trim().length > 0 && allowCustom) {
             e.preventDefault();
             // Enter'a basınca özel etiket ekleme
-            const exactMatch = searchResults.find(
+            const exactMatch = combinedSuggestions.find(
               (u) => u.username.toLowerCase() === inputValue.trim().toLowerCase()
             );
+            if (exactMatch) {
+              onUserAdd(exactMatch);
+              setInputValue('');
+              setShowResults(false);
+              return;
+            }
             if (
               !exactMatch &&
               !selectedUsers.some(
@@ -235,11 +286,11 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
             </div>
           )}
 
-          {loading && inputValue.trim().length > 1 ? (
+          {loading && inputValue.trim().length > 1 && combinedSuggestions.length === 0 ? (
             <div className="px-4 py-3 text-sm text-neutral-400">Aranıyor...</div>
-          ) : suggestedUsers.length > 0 || showCustomOption ? (
+          ) : combinedSuggestions.length > 0 || showCustomOption ? (
             <ul className="max-h-48 overflow-y-auto">
-              {suggestedUsers.map((user) => (
+              {combinedSuggestions.map((user: UserSearchResult) => (
                 <li
                   key={user.id}
                   className="group flex items-center border-b border-[#2d323b] last:border-b-0"
@@ -270,11 +321,12 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
                       </span>
                     )}
                     <span className="truncate text-sm font-medium text-neutral-200">
+                      {user.isCustom ? '' : '@'}
                       {user.username}
                     </span>
                   </button>
 
-                  {inputValue.trim().length === 0 && user.isCustom && (
+                  {user.isCustom && (
                     <button
                       type="button"
                       onClick={(e) => handleHideUser(e, user)}
@@ -327,6 +379,50 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
           ) : (
             <div className="px-4 py-3 text-sm text-neutral-400">Sonuç bulunamadı</div>
           )}
+        </div>
+      )}
+
+      {/* Textfield Altında Gösterilen Öneri Chip'leri */}
+      {suggestedUserChips.length > 0 && (
+        <div className="mt-2.5">
+          <span className="block text-xs text-neutral-400 font-medium mb-1.5">
+            Önerilen Kişiler:
+          </span>
+          <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+            {suggestedUserChips.map((user: UserSearchResult) => (
+              <button
+                key={user.id}
+                type="button"
+                onClick={() => onUserAdd(user)}
+                className="group inline-flex items-center gap-1.5 bg-surface-raised hover:bg-violet-950/40 border border-[#2d323b] hover:border-violet-500/40 rounded-full px-2.5 py-1 text-xs text-neutral-300 hover:text-violet-200 transition-all cursor-pointer"
+                title={`"${user.username}" kişisini ekle`}
+              >
+                {user.picturePath ? (
+                  <span className="relative block w-3.5 h-3.5 shrink-0 overflow-hidden rounded-full bg-neutral-700">
+                    <Image
+                      src={user.picturePath}
+                      alt=""
+                      fill
+                      sizes="14px"
+                      unoptimized
+                      className="object-cover"
+                    />
+                  </span>
+                ) : (
+                  <span className="w-3.5 h-3.5 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center text-[9px] font-bold">
+                    {user.isCustom ? '#' : user.username.charAt(0).toUpperCase()}
+                  </span>
+                )}
+                <span>
+                  {user.isCustom ? '' : '@'}
+                  {user.username}
+                </span>
+                <span className="text-[10px] text-neutral-500 group-hover:text-violet-300 font-bold">
+                  +
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>

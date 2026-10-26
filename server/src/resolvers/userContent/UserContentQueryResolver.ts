@@ -28,6 +28,7 @@ import {
 } from "../../services/UserContentService";
 import { convertContentForGraphQL } from "../content/ContentUtils";
 import { pairReviewsToLogs } from "../../lib/userContentReviewMatching";
+import { resolveAndCacheTmdbRating } from "../../lib/tmdbFetcher";
 import { logger } from "../../lib/logger";
 
 @Resolver()
@@ -971,6 +972,14 @@ export class UserContentQueryResolver {
       const content = await prisma.content.findUnique({
         where: { id: contentId },
         select: {
+          id: true,
+          contentTypeId: true,
+          tmdbId: true,
+          tmdbRating: true,
+          title: true,
+          originalTitle: true,
+          releaseDate: true,
+          firstAirDate: true,
           consumeCount: true,
           favoriteCount: true,
           discussionCount: true,
@@ -1018,6 +1027,10 @@ export class UserContentQueryResolver {
         );
       }
 
+      const tmdbRating = content
+        ? await resolveAndCacheTmdbRating(prisma, content)
+        : null;
+
       const result: ContentStats = {
         consumeCount: content?.consumeCount ?? 0,
         favoriteCount: content?.favoriteCount ?? 0,
@@ -1034,6 +1047,7 @@ export class UserContentQueryResolver {
                 content.totalPlaytimeMinutes / content.totalPlaytimeLogs,
               )
             : undefined,
+        tmdbRating: tmdbRating ?? undefined,
       };
 
       logger.debug(`[contentStats] Result: `, result);

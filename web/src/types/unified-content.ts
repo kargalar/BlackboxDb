@@ -253,6 +253,7 @@ export interface UnifiedContent {
   consumeLaterCount?: number;
   favoriteCount: number;
   discussionCount: number;
+  tmdbRating?: number | null;
   ratingDistribution: number[]; // [1star, 2star, 3star, 4star, 5star]
 
   // Images

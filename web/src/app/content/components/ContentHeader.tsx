@@ -35,6 +35,7 @@ interface Stats {
   average_rating?: number;
   rating_count?: number;
   rating_distribution?: number[];
+  tmdb_rating?: number;
 }
 
 interface ContentHeaderProps {
@@ -348,7 +349,16 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
             )}
 
             {/* Stats - Under poster */}
-            {stats && <ContentStats stats={stats} type={type} contentId={id} />}
+            {stats && (
+              <ContentStats
+                stats={{
+                  ...stats,
+                  tmdb_rating: stats.tmdb_rating ?? (content as any)?.tmdbRating,
+                }}
+                type={type}
+                contentId={id}
+              />
+            )}
           </div>
           <div className="content-detail-main flex-1">
             <div className="content-detail-title-row mb-2 flex items-start justify-between gap-4">

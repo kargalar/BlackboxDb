@@ -37,6 +37,7 @@ model AppUser {
   gridColumns                   Int                        @default(5) @map("grid_columns")
   gridRows                      Int                        @default(4) @map("grid_rows")
   posterZoomEnabled             Boolean                    @default(true) @map("poster_zoom_enabled")
+  posterRatingEnabled           Boolean                    @default(false) @map("poster_rating_enabled")
   posterIconsBelow              Boolean                    @default(true) @map("poster_icons_below")
   showSensitiveContent          Boolean                    @default(false) @map("show_sensitive_content")
   isDeleted                     Boolean                    @default(false) @map("is_deleted")
@@ -330,6 +331,7 @@ model Content {
   title                       String                  @db.VarChar(255)
   originalTitle               String?                 @map("original_title") @db.VarChar(255)
   tmdbId                      Int?                    @map("tmdb_id")
+  tmdbRating                  Float?                  @map("tmdb_rating") @db.Real
   igdbId                      Int?                    @map("igdb_id")
   contentTypeId               Int                     @map("content_type_id")
   releaseDate                 DateTime?               @map("release_date") @db.Date

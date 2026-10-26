@@ -114,6 +114,8 @@ export const GET_PERSON_CONTENT = gql`
       releaseDate
       popularity
       posterUrl
+      ratingDistribution
+      tmdbRating
       userStatus {
         isConsumed
         isFavorite
@@ -138,6 +140,8 @@ export const GET_PERSON_CAST_CONTENT = gql`
       releaseDate
       popularity
       posterUrl
+      ratingDistribution
+      tmdbRating
       userStatus {
         isConsumed
         isFavorite
@@ -162,6 +166,8 @@ export const GET_PERSON_CREW_CONTENT = gql`
       releaseDate
       popularity
       posterUrl
+      ratingDistribution
+      tmdbRating
       userStatus {
         isConsumed
         isFavorite
@@ -248,6 +254,8 @@ export interface PersonContentData {
   releaseDate?: string;
   popularity?: number;
   posterUrl?: string;
+  ratingDistribution?: number[];
+  tmdbRating?: number | null;
   userStatus?: {
     isConsumed: boolean;
     isFavorite: boolean;

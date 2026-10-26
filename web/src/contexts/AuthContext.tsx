@@ -26,6 +26,7 @@ interface User {
   gridRows?: number;
   posterZoomEnabled?: boolean;
   posterIconsBelow?: boolean;
+  posterRatingEnabled?: boolean;
   showSensitiveContent?: boolean;
   preferredGamePlatformId?: number | null;
   preferredGamePlatformIds?: number[];
@@ -46,6 +47,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isPrivileged: boolean;
+  updateUserPreferences: (preferences: Partial<User>) => void;
   signInWithGoogle: () => Promise<void>;
   signUpWithEmail: (email: string, password: string, username?: string) => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
@@ -57,6 +59,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   isPrivileged: false,
+  updateUserPreferences: () => {},
   signInWithGoogle: async () => {},
   signUpWithEmail: async () => {},
   signInWithEmail: async () => {},
@@ -78,6 +81,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isPrivileged, setIsPrivileged] = useState(false);
   const initRef = useRef(false);
+
+  const updateUserPreferences = useCallback((preferences: Partial<User>) => {
+    setUser((current) => (current ? { ...current, ...preferences } : current));
+  }, []);
 
   // Helper: User objesini set et
   const applyUser = useCallback((userData: any) => {
@@ -348,6 +355,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     loading,
     isPrivileged,
+    updateUserPreferences,
     signInWithGoogle,
     signUpWithEmail,
     signInWithEmail,

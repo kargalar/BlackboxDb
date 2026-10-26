@@ -17,6 +17,7 @@ interface StatsProps {
     average_rating?: number;
     rating_count?: number;
     rating_distribution?: number[];
+    tmdb_rating?: number;
   };
   type: string;
   contentId: string;
@@ -106,7 +107,7 @@ const ContentStats = ({ stats, type, contentId }: StatsProps) => {
         </div>
 
         <div className="flex items-end justify-center gap-2 mt-4">
-          <div className="flex w-full max-w-[200px] flex-none items-end justify-center gap-0.5 h-14">
+          <div className="flex flex-1 min-w-0 max-w-[180px] items-end justify-center gap-0.5 h-14">
             {ratingScale.map((rating, index) => {
               const count = stats.rating_distribution?.[index] || 0;
               const maxCount = Math.max(...(stats.rating_distribution || [1]));
@@ -121,7 +122,7 @@ const ContentStats = ({ stats, type, contentId }: StatsProps) => {
                   <button
                     onClick={() => handleBarClick(rating, index)}
                     disabled={!hasUsers}
-                    className={`w-4 bg-amber-500 rounded-t-sm transition-all duration-200 ${hasUsers ? 'hover:bg-amber-400 hover: cursor-pointer' : 'opacity-50 cursor-default'}`}
+                    className={`w-3.5 bg-amber-500 rounded-t-sm transition-all duration-200 ${hasUsers ? 'hover:bg-amber-400 hover: cursor-pointer' : 'opacity-50 cursor-default'}`}
                     style={{ height: `${heightPx}px` }}
                     title={t('tooltips.ratingCount', { rating, count })}
                   />
@@ -130,12 +131,21 @@ const ContentStats = ({ stats, type, contentId }: StatsProps) => {
             })}
           </div>
 
-          <div className="flex flex-col items-center justify-end">
+          <div className="flex flex-col items-center justify-end shrink-0">
             <div className="text-xl font-bold text-amber-400">
               {stats.average_rating ? formatRating(stats.average_rating) : '0'}
             </div>
             <div className="text-[10px] text-white/40">{t('dialog.average')}</div>
           </div>
+
+          {(type === 'movie' || type === 'tv') && (
+            <div className="flex flex-col items-center justify-end shrink-0 pl-2 border-l border-white/10">
+              <div className="text-xl font-bold text-sky-400">
+                {stats.tmdb_rating ? formatRating(stats.tmdb_rating) : '-'}
+              </div>
+              <div className="text-[10px] font-medium text-sky-400/70">{t('dialog.tmdb')}</div>
+            </div>
+          )}
         </div>
 
         <div className="mt-1 text-[10px] text-white/30 text-center">

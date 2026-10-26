@@ -7,11 +7,12 @@
 
 import type { Route } from 'next';
 import ContentCard from '@/components/atoms/ContentCard';
+import type { PosterRatingData } from '@/lib/poster-rating';
 import ContentActionButtons from '@/components/atoms/shared/ContentActionButtons';
 import ContentBadgesContainer from '@/components/atoms/shared/ContentBadges';
 import { useContentActions } from '@/hooks/useContentActions';
 
-type Book = {
+type Book = PosterRatingData & {
   id: string | number;
   title: string;
   authors?: string[];
@@ -30,6 +31,8 @@ interface BookCardProps {
   isConsumed?: boolean;
   isFavorite?: boolean;
   isConsumeLater?: boolean;
+  watchLater?: boolean;
+  isWatchLater?: boolean;
   isContinuing?: boolean;
   isAbandoned?: boolean;
   viewerIsConsumed?: boolean;
@@ -58,6 +61,8 @@ export default function BookCard({
   isConsumed = false,
   isFavorite = false,
   isConsumeLater = false,
+  watchLater,
+  isWatchLater,
   isContinuing = false,
   isAbandoned = false,
   viewerIsConsumed,
@@ -77,6 +82,9 @@ export default function BookCard({
   subtitleOverride = null,
   hasReview = false,
 }: BookCardProps) {
+  const activeConsumeLater = Boolean(
+    viewerIsConsumeLater || isConsumeLater || watchLater || isWatchLater
+  );
   const dateStr = book.releaseDate || book.publishedDate;
   const year = dateStr ? (dateStr.match(/\d{4}/)?.[0] ?? '') : '';
   const subtitle = [book.authors?.slice(0, 2).join(', '), year].filter(Boolean).join(' • ');
@@ -109,7 +117,7 @@ export default function BookCard({
       contentType="book"
       isConsumed={viewerIsConsumed ?? isConsumed}
       isFavorite={viewerIsFavorite ?? isFavorite}
-      isConsumeLater={viewerIsConsumeLater ?? isConsumeLater}
+      isConsumeLater={activeConsumeLater}
       isContinuing={viewerIsContinuing ?? isContinuing}
       isAbandoned={viewerIsAbandoned ?? isAbandoned}
       onWatch={handleWatch}
@@ -129,7 +137,7 @@ export default function BookCard({
       size={size}
       isConsumed={isConsumed}
       isFavorite={isFavorite}
-      isConsumeLater={isConsumeLater}
+      isConsumeLater={activeConsumeLater}
       isContinuing={isContinuing}
       isAbandoned={isAbandoned}
       hasReview={hasReview}
@@ -147,6 +155,7 @@ export default function BookCard({
       className={className}
       overlay={overlay}
       rightTop={badges}
+      communityRating={book}
       useNextImage={false}
     />
   );

@@ -661,6 +661,8 @@ export default function CompanyPage() {
                       id: content.contentId,
                       title: content.contentTitle,
                       posterUrl: content.posterUrl,
+                      ratingDistribution: content.ratingDistribution,
+                      tmdbRating: content.tmdbRating,
                       releaseDate: content.releaseDate,
                     }}
                     contentType={getContentTypeStr(content)}
