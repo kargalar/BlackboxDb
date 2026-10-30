@@ -25,8 +25,22 @@ function writeArray(key: string, values: unknown[]) {
   }
 }
 
+const LEGACY_PREFIX = 'legacy:';
+const LEGACY_RECOMMENDER_PREFIX = 'legacy:recommender:';
+
+export function toSuggestedTag(tag: string): string | null {
+  const value = tag.trim();
+  if (value.startsWith(LEGACY_RECOMMENDER_PREFIX)) {
+    return value.substring(LEGACY_RECOMMENDER_PREFIX.length).trim() || null;
+  }
+  return value.startsWith(LEGACY_PREFIX) ? null : value;
+}
+
 export function getRecentTags(): string[] {
-  return readArray(STORAGE_KEYS.tags).filter((tag): tag is string => typeof tag === 'string');
+  return readArray(STORAGE_KEYS.tags)
+    .filter((tag): tag is string => typeof tag === 'string')
+    .map(toSuggestedTag)
+    .filter((tag): tag is string => tag !== null);
 }
 
 export function getRecentTaggedUsers(): TaggedUserSuggestion[] {
@@ -45,7 +59,7 @@ export function getRecentTaggedUsers(): TaggedUserSuggestion[] {
 export function rememberTags(tags: string[]): string[] {
   const unique = new Map<string, string>();
   for (const tag of [...tags, ...getRecentTags()]) {
-    const value = tag.trim();
+    const value = toSuggestedTag(tag) ?? '';
     if (value && !value.startsWith('with:') && !unique.has(value.toLowerCase())) {
       unique.set(value.toLowerCase(), value);
     }

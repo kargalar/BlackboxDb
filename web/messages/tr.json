@@ -2212,7 +2212,62 @@
     "removed": "Removed",
     "modified": "Modified"
   },
+  "EmotionReactions": {
+    "title": "Sana ne hissettirdi?",
+    "description": "Bir emoji bırak, topluluğun nasıl hissettiğini gör.",
+    "loginRequired": "Duygu bırakmak için giriş yap.",
+    "emotions": {
+      "scary": "Korkunç",
+      "emotional": "Duygusal",
+      "funny": "Komik",
+      "exciting": "Heyecanlı",
+      "relaxing": "Rahatlatıcı",
+      "thoughtful": "Düşündürücü"
+    },
+    "descriptions": {
+      "scary": "Gerilim ve korku dolu",
+      "emotional": "Kalbine dokunan",
+      "funny": "Kahkaha attıran",
+      "exciting": "Adrenalin yükselten",
+      "relaxing": "İyi hissettiren",
+      "thoughtful": "Aklında kalan"
+    }
+  },
+  "EmotionDiscovery": {
+    "eyebrow": "Duyguna göre keşfet",
+    "title": "Bir sonraki favorini hislerine göre bul",
+    "description": "Topluluk emojileriyle en korkunç, en duygusal, en komik ve daha fazlasını film, dizi, oyun ve kitaplarda keşfet.",
+    "chooseEmotion": "Bir duygu seç",
+    "rankedBy": "Topluluk tepkilerine göre sıralanır",
+    "contentType": "İçerik türü",
+    "loading": "Topluluğu etkileyen içerikler bulunuyor…",
+    "empty": "Bu duygu için henüz tepki yok.",
+    "emptyHint": "Bir içerik açıp ilk emojiyi sen bırak.",
+    "emotions": {
+      "scary": "Korkunç",
+      "emotional": "Duygusal",
+      "funny": "Komik",
+      "exciting": "Heyecanlı",
+      "relaxing": "Rahatlatıcı",
+      "thoughtful": "Düşündürücü"
+    },
+    "types": {
+      "all": "Tümü",
+      "movie": "Filmler",
+      "tv": "Diziler",
+      "game": "Oyunlar",
+      "book": "Kitaplar",
+      "music": "Müzik",
+      "podcast": "Podcastler",
+      "theater": "Tiyatro",
+      "concert": "Konserler"
+    }
+  },
   "Explore": {
+    "emotionDiscovery": {
+      "title": "Duyguna göre keşfet",
+      "description": "Topluluğun tepkileriyle en korkunç, en duygusal, en komik ve daha fazlasını bul."
+    },
     "title": {
       "movie": "Filmleri Keşfet",
       "tv": "Dizileri Keşfet",

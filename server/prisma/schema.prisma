@@ -78,6 +78,7 @@ model AppUser {
   quizResults                   QuizResult[]
   reportsSent                   Report[]                   @relation("ReportReporter")
   userContentLogs               UserContentLog[]
+  emotionReactions              ContentEmotionReaction[]
   userContentPreferences        UserContentPreference[]
   userEpisodeLogs               UserEpisodeLog[]
   userExpansionLogs             UserExpansionLog[]
@@ -425,6 +426,7 @@ model Content {
   featuredBy             UserFeaturedContent[]
   editorPicks            EditorPick[]
   userListItems          UserListItem[]
+  emotionReactions       ContentEmotionReaction[]
 
   @@index([contentTypeId])
   @@index([releaseDate])
@@ -690,6 +692,22 @@ model UserContentLog {
   @@index([userId, contentId, date(sort: Desc)])
   @@index([userId, date(sort: Desc), updatedAt(sort: Desc), id(sort: Desc)])
   @@map("user_content_log")
+}
+
+model ContentEmotionReaction {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id") @db.Uuid
+  contentId String   @map("content_id") @db.VarChar(255)
+  emotion   String   @db.VarChar(32)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  user      AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contentId])
+  @@index([contentId, emotion])
+  @@index([emotion, updatedAt(sort: Desc)])
+  @@map("content_emotion_reaction")
 }
 
 model UserContentPreference {

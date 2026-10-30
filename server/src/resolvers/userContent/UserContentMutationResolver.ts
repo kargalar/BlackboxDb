@@ -29,6 +29,8 @@ import {
 import { logger } from "../../lib/logger";
 import { saveExternalContent } from "../../services/ExternalContentSaveService";
 
+const LEGACY_RECOMMENDER_TAG_PREFIX = "legacy:recommender:";
+
 @Resolver()
 export class UserContentMutationResolver {
   /**
@@ -1977,13 +1979,14 @@ export class UserContentMutationResolver {
         logger.debug(
           `[removeTagFromAllLogs] Removing string tag '${tag}' for user ${user.id}`,
         );
+        const variants = [tag, `${LEGACY_RECOMMENDER_TAG_PREFIX}${tag}`];
         const logs = await prisma.userContentLog.findMany({
-          where: { userId: user.id, tags: { has: tag } },
+          where: { userId: user.id, tags: { hasSome: variants } },
         });
         for (const log of logs) {
           await prisma.userContentLog.update({
             where: { id: log.id },
-            data: { tags: log.tags.filter((t) => t !== tag) },
+            data: { tags: log.tags.filter((t) => !variants.includes(t)) },
           });
         }
       }
@@ -2009,6 +2012,43 @@ export class UserContentMutationResolver {
     } catch (error) {
       logger.error(`[removeTagFromAllLogs] Error:`, error);
       throw new Error("Failed to remove tag from all logs");
+    }
+  }
+
+  /**
+   * Rename a tag across all logs of the logged-in user (no log is deleted)
+   */
+  @Authorized()
+  @Mutation(() => Boolean)
+  async renameTagInAllLogs(
+    @Arg("oldTag", () => String) oldTag: string,
+    @Arg("newTag", () => String) newTag: string,
+    @Ctx() { user, prisma }: GraphQLContext,
+  ): Promise<boolean> {
+    if (!user) throw new Error("Not authenticated");
+    const cleanNewTag = newTag.trim();
+    if (!cleanNewTag || cleanNewTag.startsWith("with:")) {
+      throw new Error("Invalid tag name");
+    }
+
+    try {
+      const variants = [oldTag, `${LEGACY_RECOMMENDER_TAG_PREFIX}${oldTag}`];
+      const logs = await prisma.userContentLog.findMany({
+        where: { userId: user.id, tags: { hasSome: variants } },
+      });
+      for (const log of logs) {
+        const renamed = log.tags.map((t) =>
+          variants.includes(t) ? cleanNewTag : t,
+        );
+        await prisma.userContentLog.update({
+          where: { id: log.id },
+          data: { tags: Array.from(new Set(renamed)) },
+        });
+      }
+      return true;
+    } catch (error) {
+      logger.error(`[renameTagInAllLogs] Error:`, error);
+      throw new Error("Failed to rename tag in all logs");
     }
   }
 }

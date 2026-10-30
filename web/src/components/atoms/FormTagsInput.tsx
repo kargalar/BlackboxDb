@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { removeTagFromAllLogs } from '@/services/userContentService';
+import { removeTagFromAllLogs, renameTagInAllLogs } from '@/services/userContentService';
+import { rememberTags } from '@/lib/log-suggestions';
 
 interface FormTagsInputProps {
   label: string;
@@ -45,10 +46,14 @@ export function FormTagsInput({
     .map((t) => t.trim())
     .filter(Boolean);
 
+  const [renamedTags, setRenamedTags] = useState<string[]>([]);
+
   const suggestedChips = useMemo(() => {
-    const visibleSuggestedTags = suggestedTags.filter((tag) => !hiddenTags.includes(tag));
+    const visibleSuggestedTags = [...suggestedTags, ...renamedTags].filter(
+      (tag) => !hiddenTags.includes(tag)
+    );
     return visibleSuggestedTags.filter((tag) => !parsedTags.includes(tag));
-  }, [suggestedTags, hiddenTags, parsedTags]);
+  }, [suggestedTags, renamedTags, hiddenTags, parsedTags]);
 
   const filteredSuggestions = useMemo(() => {
     const normalizedInput = currentInput.trim().toLowerCase();
@@ -133,6 +138,26 @@ export function FormTagsInput({
       onGlobalDelete?.();
     } catch (err) {
       console.error('Etiket silinirken hata:', err);
+    }
+  };
+
+  const handleRenameTag = async (e: React.MouseEvent, tag: string) => {
+    e.stopPropagation();
+    const input = window.prompt(`"${tag}" etiketinin yeni adı:`, tag);
+    const newTag = input?.trim();
+    if (!newTag || newTag === tag || newTag.startsWith('with:')) return;
+
+    try {
+      const { success } = await renameTagInAllLogs(tag, newTag);
+      if (!success) return;
+      const newHidden = [...hiddenTags, tag];
+      setHiddenTags(newHidden);
+      localStorage.setItem('bb_hidden_tags', JSON.stringify(newHidden));
+      setRenamedTags((previous) => [...previous, newTag]);
+      rememberTags([newTag]);
+      onGlobalDelete?.();
+    } catch (err) {
+      console.error('Etiket yeniden adlandırılırken hata:', err);
     }
   };
 
@@ -233,21 +258,41 @@ export function FormTagsInput({
             </span>
             <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
               {suggestedChips.map((tag) => (
-                <button
+                <div
                   key={tag}
-                  type="button"
-                  onClick={() => addTag(tag)}
-                  className="group inline-flex items-center gap-1.5 bg-surface-raised hover:bg-violet-950/40 border border-[#2d323b] hover:border-violet-500/40 rounded-full px-2.5 py-1 text-xs text-neutral-300 hover:text-violet-200 transition-all cursor-pointer"
-                  title={`"${tag}" etiketini ekle`}
+                  className="group inline-flex items-center gap-1.5 bg-surface-raised hover:bg-violet-950/40 border border-[#2d323b] hover:border-violet-500/40 rounded-full px-2.5 py-1 text-xs text-neutral-300 hover:text-violet-200 transition-all"
                 >
-                  <span className="w-3.5 h-3.5 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center text-[9px] font-bold">
-                    #
-                  </span>
-                  <span>{tag}</span>
-                  <span className="text-[10px] text-neutral-500 group-hover:text-violet-300 font-bold">
-                    +
-                  </span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => addTag(tag)}
+                    className="inline-flex items-center gap-1.5 cursor-pointer"
+                    title={`"${tag}" etiketini ekle`}
+                  >
+                    <span className="w-3.5 h-3.5 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center text-[9px] font-bold">
+                      #
+                    </span>
+                    <span>{tag}</span>
+                    <span className="text-[10px] text-neutral-500 group-hover:text-violet-300 font-bold">
+                      +
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => handleRenameTag(e, tag)}
+                    title="Etiketi yeniden adlandır"
+                    className="text-[11px] text-neutral-500 hover:text-violet-300"
+                  >
+                    ✎
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => handleHideTag(e, tag)}
+                    title="Etiketi tamamen sil"
+                    className="text-neutral-500 hover:text-red-400"
+                  >
+                    ×
+                  </button>
+                </div>
               ))}
             </div>
           </div>

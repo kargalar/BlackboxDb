@@ -113,6 +113,12 @@ export const REMOVE_TAG_FROM_ALL_LOGS = gql`
   }
 `;
 
+export const RENAME_TAG_IN_ALL_LOGS = gql`
+  mutation RenameTagInAllLogs($oldTag: String!, $newTag: String!) {
+    renameTagInAllLogs(oldTag: $oldTag, newTag: $newTag)
+  }
+`;
+
 // ==========================================
 // TYPESCRIPT TYPES
 // ==========================================

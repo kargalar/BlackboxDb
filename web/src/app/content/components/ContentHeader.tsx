@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { deleteContent } from '@/services/adminService';
 import UserContentActions from './UserContentActions';
+import EmotionReactions from '@/components/organisms/EmotionReactions';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { UnifiedContent, ContentPerson } from '@/types/unified-content';
@@ -721,6 +722,10 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
                   </div>
                 </div>
               )}
+
+            <div className="mb-6">
+              <EmotionReactions contentId={id} />
+            </div>
 
             {/* Mobilde altta, büyük ekranlarda sağ sütunda gösterilecek */}
             <div className="mt-6 2xl:hidden">

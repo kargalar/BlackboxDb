@@ -17,6 +17,7 @@ import { useTranslations } from 'next-intl';
 import { useUserContentActions } from '../hooks/useUserContentActions';
 import PlaytimeControl from './actions/PlaytimeControl';
 import ReadingFormatControl from './actions/ReadingFormatControl';
+import QuickTagsEditor from './actions/QuickTagsEditor';
 
 interface UserContentActionsProps {
   isFavorite: boolean;
@@ -470,6 +471,16 @@ const UserContentActions: React.FC<UserContentActionsProps> = ({
             <div className="bg-neutral-900/50 rounded-2xl p-4 border border-neutral-800 flex items-center w-full">
               <Stars size="md" value={userRating} onChange={handleRatingChange} />
             </div>
+
+            {user && (
+              <QuickTagsEditor
+                userTags={userTags ?? []}
+                userTaggedUsers={userTaggedUsers ?? []}
+                onSave={async (tags, taggedUserIds) => {
+                  await updateUserContentLog(id, { tags, taggedUserIds });
+                }}
+              />
+            )}
 
             {((userTags && userTags.length > 0) ||
               (userTaggedUsers && userTaggedUsers.length > 0)) && (

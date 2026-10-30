@@ -3,6 +3,7 @@ import {
   getRecentTags,
   getRecentTaggedUsers,
   rememberTags,
+  toSuggestedTag,
   rememberTaggedUsers,
   type TaggedUserSuggestion,
 } from '@/lib/log-suggestions';
@@ -133,7 +134,8 @@ export function useAddLogForm({
         data.forEach((log: any) => {
           if (log.tags && Array.isArray(log.tags)) {
             log.tags.forEach((tag: string) => {
-              if (!tag.startsWith('with:')) tags.add(tag.trim());
+              const suggestedTag = toSuggestedTag(tag);
+              if (suggestedTag && !suggestedTag.startsWith('with:')) tags.add(suggestedTag);
             });
           }
         });

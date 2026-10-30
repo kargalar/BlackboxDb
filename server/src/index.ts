@@ -78,6 +78,7 @@ import {
   ContentScreenshotFieldResolver,
 } from "./resolvers/MediaVoteResolver";
 import { EditorPickResolver } from "./resolvers/EditorPickResolver";
+import { EmotionReactionResolver } from "./resolvers/EmotionReactionResolver";
 
 // Context
 import { basePrisma, createContext, GraphQLContext } from "./context";
@@ -255,6 +256,7 @@ async function bootstrap() {
       ContentImageFieldResolver,
       ContentScreenshotFieldResolver,
       EditorPickResolver,
+      EmotionReactionResolver,
     ],
     validate: true,
     authChecker: ({ context, info }, roles) => {

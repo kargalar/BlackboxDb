@@ -1,1 +1,0 @@
-duygu emojisi bırakark en korkunç en duygusal en komik giib fimleri görebilelim.

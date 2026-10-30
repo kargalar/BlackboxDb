@@ -2214,7 +2214,62 @@
     "removed": "Removed",
     "modified": "Modified"
   },
+  "EmotionReactions": {
+    "title": "What did it make you feel?",
+    "description": "Leave an emoji and see how the community felt.",
+    "loginRequired": "Log in to leave an emotion.",
+    "emotions": {
+      "scary": "Scary",
+      "emotional": "Emotional",
+      "funny": "Funny",
+      "exciting": "Exciting",
+      "relaxing": "Comforting",
+      "thoughtful": "Thought-provoking"
+    },
+    "descriptions": {
+      "scary": "Scary and full of suspense",
+      "emotional": "A story that touches your heart",
+      "funny": "A story that makes you laugh",
+      "exciting": "A story that gets your adrenaline going",
+      "relaxing": "A story that helps you unwind",
+      "thoughtful": "A story that stays on your mind"
+    }
+  },
+  "EmotionDiscovery": {
+    "eyebrow": "Discover by feeling",
+    "title": "Find your next favorite by emotion",
+    "description": "Community emoji reactions reveal the scariest, most emotional, funniest, and more across films, shows, games, and books.",
+    "chooseEmotion": "Pick a feeling",
+    "rankedBy": "Ranked by community reactions",
+    "contentType": "Content type",
+    "loading": "Finding what moved the community…",
+    "empty": "No reactions for this feeling yet.",
+    "emptyHint": "Open a title and leave the first emoji.",
+    "emotions": {
+      "scary": "Scary",
+      "emotional": "Emotional",
+      "funny": "Funny",
+      "exciting": "Exciting",
+      "relaxing": "Comforting",
+      "thoughtful": "Thought-provoking"
+    },
+    "types": {
+      "all": "All",
+      "movie": "Movies",
+      "tv": "TV shows",
+      "game": "Games",
+      "book": "Books",
+      "music": "Music",
+      "podcast": "Podcasts",
+      "theater": "Theater",
+      "concert": "Concerts"
+    }
+  },
   "Explore": {
+    "emotionDiscovery": {
+      "title": "Discover by emotion",
+      "description": "Find the scariest, most emotional, funniest titles and more from community reactions."
+    },
     "title": {
       "movie": "Explore Movies",
       "tv": "Explore TV Shows",

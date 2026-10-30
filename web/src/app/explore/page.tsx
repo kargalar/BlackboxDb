@@ -69,8 +69,8 @@ export default function ExplorePage() {
     },
   ];
 
-  const contentTypes = allContentTypes.filter(
-    (type) => preferredContentTypes.includes(type.typeId)
+  const contentTypes = allContentTypes.filter((type) =>
+    preferredContentTypes.includes(type.typeId)
   );
 
   // Combine filtered content types with entity types
@@ -109,6 +109,27 @@ export default function ExplorePage() {
           </Link>
         ))}
       </div>
+
+      <Link
+        href="/explore/emotions"
+        className="group mt-5 flex items-center gap-4 rounded-2xl border border-violet-400/20 bg-gradient-to-r from-violet-500/10 to-fuchsia-500/5 p-5 transition-colors hover:border-violet-300/40"
+      >
+        <span className="text-3xl" aria-hidden="true">
+          😱 😭 😂
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold text-white">{t('emotionDiscovery.title')}</span>
+          <span className="mt-1 block text-sm text-white/55">
+            {t('emotionDiscovery.description')}
+          </span>
+        </span>
+        <span
+          className="text-xl text-violet-200 transition-transform group-hover:translate-x-1"
+          aria-hidden="true"
+        >
+          →
+        </span>
+      </Link>
     </div>
   );
 }

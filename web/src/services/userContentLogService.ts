@@ -3,6 +3,7 @@ import {
   DELETE_ALL_USER_CONTENT_LOGS,
   CREATE_USER_CONTENT_LOG,
   REMOVE_TAG_FROM_ALL_LOGS,
+  RENAME_TAG_IN_ALL_LOGS,
   GET_INCOMING_ACTIVITY_FEED,
   UPDATE_USER_CONTENT_LOG,
   type UserContentLog,
@@ -115,6 +116,22 @@ export async function removeTagFromAllLogs(options: {
     return { success: !!data?.removeTagFromAllLogs };
   } catch (error) {
     console.error('❌ [GraphQL] Error removing tag from all logs:', error);
+    return { success: false, error };
+  }
+}
+
+export async function renameTagInAllLogs(
+  oldTag: string,
+  newTag: string
+): Promise<{ success: boolean; error?: any }> {
+  try {
+    const { data } = await apolloClient.mutate<{ renameTagInAllLogs: boolean }>({
+      mutation: RENAME_TAG_IN_ALL_LOGS,
+      variables: { oldTag, newTag },
+    });
+    return { success: !!data?.renameTagInAllLogs };
+  } catch (error) {
+    console.error('❌ [GraphQL] Error renaming tag in all logs:', error);
     return { success: false, error };
   }
 }
