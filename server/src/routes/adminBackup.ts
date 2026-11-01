@@ -1,9 +1,10 @@
 import { spawn } from "node:child_process";
-import { existsSync, createWriteStream } from "node:fs";
-import { mkdtemp, open, rm } from "node:fs/promises";
+import { existsSync, createReadStream, createWriteStream } from "node:fs";
+import { mkdtemp, open, rm, stat } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
+import { Transform } from "node:stream";
 import { Router, type Response } from "express";
 import {
   createSystemArchive,
@@ -11,8 +12,15 @@ import {
   SYSTEM_BACKUP_EXTENSION,
   unpackSystemArchive,
 } from "../lib/systemBackup";
+import {
+  measureBackupProgress,
+  type BackupProgress,
+} from "../lib/backupProgress";
 
 type PostgresCommand = "pg_dump" | "pg_restore";
+const PROGRESS_RETENTION_MS = 10 * 60 * 1000;
+const BACKUP_ID_PATTERN =
+  /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 
 export interface BackupDatabase {
   dump(filename: string): Promise<void>;
@@ -90,6 +98,23 @@ export function createAdminBackupRouter(
 ): Router {
   const router = Router();
   let busy = false;
+  const progressRecords = new Map<
+    string,
+    { progress: BackupProgress; updatedAt: number }
+  >();
+  const updateProgress = (id: string | undefined, progress: BackupProgress) => {
+    if (id) progressRecords.set(id, { progress, updatedAt: Date.now() });
+  };
+  // Status must remain readable while the backup route owns the operation lock.
+  router.get("/backup/progress/:id", (request, response) => {
+    const record = progressRecords.get(request.params.id);
+    response.setHeader("Cache-Control", "no-store");
+    if (!record) {
+      response.status(404).json({ error: "Backup progress not found" });
+      return;
+    }
+    response.json(record.progress);
+  });
   router.use((_request, response, next) => {
     if (busy) {
       response
@@ -100,33 +125,89 @@ export function createAdminBackupRouter(
     next();
   });
 
-  router.get("/backup", async (_request, response) => {
+  router.get("/backup", async (request, response) => {
+    const id =
+      typeof request.query.backupId === "string"
+        ? request.query.backupId
+        : undefined;
+    if (id && (!BACKUP_ID_PATTERN.test(id) || progressRecords.has(id))) {
+      response
+        .status(400)
+        .json({ error: "Invalid or reused backup identifier" });
+      return;
+    }
+    for (const [key, record] of progressRecords) {
+      if (Date.now() - record.updatedAt > PROGRESS_RETENTION_MS)
+        progressRecords.delete(key);
+    }
     busy = true;
+    updateProgress(id, measureBackupProgress("database"));
     let workspace: string | undefined;
     try {
       workspace = await mkdtemp(path.join(os.tmpdir(), "blackboxdb-backup-"));
       const databaseFile = path.join(workspace, "database.dump");
       await database.dump(databaseFile);
       await database.verify(databaseFile);
-      const archive = await createSystemArchive(workspace, uploadsDirectory);
+      const archive = await createSystemArchive(
+        workspace,
+        uploadsDirectory,
+        (progress) =>
+          updateProgress(
+            id,
+            measureBackupProgress(
+              progress.phase,
+              progress.completedBytes,
+              progress.totalBytes,
+            ),
+          ),
+      );
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       response.setHeader("Cache-Control", "no-store");
       response.type("application/gzip");
-      await new Promise<void>((resolve, reject) => {
-        response.download(
-          archive,
-          `blackboxdb-backup-${timestamp}${SYSTEM_BACKUP_EXTENSION}`,
-          (error) => (error ? reject(error) : resolve()),
-        );
+      response.attachment(
+        `blackboxdb-backup-${timestamp}${SYSTEM_BACKUP_EXTENSION}`,
+      );
+      const totalBytes = (await stat(archive)).size;
+      response.setHeader("Content-Length", totalBytes);
+      let completedBytes = 0;
+      updateProgress(id, measureBackupProgress("downloading", 0, totalBytes));
+      await pipeline(
+        createReadStream(archive),
+        new Transform({
+          transform(chunk: Buffer, _encoding, callback) {
+            completedBytes += chunk.length;
+            updateProgress(
+              id,
+              measureBackupProgress("downloading", completedBytes, totalBytes),
+            );
+            callback(null, chunk);
+          },
+        }),
+        response,
+      );
+      updateProgress(id, {
+        phase: "completed",
+        percent: 100,
+        completedBytes,
+        totalBytes,
       });
     } catch (error) {
+      const previous = id ? progressRecords.get(id)?.progress : undefined;
+      updateProgress(id, {
+        ...(previous ?? measureBackupProgress("database")),
+        phase: "failed",
+        error:
+          error instanceof Error ? error.message : "Backup operation failed",
+      });
       sendFailure(response, error);
     } finally {
       busy = false;
       if (workspace)
-        await rm(workspace, { recursive: true, force: true }).catch(
-          console.error,
-        );
+        await rm(workspace, {
+          recursive: true,
+          force: true,
+          maxRetries: 3,
+        }).catch(console.error);
     }
   });
 
@@ -179,9 +260,11 @@ export function createAdminBackupRouter(
     } finally {
       busy = false;
       if (workspace && !keepWorkspace)
-        await rm(workspace, { recursive: true, force: true }).catch(
-          console.error,
-        );
+        await rm(workspace, {
+          recursive: true,
+          force: true,
+          maxRetries: 3,
+        }).catch(console.error);
     }
   });
   return router;

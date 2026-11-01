@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 import { mkdtemp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -11,7 +12,10 @@ import {
 
 const DATABASE_BYTES = "PGDMP-test-database";
 
-async function fixture(context: TestContext) {
+async function fixture(
+  context: TestContext,
+  overrides: Partial<BackupDatabase> = {},
+) {
   const root = await mkdtemp(
     path.join(os.tmpdir(), "blackboxdb-backup-http-test-"),
   );
@@ -30,6 +34,7 @@ async function fixture(context: TestContext) {
       restoreCount++;
       if (failRestore) throw new Error("Database transaction failed");
     },
+    ...overrides,
   };
   const app = express();
   app.use("/api/admin", createAdminBackupRouter(uploads, database));
@@ -41,7 +46,7 @@ async function fixture(context: TestContext) {
     await new Promise<void>((resolve, reject) =>
       server.close((error) => (error ? reject(error) : resolve())),
     );
-    await rm(root, { recursive: true, force: true });
+    await rm(root, { recursive: true, force: true, maxRetries: 3 });
   });
   const baseUrl = `http://127.0.0.1:${address.port}/api/admin`;
   return {
@@ -80,6 +85,84 @@ test("admin download and restore round-trip screenshots and database together", 
   await assert.rejects(readFile(path.join(uploads, "extra.png")), {
     code: "ENOENT",
   });
+});
+
+test("backup progress remains readable during preparation and reaches 100 after transfer", async (context) => {
+  let releaseDump!: () => void;
+  let notifyStarted!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    releaseDump = resolve;
+  });
+  const started = new Promise<void>((resolve) => {
+    notifyStarted = resolve;
+  });
+  const { baseUrl } = await fixture(context, {
+    dump: async (filename) => {
+      notifyStarted();
+      await gate;
+      await writeFile(filename, DATABASE_BYTES);
+    },
+  });
+  const id = randomUUID();
+  const download = fetch(`${baseUrl}/backup?backupId=${id}`);
+  await started;
+  try {
+    const status = await fetch(`${baseUrl}/backup/progress/${id}`);
+    assert.equal(status.status, 200);
+    assert.equal(status.headers.get("cache-control"), "no-store");
+    assert.deepEqual(await status.json(), {
+      phase: "database",
+      percent: 0,
+      completedBytes: 0,
+      totalBytes: 0,
+    });
+    const concurrent = await fetch(`${baseUrl}/backup`);
+    assert.equal(concurrent.status, 409);
+    await concurrent.text();
+  } finally {
+    releaseDump();
+  }
+  const response = await download;
+  const archive = await response.arrayBuffer();
+  assert.equal(
+    Number(response.headers.get("content-length")),
+    archive.byteLength,
+  );
+  let completedStatus: unknown;
+  // Receiving the last byte can precede the server stream's close callback.
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const completed = await fetch(`${baseUrl}/backup/progress/${id}`);
+    completedStatus = await completed.json();
+    if ((completedStatus as { phase: string }).phase === "completed") break;
+  }
+  assert.deepEqual(completedStatus, {
+    phase: "completed",
+    percent: 100,
+    completedBytes: archive.byteLength,
+    totalBytes: archive.byteLength,
+  });
+});
+
+test("failed backup reports an error instead of a completed percentage", async (context) => {
+  context.mock.method(console, "error", () => {});
+  const { baseUrl } = await fixture(context, {
+    dump: async () => {
+      throw new Error("Database backup failed");
+    },
+  });
+  const id = randomUUID();
+  const download = await fetch(`${baseUrl}/backup?backupId=${id}`);
+  assert.equal(download.status, 500);
+  await download.text();
+  const response = await fetch(`${baseUrl}/backup/progress/${id}`);
+  const status = (await response.json()) as {
+    phase: string;
+    percent: number;
+    error: string;
+  };
+  assert.equal(status.phase, "failed");
+  assert.equal(status.percent, 0);
+  assert.equal(status.error, "Database backup failed");
 });
 
 test("admin restore still accepts legacy database-only dumps and keeps current uploads", async (context) => {

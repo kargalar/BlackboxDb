@@ -12,7 +12,7 @@ import {
   formatLogsAsJSON,
 } from '@/lib/requestLogger';
 import { resetAllData, deleteAllUsers, deleteAllContentByType } from '@/services/adminService';
-import { downloadSystemBackup } from '@/services/admin/backupDownload';
+import { downloadSystemBackup, type SystemBackupProgress } from '@/services/admin/backupDownload';
 import type { Route } from 'next';
 import { gql } from '@apollo/client';
 import { useMutation, useQuery } from '@apollo/client/react';
@@ -83,6 +83,7 @@ export default function AdminHome() {
   const [isResettingData, setIsResettingData] = useState(false);
   const [isDeletingUsers, setIsDeletingUsers] = useState(false);
   const [isBackingUp, setIsBackingUp] = useState(false);
+  const [backupProgress, setBackupProgress] = useState<SystemBackupProgress | null>(null);
   const [isRestoring, setIsRestoring] = useState(false);
   const [isUpdatingTheme, setIsUpdatingTheme] = useState(false);
 
@@ -224,12 +225,15 @@ export default function AdminHome() {
 
   const handleBackupDatabase = async () => {
     setIsBackingUp(true);
+    setBackupProgress(null);
     try {
       await downloadSystemBackup(
         `${API_BASE_URL}/api/admin/backup`,
-        `blackboxdb-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.tar.gz`
+        `blackboxdb-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.tar.gz`,
+        setBackupProgress
       );
     } catch (error) {
+      setBackupProgress(null);
       if (error instanceof Error && error.name === 'AbortError') return;
       console.error('❌ [Admin] Backup error:', error);
       alert(t('alerts.backupFailed') + (error instanceof Error ? error.message : String(error)));
@@ -502,7 +506,7 @@ export default function AdminHome() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               onClick={handleBackupDatabase}
-              disabled={isBackingUp}
+              disabled={isBackingUp || isRestoring}
               className="p-4 rounded-xl bg-blue-600/20 border border-blue-500/30 hover:bg-blue-600/30 transition-colors disabled:opacity-50 text-left"
             >
               <div className="font-semibold text-blue-400 flex items-center gap-2">
@@ -518,7 +522,7 @@ export default function AdminHome() {
 
             <button
               onClick={handleRestoreDatabase}
-              disabled={isRestoring}
+              disabled={isRestoring || isBackingUp}
               className="p-4 rounded-xl bg-amber-600/20 border border-amber-500/30 hover:bg-amber-600/30 transition-colors disabled:opacity-50 text-left"
             >
               <div className="font-semibold text-amber-400 flex items-center gap-2">
@@ -532,6 +536,30 @@ export default function AdminHome() {
               <p className="text-sm text-white/40 mt-1">{t('dangerous.restoreDesc')}</p>
             </button>
           </div>
+          {backupProgress && (
+            <div className="mt-4 rounded-xl border border-blue-500/20 bg-blue-600/10 p-4">
+              <div
+                className="mb-2 flex items-center justify-between gap-3 text-sm text-blue-300"
+                role="status"
+              >
+                <span>{t(`backupProgress.${backupProgress.phase}`)}</span>
+                <span className="font-semibold tabular-nums">{backupProgress.percent}%</span>
+              </div>
+              <div
+                role="progressbar"
+                aria-label={t('backupProgress.label')}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={backupProgress.percent}
+                className="h-2 overflow-hidden rounded-full bg-white/10"
+              >
+                <div
+                  className="h-full rounded-full bg-blue-400 transition-[width] duration-300"
+                  style={{ width: `${backupProgress.percent}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Destructive Operations Row */}

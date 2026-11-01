@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test, type TestContext } from "node:test";
 import * as tar from "tar";
+import { measureBackupProgress } from "./backupProgress";
 import {
   createSystemArchive,
   restoreSystemUploads,
@@ -75,6 +76,36 @@ test("system backup round-trips the database, screenshots and every upload categ
 test("system backup supports an empty uploads directory", async (context) => {
   const { workspace, uploads, destination } = await fixture(context);
   const archive = await createSystemArchive(workspace, uploads);
+  await unpackSystemArchive(archive, destination);
+});
+
+test("archive progress measures every phase and never goes backwards", async (context) => {
+  const { workspace, uploads, destination } = await fixture(context);
+  await putFile(uploads, "screenshots/shot.png", "screenshot-bytes");
+  const updates: ReturnType<typeof measureBackupProgress>[] = [];
+  const archive = await createSystemArchive(workspace, uploads, (progress) => {
+    updates.push(
+      measureBackupProgress(
+        progress.phase,
+        progress.completedBytes,
+        progress.totalBytes,
+      ),
+    );
+  });
+  assert.deepEqual(
+    [...new Set(updates.map((progress) => progress.phase))],
+    ["copying", "checksums", "archiving"],
+  );
+  for (let index = 1; index < updates.length; index++) {
+    assert.ok(updates[index].percent >= updates[index - 1].percent);
+  }
+  const copying = updates
+    .filter((progress) => progress.phase === "copying")
+    .at(-1)!;
+  assert.equal(copying.completedBytes, Buffer.byteLength("screenshot-bytes"));
+  assert.equal(copying.completedBytes, copying.totalBytes);
+  assert.equal(updates.at(-1)!.percent, 80);
+  assert.equal(measureBackupProgress("downloading", 100, 100).percent, 99);
   await unpackSystemArchive(archive, destination);
 });
 

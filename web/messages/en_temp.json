@@ -1096,6 +1096,16 @@
       "deleteUsers": "Delete All Users",
       "deleteUsersDesc": "Only you will be preserved"
     },
+    "backupProgress": {
+      "label": "Backup progress",
+      "database": "Backing up the database…",
+      "copying": "Copying screenshots and uploads…",
+      "checksums": "Verifying files…",
+      "archiving": "Preparing backup archive…",
+      "downloading": "Downloading backup…",
+      "completed": "Backup complete",
+      "failed": "Backup failed"
+    },
     "theme": {
       "title": "Global Theme Settings",
       "desc": "Change the site's overall appearance for everyone.",

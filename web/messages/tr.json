@@ -1310,6 +1310,16 @@
       "deleteUsers": "Delete All Users",
       "deleteUsersDesc": "Only you will be preserved"
     },
+    "backupProgress": {
+      "label": "Yedekleme ilerlemesi",
+      "database": "Veritabanı yedekleniyor…",
+      "copying": "Ekran görüntüleri ve yüklemeler kopyalanıyor…",
+      "checksums": "Dosyalar doğrulanıyor…",
+      "archiving": "Yedek arşivi hazırlanıyor…",
+      "downloading": "Yedek indiriliyor…",
+      "completed": "Yedekleme tamamlandı",
+      "failed": "Yedekleme başarısız"
+    },
     "theme": {
       "title": "Global Theme Settings",
       "desc": "Change the site's overall appearance for everyone.",

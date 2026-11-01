@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { createReadStream } from "node:fs";
+import { createReadStream, createWriteStream } from "node:fs";
 import {
   copyFile,
   mkdir,
@@ -10,6 +10,9 @@ import {
   writeFile,
 } from "node:fs/promises";
 import path from "node:path";
+import { Transform } from "node:stream";
+import { pipeline } from "node:stream/promises";
+import { createGzip } from "node:zlib";
 import * as tar from "tar";
 
 export const SYSTEM_BACKUP_EXTENSION = ".tar.gz";
@@ -35,13 +38,25 @@ interface BackupManifest {
   files: BackupFile[];
 }
 
+export interface ArchiveProgress {
+  phase: "copying" | "checksums" | "archiving";
+  completedBytes: number;
+  totalBytes: number;
+}
+
+type ReportArchiveProgress = (progress: ArchiveProgress) => void;
+
 async function describeFile(
   root: string,
   relativePath: string,
+  onBytes?: (bytes: number) => void,
 ): Promise<BackupFile> {
   const filename = path.join(root, relativePath);
   const hash = createHash("sha256");
-  for await (const chunk of createReadStream(filename)) hash.update(chunk);
+  for await (const chunk of createReadStream(filename)) {
+    hash.update(chunk);
+    onBytes?.(chunk.length);
+  }
   return {
     path: relativePath,
     size: (await stat(filename)).size,
@@ -49,15 +64,22 @@ async function describeFile(
   };
 }
 
-async function copyUploads(source: string, destination: string): Promise<void> {
+async function copyUploads(
+  source: string,
+  destination: string,
+  onBytes: (bytes: number) => void,
+): Promise<void> {
   await mkdir(destination, { recursive: true });
   const entries = await readdir(source, { withFileTypes: true });
   for (const entry of entries) {
     const from = path.join(source, entry.name);
     const to = path.join(destination, entry.name);
-    if (entry.isDirectory()) await copyUploads(from, to);
-    else if (entry.isFile()) await copyFile(from, to);
-    else throw new Error("Uploads contain an unsupported link or special file");
+    if (entry.isDirectory()) await copyUploads(from, to, onBytes);
+    else if (entry.isFile()) {
+      await copyFile(from, to);
+      onBytes((await stat(to)).size);
+    } else
+      throw new Error("Uploads contain an unsupported link or special file");
   }
 }
 
@@ -82,15 +104,48 @@ async function listFiles(
 export async function createSystemArchive(
   workspace: string,
   uploadsDirectory: string,
+  onProgress?: ReportArchiveProgress,
 ): Promise<string> {
-  await copyUploads(uploadsDirectory, path.join(workspace, UPLOADS_DIRECTORY));
+  onProgress?.({ phase: "copying", completedBytes: 0, totalBytes: 0 });
+  let uploadBytes = 0;
+  for (const filename of await listFiles(uploadsDirectory, "")) {
+    uploadBytes += (await stat(path.join(uploadsDirectory, filename))).size;
+  }
+  let copiedBytes = 0;
+  await copyUploads(
+    uploadsDirectory,
+    path.join(workspace, UPLOADS_DIRECTORY),
+    (bytes) => {
+      copiedBytes += bytes;
+      onProgress?.({
+        phase: "copying",
+        completedBytes: copiedBytes,
+        totalBytes: uploadBytes,
+      });
+    },
+  );
   const filenames = [
     DATABASE_FILE,
     ...(await listFiles(workspace, UPLOADS_DIRECTORY)),
   ].sort();
   const files: BackupFile[] = [];
+  let totalBytes = 0;
   for (const filename of filenames)
-    files.push(await describeFile(workspace, filename));
+    totalBytes += (await stat(path.join(workspace, filename))).size;
+  let hashedBytes = 0;
+  onProgress?.({ phase: "checksums", completedBytes: 0, totalBytes });
+  for (const filename of filenames) {
+    files.push(
+      await describeFile(workspace, filename, (bytes) => {
+        hashedBytes += bytes;
+        onProgress?.({
+          phase: "checksums",
+          completedBytes: hashedBytes,
+          totalBytes,
+        });
+      }),
+    );
+  }
   const manifest: BackupManifest = {
     format: BACKUP_FORMAT,
     version: BACKUP_VERSION,
@@ -102,10 +157,32 @@ export async function createSystemArchive(
     JSON.stringify(manifest, null, 2),
   );
   const archive = path.join(workspace, `backup${SYSTEM_BACKUP_EXTENSION}`);
-  await tar.create(
-    { cwd: workspace, file: archive, gzip: true, strict: true },
-    [DATABASE_FILE, MANIFEST_FILE, UPLOADS_DIRECTORY],
+  totalBytes += (await stat(path.join(workspace, MANIFEST_FILE))).size;
+  let archivedBytes = 0;
+  onProgress?.({ phase: "archiving", completedBytes: 0, totalBytes });
+  await pipeline(
+    tar.create({ cwd: workspace, strict: true }, [
+      DATABASE_FILE,
+      MANIFEST_FILE,
+      UPLOADS_DIRECTORY,
+    ]),
+    new Transform({
+      transform(chunk: Buffer, _encoding, callback) {
+        archivedBytes += chunk.length;
+        // Tar headers and block padding do not count as file content. Reserve
+        // the final byte until gzip and the output file have both finished.
+        onProgress?.({
+          phase: "archiving",
+          completedBytes: Math.min(archivedBytes, totalBytes - 1),
+          totalBytes,
+        });
+        callback(null, chunk);
+      },
+    }),
+    createGzip(),
+    createWriteStream(archive, { flags: "wx" }),
   );
+  onProgress?.({ phase: "archiving", completedBytes: totalBytes, totalBytes });
   return archive;
 }
 

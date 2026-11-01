@@ -68,6 +68,13 @@ PostgreSQL client tools (`pg_dump` and `pg_restore`) must be installed on the se
 Allow enough temporary disk space for a copy of the uploads and the resulting archive.
 Pause edits and uploads while taking a backup so database records and files stay consistent.
 
+The admin screen shows an overall progress bar and the current phase: database dump,
+upload copy, checksum verification, archive creation, and download. Preparation uses
+fixed phase weights and measured file bytes; the database phase remains at its
+starting percentage until `pg_dump` finishes. Downloads stream directly to disk
+where supported and reach 100% only after the file writer closes. Other browsers
+use their native downloader and report the server's transfer progress.
+
 Restore accepts these system archives and older database-only `.dump` backups.
 A system archive replaces both the database and local uploads; a legacy `.dump`
 replaces only the database. Archives are validated before restoration, and database
