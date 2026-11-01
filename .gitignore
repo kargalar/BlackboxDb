@@ -25,6 +25,7 @@ web/.next/
 # Local databases, backups, and personal import data
 backups/
 server/backups/
+.blackboxdb-restore-*/
 server/prisma/*.db
 admin import/
 film.csv

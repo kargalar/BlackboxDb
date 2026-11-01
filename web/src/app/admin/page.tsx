@@ -12,6 +12,7 @@ import {
   formatLogsAsJSON,
 } from '@/lib/requestLogger';
 import { resetAllData, deleteAllUsers, deleteAllContentByType } from '@/services/adminService';
+import { downloadSystemBackup } from '@/services/admin/backupDownload';
 import type { Route } from 'next';
 import { gql } from '@apollo/client';
 import { useMutation, useQuery } from '@apollo/client/react';
@@ -224,37 +225,24 @@ export default function AdminHome() {
   const handleBackupDatabase = async () => {
     setIsBackingUp(true);
     try {
-      console.log('💾 [Admin] Starting database backup stream...');
-      const response = await fetch(`${API_BASE_URL}/api/admin/backup`, {
-        credentials: 'include',
-      });
-      if (!response.ok) throw new Error(t('alerts.backupFailed'));
-
-      const blob = await response.blob();
-      const downloadUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = `blackboxdb-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.dump`;
-      link.click();
-      URL.revokeObjectURL(downloadUrl);
-
-      // Small delay to remove loading state after triggering download
-      setTimeout(() => {
-        console.log('✅ [Admin] Backup download triggered successfully');
-        setIsBackingUp(false);
-      }, 1500);
-    } catch (err: any) {
-      console.error('❌ [Admin] Backup error:', err);
-      alert(t('alerts.backupFailed') + err.message);
+      await downloadSystemBackup(
+        `${API_BASE_URL}/api/admin/backup`,
+        `blackboxdb-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.tar.gz`
+      );
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') return;
+      console.error('❌ [Admin] Backup error:', error);
+      alert(t('alerts.backupFailed') + (error instanceof Error ? error.message : String(error)));
+    } finally {
       setIsBackingUp(false);
     }
   };
 
   const handleRestoreDatabase = async () => {
-    // Create a file input to select the backup .dump
+    // Accept complete system archives and legacy database-only backups.
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
-    fileInput.accept = '.dump,.sql';
+    fileInput.accept = '.tar.gz,.dump';
     fileInput.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;

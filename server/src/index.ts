@@ -6,22 +6,12 @@ import { expressMiddleware } from "@as-integrations/express4";
 import { buildSchema } from "type-graphql";
 import * as dotenv from "dotenv";
 import { graphqlUploadExpress } from "graphql-upload-minimal";
-import { spawn } from "child_process";
 import fs from "fs";
 import path from "path";
 import jwt from "jsonwebtoken";
 import { createServer } from "http";
 
-const getPgCommand = (cmd: "pg_dump" | "pg_restore"): string => {
-  if (process.platform === "win32") {
-    // Check common PostgreSQL installation paths on Windows
-    for (let version = 18; version >= 10; version--) {
-      const p = `C:\\Program Files\\PostgreSQL\\${version}\\bin\\${cmd}.exe`;
-      if (fs.existsSync(p)) return p;
-    }
-  }
-  return cmd;
-};
+import { createAdminBackupRouter } from "./routes/adminBackup";
 
 // Resolvers
 import { UserResolver } from "./resolvers/UserResolver";
@@ -360,118 +350,7 @@ async function bootstrap() {
     }
   };
 
-  app.get("/api/admin/backup", requireAdminREST, (req, res) => {
-    console.log("💾 [REST] Starting DB backup stream...");
-    const dbUrl = process.env.DATABASE_URL;
-    if (!dbUrl) {
-      res.status(500).json({ error: "DATABASE_URL not configured" });
-      return;
-    }
-
-    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const filename = `blackboxdb-backup-${timestamp}.dump`;
-
-    res.setHeader("Content-Type", "application/octet-stream");
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-
-    const cmd = getPgCommand("pg_dump");
-    // Remove query parameters like ?schema=public which pg_dump does not support
-    const cleanDbUrl = dbUrl.split("?")[0];
-    const pgDump = spawn(cmd, ["-d", cleanDbUrl, "-F", "c"]);
-
-    pgDump.stdout.pipe(res);
-
-    pgDump.stderr.on("data", (data) => {
-      console.error(`[pg_dump error]: ${data}`);
-    });
-
-    pgDump.on("error", (error) => {
-      console.error("❌ pg_dump spawn error:", error);
-      if (!res.headersSent) {
-        res.status(500).json({ error: "Failed to start pg_dump" });
-      } else {
-        res.end();
-      }
-    });
-
-    pgDump.on("close", (code) => {
-      if (code === 0) {
-        console.log("✅ [REST] Backup stream completed successfully.");
-      } else {
-        console.error(`❌ [REST] Backup failed with code ${code}`);
-      }
-    });
-  });
-
-  app.post("/api/admin/restore", requireAdminREST, (req, res) => {
-    console.log("♻️ [REST] Starting DB restore stream from upload...");
-    const dbUrl = process.env.DATABASE_URL;
-    if (!dbUrl) {
-      res.status(500).json({ error: "DATABASE_URL not configured" });
-      return;
-    }
-
-    const cmd = getPgCommand("pg_restore");
-    // Remove query parameters like ?schema=public which pg_restore does not support
-    const cleanDbUrl = dbUrl.split("?")[0];
-    const pgRestore = spawn(cmd, [
-      "-d",
-      cleanDbUrl,
-      "--clean",
-      "--if-exists",
-      "--no-owner",
-    ]);
-
-    // Pipe the raw request body directly into pg_restore stdin
-    req.pipe(pgRestore.stdin);
-
-    pgRestore.stdin.on("error", (err: any) => {
-      if (err.code === "EPIPE") {
-        console.warn(
-          "⚠️ [REST] pg_restore closed the input stream early (EPIPE). This usually means the uploaded file is not a valid backup archive.",
-        );
-      } else {
-        console.error("❌ pg_restore stdin error:", err);
-      }
-    });
-
-    const errorLogs: string[] = [];
-    pgRestore.stderr.on("data", (data) => {
-      // pg_restore writes to stderr even for non-fatal warnings (like dropping tables that don't exist yet)
-      const msg = data.toString();
-      console.error(`[pg_restore output]: ${msg}`);
-      errorLogs.push(msg);
-    });
-
-    pgRestore.on("error", (error) => {
-      console.error("❌ pg_restore spawn error:", error);
-      if (!res.headersSent) {
-        res
-          .status(500)
-          .json({
-            error: "Failed to start pg_restore",
-            details: error.message,
-          });
-      }
-    });
-
-    pgRestore.on("close", (code) => {
-      if (code === 0) {
-        console.log("✅ [REST] Restore completed successfully.");
-        if (!res.headersSent) {
-          res.status(200).json({ success: true });
-        }
-      } else {
-        console.error(`❌ [REST] Restore failed with code ${code}`);
-        if (!res.headersSent) {
-          res.status(500).json({
-            error: "Restore process failed",
-            details: errorLogs.join("\n"),
-          });
-        }
-      }
-    });
-  });
+  app.use("/api/admin", requireAdminREST, createAdminBackupRouter(uploadsDir));
 
   // Health check endpoint
   app.get("/health", (req, res) => {

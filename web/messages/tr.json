@@ -1299,11 +1299,11 @@
     "dangerous": {
       "title": "Dangerous Operations",
       "desc": "These actions cannot be undone!",
-      "backupRestore": "Backup & Restore",
-      "backup": "Backup Database",
-      "backupDesc": "Download entire database as native .dump",
-      "restore": "Restore from Backup",
-      "restoreDesc": "Restore database natively from .dump backup file",
+      "backupRestore": "Yedekleme ve Geri Yükleme",
+      "backup": "Tüm Verileri Yedekle",
+      "backupDesc": "Veritabanını ve ekran görüntüleri dahil tüm yerel yüklemeleri tek .tar.gz arşivi olarak indir",
+      "restore": "Yedekten Geri Yükle",
+      "restoreDesc": ".tar.gz arşivinden veritabanını ve yüklemeleri; eski .dump dosyasından yalnızca veritabanını geri yükle",
       "deletion": "Deletion Operations",
       "resetData": "Reset All Data",
       "resetDataDesc": "Contents will be deleted, users will be preserved",
@@ -1338,9 +1338,9 @@
       "usersDeleted": "✅ Users deleted!",
       "tokenMissing": "Session key not found.",
       "backupFailed": "❌ Backup failed: ",
-      "restoreWarning": "WARNING!\\n\\nCurrent database will be cleared and restored from backup.\\nDo you want to continue?",
+      "restoreWarning": "DİKKAT!\\n\\nVeritabanı yedekle değiştirilecek. Tam sistem yedeği, ekran görüntüleri dahil tüm yerel yüklemeleri de değiştirecek.\\nDevam etmek istiyor musunuz?",
       "restoreFinalWarning": "FINAL WARNING!\\n\\nThis action cannot be undone. Really continue?",
-      "restoreSuccess": "✅ Database restored successfully!",
+      "restoreSuccess": "✅ Yedek başarıyla geri yüklendi!",
       "restoreFailed": "❌ Restore failed: "
     }
   },
