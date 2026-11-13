@@ -58,62 +58,6 @@ export async function shouldEnableNotifyOnRelease(
   return isUpcomingRelease(content);
 }
 
-export async function cleanupReviewOnContentRemoval(
-  prisma: any,
-  userId: string,
-  contentId: string,
-  logIdToBeExcluded?: number,
-) {
-  try {
-    // Check if the user has any remaining logs for this content where isConsumed is true
-    const remainingLogsCount = await prisma.userContentLog.count({
-      where: {
-        userId,
-        contentId,
-        isConsumed: true,
-        ...(logIdToBeExcluded ? { id: { not: logIdToBeExcluded } } : {}),
-      },
-    });
-
-    // If there are no consumed logs left, we should soft-delete the review/comment
-    if (remainingLogsCount === 0) {
-      const existingReview = await prisma.discussion.findFirst({
-        where: {
-          contentId,
-          authorId: userId,
-          type: "comment",
-          isDeleted: false,
-        },
-      });
-
-      if (existingReview) {
-        await prisma.discussion.update({
-          where: { id: existingReview.id },
-          data: { isDeleted: true, deletedAt: new Date() },
-        });
-
-        await prisma.content.update({
-          where: { id: contentId },
-          data: { discussionCount: { decrement: 1 } },
-        });
-
-        await prisma.content.updateMany({
-          where: { id: contentId, discussionCount: { lt: 0 } },
-          data: { discussionCount: 0 },
-        });
-
-        logger.info(
-          `[cleanupReviewOnContentRemoval] Soft-deleted review ${existingReview.id} for user ${userId} and content ${contentId} because the content was unlogged/removed.`,
-        );
-      }
-    }
-  } catch (error) {
-    logger.error(
-      "[cleanupReviewOnContentRemoval] Error during review cleanup:",
-      error,
-    );
-  }
-}
 
 export async function syncTvShowWatchState(
   prisma: any,

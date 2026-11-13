@@ -17,7 +17,6 @@ import {
   syncBookPublicationConsumeCount,
   syncBookPublicationRatingStats,
   adjustContentRatingStats,
-  cleanupReviewOnContentRemoval,
   shouldEnableNotifyOnRelease,
   updateGameMedianPlaytime,
   calculateContentRatingStats,
@@ -279,8 +278,6 @@ export class UserContentMutationResolver {
         where: { id: contentId, consumeCount: { lt: 0 } },
         data: { consumeCount: 0 },
       });
-
-      await cleanupReviewOnContentRemoval(prisma, user.id, contentId);
 
       logger.success(`[unlogContentWatch] Success`);
       return true;
@@ -625,8 +622,6 @@ export class UserContentMutationResolver {
         });
       }
 
-      await cleanupReviewOnContentRemoval(prisma, user.id, contentId);
-
       logger.success(`[toggleConsumeLater] ConsumeLater = ${newState}`);
       return newState;
     } catch (error) {
@@ -760,8 +755,6 @@ export class UserContentMutationResolver {
         });
       }
 
-      await cleanupReviewOnContentRemoval(prisma, user.id, contentId);
-
       logger.success(`[toggleContentContinuing] Continuing = ${newState}`);
       return newState;
     } catch (error) {
@@ -879,8 +872,6 @@ export class UserContentMutationResolver {
           },
         });
       }
-
-      await cleanupReviewOnContentRemoval(prisma, user.id, contentId);
 
       logger.success(`[toggleContentAbandoned] Abandoned = ${newState}`);
       return newState;
@@ -1004,13 +995,6 @@ export class UserContentMutationResolver {
         logger.warn(`[deleteContentWatch] Log not found or unauthorized`);
         return false;
       }
-
-      await cleanupReviewOnContentRemoval(
-        prisma,
-        user.id,
-        log.contentId,
-        logId,
-      );
 
       await prisma.userContentLog.delete({ where: { id: logId } });
 
@@ -1948,8 +1932,6 @@ export class UserContentMutationResolver {
       }
 
       await updateGameMedianPlaytime(prisma, contentId);
-
-      await cleanupReviewOnContentRemoval(prisma, user.id, contentId);
 
       logger.success(
         `[updateUserContentLog] Updated log for content ${contentId}`,

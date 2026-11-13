@@ -501,8 +501,6 @@ export default function ContentComments({
           : c
       )
     );
-    setEditingCommentId(null);
-
     try {
       const { data } = await apolloClient.mutate<{ updateDiscussion: Partial<Comment> }>({
         mutation: UPDATE_DISCUSSION,
@@ -519,6 +517,9 @@ export default function ContentComments({
         setComments((prev) =>
           prev.map((c) => (c.id === commentId ? { ...c, ...data.updateDiscussion } : c))
         );
+        handleEditCancel();
+      } else {
+        throw new Error('Comment update returned no data');
       }
     } catch (e) {
       console.error('Error updating comment:', e);
@@ -567,7 +568,10 @@ export default function ContentComments({
 
   const handleCommentCardClick = (event: React.MouseEvent<HTMLDivElement>, comment: Comment) => {
     const target = event.target as HTMLElement | null;
-    if (target?.closest('[data-mention-link="true"]')) {
+    if (
+      editingCommentId === comment.id ||
+      target?.closest('button, a, textarea, input, select, [data-mention-link="true"]')
+    ) {
       return;
     }
 
@@ -997,6 +1001,7 @@ export default function ContentComments({
                     <div className="mb-3 pr-8" onClick={(e) => e.stopPropagation()}>
                       <div className="relative">
                         <textarea
+                          autoFocus
                           value={editContent}
                           onChange={(e) => {
                             const val = e.target.value;
