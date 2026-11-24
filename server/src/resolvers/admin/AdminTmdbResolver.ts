@@ -1,4 +1,7 @@
-import { Resolver, Query, Arg, Ctx, Authorized, Int } from "type-graphql";
+import { Resolver, Query, Mutation, Arg, Ctx, Authorized, Int } from "type-graphql";
+import { importQueue } from "../../lib/ImportQueueManager";
+import { syncTvSeasons } from "../../lib/tmdbTvSync";
+import { PopularImportResult } from "../import/ImportMutationResolver";
 import { GraphQLContext } from "../../context";
 import { requireAdminOrModerator } from "../../lib/authGuard";
 import { logger } from "../../lib/logger";
@@ -34,6 +37,37 @@ import {
  */
 @Resolver()
 export class AdminTmdbResolver {
+  @Authorized("ADMIN")
+  @Mutation(() => PopularImportResult)
+  async syncExistingTvShows(@Ctx() { user, prisma }: GraphQLContext): Promise<PopularImportResult> {
+    if (!user) throw new Error("Not authenticated");
+    const active = await prisma.importJob.findFirst({ where: { type: "tmdb_tv_sync", status: { in: ["PENDING", "PROCESSING"] } } });
+    if (active) throw new Error("Dizi kontrolü zaten çalışıyor.");
+    const job = await prisma.importJob.create({ data: { userId: user.id, type: "tmdb_tv_sync", fileName: "TMDB dizi kontrolü", totalItems: 0, status: "PENDING" } });
+    importQueue.addJob(async () => {
+      let imported = 0, skipped = 0, failed = 0, processed = 0;
+      try {
+        const shows = await prisma.content.findMany({ where: { contentTypeId: 2, isDeleted: false, tmdbId: { not: null } }, select: { id: true, title: true, tmdbId: true } });
+        await prisma.importJob.update({ where: { id: job.id }, data: { status: "PROCESSING", totalItems: shows.length } });
+        for (const show of shows) {
+          try {
+            const added = await syncTvSeasons(prisma, show.id, show.tmdbId!);
+            if (added) imported++; else skipped++;
+          } catch (error) {
+            failed++;
+            await prisma.importJob.update({ where: { id: job.id }, data: { errors: { push: `${show.title}: ${error instanceof Error ? error.message : String(error)}` } } });
+          }
+          processed++;
+          await prisma.importJob.update({ where: { id: job.id }, data: { processedItems: processed, currentItem: JSON.stringify({ title: show.title, imported, skipped, failed }) } });
+        }
+        await prisma.importJob.update({ where: { id: job.id }, data: { status: "COMPLETED", currentItem: JSON.stringify({ title: "Kontrol tamamlandı", imported, skipped, failed }) } });
+      } catch (error) {
+        await prisma.importJob.update({ where: { id: job.id }, data: { status: "FAILED", errors: { push: String(error) } } });
+      }
+    });
+    return { success: true, jobId: job.id, message: "Kontrol başlatıldı" };
+  }
+
   // ─── SEARCH ───
 
   @Authorized()

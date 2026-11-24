@@ -261,6 +261,9 @@ export class ScreenshotInput {
   @Field(() => Int, { nullable: true })
   seasonNumber?: number;
 
+  @Field(() => Int, { nullable: true })
+  episodeNumber?: number;
+
   @Field(() => String, { nullable: true })
   description?: string;
 

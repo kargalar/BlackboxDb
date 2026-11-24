@@ -1,10 +1,10 @@
+import "dotenv/config";
 import "reflect-metadata";
 import express from "express";
 import cors from "cors";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express4";
 import { buildSchema } from "type-graphql";
-import * as dotenv from "dotenv";
 import { graphqlUploadExpress } from "graphql-upload-minimal";
 import fs from "fs";
 import path from "path";
@@ -77,8 +77,6 @@ import {
   clearAuthCookies,
   getCookie,
 } from "./lib/authCookies";
-
-dotenv.config();
 
 const PORT = process.env.PORT || 4000;
 const MAX_GRAPHQL_JSON_BODY_SIZE = "50mb";

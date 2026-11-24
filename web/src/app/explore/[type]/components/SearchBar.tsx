@@ -1,100 +1,71 @@
 'use client';
 
-import { useState, FormEvent, useEffect, useRef, startTransition } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-
-type ContentType =
-  | 'movie'
-  | 'tv'
-  | 'game'
-  | 'book'
-  | 'person'
-  | 'company';
+import { useState, type FormEvent, useEffect, useRef } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { updateExploreUrl } from '../../exploreUrl';
 
 interface SearchBarProps {
-  contentType: ContentType;
   placeholder?: string;
-  onSearch?: (query: string) => void;
 }
 
-export function SearchBar({ contentType, placeholder = 'Ara...', onSearch }: SearchBarProps) {
-  const router = useRouter();
+export function SearchBar({ placeholder }: SearchBarProps) {
+  const t = useTranslations('Explore');
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const urlQuery = searchParams.get('q') || '';
-  const [searchInput, setSearchInput] = useState(urlQuery);
+  const urlQuery = useSearchParams().get('q') ?? '';
+  const [draft, setDraft] = useState<{ pathname: string; urlQuery: string; text: string } | null>(null);
+  const searchInput = draft?.pathname === pathname && draft.urlQuery === urlQuery
+    ? draft.text
+    : urlQuery;
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const didMountRef = useRef(false);
 
-  const pushSearch = (query: string) => {
-    const trimmedQuery = query.trim();
-
-    // Prevent overriding the URL if the query hasn't actually changed
-    // This fixes a race condition where stale closures from React Strict Mode
-    // would push '?page=1' to the URL, erasing other filters applied on mount.
-    if (trimmedQuery === urlQuery) {
-      return;
-    }
-
-    const params = new URLSearchParams(searchParams.toString());
-    if (trimmedQuery) {
-      params.set('q', trimmedQuery);
-      params.delete('page'); // Reset to page 1 by removing the param
-    } else {
-      params.delete('q');
-      params.delete('page');
-    }
-    const nextUrl = `${pathname}?${params.toString()}`;
-    const currentUrl = `${pathname}?${searchParams.toString()}`;
-    if (nextUrl !== currentUrl) {
-      startTransition(() => {
-        router.push(nextUrl as any, { scroll: false });
-      });
-    }
-    onSearch?.(trimmedQuery);
+  const cancelSearch = () => {
+    if (debounceRef.current !== null) clearTimeout(debounceRef.current);
+    debounceRef.current = null;
   };
 
   useEffect(() => {
-    // Only update search input from URL if we are not actively typing/debouncing
-    // This prevents Next.js router.push race conditions from reverting the user's text
-    if (!debounceRef.current) {
-      setSearchInput(urlQuery);
-    }
-  }, [urlQuery]);
-
-  // Debounced typing
-  useEffect(() => {
-    if (!didMountRef.current) {
-      didMountRef.current = true;
-      return;
-    }
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      pushSearch(searchInput);
-      debounceRef.current = null;
-    }, 400);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
+    const syncHistory = () => {
+      cancelSearch();
+      setDraft(null);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchInput]);
+    window.addEventListener('popstate', syncHistory);
+    return () => {
+      cancelSearch();
+      window.removeEventListener('popstate', syncHistory);
+    };
+  }, [pathname]);
 
-  const handleSearch = (e: FormEvent) => {
-    e.preventDefault();
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    pushSearch(searchInput);
+  const commitSearch = (text: string) => {
+    cancelSearch();
+    const params = new URLSearchParams(window.location.search);
+    const currentQuery = params.get('q') ?? '';
+    const query = text.trim();
+    setDraft({ pathname, urlQuery: currentQuery, text: query });
+    if (query === currentQuery) return;
+
+    if (query) params.set('q', query);
+    else params.delete('q');
+    params.delete('page');
+    updateExploreUrl(params);
   };
 
-  const clearSearch = () => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    setSearchInput('');
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('q');
-    params.delete('page');
-    startTransition(() => {
-      router.push(`${pathname}?${params.toString()}` as any, { scroll: false });
-    });
-    onSearch?.('');
+  const changeSearch = (text: string) => {
+    cancelSearch();
+    setDraft({ pathname, urlQuery, text });
+    const location = window.location.pathname;
+    const currentQuery = new URLSearchParams(window.location.search).get('q');
+    debounceRef.current = setTimeout(() => {
+      debounceRef.current = null;
+      if (window.location.pathname !== location) return;
+      if (new URLSearchParams(window.location.search).get('q') !== currentQuery) return;
+      commitSearch(text);
+    }, 400);
+  };
+
+  const handleSearch = (event: FormEvent) => {
+    event.preventDefault();
+    commitSearch(searchInput);
   };
 
   return (
@@ -103,8 +74,9 @@ export function SearchBar({ contentType, placeholder = 'Ara...', onSearch }: Sea
         <input
           type="text"
           value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder={placeholder}
+          onChange={(e) => changeSearch(e.target.value)}
+          placeholder={placeholder ?? t('searchPlaceholder')}
+          aria-label={placeholder ?? t('searchPlaceholder')}
           className="w-full px-4 py-3 pl-12 pr-12 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
         <svg
@@ -125,7 +97,8 @@ export function SearchBar({ contentType, placeholder = 'Ara...', onSearch }: Sea
         {searchInput && (
           <button
             type="button"
-            onClick={clearSearch}
+            onClick={() => commitSearch('')}
+            aria-label={t('clearSearch')}
             className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition"
           >
             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">

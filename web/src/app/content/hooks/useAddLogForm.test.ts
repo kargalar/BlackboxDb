@@ -1,5 +1,7 @@
+/// <reference types="vitest/jsdom" />
+
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getRecentTags, getRecentTaggedUsers } from '@/lib/log-suggestions';
 import { useAddLogForm } from './useAddLogForm';
 
@@ -17,7 +19,11 @@ const options = {
 };
 
 describe('log suggestions', () => {
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    vi.stubGlobal('localStorage', jsdom.window.localStorage);
+    window.localStorage.clear();
+  });
+  afterEach(() => vi.unstubAllGlobals());
 
   it('remembers additions before saving and offers them when another form opens', async () => {
     const first = renderHook(() => useAddLogForm(options));
@@ -55,8 +61,8 @@ describe('log suggestions', () => {
   });
 
   it('ignores malformed stored history', () => {
-    localStorage.setItem('bb_recent_tags', '{');
-    localStorage.setItem('bb_recent_with_who', JSON.stringify([null, {}, { username: 3 }]));
+    window.localStorage.setItem('bb_recent_tags', '{');
+    window.localStorage.setItem('bb_recent_with_who', JSON.stringify([null, {}, { username: 3 }]));
     expect(getRecentTags()).toEqual([]);
     expect(getRecentTaggedUsers()).toEqual([]);
   });

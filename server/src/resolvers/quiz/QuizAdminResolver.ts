@@ -45,6 +45,7 @@ export class QuizAdminResolver {
         difficulty: input.difficulty || 1,
         order: input.order ?? (maxOrder._max.order || 0) + 1,
         seasonNumber: input.seasonNumber ?? null,
+        episodeNumber: input.seasonNumber == null ? null : (input.episodeNumber ?? null),
         isEnabledForQuiz: input.isEnabledForQuiz || false,
       },
     });
@@ -69,6 +70,8 @@ export class QuizAdminResolver {
         ...(input.seasonNumber !== undefined && {
           seasonNumber: input.seasonNumber,
         }),
+        ...(input.episodeNumber !== undefined && { episodeNumber: input.episodeNumber }),
+        ...(input.seasonNumber === null && { episodeNumber: null }),
         ...(input.isEnabledForQuiz !== undefined && {
           isEnabledForQuiz: input.isEnabledForQuiz,
         }),

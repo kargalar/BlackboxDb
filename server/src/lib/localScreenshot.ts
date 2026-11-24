@@ -100,20 +100,25 @@ export function moveLocalScreenshotToContentFolder(
   const sourcePath = path.resolve(process.cwd(), "uploads/screenshots", currentFolder, fileName);
   const targetDir = path.resolve(process.cwd(), "uploads/screenshots", contentId);
   const targetPath = path.join(targetDir, fileName);
+  const targetUrl = `/uploads/screenshots/${contentId}/${fileName}${hash}`;
 
-  if (!fs.existsSync(targetDir)) {
-    fs.mkdirSync(targetDir, { recursive: true });
+  if (fs.existsSync(targetPath)) return targetUrl;
+  if (!fs.existsSync(sourcePath)) {
+    throw new Error(`Local screenshot is missing: ${imageUrl}`);
   }
 
-  if (fs.existsSync(sourcePath)) {
+  fs.mkdirSync(targetDir, { recursive: true });
+  if (currentFolder === "temp") {
     try {
       fs.renameSync(sourcePath, targetPath);
     } catch {
-      fs.copyFileSync(sourcePath, targetPath);
+      fs.copyFileSync(sourcePath, targetPath, fs.constants.COPYFILE_EXCL);
       fs.unlinkSync(sourcePath);
     }
+  } else {
+    fs.copyFileSync(sourcePath, targetPath, fs.constants.COPYFILE_EXCL);
   }
 
-  return `/uploads/screenshots/${contentId}/${fileName}${hash}`;
+  return targetUrl;
 }
 

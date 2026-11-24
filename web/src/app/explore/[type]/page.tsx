@@ -17,6 +17,7 @@ import { useTranslations } from 'next-intl';
 import { useGlobalSettings } from '@/contexts/GlobalSettingsContext';
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
+import { getExplorePage } from '../exploreUrl';
 
 type ContentType = 'movie' | 'tv' | 'game' | 'book';
 const GET_CONTENT_TYPE_BY_SLUG = gql`
@@ -52,7 +53,6 @@ function ExplorePageInner({ params }: PageProps) {
   const { settings } = useGlobalSettings();
 
   const query = searchParams.get('q') || '';
-  const page = parseInt(searchParams.get('page') || '1');
   const t = useTranslations('Explore');
 
   // Add to list modal state
@@ -64,6 +64,7 @@ function ExplorePageInner({ params }: PageProps) {
   const gridColumns = preferences?.gridColumns || 5;
   const gridRows = preferences?.gridRows || 4;
   const itemsPerPage = gridColumns * gridRows;
+  const page = getExplorePage(searchParams.get('page'), itemsPerPage);
 
   const { filters, filterCounts, sortBy, sortOrder, handleFilterChange, handleSortChange } =
     useExploreFilters(contentType, contentTypeId);
@@ -154,7 +155,7 @@ function ExplorePageInner({ params }: PageProps) {
               </span>
             </div>
             <div className="basis-full min-w-0 sm:flex-1 sm:basis-0">
-              <SearchBar contentType={contentType} />
+              <SearchBar />
             </div>
           </div>
         </div>
@@ -189,11 +190,7 @@ function ExplorePageInner({ params }: PageProps) {
               onRetry={retry}
             />
 
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              contentType={contentType}
-            />
+            <Pagination currentPage={currentPage} totalPages={totalPages} />
           </div>
         </div>
 

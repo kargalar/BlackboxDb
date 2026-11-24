@@ -10,9 +10,10 @@ import { ContentSoundtrack } from './ContentSoundtrack';
 interface ContentMediaProps {
   content: UnifiedContent;
   isWatched: boolean;
+  seasons?: Array<{ seasonNumber: number; name: string; episodes?: Array<{ episodeNumber: number; name: string }> }>;
 }
 
-export default function ContentMedia({ content, isWatched }: ContentMediaProps) {
+export default function ContentMedia({ content, isWatched, seasons }: ContentMediaProps) {
   const tHeader = useTranslations('ContentHeader');
   const tScreenshots = useTranslations('ContentScreenshots');
 
@@ -149,6 +150,7 @@ export default function ContentMedia({ content, isWatched }: ContentMediaProps) 
       {hasScreenshots && activeTab === 'screenshots' && (
         <ContentScreenshots
           screenshots={screenshots as any}
+          seasons={seasons}
           isWatched={isWatched}
           hideTitle={availableTabs.length > 1}
           mediaType="screenshot"

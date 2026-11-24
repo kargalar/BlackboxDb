@@ -1,7 +1,7 @@
 'use client';
 
 import React, { Suspense, useMemo } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { UserIcon } from '@/components/atoms/icons/SidebarIcons';
 import { SearchBar } from '../[type]/components/SearchBar';
 import { X } from 'lucide-react';
@@ -16,6 +16,7 @@ import { PersonFilterSidebar, type PersonFilterState } from './components/Person
 import { Pagination } from '../[type]/components/Pagination';
 import { useTranslations } from 'next-intl';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { getExplorePage, updateExploreUrl } from '../exploreUrl';
 
 export default function PersonExplorePage() {
   return (
@@ -27,9 +28,7 @@ export default function PersonExplorePage() {
 
 function PersonExplorePageInner() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const query = searchParams.get('q') || '';
-  const page = parseInt(searchParams.get('page') || '1', 10);
   const searchParamsString = searchParams.toString();
   const filters = useMemo<PersonFilterState>(() => {
     const params = new URLSearchParams(searchParamsString);
@@ -58,6 +57,7 @@ function PersonExplorePageInner() {
   const t = useTranslations('Explore.Person');
   const preferences = useUserPreferences();
   const itemsPerPage = (preferences?.gridColumns || 5) * (preferences?.gridRows || 4);
+  const page = getExplorePage(searchParams.get('page'), itemsPerPage);
 
   const { items, totalPages, loading } = usePersonSearch(
     query,
@@ -73,7 +73,7 @@ function PersonExplorePageInner() {
     newSortBy: PersonSortOption,
     newSortOrder: SortOrder
   ) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     params.delete('page');
 
     params.delete('gender');
@@ -97,7 +97,7 @@ function PersonExplorePageInner() {
     params.set('sortBy', newSortBy);
     params.set('sortOrder', newSortOrder);
 
-    router.push(`/explore/person?${params.toString()}`, { scroll: false });
+    updateExploreUrl(params);
   };
 
   const updateFilters = (newFilters: PersonFilterState) => {
@@ -167,7 +167,7 @@ function PersonExplorePageInner() {
               )}
             </div>
             <div className="flex-1 min-w-[200px]">
-              <SearchBar contentType="person" placeholder={t('searchPlaceholder')} />
+              <SearchBar placeholder={t('searchPlaceholder')} />
             </div>
           </div>
         </div>
@@ -233,7 +233,7 @@ function PersonExplorePageInner() {
 
                 {totalPages > 1 && (
                   <div className="mt-8 mb-4 border-t border-gray-800 pt-8">
-                    <Pagination currentPage={page} totalPages={totalPages} contentType="person" />
+                    <Pagination currentPage={page} totalPages={totalPages} />
                   </div>
                 )}
               </>

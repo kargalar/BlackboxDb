@@ -1,5 +1,8 @@
 import "reflect-metadata";
 import assert from "node:assert/strict";
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import test from "node:test";
 import type { PrismaClient } from "@prisma/client";
 import type { UpdateContentInput } from "../../types/admin";
@@ -10,47 +13,83 @@ import { saveImages, saveScreenshots } from "./AdminContentHelpers";
 
 const CONTENT_ID = "test-content";
 const CDN_URL = "https://media.example.test";
-const SOURCE_URL = `${CDN_URL}/blackbox/screenshots/source.jpg`;
-const TARGET_URL = `${CDN_URL}/blackbox/screenshots/${CONTENT_ID}/source.jpg`;
+const SOURCE_URL = "https://image.tmdb.org/t/p/original/source.png";
+const TARGET_URL = `${CDN_URL}/blackbox/screenshots/${CONTENT_ID}/source.png`;
+const PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==",
+  "base64",
+);
+
+function imageResponse() {
+  return new Response(new Uint8Array(PNG), { headers: { "content-type": "image/png" } });
+}
 
 test("content media preparation", async (t) => {
   const originalFetch = globalThis.fetch;
-  t.after(() => {
+  const originalDirectory = process.cwd();
+  const directory = await mkdtemp(path.join(tmpdir(), "blackbox-media-"));
+  process.chdir(directory);
+  t.after(async () => {
     globalThis.fetch = originalFetch;
+    process.chdir(originalDirectory);
+    await rm(directory, { recursive: true, force: true });
   });
 
-  function database(screenshots: Array<{ id: number; imageUrl: string }> = []) {
+  function database(
+    screenshots: Array<{ id: number; imageUrl: string }> = [],
+    images: Array<{ type: string; filePath: string }> = [],
+  ) {
     return {
       contentScreenshot: { findMany: async () => screenshots },
-      contentImage: { findMany: async (): Promise<never[]> => [] },
+      contentImage: { findMany: async () => images },
     } as unknown as PrismaClient;
   }
 
-  await t.test("performs no requests for unchanged images already in the content folder", async () => {
+  await t.test("performs no requests for unchanged legacy images", async () => {
     globalThis.fetch = async () => { throw new Error("Unexpected storage request"); };
+    const posterUrl = "https://external.test/poster.jpg";
     const prepared = await prepareContentMedia(
-      database([{ id: 42, imageUrl: TARGET_URL }]), CONTENT_ID,
-      { screenshots: [{ id: 42, imageUrl: TARGET_URL }], posterUrl: "https://external.test/poster.jpg" }, true,
+      database([{ id: 42, imageUrl: TARGET_URL }], [{ type: "poster", filePath: posterUrl }]), CONTENT_ID,
+      { screenshots: [{ id: 42, imageUrl: TARGET_URL }], posterUrl }, true,
     );
     assert.equal(prepared.screenshots[0].imageUrl, TARGET_URL);
-    assert.equal(prepared.posterUrl, "https://external.test/poster.jpg");
+    assert.equal(prepared.posterUrl, posterUrl);
   });
 
   await t.test("uploads shared base64 media once and preserves backdrop focus", async () => {
-    let uploads = 0;
-    globalThis.fetch = async (_url, options) => {
-      assert.equal(options?.method, "PUT");
-      uploads++;
-      return new Response(null, { status: 201 });
-    };
-    const image = "data:image/jpeg;base64,aW1hZ2U=";
+    globalThis.fetch = async () => { throw new Error("Unexpected storage request"); };
+    const image = `data:image/png;base64,${PNG.toString("base64")}`;
     const prepared = await prepareContentMedia(database(), CONTENT_ID, {
       backdropUrl: `${image}#focus=0.5,0.3`,
       images: [{ filePath: `${image}#focus=0.5,0.3`, type: "backdrop" }],
     }, false);
-    assert.equal(uploads, 1);
+    assert.equal((await readdir(`uploads/content-images/${CONTENT_ID}/backdrop`)).length, 1);
     assert.equal(prepared.backdropUrl, prepared.images[0].filePath);
     assert.ok(prepared.backdropUrl.endsWith("#focus=0.5,0.3"));
+  });
+
+  await t.test("retries temporary media and keeps the original when reusing saved media", async () => {
+    globalThis.fetch = async () => { throw new Error("Unexpected storage request"); };
+    await mkdir("uploads/content-images/temp/poster", { recursive: true });
+    await mkdir("uploads/screenshots/temp", { recursive: true });
+    await writeFile("uploads/content-images/temp/poster/local.png", PNG);
+    await writeFile("uploads/screenshots/temp/local.png", PNG);
+    const input = {
+      posterUrl: "/uploads/content-images/temp/poster/local.png",
+      screenshots: [{ imageUrl: "/uploads/screenshots/temp/local.png" }],
+    };
+    const prepared = await prepareContentMedia(database(), "first", input, false);
+    assert.deepEqual(await prepareContentMedia(database(), "first", input, false), prepared);
+
+    const reused = await prepareContentMedia(database(), "second", prepared, false);
+    for (const media of [prepared, reused]) {
+      assert.deepEqual(await readFile(media.posterUrl.slice(1)), PNG);
+      assert.deepEqual(await readFile(media.screenshots[0].imageUrl.slice(1)), PNG);
+    }
+    await assert.rejects(
+      prepareContentMedia(database(), "third", { screenshots: input.screenshots }, false),
+      /Local screenshot is missing/,
+    );
   });
 
   await t.test("alignment changes perform no storage requests", async () => {
@@ -101,44 +140,33 @@ test("content media preparation", async (t) => {
     globalThis.fetch = async () => new Response(null, { status: 404 });
     await assert.rejects(
       prepareContentMedia(database(), CONTENT_ID, { screenshots: [{ imageUrl: SOURCE_URL }] }, true),
-      /missing from both/,
+      /Could not download content image \(404\)/,
     );
   });
 
   await t.test("prepares 125 new screenshots with bounded concurrency and no HEAD requests", async () => {
     let activeRequests = 0;
     let peakRequests = 0;
-    let copies = 0;
-    let cancelledChecks = 0;
-    globalThis.fetch = async (url, options) => {
-      const method = options?.method ?? "GET";
-      assert.notEqual(method, "HEAD");
-      assert.notEqual(method, "DELETE");
+    let downloads = 0;
+    globalThis.fetch = async (_url, options) => {
+      assert.equal(options?.method ?? "GET", "GET");
       activeRequests++;
+      downloads++;
       peakRequests = Math.max(peakRequests, activeRequests);
       await new Promise<void>((resolve) => setImmediate(resolve));
       activeRequests--;
-      if (method === "PUT") {
-        copies++;
-        return new Response(null, { status: 201 });
-      }
-      if (options?.headers) {
-        // Existence probes must cancel the body instead of downloading the file.
-        const body = new ReadableStream({ cancel: () => { cancelledChecks++; } });
-        return new Response(body, { status: String(url).includes(CONTENT_ID) ? 404 : 200 });
-      }
-      return new Response("image", { headers: { "content-type": "image/png" } });
+      return imageResponse();
     };
     const screenshots = Array.from({ length: 125 }, (_, index) => ({
-      imageUrl: `${CDN_URL}/blackbox/screenshots/bulk-${index}.png`,
+      imageUrl: `https://image.tmdb.org/t/p/original/bulk-${index}.png`,
     }));
     const prepared = await prepareContentMedia(database(), CONTENT_ID, { screenshots }, true);
     assert.equal(prepared.screenshots.length, 125);
-    prepared.screenshots.forEach((screenshot, index) => {
-      assert.equal(screenshot.imageUrl, `${CDN_URL}/blackbox/screenshots/${CONTENT_ID}/bulk-${index}.png`);
-    });
-    assert.equal(copies, 125);
-    assert.equal(cancelledChecks, 250);
+    for (const screenshot of prepared.screenshots) {
+      assert.ok(screenshot.imageUrl.startsWith(`/uploads/content-images/${CONTENT_ID}/screenshot/`));
+      assert.deepEqual(await readFile(screenshot.imageUrl.slice(1)), PNG);
+    }
+    assert.equal(downloads, 125);
     assert.ok(peakRequests <= 5);
   });
 
@@ -164,17 +192,17 @@ test("content media preparation", async (t) => {
       assert.equal(inTransaction, false);
       return new Response(null, { status: 404 });
     };
-    await assert.rejects(resolver.updateContent(CONTENT_ID, input, context), /missing from both/);
+    await assert.rejects(resolver.updateContent(CONTENT_ID, input, context), /Could not download content image \(404\)/);
     assert.equal(transactions, 0);
 
     globalThis.fetch = async () => {
       assert.equal(inTransaction, false);
-      return new Response(null, { status: 200 });
+      return imageResponse();
     };
     Object.assign(resolver, {
       updateContentInTransaction: async (_id: string, prepared: UpdateContentInput) => {
         assert.equal(inTransaction, true);
-        assert.equal(prepared.screenshots[0].imageUrl, TARGET_URL);
+        assert.deepEqual(await readFile(prepared.screenshots[0].imageUrl.slice(1)), PNG);
         return { id: CONTENT_ID };
       },
     });
@@ -186,7 +214,7 @@ test("content media preparation", async (t) => {
   await t.test("persists prepared screenshots without storage requests and skips unchanged rows", async () => {
     globalThis.fetch = async () => { throw new Error("Storage request inside transaction"); };
     const existing = {
-      id: 42, imageUrl: TARGET_URL, difficulty: 1, order: 0, seasonNumber: null as number | null,
+      id: 42, imageUrl: TARGET_URL, difficulty: 1, order: 0, seasonNumber: null as number | null, episodeNumber: null as number | null,
       isEnabledForQuiz: false, isSpoiler: false, isSensitive: false,
     };
     let updates = 0;

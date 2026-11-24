@@ -307,6 +307,7 @@ export interface UnifiedContent {
     difficulty: number;
     order: number;
     seasonNumber?: number | null;
+  episodeNumber?: number | null;
     isEnabledForQuiz: boolean;
     isSpoiler?: boolean;
     isSensitive?: boolean;

@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 import Image from 'next/image';
@@ -11,10 +10,6 @@ import {
   Medal,
   Crown,
   ArrowLeft,
-  Film,
-  Tv,
-  Gamepad2,
-  BookOpen,
   User,
   Target,
   Percent,
@@ -79,13 +74,6 @@ const GET_MY_ENTRY = gql`
   }
 `;
 
-const CONTENT_TYPES = [
-  { id: 1, name: 'Film', icon: Film, color: 'bg-red-500 ', emoji: '🎬' },
-  { id: 2, name: 'Dizi', icon: Tv, color: 'bg-blue-500 ', emoji: '📺' },
-  { id: 3, name: 'Oyun', icon: Gamepad2, color: 'bg-green-500 ', emoji: '🎮' },
-  { id: 4, name: 'Kitap', icon: BookOpen, color: 'bg-yellow-500 ', emoji: '📚' },
-];
-
 export default function LeaderboardPage() {
   return (
     <Suspense fallback={<div className="p-6 text-white">Yükleniyor...</div>}>
@@ -95,11 +83,9 @@ export default function LeaderboardPage() {
 }
 
 function LeaderboardPageInner() {
-  const searchParams = useSearchParams();
   const { user } = useAuth();
 
-  const initialType = parseInt(searchParams.get('type') || '1');
-  const [selectedType, setSelectedType] = useState(initialType);
+  const selectedType = 1;
 
   const { data: leaderboardData, loading } = useQuery<GetLeaderboardData>(GET_LEADERBOARD, {
     variables: { contentTypeId: selectedType, limit: 100 },
@@ -112,7 +98,6 @@ function LeaderboardPageInner() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const currentType = CONTENT_TYPES.find((t) => t.id === selectedType);
   const leaderboard = leaderboardData?.getLeaderboard || [];
   const myEntry = myEntryData?.getMyLeaderboardEntry;
 
@@ -144,34 +129,8 @@ function LeaderboardPageInner() {
               <Trophy className="w-8 h-8 text-yellow-500" />
               Liderlik Tablosu
             </h1>
-            <p className="text-gray-400 mt-1">En iyi oyuncuları keşfet</p>
+            <p className="text-gray-400 mt-1">Yalnızca günün quizi puanları sıralanır</p>
           </div>
-        </div>
-
-        {/* Category Tabs */}
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
-          {CONTENT_TYPES.map((type) => {
-            const Icon = type.icon;
-            const isActive = selectedType === type.id;
-
-            return (
-              <button
-                key={type.id}
-                onClick={() => setSelectedType(type.id)}
-                className={`
-                  flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all whitespace-nowrap
-                  ${
-                    isActive
-                      ? ` ${type.color} text-white`
-                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
-                  }
-                `}
-              >
-                <Icon className="w-4 h-4" />
-                {type.name}
-              </button>
-            );
-          })}
         </div>
 
         {/* My Stats Card */}
@@ -263,7 +222,7 @@ function LeaderboardPageInner() {
               <Trophy className="w-16 h-16 text-gray-600 mx-auto mb-4" />
               <p className="text-gray-400 text-lg">Henüz kimse oynamadı</p>
               <Link
-                href={`/quiz/play?type=${selectedType}`}
+                href="/quiz/play?type=1&daily=1"
                 className="inline-block mt-4 px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold"
               >
                 İlk Sen Oyna!
@@ -356,10 +315,10 @@ function LeaderboardPageInner() {
         {/* Play CTA */}
         <div className="mt-8 text-center">
           <Link
-            href={`/quiz/play?type=${selectedType}`}
+            href="/quiz/play?type=1&daily=1"
             className="inline-flex items-center gap-2 px-8 py-4 bg-gray-700 hover:bg-gray-600 hover: text-white text-lg font-bold rounded-xl transition-all"
           >
-            {currentType?.emoji} {currentType?.name} Quiz&apos;e Başla
+            🎬 Günün Quizine Başla
           </Link>
         </div>
       </div>

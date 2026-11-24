@@ -17,6 +17,9 @@ export class AdminScreenshot {
     @Field(() => Int, { nullable: true })
     seasonNumber?: number;
 
+  @Field(() => Int, { nullable: true })
+  episodeNumber?: number;
+
     @Field(() => String, { nullable: true })
     description?: string;
 

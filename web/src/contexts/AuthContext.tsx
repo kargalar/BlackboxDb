@@ -26,6 +26,7 @@ interface User {
   gridRows?: number;
   posterZoomEnabled?: boolean;
   posterIconsBelow?: boolean;
+  posterIconsPosition?: 'above' | 'below' | 'off';
   posterRatingEnabled?: boolean;
   showSensitiveContent?: boolean;
   preferredGamePlatformId?: number | null;

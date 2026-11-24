@@ -133,9 +133,9 @@ export default function QuizPage() {
 
   useEffect(() => {
     if (selectedType) {
-      getLeaderboard({ variables: { contentTypeId: selectedType, limit: 5 } });
+      getLeaderboard({ variables: { contentTypeId: 1, limit: 5 } });
       if (user) {
-        getMyEntry({ variables: { contentTypeId: selectedType } });
+        getMyEntry({ variables: { contentTypeId: 1 } });
       }
     }
   }, [selectedType, getLeaderboard, getMyEntry, user]);
@@ -155,6 +155,20 @@ export default function QuizPage() {
           <span className="gradient-text">{t('title')}</span>
         </h1>
         <p className="text-xl text-white/50 max-w-2xl mx-auto">{t('description')}</p>
+      </div>
+
+      <div className="glass-card p-6 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-white">{t('dailyTitle')}</h2>
+          <p className="text-white/60 mt-1">{t('dailyDescription')}</p>
+        </div>
+        {user ? (
+          <button onClick={() => router.push('/quiz/play?type=1&daily=1')} className="px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold">
+            {t('dailyStart')}
+          </button>
+        ) : (
+          <Link href="/auth/login" className="px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold">{t('dailyLogin')}</Link>
+        )}
       </div>
 
       {/* Content Type Cards */}
@@ -320,7 +334,7 @@ export default function QuizPage() {
                 <span className="gradient-text">{t('leaderboard.title')}</span>
               </h2>
               <Link
-                href={`/quiz/leaderboard?type=${selectedType}`}
+                href="/quiz/leaderboard?type=1"
                 className="text-violet-400 hover:text-violet-300 text-sm font-medium flex items-center gap-1"
               >
                 {t('leaderboard.seeAll')} <ChevronRight className="w-4 h-4" />

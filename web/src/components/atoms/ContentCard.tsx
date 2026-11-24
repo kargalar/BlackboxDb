@@ -48,9 +48,14 @@ export function ContentCard({
   aspectClassName,
 }: ContentCardProps) {
   const sz = sizeMap[size];
-  const { posterZoomEnabled, posterIconsBelow, posterRatingEnabled } = useUserPreferences();
+  const { posterZoomEnabled, posterIconsBelow, posterIconsPosition, posterRatingEnabled } =
+    useUserPreferences();
+  const iconsPosition = posterIconsPosition ?? (posterIconsBelow ? 'below' : 'above');
+  const isPosterIconsOff = iconsPosition === 'off';
   const posterRating =
-    posterRatingEnabled && communityRating ? getPosterRating(communityRating) : null;
+    !isPosterIconsOff && posterRatingEnabled && communityRating
+      ? getPosterRating(communityRating)
+      : null;
 
   return (
     <PosterZoomPreview src={posterSrc} alt={title} enabled={posterZoomEnabled}>
@@ -87,8 +92,10 @@ export function ContentCard({
             </div>
           )}
 
-          {/* Badges ON poster (when posterIconsBelow is false) */}
-          {!posterIconsBelow && rightTop && <div className="content-card-rating">{rightTop}</div>}
+          {/* Badges ON poster (when iconsPosition is 'above') */}
+          {iconsPosition === 'above' && rightTop && (
+            <div className="content-card-rating">{rightTop}</div>
+          )}
 
           {/* Action Buttons Overlay (visible on hover) */}
           {overlay && <div className="content-card-actions">{overlay}</div>}
@@ -100,8 +107,10 @@ export function ContentCard({
           </div>
         </div>
 
-        {/* Status Badges - Below poster (when posterIconsBelow is true) */}
-        {posterIconsBelow && rightTop && <div className="content-card-badges">{rightTop}</div>}
+        {/* Status Badges - Below poster (when iconsPosition is 'below') */}
+        {iconsPosition === 'below' && rightTop && (
+          <div className="content-card-badges">{rightTop}</div>
+        )}
       </Link>
     </PosterZoomPreview>
   );

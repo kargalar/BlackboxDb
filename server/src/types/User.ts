@@ -60,6 +60,9 @@ export class AppUser {
   @Field(() => Boolean, { nullable: true })
   posterIconsBelow?: boolean;
 
+  @Field(() => String, { nullable: true })
+  posterIconsPosition?: string;
+
   @Field(() => Boolean, { nullable: true })
   posterRatingEnabled?: boolean;
 

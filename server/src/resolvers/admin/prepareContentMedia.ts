@@ -7,7 +7,6 @@ import {
   saveLocalScreenshot,
 } from "../../lib/localScreenshot";
 import {
-  isLocalContentImageUrl,
   localizeContentImage,
   type ContentImageKind,
 } from "../../lib/localContentImage";
@@ -59,10 +58,7 @@ export async function prepareContentMedia<
     url: string,
     preset: ContentImageKind,
   ): Promise<string> {
-    const unchangedLocalImage =
-      isLocalContentImageUrl(url);
     if (
-      unchangedLocalImage &&
       existingImages.some(
         (image) =>
           image.type === preset &&
@@ -119,11 +115,9 @@ export async function prepareContentMedia<
               ? row.id === screenshot.id
               : row.imageUrl === screenshot.imageUrl,
           );
-          const imageUrl =
-            existing?.imageUrl === screenshot.imageUrl &&
-            isLocalScreenshotUrl(screenshot.imageUrl)
-              ? moveLocalScreenshotToContentFolder(screenshot.imageUrl, contentId)
-              : await resolveUrl(screenshot.imageUrl, "screenshot");
+          const imageUrl = existing?.imageUrl === screenshot.imageUrl
+            ? existing.imageUrl
+            : await resolveUrl(screenshot.imageUrl, "screenshot");
           // Preserve identity when an old URL is recovered to its content folder.
           return {
             ...screenshot,

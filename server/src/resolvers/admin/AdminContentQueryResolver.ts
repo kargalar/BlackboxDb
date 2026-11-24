@@ -340,6 +340,7 @@ export class AdminContentQueryResolver {
             difficulty: true,
             order: true,
             seasonNumber: true,
+            episodeNumber: true,
             isEnabledForQuiz: true,
             isSpoiler: true,
             isSensitive: true,

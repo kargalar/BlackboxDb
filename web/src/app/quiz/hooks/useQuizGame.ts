@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useQuery, useMutation, useLazyQuery } from '@apollo/client/react';
+import { skipToken, useQuery, useMutation, useLazyQuery } from '@apollo/client/react';
 import { gql } from '@apollo/client';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
-export const START_QUIZ_V2 = gql`
-  query StartQuizV2($contentTypeId: Int!) {
-    startQuizV2(contentTypeId: $contentTypeId) {
+const QUIZ_FIELDS = gql`
+  fragment QuizFields on QuizSessionV2 {
+      dailyDate
+      dailyCompleted
       contentItems {
         contentId
         title
@@ -35,8 +36,18 @@ export const START_QUIZ_V2 = gql`
       pointsLevel3
       pointsLevel4
       pointsLevel5
-    }
   }
+`;
+
+export const START_QUIZ_V2 = gql`
+  query StartQuizV2($contentTypeId: Int!, $questionCount: Int, $consumedOnly: Boolean!) {
+    startQuizV2(contentTypeId: $contentTypeId, questionCount: $questionCount, consumedOnly: $consumedOnly) { ...QuizFields }
+  }
+  ${QUIZ_FIELDS}
+`;
+const DAILY_QUIZ = gql`
+  query DailyQuiz { dailyQuiz { ...QuizFields } }
+  ${QUIZ_FIELDS}
 `;
 
 export const SEARCH_CONTENT = gql`
@@ -91,6 +102,17 @@ export interface ContentItem {
   screenshots: { id: number; imageUrl: string; difficulty: number }[];
 }
 
+interface QuizSession {
+  dailyDate?: string | null;
+  dailyCompleted?: boolean | null;
+  contentItems: ContentItem[];
+  pointsLevel1: number;
+  pointsLevel2: number;
+  pointsLevel3: number;
+  pointsLevel4: number;
+  pointsLevel5: number;
+}
+
 const EMPTY_CONTENT_ITEMS: ContentItem[] = [];
 
 export interface SearchContentItem {
@@ -111,40 +133,50 @@ export interface ContentResult {
 }
 
 export type GameState =
-  | 'loading'
-  | 'empty'
   | 'ready'
   | 'playing'
   | 'revealed'
   | 'revealed-correct'
   | 'finished';
 
-export function useQuizGame(contentTypeId: number, t: any) {
-  const { user } = useAuth();
+export function useQuizGame(contentTypeId: number, t: any, dailyMode = false) {
+  const { user, loading: authLoading } = useAuth();
 
-  const [gameState, setGameState] = useState<GameState>('loading');
+  const [gameState, setGameState] = useState<GameState>('ready');
+  const [practiceQuiz, setPracticeQuiz] = useState<QuizSession>();
   const [currentContentIndex, setCurrentContentIndex] = useState(0);
   const [currentScreenshotIndex, setCurrentScreenshotIndex] = useState(0);
   const [results, setResults] = useState<ContentResult[]>([]);
   const gameStartedAtRef = useRef<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isWrongAnswer, setIsWrongAnswer] = useState(false);
+  const wrongAnswerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [searchQuery, setSearchQueryState] = useState('');
   const [selectedResultIndex, setSelectedResultIndex] = useState(-1);
-  const showSearchResults = searchQuery.length >= 2;
+  const trimmedSearch = searchQuery.trim();
+  const showSearchResults = gameState === 'playing' && trimmedSearch.length >= 2;
   const setSearchQuery = useCallback((query: string) => {
     setSearchQueryState(query);
-    setSelectedResultIndex(query.length >= 2 ? 0 : -1);
+    setSelectedResultIndex(query.trim().length >= 2 ? 0 : -1);
   }, []);
 
-  const { data, loading, error, refetch } = useQuery(START_QUIZ_V2, {
-    variables: { contentTypeId },
-    fetchPolicy: 'network-only',
-  });
+  const { data, loading, error, refetch } = useQuery<{ dailyQuiz: QuizSession }>(
+    DAILY_QUIZ,
+    dailyMode && !authLoading && user ? { fetchPolicy: 'no-cache' } : skipToken
+  );
+  const [loadPractice, { loading: practiceLoading }] = useLazyQuery<{ startQuizV2: QuizSession }>(
+    START_QUIZ_V2,
+    { fetchPolicy: 'no-cache' }
+  );
 
-  const [searchContent, { data: searchData, loading: searchLoading }] =
-    useLazyQuery<SearchContentResponse>(SEARCH_CONTENT);
+  const { data: searchData, loading: searchLoading, error: searchError } =
+    useQuery<SearchContentResponse>(
+      SEARCH_CONTENT,
+      showSearchResults
+        ? { variables: { searchQuery: trimmedSearch, contentTypeId, limit: 10 } }
+        : skipToken
+    );
 
   const [submitQuiz] = useMutation<any, any>(SUBMIT_QUIZ, {
     onCompleted: (data: any) => console.log('[QuizPlay] Quiz submitted:', data.submitQuiz),
@@ -154,26 +186,17 @@ export function useQuizGame(contentTypeId: number, t: any) {
     },
   });
 
-  const quiz = (data as any)?.startQuizV2;
+  const quiz = dailyMode ? data?.dailyQuiz : practiceQuiz;
   const contentItems: ContentItem[] = quiz?.contentItems ?? EMPTY_CONTENT_ITEMS;
-  const resolvedGameState =
-    gameState === 'loading' && !loading ? (contentItems.length > 0 ? 'ready' : 'empty') : gameState;
   const currentContent = contentItems[currentContentIndex];
   const currentScreenshot = currentContent?.screenshots[currentScreenshotIndex];
   const totalScreenshots = currentContent?.screenshots.length || 0;
 
   useEffect(() => {
-    if (!loading && error) {
-      console.error('[QuizPlay] Error loading quiz:', error);
-      toast.error((error as any)?.message || t('quizNotLoaded'));
-    }
-  }, [loading, error, t]);
-
-  useEffect(() => {
-    if (searchQuery.length >= 2) {
-      searchContent({ variables: { searchQuery, contentTypeId, limit: 10 } });
-    }
-  }, [searchQuery, contentTypeId, searchContent]);
+    return () => {
+      if (wrongAnswerTimer.current !== null) clearTimeout(wrongAnswerTimer.current);
+    };
+  }, []);
 
   const calculatePoints = (difficulty: number): number => {
     if (!quiz) return 0;
@@ -185,8 +208,34 @@ export function useQuizGame(contentTypeId: number, t: any) {
   };
 
   const hasSubmittedRef = useRef(false);
+  const startingRef = useRef(false);
 
-  const startGame = () => {
+  const startGame = async (questionCount: number, consumedOnly: boolean) => {
+    if (startingRef.current) return;
+    if (dailyMode) {
+      if (!user || !quiz?.contentItems.length || quiz.dailyCompleted) return;
+    } else {
+      startingRef.current = true;
+      try {
+        const { data } = await loadPractice({
+          variables: { contentTypeId, questionCount, consumedOnly },
+        });
+        const nextQuiz = data?.startQuizV2;
+        if (!nextQuiz?.contentItems.length) {
+          toast.error(t('noMatchingContent'));
+          return;
+        }
+        if (nextQuiz.contentItems.length < questionCount) {
+          toast(t('fewerQuestions', { count: nextQuiz.contentItems.length }));
+        }
+        setPracticeQuiz(nextQuiz);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : t('quizNotLoaded'));
+        return;
+      } finally {
+        startingRef.current = false;
+      }
+    }
     hasSubmittedRef.current = false;
     setGameState('playing');
     setCurrentContentIndex(0);
@@ -205,19 +254,19 @@ export function useQuizGame(contentTypeId: number, t: any) {
 
   useEffect(() => {
     if (gameState !== 'finished' || hasSubmittedRef.current) return;
-    if (!user || results.length === 0) return;
+    if (!dailyMode || !user || !quiz?.dailyDate || results.length === 0) return;
 
     hasSubmittedRef.current = true;
     const answers = results.map((r) => ({
-      screenshotId: contentItems.find((c) => c.contentId === r.contentId)?.screenshots[0]?.id || 0,
+      screenshotId: contentItems.find((c) => c.contentId === r.contentId)?.screenshots[r.screenshotsUsed - 1]?.id || 0,
       selectedContentId: r.wasCorrect ? r.contentId : '',
       timeTaken: 0,
     }));
 
     submitQuiz({
-      variables: { input: { contentTypeId, answers, totalTimeTaken: elapsedSeconds } },
+      variables: { input: { contentTypeId, dailyDate: quiz.dailyDate, answers, totalTimeTaken: elapsedSeconds } },
     });
-  }, [gameState, results, user, contentItems, contentTypeId, submitQuiz, elapsedSeconds]);
+  }, [gameState, results, user, contentItems, contentTypeId, submitQuiz, elapsedSeconds, dailyMode, quiz]);
 
   const moveToNextScreenshot = () => {
     if (currentScreenshotIndex < totalScreenshots - 1) {
@@ -249,7 +298,8 @@ export function useQuizGame(contentTypeId: number, t: any) {
     } else {
       toast.error(t('wrong'));
       setIsWrongAnswer(true);
-      setTimeout(() => {
+      wrongAnswerTimer.current = setTimeout(() => {
+        wrongAnswerTimer.current = null;
         setIsWrongAnswer(false);
         moveToNextScreenshot();
       }, 1200);
@@ -262,13 +312,19 @@ export function useQuizGame(contentTypeId: number, t: any) {
     moveToNextScreenshot();
   };
 
+  const handleGiveUp = () => {
+    if (gameState !== 'playing' || isWrongAnswer) return;
+    setSearchQuery('');
+    setGameState('revealed');
+  };
+
   const continueAfterReveal = () => {
     setResults((prev) => [
       ...prev,
       {
         contentId: currentContent?.contentId || '',
         wasCorrect: false,
-        screenshotsUsed: totalScreenshots,
+        screenshotsUsed: currentScreenshotIndex + 1,
         pointsEarned: 0,
       },
     ]);
@@ -329,7 +385,7 @@ export function useQuizGame(contentTypeId: number, t: any) {
   const accuracy = results.length > 0 ? Math.round((correctCount / results.length) * 100) : 0;
 
   return {
-    gameState: resolvedGameState,
+    gameState,
     setGameState,
     currentContentIndex,
     currentScreenshotIndex,
@@ -342,6 +398,8 @@ export function useQuizGame(contentTypeId: number, t: any) {
     selectedResultIndex,
     setSelectedResultIndex,
     quiz,
+    user,
+    authLoading,
     contentItems,
     currentContent,
     currentScreenshot,
@@ -349,15 +407,17 @@ export function useQuizGame(contentTypeId: number, t: any) {
     searchData,
     loading,
     searchLoading,
+    searchError,
+    practiceLoading,
     error,
     refetch,
     totalScore,
     correctCount,
     accuracy,
     startGame,
-    finishQuiz,
     handleAnswer,
     handlePass,
+    handleGiveUp,
     continueAfterReveal,
     continueAfterCorrectReveal,
     getContentDetails,

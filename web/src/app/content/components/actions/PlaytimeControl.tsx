@@ -1,5 +1,11 @@
 import React from 'react';
 import { Minus, Plus } from 'lucide-react';
+import {
+  adjustPlaytime,
+  getPlaytimeStep,
+  handlePlaytimeKeyDown,
+  type PlaytimeUnit,
+} from '../playtimeStep';
 
 interface PlaytimeControlProps {
   t: any;
@@ -16,6 +22,11 @@ const PlaytimeControl: React.FC<PlaytimeControlProps> = ({
   setLocalPlaytime,
   handlePlaytimeChange,
 }) => {
+  const saveStep = (unit: PlaytimeUnit, step: number) => {
+    const total = adjustPlaytime(localPlaytime, unit, step);
+    if (total !== localPlaytime) handlePlaytimeChange(total);
+  };
+
   return (
     <div>
       <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3 flex items-center justify-between">
@@ -32,13 +43,7 @@ const PlaytimeControl: React.FC<PlaytimeControlProps> = ({
               <div className="flex items-center bg-neutral-950 border border-neutral-800 rounded-lg overflow-hidden focus-within:border-neutral-700 transition-all duration-200">
                 <button
                   type="button"
-                  onClick={() => {
-                    const currentHours = Math.floor((localPlaytime || 0) / 60);
-                    if (currentHours > 0) {
-                      const currentMinutes = (localPlaytime || 0) % 60;
-                      handlePlaytimeChange((currentHours - 1) * 60 + currentMinutes);
-                    }
-                  }}
+                  onClick={(event) => saveStep('hours', -getPlaytimeStep(event))}
                   className="px-2 py-1.5 text-neutral-400 hover:bg-neutral-900 hover:text-white transition-colors"
                 >
                   <Minus className="w-3.5 h-3.5" />
@@ -46,6 +51,11 @@ const PlaytimeControl: React.FC<PlaytimeControlProps> = ({
                 <input
                   type="number"
                   min="0"
+                  onKeyDown={(event) =>
+                    handlePlaytimeKeyDown(event, (step) =>
+                      setLocalPlaytime(adjustPlaytime(localPlaytime, 'hours', step))
+                    )
+                  }
                   value={localPlaytime ? Math.floor(localPlaytime / 60) : ''}
                   onChange={(e) => {
                     const newHours = Math.max(0, parseInt(e.target.value) || 0);
@@ -62,11 +72,7 @@ const PlaytimeControl: React.FC<PlaytimeControlProps> = ({
                 />
                 <button
                   type="button"
-                  onClick={() => {
-                    const currentHours = Math.floor((localPlaytime || 0) / 60);
-                    const currentMinutes = (localPlaytime || 0) % 60;
-                    handlePlaytimeChange((currentHours + 1) * 60 + currentMinutes);
-                  }}
+                  onClick={(event) => saveStep('hours', getPlaytimeStep(event))}
                   className="px-2 py-1.5 text-neutral-400 hover:bg-neutral-900 hover:text-white transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -85,13 +91,7 @@ const PlaytimeControl: React.FC<PlaytimeControlProps> = ({
               <div className="flex items-center bg-neutral-950 border border-neutral-800 rounded-lg overflow-hidden focus-within:border-neutral-700 transition-all duration-200">
                 <button
                   type="button"
-                  onClick={() => {
-                    const currentMinutes = (localPlaytime || 0) % 60;
-                    if (currentMinutes > 0) {
-                      const currentHours = Math.floor((localPlaytime || 0) / 60);
-                      handlePlaytimeChange(currentHours * 60 + (currentMinutes - 1));
-                    }
-                  }}
+                  onClick={(event) => saveStep('minutes', -getPlaytimeStep(event))}
                   className="px-2 py-1.5 text-neutral-400 hover:bg-neutral-900 hover:text-white transition-colors"
                 >
                   <Minus className="w-3.5 h-3.5" />
@@ -100,6 +100,11 @@ const PlaytimeControl: React.FC<PlaytimeControlProps> = ({
                   type="number"
                   min="0"
                   max="59"
+                  onKeyDown={(event) =>
+                    handlePlaytimeKeyDown(event, (step) =>
+                      setLocalPlaytime(adjustPlaytime(localPlaytime, 'minutes', step))
+                    )
+                  }
                   value={localPlaytime ? localPlaytime % 60 : ''}
                   onChange={(e) => {
                     const newMinutes = Math.min(59, Math.max(0, parseInt(e.target.value) || 0));
@@ -116,11 +121,7 @@ const PlaytimeControl: React.FC<PlaytimeControlProps> = ({
                 />
                 <button
                   type="button"
-                  onClick={() => {
-                    const currentMinutes = (localPlaytime || 0) % 60;
-                    const currentHours = Math.floor((localPlaytime || 0) / 60);
-                    handlePlaytimeChange(currentHours * 60 + (currentMinutes + 1));
-                  }}
+                  onClick={(event) => saveStep('minutes', getPlaytimeStep(event))}
                   className="px-2 py-1.5 text-neutral-400 hover:bg-neutral-900 hover:text-white transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />

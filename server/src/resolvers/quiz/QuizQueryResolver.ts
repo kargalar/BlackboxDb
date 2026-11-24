@@ -1,4 +1,4 @@
-import { Resolver, Query, Arg, Ctx, Int } from "type-graphql";
+import { Resolver, Query, Arg, Ctx, Int, Authorized } from "type-graphql";
 import { GraphQLContext } from "../../context";
 import {
   ContentScreenshot,
@@ -17,6 +17,24 @@ import {
 
 @Resolver()
 export class QuizQueryResolver {
+  @Authorized()
+  @Query(() => QuizSessionV2)
+  async dailyQuiz(@Ctx() context: GraphQLContext): Promise<QuizSessionV2> {
+    if (!context.user) throw new Error("Giriş yapmanız gerekiyor");
+    const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    let daily = await context.prisma.dailyQuiz.findUnique({ where: { date } });
+    if (!daily) {
+      const session = await this.startQuizV2(1, 10, false, context, true);
+      if (session.contentItems.length < 10) throw new Error("Günün quizi için yeterli film bulunamadı.");
+      daily = await context.prisma.dailyQuiz.upsert({
+        where: { date }, create: { date, session: JSON.parse(JSON.stringify(session)) }, update: {},
+      });
+    }
+    const attempt = await context.prisma.dailyQuizAttempt.findUnique({
+      where: { date_userId: { date, userId: context.user.id } },
+    });
+    return { ...(daily.session as unknown as QuizSessionV2), dailyDate: date, dailyCompleted: !!attempt };
+  }
   // ======================================
   // Screenshot Queries
   // ======================================
@@ -276,8 +294,17 @@ export class QuizQueryResolver {
   @Query(() => QuizSessionV2)
   async startQuizV2(
     @Arg("contentTypeId", () => Int) contentTypeId: number,
-    @Ctx() { prisma }: GraphQLContext,
+    @Arg("questionCount", () => Int, { nullable: true }) questionCount: number | null,
+    @Arg("consumedOnly", () => Boolean, { defaultValue: false }) consumedOnly: boolean,
+    @Ctx() { prisma, user }: GraphQLContext,
+    @Arg("dailyPool", () => Boolean, { defaultValue: false }) dailyPool = false,
   ): Promise<QuizSessionV2> {
+    if (questionCount != null && (questionCount < 1 || questionCount > 100)) {
+      throw new Error("Soru sayısı 1 ile 100 arasında olmalıdır.");
+    }
+    if (consumedOnly && !user) {
+      throw new Error("Bu seçenek için giriş yapmalısınız.");
+    }
     console.log(`🎮 [QuizQuery] startQuizV2: contentTypeId=${contentTypeId}`);
 
     // Quiz ayarlarını al
@@ -304,15 +331,16 @@ export class QuizQueryResolver {
       throw new Error("İçerik türü bulunamadı");
     }
 
-    // Quiz'e aktif içerikleri ve screenshot'larını al
-    // All 5 difficulty levels must be covered - auto-detect (no manual isEnabledForQuiz on content needed)
-    const QUIZ_DIFFICULTIES = [1, 2, 3, 4, 5];
-
     const contents = await prisma.content.findMany({
       where: {
         contentTypeId,
+        deletedAt: null,
+        ...(dailyPool ? { isEnabledForQuiz: true } : {}),
+        ...(consumedOnly && user
+          ? { userContentLogs: { some: { userId: user.id, isConsumed: true } } }
+          : {}),
         screenshots: {
-          some: { isEnabledForQuiz: true },
+          some: { isEnabledForQuiz: true, difficulty: { gte: 1, lte: 5 } },
         },
       },
       include: {
@@ -331,18 +359,11 @@ export class QuizQueryResolver {
       },
     });
 
-    if (contents.length < 1) {
-      console.error(
-        `❌ [QuizQuery] startQuizV2: no enabled content for contentTypeId=${contentTypeId}`,
-      );
-      throw new Error("Bu içerik türü için quiz aktif içerik bulunamadı.");
-    }
-
     // İçerikleri karıştır ve questionsCount kadarını seç
     const shuffledContents = shuffleArray(contents);
     const selectedContents = shuffledContents.slice(
       0,
-      settings.questionsCount || 10,
+      questionCount ?? (settings.questionsCount || 10),
     );
 
     // Content items oluştur - zordan kolaya, her seviyeden 1 rastgele seç

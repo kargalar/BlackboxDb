@@ -51,7 +51,8 @@ const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
+    reader.onerror = () => reject(new Error(`${file.name}: ${reader.error?.message || 'Dosya okunamadı'}`));
+    reader.onabort = () => reject(new Error(`${file.name}: Dosya okuma iptal edildi`));
     reader.readAsDataURL(file);
   });
 };
@@ -179,7 +180,7 @@ export function useAddContentSubmit({
           const chunk = newScreenshots.slice(i, i + chunkSize);
 
           try {
-            await Promise.all(
+            const results = await Promise.allSettled(
               chunk.map(async (screenshot, chunkIndex) => {
                 // JIT (Just In Time) Base64 conversion to avoid OOM
                 let base64Data = screenshot.base64;
@@ -187,8 +188,12 @@ export function useAddContentSubmit({
                   base64Data = await fileToBase64(screenshot.file);
                 }
 
+                if (!base64Data) {
+                  throw new Error(`${screenshot.fileName || 'Ekran görüntüsü'}: Görsel verisi bulunamadı`);
+                }
+
                 const uploadedUrl = await uploadContentImage(
-                  base64Data!,
+                  base64Data,
                   screenshot.fileName ||
                     screenshot.file?.name ||
                     `screenshot-${i + chunkIndex + 1}.jpg`,
@@ -223,9 +228,12 @@ export function useAddContentSubmit({
                 );
               })
             );
-          } catch (err: any) {
-            console.error(`❌ [AddContent] Screenshot chunk upload failed:`, err);
-            toast.error(`Ekran görüntüleri yüklenemedi: ${err.message}`);
+            const failure = results.find((result) => result.status === 'rejected');
+            if (failure?.status === 'rejected') throw failure.reason;
+          } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Bilinmeyen yükleme hatası';
+            console.error(`❌ [AddContent] Screenshot chunk upload failed:`, message);
+            toast.error(`Ekran görüntüleri yüklenemedi: ${message}`);
             setLoading(false);
             setUploadProgress('');
             return;

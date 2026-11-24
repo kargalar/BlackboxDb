@@ -188,6 +188,7 @@ export const CONTENT_DETAIL_FIELDS = gql`
       difficulty
       order
       seasonNumber
+      episodeNumber
       isEnabledForQuiz
       isSpoiler
       isSensitive

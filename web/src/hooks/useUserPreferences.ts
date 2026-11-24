@@ -2,6 +2,23 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 
+export type PosterIconsPosition = 'above' | 'below' | 'off';
+
+/** Resolve the effective poster icons position from the tri-state field or legacy boolean. */
+export function resolvePosterIconsPosition(
+  posterIconsPosition?: string | null,
+  posterIconsBelow?: boolean | null
+): PosterIconsPosition {
+  if (
+    posterIconsPosition === 'above' ||
+    posterIconsPosition === 'below' ||
+    posterIconsPosition === 'off'
+  ) {
+    return posterIconsPosition;
+  }
+  return posterIconsBelow === false ? 'above' : 'below';
+}
+
 /** Default preferences for unauthenticated or new users */
 const DEFAULTS = {
   preferredContentTypes: [1, 2, 3, 4, 5],
@@ -9,6 +26,7 @@ const DEFAULTS = {
   gridRows: 4,
   posterZoomEnabled: false,
   posterIconsBelow: true,
+  posterIconsPosition: 'below' as PosterIconsPosition,
   posterRatingEnabled: false,
   showSensitiveContent: false,
   splitHomePopularSections: false,
@@ -46,7 +64,11 @@ export function useUserPreferences() {
   const gridColumns = user?.gridColumns || DEFAULTS.gridColumns;
   const gridRows = user?.gridRows || DEFAULTS.gridRows;
   const posterZoomEnabled = user?.posterZoomEnabled === true;
-  const posterIconsBelow = user?.posterIconsBelow !== false;
+  const posterIconsPosition = resolvePosterIconsPosition(
+    user?.posterIconsPosition,
+    user?.posterIconsBelow
+  );
+  const posterIconsBelow = posterIconsPosition === 'below';
   const showSensitiveContent = user?.showSensitiveContent === true;
   const preferredGamePlatformIds = user?.preferredGamePlatformIds?.length
     ? user.preferredGamePlatformIds
@@ -63,6 +85,7 @@ export function useUserPreferences() {
     gridRows,
     posterZoomEnabled,
     posterIconsBelow,
+    posterIconsPosition,
     posterRatingEnabled: user?.posterRatingEnabled ?? DEFAULTS.posterRatingEnabled,
     showSensitiveContent,
     preferredGamePlatformIds,

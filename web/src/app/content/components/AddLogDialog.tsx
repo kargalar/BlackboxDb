@@ -8,6 +8,12 @@ import { DetailedRatingDropdown } from '@/components/molecules/DetailedRatingDro
 import { UserSearchInput } from '@/components/molecules/UserSearchInput';
 import { FormTagsInput } from '@/components/atoms/FormTagsInput';
 import {
+  adjustPlaytime,
+  getPlaytimeStep,
+  handlePlaytimeKeyDown,
+  type PlaytimeUnit,
+} from './playtimeStep';
+import {
   Calendar,
   Clock,
   Gamepad,
@@ -118,6 +124,14 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
     onClose,
     t,
   });
+
+  const stepPlaytime = (unit: PlaytimeUnit, step: number) => {
+    setFormData((prev) => {
+      const current = Number(prev.playtime_minutes) || 0;
+      const total = adjustPlaytime(current, unit, step);
+      return total === current ? prev : { ...prev, playtime_minutes: total || '' };
+    });
+  };
 
   const platformDropdownRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -396,19 +410,7 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
                       <div className="flex items-center bg-neutral-950 border border-neutral-800 rounded-lg overflow-hidden focus-within:border-neutral-700 transition-all duration-200">
                         <button
                           type="button"
-                          onClick={() => {
-                            const currentHours = Math.floor(
-                              (Number(formData.playtime_minutes) || 0) / 60
-                            );
-                            if (currentHours > 0) {
-                              const currentMinutes = (Number(formData.playtime_minutes) || 0) % 60;
-                              const total = (currentHours - 1) * 60 + currentMinutes;
-                              setFormData((prev) => ({
-                                ...prev,
-                                playtime_minutes: total > 0 ? total : '',
-                              }));
-                            }
-                          }}
+                          onClick={(event) => stepPlaytime('hours', -getPlaytimeStep(event))}
                           className="px-2 py-1.5 text-neutral-400 hover:bg-neutral-900 hover:text-white transition-colors"
                         >
                           <Minus className="w-3.5 h-3.5" />
@@ -416,6 +418,9 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
                         <input
                           type="number"
                           min="0"
+                          onKeyDown={(event) =>
+                            handlePlaytimeKeyDown(event, (step) => stepPlaytime('hours', step))
+                          }
                           value={
                             formData.playtime_minutes
                               ? Math.floor(Number(formData.playtime_minutes) / 60)
@@ -435,14 +440,7 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
                         />
                         <button
                           type="button"
-                          onClick={() => {
-                            const currentHours = Math.floor(
-                              (Number(formData.playtime_minutes) || 0) / 60
-                            );
-                            const currentMinutes = (Number(formData.playtime_minutes) || 0) % 60;
-                            const total = (currentHours + 1) * 60 + currentMinutes;
-                            setFormData((prev) => ({ ...prev, playtime_minutes: total }));
-                          }}
+                          onClick={(event) => stepPlaytime('hours', getPlaytimeStep(event))}
                           className="px-2 py-1.5 text-neutral-400 hover:bg-neutral-900 hover:text-white transition-colors"
                         >
                           <Plus className="w-3.5 h-3.5" />
@@ -461,19 +459,7 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
                       <div className="flex items-center bg-neutral-950 border border-neutral-800 rounded-lg overflow-hidden focus-within:border-neutral-700 transition-all duration-200">
                         <button
                           type="button"
-                          onClick={() => {
-                            const currentMinutes = (Number(formData.playtime_minutes) || 0) % 60;
-                            if (currentMinutes > 0) {
-                              const currentHours = Math.floor(
-                                (Number(formData.playtime_minutes) || 0) / 60
-                              );
-                              const total = currentHours * 60 + (currentMinutes - 1);
-                              setFormData((prev) => ({
-                                ...prev,
-                                playtime_minutes: total > 0 ? total : '',
-                              }));
-                            }
-                          }}
+                          onClick={(event) => stepPlaytime('minutes', -getPlaytimeStep(event))}
                           className="px-2 py-1.5 text-neutral-400 hover:bg-neutral-900 hover:text-white transition-colors"
                         >
                           <Minus className="w-3.5 h-3.5" />
@@ -482,6 +468,9 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
                           type="number"
                           min="0"
                           max="59"
+                          onKeyDown={(event) =>
+                            handlePlaytimeKeyDown(event, (step) => stepPlaytime('minutes', step))
+                          }
                           value={
                             formData.playtime_minutes ? Number(formData.playtime_minutes) % 60 : ''
                           }
@@ -504,14 +493,7 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
                         />
                         <button
                           type="button"
-                          onClick={() => {
-                            const currentMinutes = (Number(formData.playtime_minutes) || 0) % 60;
-                            const currentHours = Math.floor(
-                              (Number(formData.playtime_minutes) || 0) / 60
-                            );
-                            const total = currentHours * 60 + (currentMinutes + 1);
-                            setFormData((prev) => ({ ...prev, playtime_minutes: total }));
-                          }}
+                          onClick={(event) => stepPlaytime('minutes', getPlaytimeStep(event))}
                           className="px-2 py-1.5 text-neutral-400 hover:bg-neutral-900 hover:text-white transition-colors"
                         >
                           <Plus className="w-3.5 h-3.5" />

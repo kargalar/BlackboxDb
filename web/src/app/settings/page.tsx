@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { resolvePosterIconsPosition, type PosterIconsPosition } from '@/hooks/useUserPreferences';
 import { getAllUserContentLogs, deleteAllUserContentLogs } from '@/services/userContentService';
 import { apolloClient } from '@/lib/apollo-client';
 import { UPDATE_PREFERENCES } from '@/services/graphql/auth';
@@ -93,7 +94,7 @@ export default function SettingsPage() {
   const [gridColumns, setGridColumns] = useState(5);
   const [gridRows, setGridRows] = useState(4);
   const [posterZoomEnabled, setPosterZoomEnabled] = useState(true);
-  const [posterIconsBelow, setPosterIconsBelow] = useState(true);
+  const [posterIconsPosition, setPosterIconsPosition] = useState<PosterIconsPosition>('below');
   const [posterRatingEnabled, setPosterRatingEnabled] = useState(false);
   const [showSensitiveContent, setShowSensitiveContent] = useState(false);
   const [preferredGamePlatformIds, setPreferredGamePlatformIds] = useState<number[]>([]);
@@ -146,7 +147,9 @@ export default function SettingsPage() {
       setGridColumns(user.gridColumns || 5);
       setGridRows(user.gridRows || 4);
       setPosterZoomEnabled(user.posterZoomEnabled !== false);
-      setPosterIconsBelow(user.posterIconsBelow !== false);
+      setPosterIconsPosition(
+        resolvePosterIconsPosition(user.posterIconsPosition, user.posterIconsBelow)
+      );
       setPosterRatingEnabled(user.posterRatingEnabled === true);
       setShowSensitiveContent(user.showSensitiveContent === true);
       setPreferredGamePlatformIds(
@@ -178,7 +181,11 @@ export default function SettingsPage() {
     if (!user) return;
     try {
       const { data } = await apolloClient.mutate<{
-        updatePreferences: { posterRatingEnabled: boolean };
+        updatePreferences: {
+          posterRatingEnabled?: boolean;
+          posterIconsPosition?: PosterIconsPosition;
+          posterIconsBelow?: boolean;
+        };
       }>({
         mutation: UPDATE_PREFERENCES,
         variables: {
@@ -186,7 +193,8 @@ export default function SettingsPage() {
           gridColumns,
           gridRows,
           posterZoomEnabled,
-          posterIconsBelow,
+          posterIconsBelow: posterIconsPosition === 'below',
+          posterIconsPosition,
           posterRatingEnabled,
           showSensitiveContent,
           preferredGamePlatformId: preferredGamePlatformIds[0] ?? null,
@@ -203,7 +211,14 @@ export default function SettingsPage() {
           notifyOnRoleUpdates,
         },
       });
-      if (posterRatingEnabled !== (user.posterRatingEnabled === true)) {
+      const currentPosterIconsPosition = resolvePosterIconsPosition(
+        user.posterIconsPosition,
+        user.posterIconsBelow
+      );
+      if (
+        posterRatingEnabled !== (user.posterRatingEnabled === true) ||
+        posterIconsPosition !== currentPosterIconsPosition
+      ) {
         hasLoadedPrefs.current = false;
         if (data?.updatePreferences) updateUserPreferences(data.updatePreferences);
       }
@@ -218,7 +233,7 @@ export default function SettingsPage() {
     gridColumns,
     gridRows,
     posterZoomEnabled,
-    posterIconsBelow,
+    posterIconsPosition,
     posterRatingEnabled,
     updateUserPreferences,
     showSensitiveContent,
@@ -737,36 +752,36 @@ export default function SettingsPage() {
 
             {/* Poster Icons Position */}
             <div className="glass-card p-6">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-xl font-semibold mb-1">Poster Icons Position</h2>
                   <p className="text-white/50 text-sm">
-                    Show status icons (watched, favorite, etc.) below or on top of the poster
+                    Show status icons (watched, favorite, etc.) below or on top of the poster, or
+                    turn off to hide all overlays including poster ratings
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`text-xs ${posterIconsBelow ? 'text-white/40' : 'text-white/80'}`}
-                  >
-                    Above
-                  </span>
-                  <button
-                    onClick={() => setPosterIconsBelow((prev) => !prev)}
-                    className={`relative w-14 h-7 rounded-full transition-colors duration-200 ${
-                      posterIconsBelow ? 'bg-blue-500' : 'bg-white/20'
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform duration-200 ${
-                        posterIconsBelow ? 'translate-x-7' : 'translate-x-0'
+                <div className="flex items-center gap-2 shrink-0">
+                  {(
+                    [
+                      { value: 'above', label: 'Above' },
+                      { value: 'below', label: 'Below' },
+                      { value: 'off', label: 'Off' },
+                    ] as const
+                  ).map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      aria-pressed={posterIconsPosition === option.value}
+                      onClick={() => setPosterIconsPosition(option.value)}
+                      className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                        posterIconsPosition === option.value
+                          ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
+                          : 'bg-white/5 text-white/60 border border-white/10 hover:border-white/30'
                       }`}
-                    />
-                  </button>
-                  <span
-                    className={`text-xs ${posterIconsBelow ? 'text-white/80' : 'text-white/40'}`}
-                  >
-                    Below
-                  </span>
+                    >
+                      {option.label}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>

@@ -224,11 +224,16 @@ export function ContentBadgesContainer({
   hasReview = false,
   userConsumeCount,
 }: ContentBadgesContainerProps) {
-  const { posterIconsBelow } = useUserPreferences();
+  const { posterIconsBelow, posterIconsPosition } = useUserPreferences();
+  const iconsPosition = posterIconsPosition ?? (posterIconsBelow ? 'below' : 'above');
+
+  if (iconsPosition === 'off') return null;
+
+  const isBelow = iconsPosition === 'below';
 
   const ratingBadge =
     showRating && rating ? (
-      <RatingBadge rating={rating} reviewCount={reviewCount} transparent={posterIconsBelow} />
+      <RatingBadge rating={rating} reviewCount={reviewCount} transparent={isBelow} />
     ) : null;
 
   const statusBadges = (
@@ -243,7 +248,7 @@ export function ContentBadgesContainer({
       isAbandoned={isAbandoned}
       hasReview={hasReview}
       userConsumeCount={userConsumeCount}
-      transparent={posterIconsBelow}
+      transparent={isBelow}
     />
   );
 
@@ -251,9 +256,7 @@ export function ContentBadgesContainer({
   if (!ratingBadge && !statusBadges) return null;
 
   return (
-    <div
-      className={`flex flex-row flex-wrap items-center ${posterIconsBelow ? 'gap-2 mt-1' : 'gap-1'}`}
-    >
+    <div className={`flex flex-row flex-wrap items-center ${isBelow ? 'gap-2 mt-1' : 'gap-1'}`}>
       {ratingBadge}
       {statusBadges}
     </div>

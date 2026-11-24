@@ -1,14 +1,13 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { type FilterState, type FilterCounts } from '../components/FilterSidebar';
 import { type SortOption } from '../components/SortingBar';
 import { getFilterCounts } from './contentSearch';
 import { useAuth } from '@/contexts/AuthContext';
+import { updateExploreUrl } from '../../exploreUrl';
 
 export function useExploreFilters(contentType: string, contentTypeId: number) {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
   const { user } = useAuth();
 
   const [filterCounts, setFilterCounts] = useState<FilterCounts | undefined>(undefined);
@@ -68,10 +67,10 @@ export function useExploreFilters(contentType: string, contentTypeId: number) {
           ? [user.preferredGamePlatformId]
           : [];
 
-      if (!searchParams.has('platform') && preferredGamePlatformIds.length > 0) {
-        const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(window.location.search);
+      if (!params.has('platform') && preferredGamePlatformIds.length > 0) {
         preferredGamePlatformIds.forEach((id) => params.append('platform', String(id)));
-        router.replace(`${pathname}?${params.toString()}` as any, { scroll: false });
+        updateExploreUrl(params, true);
       }
       preferencesApplied.current = true;
     }
@@ -82,16 +81,7 @@ export function useExploreFilters(contentType: string, contentTypeId: number) {
     ) {
       preferencesApplied.current = true;
     }
-  }, [user, contentTypeId, searchParams, pathname, router]);
-
-  // Yeni arama yapıldığında sıralamayı none olarak değiştir (URL'yi güncellemeye gerek kalmadan computed state olarak handle edilebilir ancak URL'ye yansıtmak daha temiz)
-  useEffect(() => {
-    if (queryParam && sortOrder !== 'none') {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('sortOrder', 'none');
-      router.replace(`${pathname}?${params.toString()}` as any, { scroll: false });
-    }
-  }, [queryParam, sortOrder, pathname, router, searchParams]);
+  }, [user, contentTypeId]);
 
   useEffect(() => {
     const loadFilterCounts = async () => {
@@ -106,7 +96,7 @@ export function useExploreFilters(contentType: string, contentTypeId: number) {
   }, [contentType, contentTypeId]);
 
   const handleFilterChange = (newFilters: FilterState) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     params.delete('page');
 
     const arrayKeys = [
@@ -179,15 +169,15 @@ export function useExploreFilters(contentType: string, contentTypeId: number) {
 
     if (newFilters.hasAwards !== undefined) params.set('hasAwards', String(newFilters.hasAwards));
 
-    router.push(`${pathname}?${params.toString()}` as any, { scroll: false });
+    updateExploreUrl(params);
   };
 
   const handleSortChange = (newSortBy: SortOption, newSortOrder: 'asc' | 'desc' | 'none') => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     params.delete('page');
     params.set('sortBy', newSortBy);
     params.set('sortOrder', newSortOrder);
-    router.push(`${pathname}?${params.toString()}` as any, { scroll: false });
+    updateExploreUrl(params);
   };
 
   return {

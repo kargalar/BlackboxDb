@@ -23,6 +23,7 @@ interface Screenshot {
   difficulty: number;
   order: number;
   seasonNumber?: number | null;
+  episodeNumber?: number | null;
   description?: string;
   isSpoiler?: boolean;
   isSensitive?: boolean;
@@ -37,6 +38,7 @@ interface ContentScreenshotsProps {
   hideTitle?: boolean;
   mediaType?: 'screenshot' | 'image';
   imageType?: 'poster' | 'backdrop' | 'screenshot';
+  seasons?: Array<{ seasonNumber: number; name: string; episodes?: Array<{ episodeNumber: number; name: string }> }>;
 }
 
 export default function ContentScreenshots({
@@ -45,17 +47,20 @@ export default function ContentScreenshots({
   hideTitle = false,
   mediaType = 'screenshot',
   imageType = 'screenshot',
+  seasons = [],
 }: ContentScreenshotsProps) {
   const t = useTranslations('ContentScreenshots');
   const { showSensitiveContent } = useUserPreferences();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [selectedSeason, setSelectedSeason] = useState<number | 'all'>('all');
+  const [selectedSeason, setSelectedSeason] = useState<number | 'all' | 'general'>('all');
+  const [selectedEpisode, setSelectedEpisode] = useState<number | 'all' | 'general'>('all');
 
   const [showSpoilers, setShowSpoilers] = useState(isWatched);
   const [showSensitive, setShowSensitive] = useState(showSensitiveContent);
 
   const [revealedIds, setRevealedIds] = useState<Set<number>>(new Set());
   const [isExpanded, setIsExpanded] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [localScreenshots, setLocalScreenshots] = useState<Screenshot[]>(screenshots ?? []);
   const { user } = useAuth();
 
@@ -124,7 +129,8 @@ export default function ContentScreenshots({
   useEffect(() => {
     setSelectedIndex(null);
     setIsExpanded(false);
-  }, [selectedSeason]);
+    setExpandedGroups(new Set());
+  }, [selectedSeason, selectedEpisode]);
 
   const seasonNumbers = Array.from(
     new Set(
@@ -137,13 +143,14 @@ export default function ContentScreenshots({
   const visibleScreenshots =
     selectedSeason === 'all'
       ? localScreenshots
-      : localScreenshots.filter((s) => s.seasonNumber === selectedSeason);
+      : selectedSeason === 'general' ? localScreenshots.filter(s => s.seasonNumber == null) : localScreenshots.filter(s => s.seasonNumber === selectedSeason && (selectedEpisode === 'all' || (selectedEpisode === 'general' ? s.episodeNumber == null : s.episodeNumber === selectedEpisode)));
+  const episodeNumbers = typeof selectedSeason === 'number' ? Array.from(new Set(localScreenshots.filter(s => s.seasonNumber === selectedSeason && s.episodeNumber != null).map(s => s.episodeNumber as number))).sort((a,b) => a-b) : [];
 
   const sortedScreenshots = [...visibleScreenshots].sort((a, b) => {
     const seasonA = a.seasonNumber ?? 0;
     const seasonB = b.seasonNumber ?? 0;
     if (seasonA !== seasonB) return seasonA - seasonB;
-    return a.order - b.order;
+    return (a.episodeNumber ?? -1) - (b.episodeNumber ?? -1) || a.order - b.order;
   });
 
   const previewCount = 8;
@@ -311,6 +318,10 @@ export default function ContentScreenshots({
           </div>
         )}
 
+        {screenshot.seasonNumber != null && (
+          <span className="absolute bottom-2 left-2 rounded bg-black/75 px-2 py-1 text-xs font-semibold text-white">S{String(screenshot.seasonNumber).padStart(2, '0')}{screenshot.episodeNumber != null ? `E${String(screenshot.episodeNumber).padStart(2, '0')}` : ''}</span>
+        )}
+
         {/* Badgeler (Görünür olsa bile sağ ve sol üstte gösterilir) */}
         {!hidden && (
           <>
@@ -341,36 +352,6 @@ export default function ContentScreenshots({
             <span className="text-sm text-gray-500 dark:text-gray-400">
               ({sortedScreenshots.length})
             </span>
-          </div>
-        )}
-
-        {hasSeasonGroups && (
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setSelectedSeason('all')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-                selectedSeason === 'all'
-                  ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-              }`}
-            >
-              {t('all')}
-            </button>
-            {seasonNumbers.map((seasonNumber) => (
-              <button
-                key={seasonNumber}
-                type="button"
-                onClick={() => setSelectedSeason(seasonNumber)}
-                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-                  selectedSeason === seasonNumber
-                    ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                }`}
-              >
-                S{seasonNumber}
-              </button>
-            ))}
           </div>
         )}
 
@@ -422,7 +403,7 @@ export default function ContentScreenshots({
           )}
 
           {/* Expand/Collapse Button - sadece 4'ten fazla görsel varsa göster */}
-          {hasMore && (
+          {hasMore && !hasSeasonGroups && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -443,20 +424,57 @@ export default function ContentScreenshots({
         </div>
       </div>
 
-      {/* Collapsed: 2-row Grid */}
-      {!isExpanded && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {sortedScreenshots
-            .slice(0, previewCount)
-            .map((screenshot, index) => renderScreenshotCard(screenshot, index))}
+      {hasSeasonGroups && (
+        <div className="mb-4 space-y-3" aria-label={t('filterBy')}>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-sm font-medium text-gray-600 dark:text-gray-300">{t('seasonFilter')}</span>
+            {([['all', t('all')], ...(localScreenshots.some(s => s.seasonNumber == null) ? [['general', t('general')]] : []), ...seasonNumbers.map(n => [n, `S${n}`])] as [number | 'all' | 'general', string][]).map(([value, label]) => (
+              <button key={value} type="button" aria-pressed={selectedSeason === value} onClick={() => { setSelectedSeason(value); setSelectedEpisode('all'); }} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${selectedSeason === value ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'}`}>{label}</button>
+            ))}
+          </div>
+          {typeof selectedSeason === 'number' && episodeNumbers.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-sm font-medium text-gray-600 dark:text-gray-300">{t('episodeFilter')}</span>
+              {([['all', t('allEpisodes')], ...(localScreenshots.some(s => s.seasonNumber === selectedSeason && s.episodeNumber == null) ? [['general', t('seasonOnly')]] : []), ...episodeNumbers.map(n => [n, `E${n}`])] as [number | 'all' | 'general', string][]).map(([value, label]) => (
+                <button key={value} type="button" aria-pressed={selectedEpisode === value} onClick={() => setSelectedEpisode(value)} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${selectedEpisode === value ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'}`}>{label}</button>
+              ))}
+            </div>
+          )}
+          {selectedSeason === 'all' && localScreenshots.some(s => s.episodeNumber != null) && <p className="text-xs text-gray-500 dark:text-gray-400">{t('chooseSeason')}</p>}
         </div>
       )}
 
-      {/* Expanded: Grid View */}
-      {isExpanded && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {sortedScreenshots.map((screenshot, index) => renderScreenshotCard(screenshot, index))}
+      {hasSeasonGroups ? (
+        <div className="space-y-8">
+          {(() => {
+            const groups = new Map<string, { season: number | null; episode: number | null; items: Array<{ screenshot: Screenshot; index: number }> }>();
+            sortedScreenshots.forEach((screenshot, index) => {
+              const season = screenshot.seasonNumber ?? null;
+              const episode = screenshot.episodeNumber ?? null;
+              const key = `${season}:${episode}`;
+              if (!groups.has(key)) groups.set(key, { season, episode, items: [] });
+              groups.get(key)!.items.push({ screenshot, index });
+            });
+            return Array.from(groups, ([key, group]) => {
+              const season = seasons.find(item => item.seasonNumber === group.season);
+              const episode = season?.episodes?.find(item => item.episodeNumber === group.episode);
+              const code = group.season == null ? t('general') : `S${String(group.season).padStart(2, '0')}${group.episode == null ? ` — ${t('seasonOnly')}` : `E${String(group.episode).padStart(2, '0')}`}`;
+              const expanded = expandedGroups.has(key);
+              const displayed = expanded ? group.items : group.items.slice(0, previewCount);
+              return (
+                <section key={key} aria-label={code}>
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-white">{code}{episode?.name ? ` — ${episode.name}` : ''} <span className="text-sm font-normal text-gray-500">({group.items.length})</span></h3>
+                    {group.items.length > previewCount && <button type="button" aria-expanded={expanded} onClick={() => setExpandedGroups(previous => { const next = new Set(previous); if (next.has(key)) next.delete(key); else next.add(key); return next; })} className="rounded-lg bg-gray-100 px-3 py-1.5 text-sm text-gray-700 dark:bg-gray-800 dark:text-gray-200">{expanded ? t('collapse') : t('showMore', { count: group.items.length - previewCount })}</button>}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">{displayed.map(({ screenshot, index }) => renderScreenshotCard(screenshot, index))}</div>
+                </section>
+              );
+            });
+          })()}
         </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">{(isExpanded ? sortedScreenshots : sortedScreenshots.slice(0, previewCount)).map((screenshot, index) => renderScreenshotCard(screenshot, index))}</div>
       )}
 
       {/* Lightbox */}
@@ -510,7 +528,15 @@ export default function ContentScreenshots({
                 t('imageAlt', { index: selectedIndex + 1 })
               }
               className="max-w-[90vw] max-h-[85vh] object-contain pointer-events-auto"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                goPrevCb();
+              }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                goNextCb();
+              }}
             />
           </div>
 

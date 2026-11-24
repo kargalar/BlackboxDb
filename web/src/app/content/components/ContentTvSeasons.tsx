@@ -154,21 +154,13 @@ const ContentTvSeasons = ({
     };
   }, [seasonMetrics]);
 
-  const toggleSeasonPanel = (seasonNumber: number) => {
-    const nextExpanded = !expandedSeasons.has(seasonNumber);
+  const selectedSeasonNumber =
+    seasons.find((season) => expandedSeasons.has(season.seasonNumber))?.seasonNumber ??
+    seasons[0]?.seasonNumber;
 
-    console.log(`📺 [ContentTvSeasons] Sezon paneli ${seasonNumber} => ${nextExpanded}`);
-    logUiEvent('TV: season panel toggle', true, `season=${seasonNumber};expanded=${nextExpanded}`);
-
-    setExpandedSeasons((prev) => {
-      const next = new Set(prev);
-      if (next.has(seasonNumber)) {
-        next.delete(seasonNumber);
-      } else {
-        next.add(seasonNumber);
-      }
-      return next;
-    });
+  const selectSeason = (seasonNumber: number) => {
+    logUiEvent('TV: season selected', true, `season=${seasonNumber}`);
+    setExpandedSeasons(new Set([seasonNumber]));
   };
 
   return (
@@ -253,305 +245,296 @@ const ContentTvSeasons = ({
           </div>
         </div>
 
-        <div className="mt-6 space-y-4">
+        <div className="mt-6 flex gap-3 overflow-x-auto pb-3" aria-label={t('title')}>
           {seasons.map((season) => {
+            const selected = season.seasonNumber === selectedSeasonNumber;
             const metrics = seasonMetrics.find((item) => item.seasonNumber === season.seasonNumber);
-            const episodes = season.episodes ?? [];
-            const isExpanded = expandedSeasons.has(season.seasonNumber);
-            const seasonError = actionErrors[`season-${season.seasonNumber}`];
             const seasonIsFuture = (() => {
               const dateKey = getDateKey(season.airDate);
               return Boolean(dateKey && dateKey > todayKey);
             })();
+            const seasonError = actionErrors[`season-${season.seasonNumber}`];
 
             return (
               <article
-                key={season.id}
-                className={`overflow-hidden rounded-3xl border backdrop-blur-sm transition-colors hover:border-white/20 ${
-                  metrics?.isCompleted
-                    ? 'border-white/8 bg-black/75'
-                    : 'border-white/10 bg-white/[0.03]'
+                key={season.seasonNumber}
+                className={`w-[min(85vw,420px)] shrink-0 rounded-2xl border bg-black/50 p-3 transition-colors ${
+                  selected
+                    ? 'border-white/50 bg-white/[0.08]'
+                    : 'border-white/10 hover:border-white/25'
                 }`}
               >
-                <div className="flex flex-col gap-3.5 p-2 sm:p-2.5 lg:flex-row lg:items-stretch">
-                  <button
-                    type="button"
-                    onClick={() => toggleSeasonPanel(season.seasonNumber)}
-                    className="flex w-full items-stretch gap-3 text-left lg:flex-1"
-                  >
-                    <div className="relative hidden self-stretch overflow-hidden rounded-2xl bg-white/5 sm:block sm:min-h-[260px] sm:aspect-[2/3] sm:shrink-0">
-                      {season.posterUrl ? (
-                        <Image
-                          src={season.posterUrl}
-                          alt={season.name}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 640px) 120px, 200px"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-xs text-white/35">
-                          {t('season.noCover')}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-xl font-semibold text-white">
-                          {season.name}
-                          {season.seasonNumber === 0 && (
-                            <span className="ml-2 text-sm font-normal text-white/45">
-                              {t('season.specials')}
-                            </span>
-                          )}
-                        </h3>
-
-                        {seasonIsFuture && (
-                          <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-white/70">
-                            {t('season.upcoming')}
-                          </span>
-                        )}
-
-                        {metrics?.isCompleted && (
-                          <span className="rounded-full border border-emerald-500/25 bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold text-emerald-300">
-                            {t('season.completed')}
-                          </span>
-                        )}
-
-                        {!metrics?.isCompleted && metrics?.isInProgress && (
-                          <span className="rounded-full border border-sky-500/25 bg-sky-500/15 px-2.5 py-1 text-xs font-semibold text-sky-300">
-                            {t('season.inProgress')}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/55">
-                        <span>{formatAirDate(season.airDate) || t('episode.noDate')}</span>
-                        <span>
-                          {t('stats.episodesCount', {
-                            count: metrics?.totalEpisodes ?? season.episodeCount,
-                          })}
-                        </span>
-                        {typeof season.viewerCount === 'number' && season.viewerCount > 0 && (
-                          <span>{t('season.peopleWatched', { count: season.viewerCount })}</span>
-                        )}
-                        {season.userRating && season.userRating > 0 && (
-                          <span>⭐ {season.userRating.toFixed(1)}</span>
-                        )}
-                      </div>
-
-                      {season.overview && (
-                        <p className="mt-3 max-w-4xl text-sm leading-6 text-white/70 line-clamp-3">
-                          {season.overview}
-                        </p>
-                      )}
-
-                      <div className="mt-4">
-                        <div className="mb-2 flex items-center justify-between gap-3 text-sm">
-                          <span className="text-white/55">{t('season.progress')}</span>
-                          <span className="font-medium text-white/80">
-                            {metrics?.watchedCount ?? 0}/
-                            {metrics?.totalEpisodes ?? season.episodeCount}
-                          </span>
-                        </div>
-                        <div className="h-2 overflow-hidden rounded-full bg-white/10">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              metrics?.isCompleted
-                                ? 'bg-[#9a9a9a]'
-                                : metrics?.isInProgress
-                                  ? 'bg-[#5f5f5f]'
-                                  : 'bg-white/20'
-                            }`}
-                            style={{ width: `${metrics?.completionPercentage ?? 0}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-
-                  <div className="flex w-full flex-col gap-3 lg:w-auto lg:min-w-[180px] lg:items-end">
-                    {canManage && (
-                      <button
-                        type="button"
-                        onClick={() => onToggleSeasonWatch(season.seasonNumber)}
-                        className={`inline-flex items-center justify-center rounded-2xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-                          metrics?.isCompleted
-                            ? 'border border-emerald-500/25 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25'
-                            : 'bg-white/10 text-white/85 hover:bg-white/15'
-                        }`}
-                      >
-                        {metrics?.isCompleted ? t('season.watched') : t('season.markWatched')}
-                      </button>
-                    )}
-
-                    {seasonError && (
-                      <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-200">
-                        {seasonError}
+                <button
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => selectSeason(season.seasonNumber)}
+                  className="flex w-full gap-3 rounded-lg text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                >
+                  <div className="relative h-32 w-[86px] shrink-0 overflow-hidden rounded-xl bg-white/5">
+                    {season.posterUrl ? (
+                      <Image
+                        src={season.posterUrl}
+                        alt={season.name}
+                        fill
+                        className="object-cover"
+                        sizes="86px"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-center text-xs text-white/35">
+                        {t('season.noCover')}
                       </div>
                     )}
                   </div>
-                </div>
-
-                {isExpanded && episodes.length > 0 && (
-                  <div className="border-t border-white/10 bg-black/25 px-2.5 py-3 sm:px-4 sm:py-4">
-                    <div className="space-y-2">
-                      {episodes.map((episode) => {
-                        const episodeKey = `${season.seasonNumber}x${episode.episodeNumber}`;
-                        const episodeError = actionErrors[`episode-${episodeKey}`];
-                        const isWatched =
-                          watchedEpisodes.has(episodeKey) || Boolean(episode.watched);
-                        const isFutureEpisode = (() => {
-                          const dateKey = getDateKey(episode.airDate);
-                          return Boolean(dateKey && dateKey > todayKey);
-                        })();
-
-                        return (
-                          <div
-                            key={episode.id}
-                            onClick={() => {
-                              if (!canManage || isFutureEpisode) return;
-                              console.log(
-                                `📺 [ContentTvSeasons] Bölüm satırı toggle S${season.seasonNumber}E${episode.episodeNumber}`
-                              );
-                              onToggleEpisodeWatch(season.seasonNumber, episode.episodeNumber);
-                            }}
-                            className={`rounded-2xl border px-2.5 py-2.5 transition-colors sm:px-3 ${
-                              isWatched
-                                ? 'border-white/8 bg-black/80'
-                                : 'border-white/8 bg-white/[0.03] hover:bg-white/[0.05]'
-                            } ${canManage && !isFutureEpisode ? 'cursor-pointer' : ''}`}
-                          >
-                            <div className="flex flex-col gap-3.5 sm:flex-row sm:items-start">
-                              {episode.stillUrl && (
-                                <div className="relative w-full aspect-video overflow-hidden rounded-xl border border-white/10 bg-white/5 sm:w-[240px] sm:shrink-0 md:w-[280px] lg:w-[320px]">
-                                  <Image
-                                    src={episode.stillUrl}
-                                    alt={episode.name}
-                                    fill
-                                    className="object-cover"
-                                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 240px, (max-width: 1024px) 280px, 320px"
-                                  />
-                                </div>
-                              )}
-
-                              <div className="flex min-w-0 flex-1 gap-3">
-                                <div
-                                  className={`flex h-11 min-w-11 items-center justify-center rounded-2xl text-sm font-semibold text-center ${
-                                    isWatched
-                                      ? 'bg-[#050505] text-white'
-                                      : 'bg-white/8 text-white/65'
-                                  }`}
-                                >
-                                  {episode.episodeNumber}
-                                </div>
-
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <h4 className="truncate text-sm font-semibold text-white sm:text-base">
-                                      {episode.name}
-                                    </h4>
-                                    {isFutureEpisode && (
-                                      <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] font-medium text-white/65">
-                                        {t('episode.upcoming')}
-                                      </span>
-                                    )}
-                                    {isWatched && (
-                                      <span className="rounded-full border border-emerald-500/25 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-300">
-                                        {t('episode.watched')}
-                                      </span>
-                                    )}
-                                  </div>
-
-                                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/45">
-                                    <span>S{season.seasonNumber}</span>
-                                    <span>
-                                      {formatAirDate(episode.airDate) || t('episode.noDate')}
-                                    </span>
-                                    {episode.runtime && episode.runtime > 0 && (
-                                      <span>
-                                        {t('episode.runtime', { minutes: episode.runtime })}
-                                      </span>
-                                    )}
-                                  </div>
-
-                                  {episode.overview && (
-                                    <p className="mt-2 text-sm leading-6 text-white/65 line-clamp-2">
-                                      {episode.overview}
-                                    </p>
-                                  )}
-
-                                  <div
-                                    className="mt-3 flex flex-wrap items-center gap-2"
-                                    onClick={(event) => event.stopPropagation()}
-                                  >
-                                    <div
-                                      className={`w-[200px] ${!canManage ? 'opacity-75 pointer-events-none' : ''}`}
-                                    >
-                                      <Stars
-                                        value={episode.userRating ?? 0}
-                                        onChange={(rating) =>
-                                          onRateEpisode(
-                                            season.seasonNumber,
-                                            episode.episodeNumber,
-                                            rating
-                                          )
-                                        }
-                                        size="sm"
-                                        disabled={!canManage}
-                                      />
-                                    </div>
-
-                                    {episode.userRating !== null &&
-                                      episode.userRating !== undefined &&
-                                      episode.userRating > 0 &&
-                                      canManage && (
-                                        <button
-                                          type="button"
-                                          onClick={() =>
-                                            onRateEpisode(
-                                              season.seasonNumber,
-                                              episode.episodeNumber,
-                                              null
-                                            )
-                                          }
-                                          className="rounded-full bg-white/5 p-1 text-white/45 transition-colors hover:bg-red-500/15 hover:text-red-300"
-                                          title={t('episode.clearRating')}
-                                        >
-                                          <svg
-                                            className="h-3.5 w-3.5"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                          >
-                                            <path
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                              strokeWidth={2.5}
-                                              d="M6 18L18 6M6 6l12 12"
-                                            />
-                                          </svg>
-                                        </button>
-                                      )}
-                                  </div>
-
-                                  {episodeError && (
-                                    <div className="mt-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-200">
-                                      {episodeError}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-base font-semibold text-white">{season.name}</h3>
+                      {season.seasonNumber === 0 && (
+                        <span className="text-xs text-white/45">{t('season.specials')}</span>
+                      )}
+                      {seasonIsFuture && (
+                        <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/70">
+                          {t('season.upcoming')}
+                        </span>
+                      )}
+                      {metrics?.isCompleted && (
+                        <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
+                          {t('season.completed')}
+                        </span>
+                      )}
+                      {!metrics?.isCompleted && metrics?.isInProgress && (
+                        <span className="rounded-full bg-sky-500/15 px-2 py-0.5 text-[10px] font-semibold text-sky-300">
+                          {t('season.inProgress')}
+                        </span>
+                      )}
                     </div>
+                    <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs text-white/50">
+                      <span>{formatAirDate(season.airDate) || t('episode.noDate')}</span>
+                      <span>
+                        {t('stats.episodesCount', {
+                          count: metrics?.totalEpisodes ?? season.episodeCount,
+                        })}
+                      </span>
+                      {typeof season.viewerCount === 'number' && season.viewerCount > 0 && (
+                        <span>{t('season.peopleWatched', { count: season.viewerCount })}</span>
+                      )}
+                      {season.userRating && season.userRating > 0 ? (
+                        <span>⭐ {season.userRating.toFixed(1)}</span>
+                      ) : null}
+                    </div>
+                    {season.overview && (
+                      <p className="mt-2 line-clamp-2 text-xs leading-5 text-white/60">
+                        {season.overview}
+                      </p>
+                    )}
+                    <div className="mt-2">
+                      <div className="mb-1 flex justify-between gap-2 text-xs text-white/50">
+                        <span>{t('season.progress')}</span>
+                        <span>
+                          {metrics?.watchedCount ?? 0}/
+                          {metrics?.totalEpisodes ?? season.episodeCount}
+                        </span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                        <div
+                          className="h-full rounded-full bg-white/55 transition-all duration-500"
+                          style={{ width: `${metrics?.completionPercentage ?? 0}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </button>
+                {canManage && (
+                  <button
+                    type="button"
+                    onClick={() => onToggleSeasonWatch(season.seasonNumber)}
+                    className={`mt-3 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors ${
+                      metrics?.isCompleted
+                        ? 'bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25'
+                        : 'bg-white/10 text-white/85 hover:bg-white/15'
+                    }`}
+                  >
+                    {metrics?.isCompleted ? t('season.watched') : t('season.markWatched')}
+                  </button>
+                )}
+                {seasonError && (
+                  <div className="mt-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+                    {seasonError}
                   </div>
                 )}
               </article>
             );
           })}
+        </div>
+
+        <div className="mt-2">
+          {seasons
+            .filter((season) => season.seasonNumber === selectedSeasonNumber)
+            .map((season) => {
+              const episodes = season.episodes ?? [];
+              return (
+                <article
+                  key={season.id}
+                  className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]"
+                >
+                  {episodes.length > 0 && (
+                    <div className="border-t border-white/10 bg-black/25 px-2.5 py-3 sm:px-4 sm:py-4">
+                      <div className="space-y-2">
+                        {episodes.map((episode) => {
+                          const episodeKey = `${season.seasonNumber}x${episode.episodeNumber}`;
+                          const episodeError = actionErrors[`episode-${episodeKey}`];
+                          const isWatched =
+                            watchedEpisodes.has(episodeKey) || Boolean(episode.watched);
+                          const isFutureEpisode = (() => {
+                            const dateKey = getDateKey(episode.airDate);
+                            return Boolean(dateKey && dateKey > todayKey);
+                          })();
+
+                          return (
+                            <div
+                              key={episode.id}
+                              onClick={() => {
+                                if (!canManage || isFutureEpisode) return;
+                                console.log(
+                                  `📺 [ContentTvSeasons] Bölüm satırı toggle S${season.seasonNumber}E${episode.episodeNumber}`
+                                );
+                                onToggleEpisodeWatch(season.seasonNumber, episode.episodeNumber);
+                              }}
+                              className={`rounded-2xl border px-2.5 py-2.5 transition-colors sm:px-3 ${
+                                isWatched
+                                  ? 'border-white/8 bg-black/80'
+                                  : 'border-white/8 bg-white/[0.03] hover:bg-white/[0.05]'
+                              } ${canManage && !isFutureEpisode ? 'cursor-pointer' : ''}`}
+                            >
+                              <div className="flex flex-col gap-3.5 sm:flex-row sm:items-start">
+                                {episode.stillUrl && (
+                                  <div className="relative w-full aspect-video overflow-hidden rounded-xl border border-white/10 bg-white/5 sm:w-[240px] sm:shrink-0 md:w-[280px] lg:w-[320px]">
+                                    <Image
+                                      src={episode.stillUrl}
+                                      alt={episode.name}
+                                      fill
+                                      className="object-cover"
+                                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 240px, (max-width: 1024px) 280px, 320px"
+                                    />
+                                  </div>
+                                )}
+
+                                <div className="flex min-w-0 flex-1 gap-3">
+                                  <div
+                                    className={`flex h-11 min-w-11 items-center justify-center rounded-2xl text-sm font-semibold text-center ${
+                                      isWatched
+                                        ? 'bg-[#050505] text-white'
+                                        : 'bg-white/8 text-white/65'
+                                    }`}
+                                  >
+                                    {episode.episodeNumber}
+                                  </div>
+
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <h4 className="truncate text-sm font-semibold text-white sm:text-base">
+                                        {episode.name}
+                                      </h4>
+                                      {isFutureEpisode && (
+                                        <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] font-medium text-white/65">
+                                          {t('episode.upcoming')}
+                                        </span>
+                                      )}
+                                      {isWatched && (
+                                        <span className="rounded-full border border-emerald-500/25 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-300">
+                                          {t('episode.watched')}
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/45">
+                                      <span>S{season.seasonNumber}</span>
+                                      <span>
+                                        {formatAirDate(episode.airDate) || t('episode.noDate')}
+                                      </span>
+                                      {episode.runtime && episode.runtime > 0 && (
+                                        <span>
+                                          {t('episode.runtime', { minutes: episode.runtime })}
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {episode.overview && (
+                                      <p className="mt-2 text-sm leading-6 text-white/65 line-clamp-2">
+                                        {episode.overview}
+                                      </p>
+                                    )}
+
+                                    <div
+                                      className="mt-3 flex flex-wrap items-center gap-2"
+                                      onClick={(event) => event.stopPropagation()}
+                                    >
+                                      <div
+                                        className={`w-[200px] ${!canManage ? 'opacity-75 pointer-events-none' : ''}`}
+                                      >
+                                        <Stars
+                                          value={episode.userRating ?? 0}
+                                          onChange={(rating) =>
+                                            onRateEpisode(
+                                              season.seasonNumber,
+                                              episode.episodeNumber,
+                                              rating
+                                            )
+                                          }
+                                          size="sm"
+                                          disabled={!canManage}
+                                        />
+                                      </div>
+
+                                      {episode.userRating !== null &&
+                                        episode.userRating !== undefined &&
+                                        episode.userRating > 0 &&
+                                        canManage && (
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              onRateEpisode(
+                                                season.seasonNumber,
+                                                episode.episodeNumber,
+                                                null
+                                              )
+                                            }
+                                            className="rounded-full bg-white/5 p-1 text-white/45 transition-colors hover:bg-red-500/15 hover:text-red-300"
+                                            title={t('episode.clearRating')}
+                                          >
+                                            <svg
+                                              className="h-3.5 w-3.5"
+                                              fill="none"
+                                              viewBox="0 0 24 24"
+                                              stroke="currentColor"
+                                            >
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2.5}
+                                                d="M6 18L18 6M6 6l12 12"
+                                              />
+                                            </svg>
+                                          </button>
+                                        )}
+                                    </div>
+
+                                    {episodeError && (
+                                      <div className="mt-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+                                        {episodeError}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </article>
+              );
+            })}
         </div>
       </div>
     </section>

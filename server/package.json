@@ -7,7 +7,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "prisma generate && tsc",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test src/lib/*.test.ts src/resolvers/admin/prepareContentMedia.test.ts",
+    "test": "tsx --test src/lib/*.test.ts src/resolvers/admin/prepareContentMedia.test.ts src/resolvers/quiz/*.test.ts",
     "db:audit": "tsx scripts/database-audit.ts",
     "db:backup": "tsx scripts/database-backup.ts",
     "db:verify-backup": "tsx scripts/verify-database-backup.ts",

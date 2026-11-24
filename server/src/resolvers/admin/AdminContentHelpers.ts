@@ -1138,7 +1138,7 @@ export async function processSeasons(
             select: { id: true },
           });
 
-          if (ep.runtime && typeof ep.runtime === "number" && ep.runtime > 0) {
+          if (seasonNumber > 0 && ep.runtime && typeof ep.runtime === "number" && ep.runtime > 0) {
             totalRuntime += ep.runtime;
             episodesWithRuntimeCount++;
           }
@@ -1402,7 +1402,7 @@ export async function saveImages(
     logger.info(`[saveImages] Primary backdrop unset for content ${contentId}`);
   } else if (backdropUrl) {
     const finalBackdropUrl = mediaPrepared
-      ? getImageSource(backdropUrl)
+      ? backdropUrl
       : await localizeContentImage(backdropUrl, contentId, "backdrop");
     const backdropSource = getImageSource(finalBackdropUrl);
     const existingBackdrop = await prisma.contentImage.findFirst({
@@ -1549,6 +1549,7 @@ export async function saveScreenshots(
     difficulty?: number;
     order?: number;
     seasonNumber?: number | null;
+    episodeNumber?: number | null;
     description?: string;
     isEnabledForQuiz?: boolean;
     isSpoiler?: boolean;
@@ -1606,6 +1607,7 @@ export async function saveScreenshots(
         difficulty: s.difficulty ?? 1,
         order: s.order ?? globalIndex,
         seasonNumber: s.seasonNumber ?? null,
+        episodeNumber: s.seasonNumber == null ? null : (s.episodeNumber ?? null),
         isEnabledForQuiz: s.isEnabledForQuiz ?? false,
         isSpoiler: s.isSpoiler ?? false,
         isSensitive: s.isSensitive ?? false,

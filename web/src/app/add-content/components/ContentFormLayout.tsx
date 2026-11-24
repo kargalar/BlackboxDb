@@ -45,78 +45,27 @@ interface ContentFormLayoutProps {
 function getTvScreenshotSeasons(formData: AddContentFormData, t: any) {
   return [...(formData.seasons || [])]
     .map((season, index) => ({
-      seasonNumber: Number(season.seasonNumber || index + 1),
-      name: season.name || t('seasonName', { number: season.seasonNumber || index + 1 }),
+      seasonNumber: Number(season.seasonNumber ?? index + 1),
+      name: season.name || t('seasonName', { number: season.seasonNumber ?? index + 1 }),
     }))
     .filter((season) => Number.isFinite(season.seasonNumber))
     .sort((a, b) => a.seasonNumber - b.seasonNumber);
 }
 
-function mergeSeasonScreenshots(
-  allScreenshots: Screenshot[],
-  seasonNumber: number | null,
-  seasonScreenshots: Screenshot[]
-) {
-  const matchesSeason = (s: Screenshot) =>
-    seasonNumber === null
-      ? s.seasonNumber === undefined || s.seasonNumber === null
-      : s.seasonNumber === seasonNumber;
-  const otherScreenshots = allScreenshots.filter((s) => !matchesSeason(s));
-  const normalizedSeasonScreenshots = seasonScreenshots.map((s, index) => ({
-    ...s,
-    seasonNumber,
-    order: index,
-  }));
-
-  return [...otherScreenshots, ...normalizedSeasonScreenshots].map((s, index) => ({
-    ...s,
-    order: s.seasonNumber ? s.order : index,
-  }));
+function screenshotInGroup(s: Screenshot, season: number | null, episode: number | null) {
+  return (s.seasonNumber ?? null) === season && (s.episodeNumber ?? null) === episode;
 }
-
-function getScreenshotKey(screenshot: Screenshot) {
-  return screenshot.id
-    ? `id:${screenshot.id}`
-    : `url:${screenshot.imageUrl}|file:${screenshot.fileName || ''}`;
+function screenshotKey(s: Screenshot) { return s.id ? `id:${s.id}` : `url:${s.imageUrl}|${s.fileName || ''}`; }
+function mergeGroup(all: Screenshot[], season: number | null, episode: number | null, group: Screenshot[]) {
+  return [...all.filter(s => !screenshotInGroup(s, season, episode)), ...group.map((s, order) => ({ ...s, seasonNumber: season, episodeNumber: episode, order }))];
 }
-
-function moveScreenshotToSeason(
-  allScreenshots: Screenshot[],
-  screenshot: Screenshot,
-  targetSeasonNumber: number | null,
-  targetIndex?: number
-) {
-  const movingKey = getScreenshotKey(screenshot);
-  const withoutMoving = allScreenshots.filter((s) => getScreenshotKey(s) !== movingKey);
-  const movedScreenshot = {
-    ...screenshot,
-    seasonNumber: targetSeasonNumber,
-  };
-
-  const matchesTargetSeason = (s: Screenshot) =>
-    targetSeasonNumber === null
-      ? s.seasonNumber === undefined || s.seasonNumber === null
-      : s.seasonNumber === targetSeasonNumber;
-
-  const targetScreenshots = withoutMoving.filter(matchesTargetSeason);
-  const otherScreenshots = withoutMoving.filter((s) => !matchesTargetSeason(s));
-  const insertIndex =
-    targetIndex === undefined
-      ? targetScreenshots.length
-      : Math.max(0, Math.min(targetIndex, targetScreenshots.length));
-
-  targetScreenshots.splice(insertIndex, 0, movedScreenshot);
-
-  const combined = [...otherScreenshots, ...targetScreenshots];
-  const groupOrder = new Map<string, number>();
-
-  return combined.map((s) => {
-    const key =
-      s.seasonNumber === undefined || s.seasonNumber === null ? 'general' : String(s.seasonNumber);
-    const order = groupOrder.get(key) || 0;
-    groupOrder.set(key, order + 1);
-    return { ...s, order };
-  });
+function moveGroup(all: Screenshot[], screenshot: Screenshot, season: number | null, episode: number | null, index?: number) {
+  const original = all.find(s => screenshotKey(s) === screenshotKey(screenshot));
+  if (!original) return all;
+  const rest = all.filter(s => screenshotKey(s) !== screenshotKey(screenshot));
+  const group = rest.filter(s => screenshotInGroup(s, season, episode));
+  group.splice(index ?? group.length, 0, original);
+  return mergeGroup(rest, season, episode, group);
 }
 
 /**
@@ -396,86 +345,27 @@ export function ContentFormLayout({
               {t('screenshots')}
             </h3>
             <DiffAlert diffs={getDiffForTab(allDiffs, 'media')} onRevert={handleRevert} />
-            {formData.contentTypeId === '2' && getTvScreenshotSeasons(formData, t).length > 0 ? (
-              <div className="space-y-8">
-                {(formData.screenshots || []).some(
-                  (s) => s.seasonNumber === undefined || s.seasonNumber === null
-                ) && (
-                  <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-                    <ScreenshotUpload
-                      title={t('generalScreenshots')}
-                      groupKey="general"
-                      screenshots={(formData.screenshots || []).filter(
-                        (s) => s.seasonNumber === undefined || s.seasonNumber === null
-                      )}
-                      onScreenshotsChange={(screenshots) =>
-                        setFormData({
-                          ...formData,
-                          screenshots: mergeSeasonScreenshots(
-                            formData.screenshots || [],
-                            null,
-                            screenshots
-                          ),
-                        })
-                      }
-                      onMoveScreenshotHere={(screenshot, targetIndex) =>
-                        setFormData({
-                          ...formData,
-                          screenshots: moveScreenshotToSeason(
-                            formData.screenshots || [],
-                            screenshot,
-                            null,
-                            targetIndex
-                          ),
-                        })
-                      }
-                      disabled={loading}
-                    />
-                  </div>
-                )}
-                {getTvScreenshotSeasons(formData, t).map((season) => (
-                  <div
-                    key={season.seasonNumber}
-                    className="rounded-lg border border-gray-200 dark:border-gray-700 p-4"
-                  >
-                    <ScreenshotUpload
-                      title={t('seasonScreenshots', { seasonName: season.name })}
-                      groupKey={`season-${season.seasonNumber}`}
-                      screenshots={(formData.screenshots || []).filter(
-                        (s) => s.seasonNumber === season.seasonNumber
-                      )}
-                      onScreenshotsChange={(screenshots) =>
-                        setFormData({
-                          ...formData,
-                          screenshots: mergeSeasonScreenshots(
-                            formData.screenshots || [],
-                            season.seasonNumber,
-                            screenshots
-                          ),
-                        })
-                      }
-                      onMoveScreenshotHere={(screenshot, targetIndex) =>
-                        setFormData({
-                          ...formData,
-                          screenshots: moveScreenshotToSeason(
-                            formData.screenshots || [],
-                            screenshot,
-                            season.seasonNumber,
-                            targetIndex
-                          ),
-                        })
-                      }
-                      disabled={loading}
-                    />
+            {formData.contentTypeId === '2' ? (
+              <div className="space-y-6">
+                {[
+                  { season: null as number | null, episode: null as number | null, title: t('generalScreenshots') },
+                  ...(formData.screenshots || []).filter(s => s.seasonNumber != null && !(formData.seasons || []).some(season => Number(season.seasonNumber) === s.seasonNumber && (s.episodeNumber == null || season.episodes?.some(ep => ep.episodeNumber === s.episodeNumber)))).filter((s, index, all) => all.findIndex(other => other.seasonNumber === s.seasonNumber && (other.episodeNumber ?? null) === (s.episodeNumber ?? null)) === index).map(s => ({ season: s.seasonNumber!, episode: s.episodeNumber ?? null, title: `S${s.seasonNumber}${s.episodeNumber != null ? `E${s.episodeNumber}` : ''}` })),
+                  ...getTvScreenshotSeasons(formData, t).flatMap(season => [
+                    { season: season.seasonNumber, episode: null as number | null, title: t('seasonScreenshots', { seasonName: season.name }) },
+                    ...(formData.seasons.find(s => Number(s.seasonNumber) === season.seasonNumber)?.episodes ?? []).map(ep => ({ season: season.seasonNumber, episode: ep.episodeNumber, title: `S${season.seasonNumber}E${ep.episodeNumber} — ${ep.name}` })),
+                  ]),
+                ].map(group => (
+                  <div key={`${group.season}-${group.episode}`} className="rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                    <ScreenshotUpload title={group.title} groupKey={`${group.season}-${group.episode}`}
+                      screenshots={(formData.screenshots || []).filter(s => screenshotInGroup(s, group.season, group.episode))}
+                      onScreenshotsChange={screenshots => setFormData(prev => ({ ...prev, screenshots: mergeGroup(prev.screenshots || [], group.season, group.episode, screenshots) }))}
+                      onMoveScreenshotHere={(screenshot, index) => setFormData(prev => ({ ...prev, screenshots: moveGroup(prev.screenshots || [], screenshot, group.season, group.episode, index) }))}
+                      disabled={loading} />
                   </div>
                 ))}
               </div>
             ) : (
-              <ScreenshotUpload
-                screenshots={formData.screenshots}
-                onScreenshotsChange={(screenshots) => setFormData({ ...formData, screenshots })}
-                disabled={loading}
-              />
+              <ScreenshotUpload screenshots={formData.screenshots} onScreenshotsChange={screenshots => setFormData({ ...formData, screenshots })} disabled={loading} />
             )}
           </div>
         )}

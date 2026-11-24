@@ -20,6 +20,7 @@ export interface Screenshot {
   description?: string;
   isEnabledForQuiz: boolean;
   seasonNumber?: number | null;
+  episodeNumber?: number | null;
   isSpoiler: boolean; // Spoiler içerik mi
   isSensitive: boolean; // Hassas/+18 içerik mi
   isNew?: boolean; // Yeni yüklenen mi (henüz upload edilmemiş)

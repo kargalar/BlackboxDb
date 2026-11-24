@@ -233,15 +233,18 @@ export function moveLocalContentImageToContentFolder(
   if (!sourcePath.startsWith(`${sourceRoot}${path.sep}`)) {
     throw new Error("Invalid local content image path");
   }
+  if (fs.existsSync(targetPath)) {
+    return `${makeLocalUrl(destinationId, kind, parts.filename)}${parts.hash}`;
+  }
   if (!fs.existsSync(sourcePath)) {
     throw new Error(`Local content image is missing: ${url}`);
   }
 
   fs.mkdirSync(targetDirectory, { recursive: true });
-  if (fs.existsSync(targetPath)) {
+  if (parts.contentId !== "temp") {
+    fs.copyFileSync(sourcePath, targetPath, fs.constants.COPYFILE_EXCL);
     return `${makeLocalUrl(destinationId, kind, parts.filename)}${parts.hash}`;
   }
-
   try {
     fs.renameSync(sourcePath, targetPath);
   } catch {

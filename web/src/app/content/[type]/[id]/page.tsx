@@ -1277,7 +1277,7 @@ export default function ContentDetailPage() {
           {/* Media (Screenshots & Videos) */}
           {type !== 'book' && content && (
             <div className="content-detail-section content-media-section">
-              <ContentMedia content={content} isWatched={isConsumed} />
+              <ContentMedia content={content} isWatched={isConsumed} seasons={seasons} />
             </div>
           )}
 

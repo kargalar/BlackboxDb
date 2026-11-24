@@ -53,6 +53,12 @@ const IMPORT_WEEKLY_POPULAR_MOVIES = gql`
   }
 `;
 
+const SYNC_EXISTING_TV_SHOWS = gql`
+  mutation SyncExistingTvShows {
+    syncExistingTvShows { success jobId message }
+  }
+`;
+
 const GET_IMPORT_JOB_STATUS = gql`
   query GetImportJobStatus($jobId: String!) {
     getImportJobStatus(jobId: $jobId) {
@@ -98,6 +104,9 @@ export default function AdminHome() {
     };
   }>(IMPORT_WEEKLY_POPULAR_MOVIES);
   const [isUpdatingBookModule, setIsUpdatingBookModule] = useState(false);
+  const [syncExistingTvShows] = useMutation<{ syncExistingTvShows: { success: boolean; jobId?: string; message?: string } }>(SYNC_EXISTING_TV_SHOWS);
+  const [isStartingTvSync, setIsStartingTvSync] = useState(false);
+  const [jobKind, setJobKind] = useState<'popular' | 'tv'>('popular');
   const [isImportingPopular, setIsImportingPopular] = useState(false);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -289,6 +298,7 @@ export default function AdminHome() {
     try {
       const { data } = await importWeeklyPopularMovies();
       if (data?.importWeeklyPopularMovies?.success && data.importWeeklyPopularMovies.jobId) {
+        setJobKind('popular');
         setActiveJobId(data.importWeeklyPopularMovies.jobId);
         setIsModalOpen(true);
       } else {
@@ -299,6 +309,21 @@ export default function AdminHome() {
       alert('Hata: ' + err.message);
     } finally {
       setIsImportingPopular(false);
+    }
+  };
+
+  const handleTvSync = async () => {
+    setIsStartingTvSync(true);
+    try {
+      const { data } = await syncExistingTvShows();
+      if (!data?.syncExistingTvShows.jobId) throw new Error(data?.syncExistingTvShows.message || 'İşlem başlatılamadı.');
+      setJobKind('tv');
+      setActiveJobId(data.syncExistingTvShows.jobId);
+      setIsModalOpen(true);
+    } catch (err: any) {
+      alert('Hata: ' + err.message);
+    } finally {
+      setIsStartingTvSync(false);
     }
   };
 
@@ -484,6 +509,14 @@ export default function AdminHome() {
             </p>
           </button>
         </div>
+      </div>
+
+      <div className="glass-card p-6 border border-purple-500/30">
+        <h2 className="text-xl font-semibold text-purple-400">TMDB dizi kontrolü</h2>
+        <p className="text-sm text-white/40 mt-2">TMDB kimliği bulunan dizilerin sezon ve bölümlerini kontrol eder, yeni kayıtları ekler ve mevcut bilgileri günceller.</p>
+        <button onClick={handleTvSync} disabled={isStartingTvSync} className="mt-4 p-4 rounded-xl bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 disabled:opacity-50 text-left text-purple-400 font-semibold">
+          {isStartingTvSync ? 'Başlatılıyor...' : 'Dizileri kontrol et'}
+        </button>
       </div>
 
       {/* Dangerous Operations */}
@@ -806,7 +839,7 @@ export default function AdminHome() {
                 {/* Header */}
                 <div className="flex justify-between items-center border-b border-white/10 pb-3">
                   <h3 className="text-lg font-semibold text-purple-400 flex items-center gap-2">
-                    <span>🔥</span> Popüler İçerik İçe Aktarılıyor
+                    <span>🔥</span> {jobKind === 'tv' ? 'TMDB Dizi Kontrolü' : 'Popüler İçerik İçe Aktarılıyor'}
                   </h3>
                   {(jobStatus === 'COMPLETED' || jobStatus === 'FAILED') && (
                     <button
@@ -855,7 +888,7 @@ export default function AdminHome() {
                       <span className="text-sm font-semibold text-green-400 mt-1">
                         {parsedProgress.imported}
                       </span>
-                      <span className="text-xs text-white/40">Aktarılan</span>
+                      <span className="text-xs text-white/40">{jobKind === 'tv' ? 'Yeni sezon/bölüm olan dizi' : 'Aktarılan'}</span>
                     </div>
 
                     <div className="flex flex-col items-center p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
@@ -863,7 +896,7 @@ export default function AdminHome() {
                       <span className="text-sm font-semibold text-blue-400 mt-1">
                         {parsedProgress.skipped}
                       </span>
-                      <span className="text-xs text-white/40">Zaten Var</span>
+                      <span className="text-xs text-white/40">{jobKind === 'tv' ? 'Yeni kayıt yok' : 'Zaten Var'}</span>
                     </div>
 
                     <div className="flex flex-col items-center p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
@@ -907,7 +940,7 @@ export default function AdminHome() {
                   ) : (
                     <div className="flex items-center gap-2 text-xs text-white/40">
                       <div className="w-3.5 h-3.5 border border-purple-400 border-t-transparent rounded-full animate-spin" />
-                      İçe aktarım devam ediyor...
+                      {jobKind === 'tv' ? 'Kontrol devam ediyor...' : 'İçe aktarım devam ediyor...'}
                     </div>
                   )}
                 </div>

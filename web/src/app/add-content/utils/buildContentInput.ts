@@ -470,21 +470,13 @@ export function buildContentInput({
   }
 
   // --- Screenshots ---
-  const validTvSeasonNumbers = new Set(
-    contentType === 2 ? formData.seasons.map((season) => Number(season.seasonNumber)) : []
-  );
   const allScreenshots =
     contentType === 4
       ? []
       : formData.screenshots
-          .filter((s: any) => {
-            if (contentType !== 2 || validTvSeasonNumbers.size === 0) return true;
-            return s.seasonNumber === undefined || s.seasonNumber === null
-              ? true
-              : validTvSeasonNumbers.has(Number(s.seasonNumber));
-          })
           .filter((s: any) => s.imageUrl && !s.imageUrl.startsWith('data:'))
           .map((s: any, index: number) => ({
+            ...(s.id ? { id: s.id } : {}),
             imageUrl: s.imageUrl,
             difficulty: s.difficulty || 1,
             order: typeof s.order === 'number' ? s.order : index,
@@ -496,6 +488,7 @@ export function buildContentInput({
               contentType === 2 && s.seasonNumber !== undefined && s.seasonNumber !== null
                 ? Number(s.seasonNumber)
                 : null,
+            episodeNumber: contentType === 2 && s.seasonNumber != null && s.episodeNumber != null ? Number(s.episodeNumber) : null,
           }));
 
   // Edit modunda screenshot'ları her zaman gönder (boş array = hepsini sil)

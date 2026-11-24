@@ -278,6 +278,8 @@ export class UserResolver {
     posterZoomEnabled?: boolean,
     @Arg("posterIconsBelow", () => Boolean, { nullable: true })
     posterIconsBelow?: boolean,
+    @Arg("posterIconsPosition", () => String, { nullable: true })
+    posterIconsPosition?: string,
     @Arg("posterRatingEnabled", () => Boolean, { nullable: true })
     posterRatingEnabled?: boolean,
     @Arg("showSensitiveContent", () => Boolean, { nullable: true })
@@ -325,8 +327,18 @@ export class UserResolver {
     }
     if (posterZoomEnabled !== undefined)
       data.posterZoomEnabled = posterZoomEnabled;
-    if (posterIconsBelow !== undefined)
+    if (posterIconsPosition !== undefined) {
+      if (!["above", "below", "off"].includes(posterIconsPosition)) {
+        throw new Error("Invalid posterIconsPosition value");
+      }
+      data.posterIconsPosition = posterIconsPosition;
+      if (posterIconsPosition === "above" || posterIconsPosition === "below") {
+        data.posterIconsBelow = posterIconsPosition === "below";
+      }
+    } else if (posterIconsBelow !== undefined) {
       data.posterIconsBelow = posterIconsBelow;
+      data.posterIconsPosition = posterIconsBelow ? "below" : "above";
+    }
     if (posterRatingEnabled !== undefined)
       data.posterRatingEnabled = posterRatingEnabled;
     if (showSensitiveContent !== undefined)

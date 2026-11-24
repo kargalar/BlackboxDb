@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   Search,
   CheckCircle,
@@ -18,6 +19,8 @@ import { useTranslations } from 'next-intl';
 import { useQuizGame, type SearchContentItem } from '../hooks/useQuizGame';
 
 const EMPTY_SEARCH_ITEMS: SearchContentItem[] = [];
+const CONTENT_TYPES = { 1: 'movie', 2: 'tv', 3: 'game', 4: 'book' } as const;
+type QuizContentType = keyof typeof CONTENT_TYPES;
 
 export default function QuizPlayPage() {
   const t = useTranslations('QuizPlay');
@@ -29,12 +32,20 @@ export default function QuizPlayPage() {
 }
 
 function QuizPlayPageInner() {
-  const router = useRouter();
   const searchParams = useSearchParams();
+  const dailyMode = searchParams.get('daily') === '1';
+  const requestedType = Number(searchParams.get('type'));
+  const contentTypeId = !dailyMode && Object.hasOwn(CONTENT_TYPES, requestedType)
+    ? (requestedType as QuizContentType)
+    : 1;
+  return <QuizGame key={`${dailyMode}:${contentTypeId}`} contentTypeId={contentTypeId} dailyMode={dailyMode} />;
+}
+
+function QuizGame({ contentTypeId, dailyMode }: { contentTypeId: QuizContentType; dailyMode: boolean }) {
+  const router = useRouter();
   const t = useTranslations('QuizPlay');
-
-  const contentTypeId = parseInt(searchParams.get('type') || '1');
-
+  const quizT = useTranslations('Quiz');
+  const contentType = CONTENT_TYPES[contentTypeId];
   const {
     gameState,
     setGameState,
@@ -49,6 +60,8 @@ function QuizPlayPageInner() {
     selectedResultIndex,
     setSelectedResultIndex,
     quiz,
+    user,
+    authLoading,
     contentItems,
     currentContent,
     currentScreenshot,
@@ -56,27 +69,44 @@ function QuizPlayPageInner() {
     searchData,
     loading,
     searchLoading,
+    searchError,
+    practiceLoading,
     error,
     refetch,
     totalScore,
     correctCount,
     accuracy,
     startGame,
-    finishQuiz,
     handleAnswer,
     handlePass,
+    handleGiveUp,
     continueAfterReveal,
     continueAfterCorrectReveal,
     getContentDetails,
-  } = useQuizGame(contentTypeId, t);
+  } = useQuizGame(contentTypeId, t, dailyMode);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const continueButtonRef = useRef<HTMLButtonElement>(null);
+  const [questionCountInput, setQuestionCountInput] = useState('10');
+  const questionCount = Number(questionCountInput);
+  const isQuestionCountValid =
+    Number.isInteger(questionCount) && questionCount >= 1 && questionCount <= 100;
+  const [consumedOnly, setConsumedOnly] = useState(false);
   const resultsContainerRef = useRef<HTMLDivElement>(null);
+  const isRevealedState = gameState === 'revealed' || gameState === 'revealed-correct';
 
   // Keyboard navigation for search results
-  const searchItems = searchData?.searchContent?.items ?? EMPTY_SEARCH_ITEMS;
+  const searchItems = !searchLoading && !searchError
+    ? searchData?.searchContent?.items ?? EMPTY_SEARCH_ITEMS
+    : EMPTY_SEARCH_ITEMS;
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.nativeEvent.isComposing || e.repeat) return;
+      if (e.key === 'Enter' && !searchQuery.trim()) {
+        e.preventDefault();
+        handlePass();
+        return;
+      }
       if (!showSearchResults || searchItems.length === 0) return;
 
       if (e.key === 'ArrowDown') {
@@ -108,64 +138,27 @@ function QuizPlayPageInner() {
         }
       }
     },
-    [showSearchResults, searchItems, selectedResultIndex, setSelectedResultIndex, handleAnswer]
+    [
+      searchQuery,
+      handlePass,
+      showSearchResults,
+      searchItems,
+      selectedResultIndex,
+      setSelectedResultIndex,
+      handleAnswer,
+    ]
   );
 
-  // Auto focus input when question changes
   useEffect(() => {
-    if (gameState === 'playing') {
-      const timer = setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
-      return () => clearTimeout(timer);
+    if (isRevealedState) {
+      continueButtonRef.current?.focus();
+    } else if (gameState === 'playing' && !isWrongAnswer) {
+      inputRef.current?.focus();
     }
-  }, [currentContentIndex, currentScreenshotIndex, gameState]);
-
-  // Enter tuşu ile revealed modal'dan devam et
-  useEffect(() => {
-    if (gameState !== 'revealed' && gameState !== 'revealed-correct') return;
-
-    let isActive = false;
-    const activateTimer = setTimeout(() => {
-      isActive = true;
-    }, 300);
-
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (!isActive) return;
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        if (gameState === 'revealed-correct') {
-          continueAfterCorrectReveal();
-        } else {
-          continueAfterReveal();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleGlobalKeyDown);
-    return () => {
-      clearTimeout(activateTimer);
-      window.removeEventListener('keydown', handleGlobalKeyDown);
-    };
-  }, [gameState, continueAfterCorrectReveal, continueAfterReveal]);
-
-  const getContentTypePath = (typeId: number) => {
-    switch (typeId) {
-      case 1:
-        return 'movie';
-      case 2:
-        return 'tv';
-      case 3:
-        return 'game';
-      case 4:
-        return 'book';
-      default:
-        return 'movie';
-    }
-  };
+  }, [currentContentIndex, currentScreenshotIndex, gameState, isRevealedState, isWrongAnswer]);
 
   // Loading
-  if (loading || gameState === 'loading') {
+  if (dailyMode && (authLoading || loading)) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
@@ -177,36 +170,38 @@ function QuizPlayPageInner() {
   }
 
   // Error
-  if (error) {
+  if (dailyMode && user && error) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center max-w-md p-8 bg-gray-800 rounded-2xl">
           <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-white mb-2">{t('errorTitle')}</h2>
           <p className="text-gray-400 mb-6">{error.message}</p>
-          <button
-            onClick={() => router.push('/quiz')}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
-          >
-            {t('backToQuiz')}
-          </button>
+          <div className="flex justify-center gap-3">
+            <button
+              onClick={() => void refetch().catch(() => {})}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
+            >
+              {t('retry')}
+            </button>
+            <Link href="/quiz" className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold">
+              {t('backToQuiz')}
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (gameState === 'empty') {
+  if (dailyMode && !user) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
         <div className="max-w-lg w-full text-center bg-gray-800/50 backdrop-blur rounded-3xl p-8">
-          <h1 className="text-2xl font-bold text-white mb-3">{t('emptyTitle')}</h1>
-          <p className="text-gray-400 mb-6">{t('emptyDescription')}</p>
-          <button
-            onClick={() => router.push('/quiz')}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold"
-          >
-            {t('backToQuiz')}
-          </button>
+          <h1 className="text-2xl font-bold text-white mb-3">{t('dailyTitle')}</h1>
+          <p className="text-gray-400 mb-6">{t('dailyRequiresLogin')}</p>
+          <Link href="/auth/login" className="inline-flex px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold">
+            {quizT('dailyLogin')}
+          </Link>
         </div>
       </div>
     );
@@ -217,10 +212,29 @@ function QuizPlayPageInner() {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
         <div className="max-w-lg w-full text-center bg-gray-800/50 backdrop-blur rounded-3xl p-8">
-          <h1 className="text-3xl font-bold text-white mb-2">{quiz.contentTypeName} Quiz</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            {dailyMode ? t('dailyTitle') : t('practiceTitle', { type: quizT(`types.${contentType}`) })}
+          </h1>
           <p className="text-gray-400 mb-8">
-            {t('itemsCount', { count: contentItems.length })} • {t('noTimeLimit')}
+            {dailyMode ? t('dailyDescription') : t('practiceDescription')}
           </p>
+
+          {!dailyMode && (
+          <div className="space-y-4 mb-6 text-left">
+            <label className="block text-gray-300">
+              <span className="block mb-2">{t('questionCount')}</span>
+              <input type="number" min={1} max={100} value={questionCountInput}
+                onChange={(e) => setQuestionCountInput(e.target.value)}
+                className="w-full rounded-lg bg-gray-700 px-4 py-3 text-white" />
+            </label>
+            <label className="flex items-center gap-3 text-gray-300">
+              <input type="checkbox" checked={Boolean(user && consumedOnly)} disabled={!user}
+                onChange={(e) => setConsumedOnly(e.target.checked)} className="h-4 w-4" />
+              {t('consumedOnly')}
+            </label>
+            {!user && <p className="text-sm text-gray-400">{t('consumedRequiresLogin')}</p>}
+          </div>
+          )}
 
           <div className="space-y-4 mb-8 text-left bg-gray-700/50 rounded-xl p-6">
             <h3 className="font-semibold text-white">{t('rulesTitle')}</h3>
@@ -249,10 +263,11 @@ function QuizPlayPageInner() {
           </div>
 
           <button
-            onClick={startGame}
-            className="w-full py-4 bg-blue-600 hover:bg-blue-700 hover: text-white text-xl font-bold rounded-xl transition-all transform hover:scale-105"
+            onClick={() => void startGame(questionCount, Boolean(user && consumedOnly))}
+            disabled={dailyMode ? !quiz || Boolean(quiz.dailyCompleted) : practiceLoading || !isQuestionCountValid}
+            className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {t('start')}
+            {dailyMode && quiz?.dailyCompleted ? t('dailyCompleted') : practiceLoading ? t('loading') : t('start')}
           </button>
         </div>
       </div>
@@ -296,16 +311,13 @@ function QuizPlayPageInner() {
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4">
-            <button
-              onClick={() => {
-                setGameState('loading');
-                refetch();
-              }}
+            {!dailyMode && <button
+              onClick={() => setGameState('ready')}
               className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold flex items-center justify-center gap-2"
             >
               <RotateCcw className="w-5 h-5" />
               {t('playAgain')}
-            </button>
+            </button>}
             <button
               onClick={() => router.push('/quiz')}
               className="flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2"
@@ -326,9 +338,9 @@ function QuizPlayPageInner() {
           <div className="mt-8">
             <h3 className="text-lg font-semibold text-white mb-4">{t('results')}</h3>
             <div className="space-y-2 max-h-96 overflow-y-auto">
-              {results.map((result, index) => {
+              {results.map((result) => {
                 const content = contentItems.find((c) => c.contentId === result.contentId);
-                const contentUrl = `/content/${getContentTypePath(contentTypeId)}/${result.contentId}`;
+                const contentUrl = `/content/${contentType}/${result.contentId}`;
                 return (
                   <div
                     key={result.contentId}
@@ -383,7 +395,6 @@ function QuizPlayPageInner() {
   }
 
   // Playing state (+ revealed modal overlay)
-  const isRevealedState = gameState === 'revealed' || gameState === 'revealed-correct';
   const isCorrectReveal = gameState === 'revealed-correct';
   const revealDetails = isRevealedState ? getContentDetails(currentContent) : null;
   const lastResult = isCorrectReveal ? results[results.length - 1] : null;
@@ -480,9 +491,9 @@ function QuizPlayPageInner() {
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={t('searchPlaceholder')}
+              aria-label={t('searchPlaceholder')}
               className="w-full pl-12 pr-4 py-4 bg-gray-800 rounded-xl text-white text-lg placeholder-gray-500 focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50"
-              autoFocus
-              disabled={isWrongAnswer}
+              disabled={isWrongAnswer || isRevealedState}
             />
 
             {/* Search Results Dropdown */}
@@ -493,6 +504,8 @@ function QuizPlayPageInner() {
               >
                 {searchLoading ? (
                   <div className="p-4 text-center text-gray-400">{t('searching')}</div>
+                ) : searchError ? (
+                  <div role="status" className="p-4 text-center text-gray-400">{t('searchFailed')}</div>
                 ) : searchItems.length === 0 ? (
                   <div className="p-4 text-center text-gray-400">{t('noResults')}</div>
                 ) : (
@@ -509,7 +522,7 @@ function QuizPlayPageInner() {
                         <div className="relative w-10 h-14 rounded overflow-hidden flex-shrink-0">
                           <Image
                             src={item.posterUrl}
-                            alt={item.title}
+                            alt=""
                             fill
                             className="object-cover"
                           />
@@ -523,15 +536,24 @@ function QuizPlayPageInner() {
             )}
           </div>
 
-          {/* Pass Button */}
-          <button
-            onClick={handlePass}
-            disabled={isWrongAnswer || isRevealedState}
-            className={`w-full py-3 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-xl font-medium flex items-center justify-center gap-2 ${isWrongAnswer || isRevealedState ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <SkipForward className="w-5 h-5" />
-            {t('pass')}
-          </button>
+          {/* Pass and give up buttons */}
+          <div className="flex items-stretch gap-2">
+            <button
+              onClick={handlePass}
+              disabled={isWrongAnswer || isRevealedState}
+              className={`flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-xl font-medium flex items-center justify-center gap-2 ${isWrongAnswer || isRevealedState ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <SkipForward className="w-5 h-5" />
+              {t('pass')}
+            </button>
+            <button
+              onClick={handleGiveUp}
+              disabled={isWrongAnswer || isRevealedState}
+              className="px-4 py-3 text-sm text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {t('giveUp')}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -573,7 +595,7 @@ function QuizPlayPageInner() {
               <div className="flex gap-4 mb-4">
                 {currentContent?.posterUrl ? (
                   <a
-                    href={`/content/${getContentTypePath(contentTypeId)}/${currentContent.contentId}`}
+                    href={`/content/${contentType}/${currentContent.contentId}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="relative w-48 h-72 rounded-lg overflow-hidden flex-shrink-0 ring-2 ring-transparent hover:ring-gray-400 transition-all"
@@ -588,7 +610,7 @@ function QuizPlayPageInner() {
                 ) : null}
                 <div className="flex-1 min-w-0">
                   <a
-                    href={`/content/${getContentTypePath(contentTypeId)}/${currentContent?.contentId}`}
+                    href={`/content/${contentType}/${currentContent?.contentId}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-lg font-bold text-white hover:text-gray-300 transition-colors mb-2 block"
@@ -682,6 +704,7 @@ function QuizPlayPageInner() {
 
             {/* Continue Button */}
             <button
+              ref={continueButtonRef}
               onClick={isCorrectReveal ? continueAfterCorrectReveal : continueAfterReveal}
               className={`w-full py-3 text-white text-base font-bold rounded-xl flex items-center justify-center gap-2 ${
                 isCorrectReveal

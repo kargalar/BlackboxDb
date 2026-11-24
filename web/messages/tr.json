@@ -388,6 +388,10 @@
     }
   },
   "Quiz": {
+    "dailyTitle": "Günün Quizi",
+    "dailyDescription": "Herkes için aynı 10 film. Skor tablosuna yalnızca günün quizinden puan kazanılır.",
+    "dailyStart": "Günün quizine başla",
+    "dailyLogin": "Giriş yap",
     "title": "🎯 Screenshot Quiz",
     "description": "Guess the content from its screenshot, earn points and take your place on the leaderboard!",
     "types": {
@@ -819,6 +823,13 @@
     "loadError": "Benzer içerikler yüklenemedi."
   },
   "ContentScreenshots": {
+    "filterBy": "Filtrele",
+    "seasonFilter": "Sezon",
+    "episodeFilter": "Bölüm",
+    "allEpisodes": "Tüm bölümler",
+    "seasonOnly": "Sezon geneli",
+    "chooseSeason": "Bölümleri görmek için bir sezon seçin.",
+    "general": "Genel",
     "spoilerContent": "Spoiler Content",
     "imageAlt": "Screenshot {index}",
     "sensitiveContent": "Sensitive",
@@ -2000,7 +2011,15 @@
     "noContent": "No content found for this company."
   },
   "QuizPlay": {
-    "loading": "Preparing quiz...",
+    "practiceTitle": "{type} Quizi",
+    "dailyRequiresLogin": "Günün quizini oynamak için giriş yap.",
+    "retry": "Tekrar dene",
+    "searchFailed": "Arama başarısız oldu. Tekrar denemek için aramanı değiştir.",
+    "dailyTitle": "Günün Quizi",
+    "dailyDescription": "Herkes için aynı 10 film. Her gün bir kez tamamlayabilir ve skor tablosuna puan kazanabilirsin. Gün, Türkiye saatine göre değişir.",
+    "practiceDescription": "Serbest quiz: Buradaki puanlar skor tablosuna eklenmez.",
+    "dailyCompleted": "Bugünün quizini tamamladın",
+    "loading": "Quiz hazırlanıyor...",
     "emptyTitle": "Soru Bulunamadı",
     "emptyDescription": "Bu kategoride henüz soru yok. Oynamaya devam etmek için başka bir kategori seçin.",
     "errorTitle": "An Error Occurred",
@@ -2037,6 +2056,12 @@
     "searching": "Searching...",
     "noResults": "No results found",
     "pass": "Pass",
+    "giveUp": "Bilemedim",
+    "questionCount": "Soru sayısı (1–100)",
+    "consumedOnly": "Yalnızca izlediğim / tamamladığım içerikler",
+    "consumedRequiresLogin": "Bu seçeneği kullanmak için giriş yapın.",
+    "noMatchingContent": "Bu seçim için quiz'e uygun içerik bulunamadı.",
+    "fewerQuestions": "Yalnızca {count} uygun içerik bulundu; quiz bu sayıyla başlayacak.",
     "correctAnswerTitle": "Correct!",
     "correctAnswerDesc": "Correct answer:",
     "wrong": "Wrong!",
@@ -2274,6 +2299,8 @@
     }
   },
   "Explore": {
+    "searchPlaceholder": "İçerik ara...",
+    "clearSearch": "Aramayı temizle",
     "emotionDiscovery": {
       "title": "Duyguna göre keşfet",
       "description": "Topluluğun tepkileriyle en korkunç, en duygusal, en komik ve daha fazlasını bul."

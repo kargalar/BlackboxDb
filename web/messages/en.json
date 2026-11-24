@@ -390,6 +390,10 @@
     }
   },
   "Quiz": {
+    "dailyTitle": "Daily Quiz",
+    "dailyDescription": "The same 10 films for everyone. Only the daily quiz earns leaderboard points.",
+    "dailyStart": "Play today's quiz",
+    "dailyLogin": "Sign in",
     "title": "🎯 Screenshot Quiz",
     "description": "Guess the content from its screenshot, earn points and take your place on the leaderboard!",
     "types": {
@@ -821,6 +825,13 @@
     "loadError": "Unable to load similar content."
   },
   "ContentScreenshots": {
+    "filterBy": "Filter",
+    "seasonFilter": "Season",
+    "episodeFilter": "Episode",
+    "allEpisodes": "All episodes",
+    "seasonOnly": "Season only",
+    "chooseSeason": "Choose a season to see episodes.",
+    "general": "General",
     "spoilerContent": "Spoiler Content",
     "imageAlt": "Screenshot {index}",
     "sensitiveContent": "Sensitive",
@@ -2002,6 +2013,14 @@
     "noContent": "No content found for this company."
   },
   "QuizPlay": {
+    "practiceTitle": "{type} Quiz",
+    "dailyRequiresLogin": "Sign in to play the daily quiz.",
+    "retry": "Try again",
+    "searchFailed": "Search failed. Change your search to try again.",
+    "dailyTitle": "Daily Quiz",
+    "dailyDescription": "The same 10 films for everyone. Complete it once per day to earn leaderboard points. Days change in Turkey's time zone.",
+    "practiceDescription": "Practice quiz: points earned here do not count toward the leaderboard.",
+    "dailyCompleted": "You completed today's quiz",
     "loading": "Preparing quiz...",
     "emptyTitle": "No Questions Available",
     "emptyDescription": "There are no questions for this category yet. Choose another category to keep playing.",
@@ -2039,6 +2058,12 @@
     "searching": "Searching...",
     "noResults": "No results found",
     "pass": "Pass",
+    "giveUp": "I don't know",
+    "questionCount": "Number of questions (1–100)",
+    "consumedOnly": "Only titles I have watched or completed",
+    "consumedRequiresLogin": "Sign in to use this option.",
+    "noMatchingContent": "No eligible quiz content was found for this selection.",
+    "fewerQuestions": "Only {count} eligible titles were found; the quiz will use those.",
     "correctAnswerTitle": "Correct!",
     "correctAnswerDesc": "Correct answer:",
     "wrong": "Wrong!",
@@ -2276,6 +2301,8 @@
     }
   },
   "Explore": {
+    "searchPlaceholder": "Search titles...",
+    "clearSearch": "Clear search",
     "emotionDiscovery": {
       "title": "Discover by emotion",
       "description": "Find the scariest, most emotional, funniest titles and more from community reactions."

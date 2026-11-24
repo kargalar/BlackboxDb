@@ -1,7 +1,7 @@
 'use client';
 
 import React, { Suspense, useMemo } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { BuildingIcon } from '@/components/atoms/icons/SidebarIcons';
 import { SearchBar } from '../[type]/components/SearchBar';
 import { X } from 'lucide-react';
@@ -16,6 +16,7 @@ import { CompanyFilterSidebar, type CompanyFilterState } from './components/Comp
 import { Pagination } from '../[type]/components/Pagination';
 import { useTranslations } from 'next-intl';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { getExplorePage, updateExploreUrl } from '../exploreUrl';
 
 export default function CompanyExplorePage() {
   return (
@@ -27,9 +28,7 @@ export default function CompanyExplorePage() {
 
 function CompanyExplorePageInner() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const query = searchParams.get('q') || '';
-  const page = parseInt(searchParams.get('page') || '1', 10);
   const searchParamsString = searchParams.toString();
   const filters = useMemo<CompanyFilterState>(() => {
     const params = new URLSearchParams(searchParamsString);
@@ -58,6 +57,7 @@ function CompanyExplorePageInner() {
   const t = useTranslations('Explore.Company');
   const preferences = useUserPreferences();
   const itemsPerPage = (preferences?.gridColumns || 5) * (preferences?.gridRows || 4);
+  const page = getExplorePage(searchParams.get('page'), itemsPerPage);
 
   const { items, totalPages, loading } = useCompanySearch(
     query,
@@ -73,7 +73,7 @@ function CompanyExplorePageInner() {
     newSortBy: CompanySortOption,
     newSortOrder: SortOrder
   ) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     params.delete('page');
 
     params.delete('foundingYearMin');
@@ -94,7 +94,7 @@ function CompanyExplorePageInner() {
     params.set('sortBy', newSortBy);
     params.set('sortOrder', newSortOrder);
 
-    router.push(`/explore/company?${params.toString()}`, { scroll: false });
+    updateExploreUrl(params);
   };
 
   const updateFilters = (newFilters: CompanyFilterState) => {
@@ -157,7 +157,7 @@ function CompanyExplorePageInner() {
               )}
             </div>
             <div className="flex-1 min-w-[200px]">
-              <SearchBar contentType="company" placeholder={t('searchPlaceholder')} />
+              <SearchBar placeholder={t('searchPlaceholder')} />
             </div>
           </div>
         </div>
@@ -223,7 +223,7 @@ function CompanyExplorePageInner() {
 
                 {totalPages > 1 && (
                   <div className="mt-8 mb-4 border-t border-gray-800 pt-8">
-                    <Pagination currentPage={page} totalPages={totalPages} contentType="company" />
+                    <Pagination currentPage={page} totalPages={totalPages} />
                   </div>
                 )}
               </>

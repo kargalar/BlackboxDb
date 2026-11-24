@@ -39,6 +39,7 @@ model AppUser {
   posterZoomEnabled             Boolean                    @default(true) @map("poster_zoom_enabled")
   posterRatingEnabled           Boolean                    @default(false) @map("poster_rating_enabled")
   posterIconsBelow              Boolean                    @default(true) @map("poster_icons_below")
+  posterIconsPosition           String                     @default("below") @map("poster_icons_position") @db.VarChar(16)
   showSensitiveContent          Boolean                    @default(false) @map("show_sensitive_content")
   isDeleted                     Boolean                    @default(false) @map("is_deleted")
   deletedAt                     DateTime?                  @map("deleted_at")
@@ -76,6 +77,8 @@ model AppUser {
   receivedNotifications         Notification[]             @relation("NotificationRecipient")
   quizLeaderboard               QuizLeaderboard[]
   quizResults                   QuizResult[]
+  dailyQuizAttempts             DailyQuizAttempt[]
+  dailyQuizLeaderboard          DailyQuizLeaderboard[]
   reportsSent                   Report[]                   @relation("ReportReporter")
   userContentLogs               UserContentLog[]
   emotionReactions              ContentEmotionReaction[]
@@ -622,6 +625,7 @@ model ContentScreenshot {
   isSpoiler        Boolean              @default(false) @map("is_spoiler")
   isSensitive      Boolean              @default(false) @map("is_sensitive")
   seasonNumber     Int?                 @map("season_number")
+  episodeNumber    Int?                 @map("episode_number")
   downvoteCount    Int                  @default(0) @map("downvote_count")
   upvoteCount      Int                  @default(0) @map("upvote_count")
   content          Content              @relation(fields: [contentId], references: [id], onDelete: Cascade)
@@ -912,6 +916,35 @@ model QuizLeaderboard {
   @@index([contentTypeId])
   @@index([totalScore])
   @@map("quiz_leaderboard")
+}
+
+model DailyQuiz {
+  date String @id
+  session Json
+  attempts DailyQuizAttempt[]
+  @@map("daily_quiz")
+}
+
+model DailyQuizAttempt {
+  id Int @id @default(autoincrement())
+  date String
+  userId String @map("user_id") @db.Uuid
+  quiz DailyQuiz @relation(fields: [date], references: [date])
+  user AppUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([date, userId])
+  @@map("daily_quiz_attempt")
+}
+
+model DailyQuizLeaderboard {
+  id Int @id @default(autoincrement())
+  userId String @unique @map("user_id") @db.Uuid
+  totalScore Int @default(0) @map("total_score")
+  totalQuizzes Int @default(0) @map("total_quizzes")
+  correctAnswers Int @default(0) @map("correct_answers")
+  totalQuestions Int @default(0) @map("total_questions")
+  bestScore Int @default(0) @map("best_score")
+  user AppUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("daily_quiz_leaderboard")
 }
 
 model UserList {

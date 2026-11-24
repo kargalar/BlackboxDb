@@ -237,6 +237,7 @@ export const GET_CONTENT_BY_ID = gql`
         difficulty
         order
         seasonNumber
+        episodeNumber
         isEnabledForQuiz
         isSpoiler
         isSensitive

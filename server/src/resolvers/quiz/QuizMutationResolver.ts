@@ -32,142 +32,51 @@ export class QuizMutationResolver {
       throw new Error("Giriş yapmanız gerekiyor");
     }
 
-    console.log(
-      `📝 [QuizMutation] submitQuiz: userId=${user.id}, contentTypeId=${input.contentTypeId}, answers=${input.answers.length}`,
-    );
-
-    const settings = await prisma.quizSettings.findUnique({
-      where: { contentTypeId: input.contentTypeId },
-    });
-
-    if (!settings) {
-      console.error(
-        `❌ [QuizMutation] submitQuiz: settings not found for contentTypeId=${input.contentTypeId}`,
-      );
-      throw new Error("Quiz ayarları bulunamadı");
+    if (!input.dailyDate || input.contentTypeId !== 1) {
+      throw new Error("Yalnızca günün quizi skor tablosuna kaydedilir.");
     }
-
-    // Sonuçları hesapla
+    const daily = await prisma.dailyQuiz.findUnique({ where: { date: input.dailyDate } });
+    if (!daily) throw new Error("Günün quizi bulunamadı.");
+    const session = daily.session as unknown as import("../../types/Quiz").QuizSessionV2;
+    if (input.answers.length !== 10 || session.contentItems.length !== 10) {
+      throw new Error("Günün quizindeki tüm sorular cevaplanmalıdır.");
+    }
+    const used = new Set<string>();
     let score = 0;
     let correctAnswers = 0;
     const answerResults: QuizAnswerResult[] = [];
-
     for (const answer of input.answers) {
-      const screenshot = await prisma.contentScreenshot.findUnique({
-        where: { id: answer.screenshotId },
-        include: {
-          content: {
-            select: { id: true, title: true },
-          },
-        },
-      });
-
-      if (!screenshot) continue;
-
-      const isCorrect = answer.selectedContentId === screenshot.content.id;
-      let pointsEarned = 0;
-
-      if (isCorrect) {
-        correctAnswers++;
-        // Zorluk seviyesine göre direkt puan
-        const pointsMap: Record<number, number> = {
-          1: settings.pointsLevel1,
-          2: settings.pointsLevel2,
-          3: settings.pointsLevel3,
-          4: settings.pointsLevel4,
-          5: settings.pointsLevel5,
-        };
-        pointsEarned = pointsMap[screenshot.difficulty] || settings.pointsLevel1;
-        score += pointsEarned;
-      }
-
-      answerResults.push({
-        screenshotId: answer.screenshotId,
-        isCorrect,
-        correctContentId: screenshot.content.id,
-        correctTitle: screenshot.content.title,
-        pointsEarned,
-      });
+      const item = session.contentItems.find((c) => c.screenshots.some((s) => s.id === answer.screenshotId));
+      if (!item || used.has(item.contentId)) throw new Error("Geçersiz quiz cevabı.");
+      used.add(item.contentId);
+      const screenshot = item.screenshots.find((s) => s.id === answer.screenshotId)!;
+      const isCorrect = answer.selectedContentId === item.contentId;
+      const points = [0, session.pointsLevel1, session.pointsLevel2, session.pointsLevel3, session.pointsLevel4, session.pointsLevel5][screenshot.difficulty] || 0;
+      const pointsEarned = isCorrect ? points : 0;
+      score += pointsEarned;
+      if (isCorrect) correctAnswers++;
+      answerResults.push({ screenshotId: answer.screenshotId, isCorrect, correctContentId: item.contentId, correctTitle: item.title, pointsEarned });
     }
-
-    // Sonucu kaydet
-    await prisma.quizResult.create({
-      data: {
-        userId: user.id,
-        contentTypeId: input.contentTypeId,
-        score,
-        correctAnswers,
-        totalQuestions: input.answers.length,
-        timeTaken: input.totalTimeTaken,
-      },
-    });
-
-    // Leaderboard'u güncelle
-    const existingEntry = await prisma.quizLeaderboard.findUnique({
-      where: {
-        userId_contentTypeId: {
-          userId: user.id,
-          contentTypeId: input.contentTypeId,
-        },
-      },
-    });
-
+    const userId = user.id;
     let isNewBestScore = false;
-
-    if (existingEntry) {
-      isNewBestScore = score > existingEntry.bestScore;
-
-      await prisma.quizLeaderboard.update({
-        where: {
-          userId_contentTypeId: {
-            userId: user.id,
-            contentTypeId: input.contentTypeId,
-          },
-        },
-        data: {
-          totalScore: existingEntry.totalScore + score,
-          totalQuizzes: existingEntry.totalQuizzes + 1,
-          correctAnswers: existingEntry.correctAnswers + correctAnswers,
-          totalQuestions: existingEntry.totalQuestions + input.answers.length,
-          bestScore: isNewBestScore ? score : existingEntry.bestScore,
-        },
+    try {
+      await prisma.$transaction(async (tx) => {
+        await tx.dailyQuizAttempt.create({ data: { date: input.dailyDate!, userId } });
+        const existing = await tx.dailyQuizLeaderboard.findUnique({ where: { userId } });
+        isNewBestScore = !existing || score > existing.bestScore;
+        await tx.dailyQuizLeaderboard.upsert({
+          where: { userId },
+          create: { userId, totalScore: score, totalQuizzes: 1, correctAnswers, totalQuestions: 10, bestScore: score },
+          update: { totalScore: { increment: score }, totalQuizzes: { increment: 1 }, correctAnswers: { increment: correctAnswers }, totalQuestions: { increment: 10 }, ...(isNewBestScore ? { bestScore: score } : {}) },
+        });
+        await tx.quizResult.create({ data: { userId, contentTypeId: 1, score, correctAnswers, totalQuestions: 10, timeTaken: input.totalTimeTaken } });
       });
-    } else {
-      isNewBestScore = true;
-      await prisma.quizLeaderboard.create({
-        data: {
-          userId: user.id,
-          contentTypeId: input.contentTypeId,
-          totalScore: score,
-          totalQuizzes: 1,
-          correctAnswers,
-          totalQuestions: input.answers.length,
-          bestScore: score,
-        },
-      });
+    } catch (error: any) {
+      if (error?.code === "P2002") throw new Error("Günün quizini zaten tamamladınız.");
+      throw error;
     }
-
-    // Yeni sıralamayı hesapla
-    const allLeaderboard = await prisma.quizLeaderboard.findMany({
-      where: { contentTypeId: input.contentTypeId },
-      orderBy: { totalScore: "desc" },
-    });
-
-    const newRank = allLeaderboard.findIndex((e) => e.userId === user.id) + 1;
-
-    console.log(
-      `✅ [QuizMutation] submitQuiz: score=${score}, correct=${correctAnswers}/${input.answers.length}, rank=${newRank}, newBest=${isNewBestScore}`,
-    );
-
-    return {
-      score,
-      correctAnswers,
-      totalQuestions: input.answers.length,
-      timeTaken: input.totalTimeTaken,
-      answerResults,
-      newRank,
-      isNewBestScore,
-    };
+    const higherScores = await prisma.dailyQuizLeaderboard.count({ where: { totalScore: { gt: (await prisma.dailyQuizLeaderboard.findUniqueOrThrow({ where: { userId } })).totalScore } } });
+    return { score, correctAnswers, totalQuestions: 10, timeTaken: input.totalTimeTaken, answerResults, newRank: higherScores + 1, isNewBestScore };
   }
 
   // ======================================
@@ -184,8 +93,8 @@ export class QuizMutationResolver {
       `🏆 [QuizMutation] getLeaderboard: contentTypeId=${contentTypeId}, limit=${limit}`,
     );
 
-    const entries = await prisma.quizLeaderboard.findMany({
-      where: { contentTypeId },
+    if (contentTypeId !== 1) return [];
+    const entries = await prisma.dailyQuizLeaderboard.findMany({
       orderBy: { totalScore: "desc" },
       take: limit,
       include: {
@@ -208,7 +117,7 @@ export class QuizMutationResolver {
       userId: entry.userId,
       username: entry.user.username,
       picturePath: entry.user.picturePath || undefined,
-      contentTypeId: entry.contentTypeId,
+      contentTypeId: 1,
       totalScore: entry.totalScore,
       totalQuizzes: entry.totalQuizzes,
       correctAnswers: entry.correctAnswers,
@@ -230,13 +139,9 @@ export class QuizMutationResolver {
       `🏆 [QuizMutation] getMyLeaderboardEntry: userId=${user.id}, contentTypeId=${contentTypeId}`,
     );
 
-    const entry = await prisma.quizLeaderboard.findUnique({
-      where: {
-        userId_contentTypeId: {
-          userId: user.id,
-          contentTypeId,
-        },
-      },
+    if (contentTypeId !== 1) return null;
+    const entry = await prisma.dailyQuizLeaderboard.findUnique({
+      where: { userId: user.id },
       include: {
         user: {
           select: {
@@ -254,9 +159,8 @@ export class QuizMutationResolver {
     }
 
     // Sıralama hesapla
-    const higherScores = await prisma.quizLeaderboard.count({
+    const higherScores = await prisma.dailyQuizLeaderboard.count({
       where: {
-        contentTypeId,
         totalScore: { gt: entry.totalScore },
       },
     });
@@ -270,7 +174,7 @@ export class QuizMutationResolver {
       userId: entry.userId,
       username: entry.user.username,
       picturePath: entry.user.picturePath || undefined,
-      contentTypeId: entry.contentTypeId,
+      contentTypeId: 1,
       totalScore: entry.totalScore,
       totalQuizzes: entry.totalQuizzes,
       correctAnswers: entry.correctAnswers,

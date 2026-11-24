@@ -23,6 +23,9 @@ export class ContentScreenshot {
   @Field(() => Int, { nullable: true })
   seasonNumber?: number;
 
+  @Field(() => Int, { nullable: true })
+  episodeNumber?: number;
+
   @Field(() => String, { nullable: true })
   description?: string;
 
@@ -269,6 +272,11 @@ export class QuizContentItem {
 
 @ObjectType()
 export class QuizSessionV2 {
+  @Field(() => String, { nullable: true })
+  dailyDate?: string;
+
+  @Field(() => Boolean, { nullable: true })
+  dailyCompleted?: boolean;
   @Field(() => [QuizContentItem])
   contentItems: QuizContentItem[];
 
@@ -314,6 +322,9 @@ export class AddScreenshotInput {
   @Field(() => Int, { nullable: true })
   seasonNumber?: number;
 
+  @Field(() => Int, { nullable: true })
+  episodeNumber?: number;
+
   @Field(() => String, { nullable: true })
   description?: string;
 
@@ -340,6 +351,9 @@ export class UpdateScreenshotInput {
 
   @Field(() => Int, { nullable: true })
   seasonNumber?: number;
+
+  @Field(() => Int, { nullable: true })
+  episodeNumber?: number;
 
   @Field(() => String, { nullable: true })
   description?: string;
@@ -398,6 +412,8 @@ export class SubmitQuizAnswerInput {
 
 @InputType()
 export class SubmitQuizInput {
+  @Field(() => String, { nullable: true })
+  dailyDate?: string;
   @Field(() => Int)
   contentTypeId: number;
 
