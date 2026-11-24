@@ -104,4 +104,20 @@ describe('poster community rating', () => {
     expect(container.querySelector('.content-card-rating')).not.toBeInTheDocument();
     expect(screen.getByLabelText('AVG: 1/10')).toBeInTheDocument();
   });
+
+  it('shows the top-right community rating badge only on card hover', () => {
+    render(
+      <ContentCard
+        {...props}
+        communityRating={{ ratingDistribution: [0, 0, 0, 0, 0, 0, 1, 1, 0, 0], tmdbRating: 9 }}
+      />
+    );
+    const badge = screen.getByLabelText('AVG: 7.5/10');
+    expect(badge).toHaveClass(
+      'opacity-0',
+      'transition-opacity',
+      'duration-300',
+      'group-hover:opacity-100'
+    );
+  });
 });

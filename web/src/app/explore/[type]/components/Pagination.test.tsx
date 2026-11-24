@@ -1,19 +1,45 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { Pagination } from './Pagination';
 import { resetGuestGridPrefsForTest, useUserPreferences } from '@/hooks/useUserPreferences';
 import { UPDATE_PREFERENCES } from '@/services/graphql/auth';
 
 const mockMutate = vi.fn();
 const mockToastError = vi.fn();
-const mockAuthState = vi.hoisted(() => ({
-  user: null as { id: string; gridColumns?: number; gridRows?: number } | null,
-  updateUserPreferences: vi.fn(),
-}));
+const mockAuth = vi.hoisted(() => {
+  const listeners = new Set<() => void>();
+  let snapshot: {
+    user: { id: string; gridColumns?: number; gridRows?: number } | null;
+    updateUserPreferences: ReturnType<typeof vi.fn>;
+  } = {
+    user: null,
+    updateUserPreferences: vi.fn(),
+  };
+  return {
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    getSnapshot: () => snapshot,
+    setState: (
+      nextUser: { id: string; gridColumns?: number; gridRows?: number } | null,
+      updateFn?: ReturnType<typeof vi.fn>
+    ) => {
+      snapshot = {
+        user: nextUser,
+        updateUserPreferences: updateFn ?? snapshot.updateUserPreferences,
+      };
+      listeners.forEach((listener) => listener());
+    },
+  };
+});
 
 vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => mockAuthState,
+  useAuth: () =>
+    useSyncExternalStore(mockAuth.subscribe, mockAuth.getSnapshot, mockAuth.getSnapshot),
 }));
 
 vi.mock('@/lib/apollo-client', () => ({
@@ -64,8 +90,7 @@ describe('Explore Pagination', () => {
     });
     window.localStorage.clear();
     resetGuestGridPrefsForTest();
-    mockAuthState.user = null;
-    mockAuthState.updateUserPreferences = vi.fn();
+    mockAuth.setState(null, vi.fn());
     mockMutate.mockReset();
     mockToastError.mockReset();
     window.history.replaceState(null, '', '/explore/movie/');
@@ -121,31 +146,20 @@ describe('Explore Pagination', () => {
   it('optimistically updates authenticated users, saves via mutation, and rolls back on failure', async () => {
     mockMutate.mockResolvedValueOnce({ data: { updatePreferences: { id: 'u1' } } });
 
-    let setHarnessUser: React.Dispatch<
-      React.SetStateAction<{ id: string; gridColumns?: number; gridRows?: number }>
-    > | null = null;
-    const updateSpy = vi.fn((prefs) => {
-      setHarnessUser?.((prev) => ({ ...prev, ...prefs }));
+    const updateSpy = vi.fn((prefs: { gridColumns?: number; gridRows?: number }) => {
+      const current = mockAuth.getSnapshot().user;
+      if (current) {
+        mockAuth.setState({ ...current, ...prefs });
+      }
     });
-    mockAuthState.updateUserPreferences = updateSpy;
+    mockAuth.setState({ id: 'u1', gridColumns: 5, gridRows: 4 }, updateSpy);
 
-    function StatefulAuthHarness() {
-      const [user, setUser] = useState<{ id: string; gridColumns?: number; gridRows?: number }>({
-        id: 'u1',
-        gridColumns: 5,
-        gridRows: 4,
-      });
-      setHarnessUser = setUser;
-      mockAuthState.user = user;
-      return (
-        <>
-          <PreferencesDisplay />
-          <Pagination currentPage={1} totalPages={3} />
-        </>
-      );
-    }
-
-    render(<StatefulAuthHarness />);
+    render(
+      <>
+        <PreferencesDisplay />
+        <Pagination currentPage={1} totalPages={3} />
+      </>
+    );
 
     fireEvent.change(screen.getByLabelText('columnsLabel'), { target: { value: '8' } });
 

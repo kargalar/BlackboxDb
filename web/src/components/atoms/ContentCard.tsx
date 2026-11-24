@@ -84,7 +84,7 @@ export function ContentCard({
 
           {posterRating && (
             <div
-              className="pointer-events-none absolute right-2 top-2 z-10 flex items-center gap-1 rounded-md bg-black/80 px-2 py-1 text-xs font-semibold text-white shadow"
+              className="pointer-events-none absolute right-2 top-2 z-10 flex items-center gap-1 rounded-md bg-black/80 px-2 py-1 text-xs font-semibold text-white opacity-0 shadow transition-opacity duration-300 group-hover:opacity-100"
               aria-label={`${posterRating.source}: ${formatRating(posterRating.value)}/10`}
             >
               <span className="text-[10px] text-white/70">{posterRating.source}</span>
