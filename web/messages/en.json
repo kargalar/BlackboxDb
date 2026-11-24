@@ -2253,13 +2253,17 @@
     "title": "What did it make you feel?",
     "description": "Leave an emoji and see how the community felt.",
     "loginRequired": "Log in to leave an emotion.",
+    "reactionAria": "{label}, {count} reactions",
+    "selectedSuffix": ", selected",
     "emotions": {
       "scary": "Scary",
       "emotional": "Emotional",
       "funny": "Funny",
       "exciting": "Exciting",
       "relaxing": "Comforting",
-      "thoughtful": "Thought-provoking"
+      "thoughtful": "Thought-provoking",
+      "romantic": "Romantic",
+      "inspiring": "Inspiring"
     },
     "descriptions": {
       "scary": "Scary and full of suspense",
@@ -2267,7 +2271,9 @@
       "funny": "A story that makes you laugh",
       "exciting": "A story that gets your adrenaline going",
       "relaxing": "A story that helps you unwind",
-      "thoughtful": "A story that stays on your mind"
+      "thoughtful": "A story that stays on your mind",
+      "romantic": "A story full of love and warmth",
+      "inspiring": "A story that motivates and uplifts you"
     }
   },
   "EmotionDiscovery": {
@@ -2286,7 +2292,9 @@
       "funny": "Funny",
       "exciting": "Exciting",
       "relaxing": "Comforting",
-      "thoughtful": "Thought-provoking"
+      "thoughtful": "Thought-provoking",
+      "romantic": "Romantic",
+      "inspiring": "Inspiring"
     },
     "types": {
       "all": "All",
@@ -2361,6 +2369,7 @@
         "genre": "Genre",
         "theme": "Theme",
         "mood": "Mood",
+        "emotion": "Emotion",
         "ageRating": "Age Rating",
         "platform": "Platform",
         "actor": "Actor",
@@ -2539,6 +2548,14 @@
         "roles": "Role"
       },
       "removeFilter": "Remove {filter} filter"
+    },
+    "Pagination": {
+      "columns": "Columns",
+      "rows": "Rows",
+      "columnsLabel": "Columns per page",
+      "rowsLabel": "Rows per page",
+      "perPage": "{count}/page",
+      "saveError": "Could not save grid layout"
     },
     "mainTitle": "Explore"
   },

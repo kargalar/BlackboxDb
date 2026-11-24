@@ -161,21 +161,27 @@ function ExplorePageInner({ params }: PageProps) {
         </div>
       </div>
 
-      <SortingBar
-        onSortChange={handleSortChange}
-        currentSort={sortBy}
-        currentOrder={sortOrder}
-        searchQuery={query}
-        hideOptions={hideOptions}
-        onHideChange={handleHideChange}
-        lengthSortLabel={contentType === 'book' ? t('lengthSort.page') : t('lengthSort.runtime')}
-      />
-
       {/* Main Content Area: Grid + Sidebar */}
       <div className="flex flex-1 min-w-0 overflow-hidden">
         {/* Content Grid Area */}
         <div className="flex-1 min-w-0 overflow-y-auto px-3 py-4 sm:px-6 sm:py-6">
           <div className="max-w-[1600px] mx-auto">
+            <div className="mb-6 flex w-full justify-center">
+              <div className="max-w-full">
+                <SortingBar
+                  onSortChange={handleSortChange}
+                  currentSort={sortBy}
+                  currentOrder={sortOrder}
+                  searchQuery={query}
+                  hideOptions={hideOptions}
+                  onHideChange={handleHideChange}
+                  lengthSortLabel={
+                    contentType === 'book' ? t('lengthSort.page') : t('lengthSort.runtime')
+                  }
+                />
+              </div>
+            </div>
+
             <ContentGrid
               items={items}
               contentType={contentType}

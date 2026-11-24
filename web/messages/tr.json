@@ -2251,13 +2251,17 @@
     "title": "Sana ne hissettirdi?",
     "description": "Bir emoji bırak, topluluğun nasıl hissettiğini gör.",
     "loginRequired": "Duygu bırakmak için giriş yap.",
+    "reactionAria": "{label}, {count} tepki",
+    "selectedSuffix": ", seçili",
     "emotions": {
       "scary": "Korkunç",
       "emotional": "Duygusal",
       "funny": "Komik",
       "exciting": "Heyecanlı",
       "relaxing": "Rahatlatıcı",
-      "thoughtful": "Düşündürücü"
+      "thoughtful": "Düşündürücü",
+      "romantic": "Romantik",
+      "inspiring": "İlham Verici"
     },
     "descriptions": {
       "scary": "Gerilim ve korku dolu",
@@ -2265,7 +2269,9 @@
       "funny": "Kahkaha attıran",
       "exciting": "Adrenalin yükselten",
       "relaxing": "İyi hissettiren",
-      "thoughtful": "Aklında kalan"
+      "thoughtful": "Aklında kalan",
+      "romantic": "Aşk ve sıcaklık dolu",
+      "inspiring": "Motive eden ve ilham veren"
     }
   },
   "EmotionDiscovery": {
@@ -2284,7 +2290,9 @@
       "funny": "Komik",
       "exciting": "Heyecanlı",
       "relaxing": "Rahatlatıcı",
-      "thoughtful": "Düşündürücü"
+      "thoughtful": "Düşündürücü",
+      "romantic": "Romantik",
+      "inspiring": "İlham Verici"
     },
     "types": {
       "all": "Tümü",
@@ -2359,6 +2367,7 @@
         "genre": "Tür",
         "theme": "Tema",
         "mood": "Ruh hali",
+        "emotion": "Duygu",
         "ageRating": "Yaş sınırı",
         "platform": "Platform",
         "actor": "Oyuncu",
@@ -2537,6 +2546,14 @@
         "roles": "Rol"
       },
       "removeFilter": "{filter} filtresini kaldır"
+    },
+    "Pagination": {
+      "columns": "Sütun",
+      "rows": "Satır",
+      "columnsLabel": "Sayfadaki sütun sayısı",
+      "rowsLabel": "Sayfadaki satır sayısı",
+      "perPage": "{count}/sayfa",
+      "saveError": "Görünüm ayarı kaydedilemedi"
     },
     "mainTitle": "Keşfet"
   },

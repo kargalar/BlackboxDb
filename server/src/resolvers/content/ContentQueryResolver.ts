@@ -32,6 +32,7 @@ import {
 import { getContentScreenshotCounts } from "../../lib/contentScreenshotCounts";
 import { logger } from "../../lib/logger";
 import { getRequestLoaders } from "../../lib/requestLoaders";
+import { filterValidEmotions } from "../../lib/emotions";
 import {
   normalizePageSize,
   normalizePageOffset,
@@ -380,6 +381,8 @@ export class ContentQueryResolver {
     gameEngineIds: number[] | undefined,
     @Arg("perspectiveIds", () => [Int], { nullable: true })
     perspectiveIds: number[] | undefined,
+    @Arg("emotions", () => [String], { nullable: true })
+    emotions: string[] | undefined,
     @Arg("emptyFilters", () => [String], { nullable: true })
     emptyFilters: string[] | undefined,
     @Ctx() { prisma, user }: GraphQLContext,
@@ -471,6 +474,22 @@ export class ContentQueryResolver {
         applyRelationFilter("theme", "contentThemes", "themeId", themeIds);
         // Mood filter
         applyRelationFilter("mood", "contentMoods", "moodId", moodIds);
+        // Emotion reaction filter
+        if (emotions?.length) {
+          const validEmotions = filterValidEmotions(emotions);
+          if (validEmotions.length === 0 && !emptyFilterSet.has("emotion")) {
+            addFilterCondition({ id: { in: [] } });
+          } else {
+            applyRelationFilter(
+              "emotion",
+              "emotionReactions",
+              "emotion",
+              validEmotions,
+            );
+          }
+        } else if (emptyFilterSet.has("emotion")) {
+          applyRelationFilter("emotion", "emotionReactions", "emotion", undefined);
+        }
         // Awards filter
         if (typeof hasAwards === "boolean") {
           where.awards = hasAwards ? { isEmpty: false } : { isEmpty: true };

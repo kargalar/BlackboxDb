@@ -52,6 +52,9 @@ export class FilterCountsResult {
 
   @Field(() => GraphQLJSONObject)
   perspectives: Record<string, number>;
+
+  @Field(() => GraphQLJSONObject, { nullable: true })
+  emotions?: Record<string, number>;
 }
 
 @Resolver()
@@ -88,6 +91,7 @@ export class FilterResolver {
         gameModes: {},
         gameEngines: {},
         perspectives: {},
+        emotions: {},
       };
 
       // 1. Genres
@@ -396,6 +400,23 @@ export class FilterResolver {
       });
       counts.perspectives[OTHER_FILTER_ID] =
         totalContentCount - contentsWithPerspectiveCount;
+
+      // 11. Community Emotion Reactions (distinct content count per emotion)
+      const emotionCounts = await prisma.$queryRaw<
+        Array<{ emotion: string; count: number }>
+      >`
+        SELECT r.emotion, COUNT(DISTINCT r.content_id)::int AS count
+        FROM content_emotion_reaction r
+        JOIN content c ON c.id = r.content_id
+        WHERE c.is_deleted = FALSE
+          AND (${contentTypeId ?? null}::int IS NULL OR c.content_type_id = ${contentTypeId ?? null})
+        GROUP BY r.emotion
+      `;
+      if (counts.emotions) {
+        for (const ec of emotionCounts) {
+          counts.emotions[ec.emotion] = ec.count;
+        }
+      }
 
       logger.success(`Successfully calculated all filter counts`);
       return counts;

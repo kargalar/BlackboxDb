@@ -20,7 +20,7 @@ interface ContentFriendsActivityProps {
 }
 
 const FRIEND_ACTIVITY_LIMIT = 20;
-const INITIAL_VISIBLE_FRIENDS = 6;
+const INITIAL_VISIBLE_FRIENDS = 8;
 const STATUS_OPTIONS = [
   { field: 'isAbandoned', key: 'abandoned', Icon: CircleSlash },
   { field: 'isContinuing', key: 'continuing', Icon: Play },
@@ -43,106 +43,106 @@ function FriendsPanel({ friends }: { friends: FriendActivity[] }) {
 
   return (
     <section aria-labelledby={headingId}>
-      <div className="content-friends-panel rounded-2xl p-4 sm:p-5">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <Users size={18} className="shrink-0 text-neutral-400" aria-hidden="true" />
-            <h3 id={headingId} className="text-sm font-semibold text-neutral-100">
+      <div className="content-friends-panel rounded-xl px-3.5 py-3 sm:px-4">
+        <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <Users size={15} className="shrink-0 text-neutral-400" aria-hidden="true" />
+            <h3 id={headingId} className="text-xs font-semibold text-neutral-100 sm:text-sm">
               {t('title')}
             </h3>
           </div>
-          <span className="text-xs text-neutral-400">
+          <span className="text-[11px] text-neutral-400">
             {t('friendCount', { count: friends.length })}
           </span>
         </div>
 
-        <ul id={listId} className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+        <ul id={listId} className="flex flex-wrap items-stretch gap-1.5">
           {visibleFriends.map((friend) => {
             const status = STATUS_OPTIONS.find((option) => friend[option.field]);
             return (
-              <li key={friend.userId} className="min-w-0">
+              <li key={friend.userId} className="max-w-full">
                 <Link
                   href={`/profile/${encodeURIComponent(friend.user.username)}`}
-                  className="content-friend-row group flex min-w-0 items-center gap-3 rounded-xl p-3 transition-colors"
+                  className="content-friend-row group flex h-full max-w-full items-center gap-2 rounded-lg px-2 py-1.5 transition-colors"
                 >
-                  <span className="content-friend-avatar relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-semibold text-neutral-300">
+                  <span className="content-friend-avatar relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full text-xs font-semibold text-neutral-300">
                     {friend.user.picturePath ? (
                       <Image
                         src={friend.user.picturePath}
                         alt=""
                         fill
-                        sizes="40px"
+                        sizes="28px"
                         className="object-cover"
                       />
                     ) : (
                       friend.user.username.charAt(0).toUpperCase()
                     )}
                   </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex min-w-0 items-center gap-1.5">
+                  <div className="min-w-0">
+                    <div className="flex min-w-0 items-center gap-1 leading-tight">
                       <span
-                        className="truncate text-sm font-medium text-neutral-200 group-hover:text-white"
+                        className="max-w-[8.5rem] truncate text-xs font-medium text-neutral-200 group-hover:text-white sm:max-w-[10.5rem]"
                         title={friend.user.username}
                       >
                         {friend.user.username}
                       </span>
                       {friend.isFavorite && (
                         <span className="shrink-0 text-rose-400" title={t('status.favorite')}>
-                          <Heart size={12} fill="currentColor" aria-hidden="true" />
+                          <Heart size={10} fill="currentColor" aria-hidden="true" />
                           <span className="sr-only">{t('status.favorite')}</span>
                         </span>
                       )}
                     </div>
-                    <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[11px]">
+                    <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[10px] leading-tight">
                       {status && (
                         <span
-                          className="content-friend-status inline-flex items-center gap-1"
+                          className="content-friend-status inline-flex shrink-0 items-center gap-0.5 whitespace-nowrap"
                           data-status={status.key}
                         >
-                          <status.Icon size={12} aria-hidden="true" />
+                          <status.Icon size={10} aria-hidden="true" />
                           <span>{t(`status.${status.key}`)}</span>
                         </span>
                       )}
-                      <span className="hidden text-neutral-500 sm:inline">
+                      <span className="hidden truncate whitespace-nowrap text-neutral-500 sm:inline">
                         {formatActivityDate(friend.updatedAt)}
                       </span>
                     </div>
                   </div>
                   {friend.rating != null && (
                     <span
-                      className="content-friend-rating inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium tabular-nums"
+                      className="content-friend-rating inline-flex shrink-0 items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[11px] font-semibold tabular-nums leading-none"
                       aria-label={t('ratingLabel', { rating: formatRating(friend.rating) })}
+                      title={t('ratingLabel', { rating: formatRating(friend.rating) })}
                     >
-                      <Star size={12} fill="currentColor" aria-hidden="true" />
+                      <Star size={10} fill="currentColor" aria-hidden="true" />
                       <span>{formatRating(friend.rating)}</span>
-                      <span className="text-[10px] text-neutral-500" aria-hidden="true">
-                        /10
-                      </span>
                     </span>
                   )}
                 </Link>
               </li>
             );
           })}
+          {friends.length > INITIAL_VISIBLE_FRIENDS && (
+            <li className="flex">
+              <button
+                type="button"
+                aria-expanded={expanded}
+                aria-controls={listId}
+                onClick={() => setExpanded((value) => !value)}
+                className="content-friends-toggle inline-flex items-center gap-1 rounded-lg border border-white/10 px-2.5 py-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-100"
+              >
+                {expanded
+                  ? t('showLess')
+                  : t('showMore', { count: friends.length - INITIAL_VISIBLE_FRIENDS })}
+                {expanded ? (
+                  <ChevronUp size={13} aria-hidden="true" />
+                ) : (
+                  <ChevronDown size={13} aria-hidden="true" />
+                )}
+              </button>
+            </li>
+          )}
         </ul>
-        {friends.length > INITIAL_VISIBLE_FRIENDS && (
-          <button
-            type="button"
-            aria-expanded={expanded}
-            aria-controls={listId}
-            onClick={() => setExpanded((value) => !value)}
-            className="content-friends-toggle mx-auto mt-3 flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-neutral-400 transition-colors hover:text-neutral-100"
-          >
-            {expanded
-              ? t('showLess')
-              : t('showMore', { count: friends.length - INITIAL_VISIBLE_FRIENDS })}
-            {expanded ? (
-              <ChevronUp size={14} aria-hidden="true" />
-            ) : (
-              <ChevronDown size={14} aria-hidden="true" />
-            )}
-          </button>
-        )}
       </div>
     </section>
   );

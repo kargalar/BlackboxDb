@@ -120,7 +120,7 @@ export function SortingBar({
     <div className="glass-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-5 py-4 border-b border-white/10">
       {/* Sort Options */}
       <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {sortOptions.map((option) => {
             const Icon = option.icon;
             const isActive = currentSort === option.value && currentOrder !== 'none';

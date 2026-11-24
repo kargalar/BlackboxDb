@@ -21,6 +21,7 @@ export function useExploreFilters(contentType: string, contentTypeId: number) {
       genres: params.getAll('genre'),
       themes: params.getAll('theme'),
       moods: params.getAll('mood'),
+      emotions: params.getAll('emotion'),
       ageRatings: params.getAll('ageRating'),
       platforms: params.getAll('platform'),
       actors: params.getAll('actor'),
@@ -103,6 +104,7 @@ export function useExploreFilters(contentType: string, contentTypeId: number) {
       'genre',
       'theme',
       'mood',
+      'emotion',
       'ageRating',
       'platform',
       'actor',
@@ -136,6 +138,7 @@ export function useExploreFilters(contentType: string, contentTypeId: number) {
     newFilters.genres?.forEach((v) => params.append('genre', v));
     newFilters.themes?.forEach((v) => params.append('theme', v));
     newFilters.moods?.forEach((v) => params.append('mood', v));
+    newFilters.emotions?.forEach((v) => params.append('emotion', v));
     newFilters.ageRatings?.forEach((v) => params.append('ageRating', v));
     newFilters.platforms?.forEach((v) => params.append('platform', v));
     newFilters.actors?.forEach((v) => params.append('actor', String(v)));

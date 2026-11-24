@@ -12,6 +12,7 @@ export interface ServerFilters {
   genreIds?: number[];
   themeIds?: number[];
   moodIds?: number[];
+  emotions?: string[];
   ageRatingIds?: number[];
   platformIds?: number[];
   actorIds?: string[];
@@ -46,6 +47,7 @@ export interface FilterCounts {
   genres: Record<string, number>;
   themes: Record<string, number>;
   moods: Record<string, number>;
+  emotions?: Record<string, number>;
   ageRatings: Record<string, number>;
   languages: Record<string, number>;
   publicationLanguages: Record<string, number>;
@@ -149,6 +151,7 @@ export async function searchContent(
           $genreIds: [Int!]
           $themeIds: [Int!]
           $moodIds: [Int!]
+          $emotions: [String!]
           $ageRatingIds: [Int!]
           $platformIds: [Int!]
           $actorIds: [String!]
@@ -184,6 +187,7 @@ export async function searchContent(
             genreIds: $genreIds
             themeIds: $themeIds
             moodIds: $moodIds
+            emotions: $emotions
             ageRatingIds: $ageRatingIds
             platformIds: $platformIds
             actorIds: $actorIds
@@ -228,6 +232,7 @@ export async function searchContent(
         ...(filters?.genreIds?.length ? { genreIds: filters.genreIds } : {}),
         ...(filters?.themeIds?.length ? { themeIds: filters.themeIds } : {}),
         ...(filters?.moodIds?.length ? { moodIds: filters.moodIds } : {}),
+        ...(filters?.emotions?.length ? { emotions: filters.emotions } : {}),
         ...(filters?.ageRatingIds?.length ? { ageRatingIds: filters.ageRatingIds } : {}),
         ...(filters?.platformIds !== undefined ? { platformIds: filters.platformIds } : {}),
         ...(filters?.actorIds?.length ? { actorIds: filters.actorIds } : {}),
@@ -312,6 +317,7 @@ export async function getPopularContent(
           $genreIds: [Int!]
           $themeIds: [Int!]
           $moodIds: [Int!]
+          $emotions: [String!]
           $ageRatingIds: [Int!]
           $platformIds: [Int!]
           $actorIds: [String!]
@@ -345,6 +351,7 @@ export async function getPopularContent(
             genreIds: $genreIds
             themeIds: $themeIds
             moodIds: $moodIds
+            emotions: $emotions
             ageRatingIds: $ageRatingIds
             platformIds: $platformIds
             actorIds: $actorIds
@@ -387,6 +394,7 @@ export async function getPopularContent(
         ...(filters?.genreIds?.length ? { genreIds: filters.genreIds } : {}),
         ...(filters?.themeIds?.length ? { themeIds: filters.themeIds } : {}),
         ...(filters?.moodIds?.length ? { moodIds: filters.moodIds } : {}),
+        ...(filters?.emotions?.length ? { emotions: filters.emotions } : {}),
         ...(filters?.ageRatingIds?.length ? { ageRatingIds: filters.ageRatingIds } : {}),
         ...(filters?.platformIds !== undefined ? { platformIds: filters.platformIds } : {}),
         ...(filters?.actorIds?.length ? { actorIds: filters.actorIds } : {}),
@@ -461,6 +469,7 @@ export async function getFilterCounts(contentTypeId: number): Promise<FilterCoun
             genres
             themes
             moods
+            emotions
             ageRatings
             languages
             publicationLanguages

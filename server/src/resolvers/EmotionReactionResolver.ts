@@ -11,17 +11,7 @@ import {
 import { Content } from "../types/Content";
 import { GraphQLContext } from "../context";
 import { convertContentForGraphQL } from "./content/ContentUtils";
-
-const CONTENT_EMOTIONS = [
-  "funny",
-  "scary",
-  "emotional",
-  "exciting",
-  "relaxing",
-  "thoughtful",
-] as const;
-
-type ContentEmotion = (typeof CONTENT_EMOTIONS)[number];
+import { isContentEmotion } from "../lib/emotions";
 
 @ObjectType()
 class EmotionCount {
@@ -87,7 +77,7 @@ export class EmotionReactionResolver {
     @Arg("limit", () => Int, { defaultValue: 24 }) limit: number,
     @Ctx() { prisma }: GraphQLContext,
   ): Promise<EmotionContent[]> {
-    if (!CONTENT_EMOTIONS.includes(emotion as ContentEmotion)) {
+    if (!isContentEmotion(emotion)) {
       throw new Error("Unsupported emotion");
     }
 
@@ -133,7 +123,7 @@ export class EmotionReactionResolver {
     @Ctx() { prisma, user }: GraphQLContext,
   ): Promise<ContentEmotionSummary> {
     if (!user) throw new Error("Not authenticated");
-    if (emotion !== null && !CONTENT_EMOTIONS.includes(emotion as ContentEmotion)) {
+    if (emotion !== null && !isContentEmotion(emotion)) {
       throw new Error("Unsupported emotion");
     }
 

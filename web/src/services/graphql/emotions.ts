@@ -51,7 +51,9 @@ export type ContentEmotion =
   | 'emotional'
   | 'exciting'
   | 'relaxing'
-  | 'thoughtful';
+  | 'thoughtful'
+  | 'romantic'
+  | 'inspiring';
 
 export const CONTENT_EMOTIONS: Array<{
   id: ContentEmotion;
@@ -63,4 +65,6 @@ export const CONTENT_EMOTIONS: Array<{
   { id: 'exciting', emoji: '🤯' },
   { id: 'relaxing', emoji: '😌' },
   { id: 'thoughtful', emoji: '🤔' },
+  { id: 'romantic', emoji: '😍' },
+  { id: 'inspiring', emoji: '🤩' },
 ];

@@ -46,13 +46,14 @@ export function ContentGrid({
   error = null,
   onRetry,
 }: ContentGridProps) {
-  const { gridClassName } = useUserPreferences();
+  const { gridClassName, gridColumns, gridRows } = useUserPreferences();
   const t = useTranslations('Explore.ContentGrid');
 
   if (loading) {
+    const skeletonCount = Math.max(1, (gridColumns || 5) * (gridRows || 4));
     return (
       <div className={`grid ${gridClassName} gap-4`}>
-        {Array.from({ length: 12 }).map((_, i) => (
+        {Array.from({ length: skeletonCount }).map((_, i) => (
           <div key={i} className="aspect-[2/3] bg-gray-800 rounded-lg animate-pulse" />
         ))}
       </div>

@@ -21,7 +21,9 @@ import { Filter, X, Pin, PinOff, ChevronLeft } from 'lucide-react';
 import { GenreFilter } from './filters/GenreFilter';
 import { ThemeFilter } from './filters/ThemeFilter';
 import { MoodFilter } from './filters/MoodFilter';
+import { EmotionFilter } from './filters/EmotionFilter';
 import { AgeRatingFilter } from './filters/AgeRatingFilter';
+import { CONTENT_EMOTIONS } from '@/services/graphql/emotions';
 import { PlatformFilter } from './filters/PlatformFilter';
 import { RatingFilter } from './filters/RatingFilter';
 import { YearFilter } from './filters/YearFilter';
@@ -58,6 +60,7 @@ export interface FilterCounts {
   genres: Record<string, number>;
   themes: Record<string, number>;
   moods: Record<string, number>;
+  emotions?: Record<string, number>;
   ageRatings: Record<string, number>;
   languages: Record<string, number>;
   publicationLanguages: Record<string, number>;
@@ -83,6 +86,7 @@ export interface FilterState {
   genres: string[];
   themes?: string[];
   moods?: string[];
+  emotions?: string[];
   ageRatings?: string[];
   platforms?: string[];
   rating: { min: number | ''; max: number | '' };
@@ -125,11 +129,13 @@ export function FilterSidebar({
   const [hasInitializedPinnedState, setHasInitializedPinnedState] = useState(false);
   const [transitionsEnabled, setTransitionsEnabled] = useState(false);
   const t = useTranslations('Explore.FilterSidebar');
+  const tEmotions = useTranslations('EmotionReactions');
 
   const [isExpanded, setIsExpanded] = useState({
     genre: true,
     themes: false,
     moods: false,
+    emotions: true,
     ageRatings: false,
     platforms: false,
     rating: true,
@@ -372,6 +378,14 @@ export function FilterSidebar({
     onFilterChange(newFilters);
   };
 
+  const handleEmotionToggle = (emotionId: string) => {
+    const currentEmotions = filters.emotions || [];
+    const newEmotions = currentEmotions.includes(emotionId)
+      ? currentEmotions.filter((e) => e !== emotionId)
+      : [...currentEmotions, emotionId];
+    onFilterChange({ ...filters, emotions: newEmotions });
+  };
+
   const handleGameModeToggle = (gameModeId: string) => {
     const currentGameModes = filters.gameModes || [];
     const newGameModes = currentGameModes.includes(gameModeId)
@@ -450,6 +464,7 @@ export function FilterSidebar({
       genres: [],
       themes: [],
       moods: [],
+      emotions: [],
       ageRatings: [],
       platforms: [],
       rating: { min: 0, max: 10 },
@@ -580,6 +595,7 @@ export function FilterSidebar({
     (filters.genres.length || 0) +
     (filters.themes?.length || 0) +
     (filters.moods?.length || 0) +
+    (filters.emotions?.length || 0) +
     (filters.ageRatings?.length || 0) +
     (filters.platforms?.length || 0) +
     (filters.actors?.length || 0) +
@@ -608,6 +624,10 @@ export function FilterSidebar({
   const clearMoods = () => {
     const newFilters = { ...filters, moods: [] };
     onFilterChange(newFilters);
+  };
+
+  const clearEmotions = () => {
+    onFilterChange({ ...filters, emotions: [] });
   };
 
   const clearAgeRatings = () => {
@@ -703,6 +723,16 @@ export function FilterSidebar({
       key: `mood-${id}`,
       label: `${t('labels.mood')}: ${getNameById(moods, id, t('other'))}`,
       onRemove: () => handleMoodToggle(id),
+    });
+  });
+
+  (filters.emotions || []).forEach((id) => {
+    const meta = CONTENT_EMOTIONS.find((item) => item.id === id);
+    const emotionLabel = meta ? `${meta.emoji} ${tEmotions(`emotions.${meta.id}`)}` : id;
+    activeFilterChips.push({
+      key: `emotion-${id}`,
+      label: `${t('labels.emotion')}: ${emotionLabel}`,
+      onRemove: () => handleEmotionToggle(id),
     });
   });
 
@@ -974,6 +1004,15 @@ export function FilterSidebar({
                   filterCounts={filterCounts?.moods}
                   otherFilterId={OTHER_FILTER_ID}
                   contentTypeId={CONTENT_TYPE_IDS[contentType]}
+                />
+
+                <EmotionFilter
+                  selectedEmotions={filters.emotions || []}
+                  isExpanded={isExpanded.emotions}
+                  onToggleSection={() => toggleSection('emotions')}
+                  onToggleEmotion={handleEmotionToggle}
+                  onClear={clearEmotions}
+                  filterCounts={filterCounts?.emotions}
                 />
 
                 <AgeRatingFilter

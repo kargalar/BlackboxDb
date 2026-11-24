@@ -163,19 +163,23 @@ function CompanyExplorePageInner() {
         </div>
       </div>
 
-      <CompanySortingBar
-        currentSort={sortBy}
-        currentOrder={sortOrder}
-        onSortChange={(sort, order) => {
-          updateSort(sort, order);
-        }}
-      />
-
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Content Grid Area */}
         <div className="flex-1 overflow-y-auto px-6 py-6">
           <div className="max-w-[1920px] mx-auto">
+            <div className="mb-6 flex w-full justify-center">
+              <div className="max-w-full">
+                <CompanySortingBar
+                  currentSort={sortBy}
+                  currentOrder={sortOrder}
+                  onSortChange={(sort, order) => {
+                    updateSort(sort, order);
+                  }}
+                />
+              </div>
+            </div>
+
             {activeFilters.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 mb-6 p-4 bg-gray-900/50 rounded-xl border border-gray-800/50">
                 <span className="text-sm text-gray-400 mr-2">{t('activeFilters')}</span>
@@ -204,8 +208,8 @@ function CompanyExplorePageInner() {
             )}
 
             {loading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                {[...Array(12)].map((_, i) => (
+              <div className={`grid ${preferences.gridClassName} gap-6`}>
+                {[...Array(Math.max(1, itemsPerPage))].map((_, i) => (
                   <div key={i} className="animate-pulse">
                     <div className="bg-gray-800 aspect-square rounded-lg mb-2"></div>
                     <div className="bg-gray-800 h-4 w-3/4 rounded mb-1"></div>
@@ -215,17 +219,15 @@ function CompanyExplorePageInner() {
               </div>
             ) : items.length > 0 ? (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                <div className={`grid ${preferences.gridClassName} gap-6`}>
                   {items.map((company) => (
                     <CompanyCard key={company.id} company={company} />
                   ))}
                 </div>
 
-                {totalPages > 1 && (
-                  <div className="mt-8 mb-4 border-t border-gray-800 pt-8">
-                    <Pagination currentPage={page} totalPages={totalPages} />
-                  </div>
-                )}
+                <div className="mt-8 mb-4 border-t border-gray-800 pt-8">
+                  <Pagination currentPage={page} totalPages={totalPages} />
+                </div>
               </>
             ) : (
               <div className="text-center py-20">

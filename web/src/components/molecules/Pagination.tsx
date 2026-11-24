@@ -7,13 +7,19 @@ interface PaginationProps {
   totalPages: number;
   /** Called when user clicks a page. Receives the target page number. */
   onPageChange: (page: number) => void;
+  className?: string;
 }
 
 /**
  * Shared pagination component with first/last, prev/next, and ±2 page buttons.
  * Styled consistently across all pages.
  */
-export function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
+export function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+  className = 'mt-6',
+}: PaginationProps) {
   const pageNumbers = useMemo(() => {
     const pages: number[] = [];
     const maxVisible = 5; // current + 2 before + 2 after
@@ -39,7 +45,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
   };
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-6">
+    <div className={`flex items-center justify-center gap-2 ${className}`}>
       {/* First page */}
       <button
         onClick={() => handleClick(1)}

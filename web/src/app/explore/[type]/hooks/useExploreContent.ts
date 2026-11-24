@@ -61,6 +61,13 @@ function buildServerFilters(
     if (ids.length > 0) serverFilters.moodIds = ids;
   }
 
+  // Emotion reactions
+  if (filters.emotions && filters.emotions.length > 0) {
+    if (filters.emotions.includes(OTHER_FILTER_ID)) emptyFilters.add('emotion');
+    const emotions = filters.emotions.filter((e) => e !== OTHER_FILTER_ID);
+    if (emotions.length > 0) serverFilters.emotions = emotions;
+  }
+
   // Age Rating IDs
   if (filters.ageRatings && filters.ageRatings.length > 0) {
     if (filters.ageRatings.includes(OTHER_FILTER_ID)) emptyFilters.add('ageRating');
