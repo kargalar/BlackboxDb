@@ -3,3 +3,9 @@ ayrıca artık içeriklerde isimleri ve açıklama metinleri de ayrıca dillere 
 tabi tür, tema gibi şeyler de seçil dile göre gösterilecek. 
 bunlar için uygun altyapıyı kur. hiçbir şeyi yıkmaktan çekinme amam veri kaybedilmemeli.
 uygun altyapı kurulduktan sonra pilerden uygun şekilde bilgierli ekerek güncelle. bundan sonraki seferlerde  de apiden getir dediğimde farklı dillerde ye göre uygun şekilde getirilsin mümkün veriler.
+
+
+bir kolonist hasar aldığında öldüğünde vs oyunu 1x hızına getir.
+ayrıca olunca kolonsit paneli görnümü bazulmasın aynı şekilde göster. canlı gibi. ama mesela meslek önceliğini falan ayaralyamayalım
+
+inşa neseleri için her bir başlığa icon ile destekler. ayrıca nesnelerin grafiklerini de güncelleyleim dah detaylı olsunlar.

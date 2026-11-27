@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import type { ContentPerson } from '@/types/unified-content';
 import { useTranslations } from 'next-intl';
-import CompanyLogo from '@/components/atoms/CompanyLogo';
+import { ContentCompanyRow } from './ContentCompanyRow';
 
 const INITIAL_SHOW_COUNT = 10;
 
@@ -39,23 +39,7 @@ export const ContentProductionTab: React.FC<ContentProductionTabProps> = ({
     <div>
       <h3 className="text-lg font-medium text-gray-200 mb-4">{t('title')}</h3>
       <div className="space-y-4">
-        {/* Production Companies */}
-        {getProductionCompanies().length > 0 && (
-          <div>
-            <span className="text-gray-400">{t('productionCompany')}</span>
-            <div className="flex flex-wrap gap-2 mt-1">
-              {getProductionCompanies().map((c) => (
-                <Link
-                  key={c.id}
-                  href={`/company/${c.id}` as any}
-                  className="border border-gray-300 bg-[#ffffff] px-3 py-1.5 rounded flex items-center justify-center transition-colors hover:bg-[#f3f4f6] text-sm text-gray-900 font-medium"
-                >
-                  {c.logoUrl ? <CompanyLogo src={c.logoUrl} name={c.name} /> : c.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
+        <ContentCompanyRow label={t('productionCompany')} companies={getProductionCompanies()} />
 
         {/* Directors */}
         {(type === 'movie' || type === 'tv') && filterByRole(crew, 'director').length > 0 && (

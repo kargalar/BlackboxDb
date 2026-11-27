@@ -3,10 +3,26 @@
 import React from 'react';
 import Link from 'next/link';
 import type { Route } from 'next';
-import type { UnifiedContent, ContentPerson } from '@/types/unified-content';
+import type { ContentLanguage, ContentPerson, UnifiedContent } from '@/types/unified-content';
 import { useTranslations } from 'next-intl';
+import { ExternalLink } from 'lucide-react';
 import AgeRatingBadge from '@/components/atoms/AgeRatingBadge';
-import CompanyLogo from '@/components/atoms/CompanyLogo';
+import { ContentCompanyRow } from './ContentCompanyRow';
+
+function getLanguageValue(language: string | ContentLanguage | { name?: string }) {
+  if (typeof language === 'string') return language;
+  return 'language' in language ? language.language?.name : language.name;
+}
+
+function getExternalUrl(value?: string) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return ['https:', 'http:'].includes(url.protocol) ? url.href : null;
+  } catch {
+    return null;
+  }
+}
 
 interface ContentDetailTabProps {
   content: UnifiedContent | null;
@@ -36,6 +52,18 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
   getLanguageName,
 }) => {
   const t = useTranslations('ContentDetailTab');
+  const tBoardGames = useTranslations('BoardGames');
+  const boardGame = content?.contentType?.slug === 'board-game' ? content : null;
+  const contentLanguages = (content?.languages ?? [])
+    .map(getLanguageValue)
+    .filter((language): language is string => Boolean(language));
+  const languages = content?.language ? [content.language] : [...new Set(contentLanguages)];
+  const productUrl = getExternalUrl(boardGame?.infoLink);
+  const rulesUrl = getExternalUrl(boardGame?.previewLink);
+  const sources = [
+    { url: productUrl, label: tBoardGames('productSource') },
+    { url: rulesUrl !== productUrl ? rulesUrl : null, label: tBoardGames('rulebook') },
+  ];
   const filterByRole = (people: ContentPerson[], role: string) =>
     people.filter((p) => p.role?.toLowerCase() === role.toLowerCase());
 
@@ -54,65 +82,22 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
         )}
 
         {/* Language */}
-        {(type === 'movie' || type === 'tv') &&
-          content?.languages &&
-          content.languages.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-gray-400">{t('originalLanguage')}</span>
-              <span className="text-white">
-                {typeof content.languages[0] === 'string'
-                  ? content.languages[0]
-                  : (content.languages[0] as any)?.language?.name ||
-                    (content.languages[0] as any)?.name}
-              </span>
-            </div>
-          )}
+        {(type === 'movie' || type === 'tv') && contentLanguages[0] && (
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400">{t('originalLanguage')}</span>
+            <span className="text-white">{getLanguageName(contentLanguages[0])}</span>
+          </div>
+        )}
 
         {/* Studio / Production Companies */}
-        {(type === 'movie' || type === 'tv') && getProductionCompanies().length > 0 && (
-          <div className="flex items-start gap-2">
-            <span className="text-gray-400 whitespace-nowrap mt-1">{t('studio')}</span>
-            <div className="flex flex-wrap gap-2">
-              {getProductionCompanies().map((company, index) => (
-                <Link
-                  key={index}
-                  href={`/company/${company.id}` as any}
-                  className="border border-gray-300 bg-[#ffffff] px-3 py-1.5 rounded flex items-center justify-center transition-colors hover:bg-[#f3f4f6] text-sm text-gray-900 font-medium"
-                >
-                  {company.logoUrl ? (
-                    <CompanyLogo src={company.logoUrl} name={company.name} />
-                  ) : (
-                    company.name
-                  )}
-                </Link>
-              ))}
-            </div>
-          </div>
+        {(type === 'movie' || type === 'tv') && (
+          <ContentCompanyRow label={t('studio')} companies={getProductionCompanies()} />
         )}
 
         {/* GAME SPECIFIC DETAILS */}
         {type === 'game' && (
           <>
-            {getDevelopers().length > 0 && (
-              <div className="flex items-start gap-2">
-                <span className="text-gray-400 whitespace-nowrap mt-1">{t('studio')}</span>
-                <div className="flex flex-wrap gap-2">
-                  {getDevelopers().map((developer, index) => (
-                    <Link
-                      key={index}
-                      href={`/company/${developer.id}` as Route}
-                      className="border border-gray-300 bg-[#ffffff] px-3 py-1.5 rounded flex items-center justify-center transition-colors hover:bg-[#f3f4f6] text-sm text-gray-900 font-medium"
-                    >
-                      {developer.logoUrl ? (
-                        <CompanyLogo src={developer.logoUrl} name={developer.name} />
-                      ) : (
-                        developer.name
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+            <ContentCompanyRow label={t('studio')} companies={getDevelopers()} />
 
             {content?.gameModes && content.gameModes.length > 0 && (
               <div className="flex items-start gap-2">
@@ -207,30 +192,11 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
                 </div>
               </div>
             )}
-
-            {(type === 'game' || type === 'book') && getPublishers().length > 0 && (
-              <div className="flex items-start gap-2">
-                <span className="text-gray-400 whitespace-nowrap mt-1">
-                  {(type as string) === 'book' ? t('publisherBook') : t('publisherGame')}
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {getPublishers().map((publisher, index) => (
-                    <Link
-                      key={index}
-                      href={`/company/${publisher.id}` as any}
-                      className="border border-gray-300 bg-[#ffffff] px-3 py-1.5 rounded flex items-center justify-center transition-colors hover:bg-[#f3f4f6] text-sm text-gray-900 font-medium"
-                    >
-                      {publisher.logoUrl ? (
-                        <CompanyLogo src={publisher.logoUrl} name={publisher.name} />
-                      ) : (
-                        publisher.name
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
           </>
+        )}
+
+        {(type === 'game' || type === 'board-game') && (
+          <ContentCompanyRow label={t('publisherGame')} companies={getPublishers()} />
         )}
 
         {/* BOOK SPECIFIC DETAILS */}
@@ -250,26 +216,7 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
               </div>
             )}
 
-            {getPublishers().length > 0 && (
-              <div className="flex items-start gap-2">
-                <span className="text-gray-400 whitespace-nowrap mt-1">{t('publisherBook')}</span>
-                <div className="flex flex-wrap gap-2">
-                  {getPublishers().map((publisher, index) => (
-                    <Link
-                      key={index}
-                      href={`/company/${publisher.id}` as any}
-                      className="border border-gray-300 bg-[#ffffff] px-3 py-1.5 rounded flex items-center justify-center transition-colors hover:bg-[#f3f4f6] text-sm text-gray-900 font-medium"
-                    >
-                      {publisher.logoUrl ? (
-                        <CompanyLogo src={publisher.logoUrl} name={publisher.name} />
-                      ) : (
-                        publisher.name
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+            <ContentCompanyRow label={t('publisherBook')} companies={getPublishers()} />
 
             {content?.language && (
               <div className="flex items-center gap-2">
@@ -418,35 +365,19 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
       )}
 
       {/* Languages Section */}
-      {((content as any)?.language || (content?.languages && content.languages.length > 0)) && (
+      {languages.length > 0 && (
         <div className="space-y-2">
           <h3 className="text-lg font-medium text-gray-200">{t('languageTitle')}</h3>
           <div className="flex flex-wrap gap-2">
-            {(content as any)?.language ? (
+            {languages.map((language) => (
               <Link
-                href={`/explore/${type}?language=${(content as any).language}` as any}
-                className="bg-blue-900/50 border border-blue-600 px-3 py-1 rounded-full text-sm hover:bg-blue-700 transition-colors"
+                key={language}
+                href={`/explore/${type}?language=${encodeURIComponent(language)}` as Route}
+                className="rounded-full bg-gray-700 px-3 py-1 text-sm text-white transition-colors hover:bg-gray-600"
               >
-                {getLanguageName((content as any).language)}
+                {getLanguageName(language)}
               </Link>
-            ) : (
-              content?.languages?.map((lang: any, index: number) => {
-                const langValue =
-                  typeof lang === 'string' ? lang : lang.language?.name || lang.name;
-
-                return (
-                  <Link
-                    key={index}
-                    href={`/explore/${type}?language=${langValue}` as any}
-                    className="bg-blue-900/50 border border-blue-600 px-3 py-1 rounded-full text-sm hover:bg-blue-700 transition-colors"
-                  >
-                    {typeof lang === 'string'
-                      ? getLanguageName(lang)
-                      : lang.language?.name || lang.name}
-                  </Link>
-                );
-              })
-            )}
+            ))}
           </div>
         </div>
       )}
@@ -490,6 +421,27 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
                 {n.name}
               </Link>
             ))}
+          </div>
+        </div>
+      )}
+
+      {(productUrl || rulesUrl) && (
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium text-gray-200">{tBoardGames('sources')}</h3>
+          <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+            {sources.map(({ url, label }) =>
+              url ? (
+                <a
+                  key={url}
+                  href={url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-white/70 hover:text-white hover:underline"
+                >
+                  {label} <ExternalLink size={14} aria-hidden="true" />
+                </a>
+              ) : null
+            )}
           </div>
         </div>
       )}

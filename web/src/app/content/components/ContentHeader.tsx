@@ -8,6 +8,7 @@ import UserContentActions from './UserContentActions';
 import EmotionReactions from '@/components/organisms/EmotionReactions';
 import Image from 'next/image';
 import Link from 'next/link';
+import { CalendarDays, Clapperboard, Dice5, List, Users } from 'lucide-react';
 import type { UnifiedContent, ContentPerson } from '@/types/unified-content';
 import ContentAlternativeImages from '@/app/content/components/ContentAlternativeImages';
 import ContentFranchise from '@/app/content/components/ContentFranchise';
@@ -29,6 +30,16 @@ import ContentDescription from './ContentDescription';
 import { getImageSource, getImageObjectPosition } from '@/lib/image-focus';
 import { useBackdropFade } from '../hooks/useBackdropFade';
 import { useTranslations } from 'next-intl';
+
+type ContentInformationTab = 'cast' | 'detail' | 'releases' | 'how-to-play' | 'production';
+
+const informationTabIcons = {
+  cast: Users,
+  detail: List,
+  releases: CalendarDays,
+  'how-to-play': Dice5,
+  production: Clapperboard,
+};
 
 interface Stats {
   consume_count?: number;
@@ -191,6 +202,7 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
   const router = useRouter();
   const { user, isPrivileged } = useAuth();
   const t = useTranslations('ContentHeader');
+  const tBoardGames = useTranslations('BoardGames');
   console.log('🎬 ContentHeader render ediliyor');
 
   // Helper function for case-insensitive role comparison
@@ -218,6 +230,7 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
   const boardGame = content?.contentType?.slug === 'board-game' ? content : null;
 
   const hasDetail = !!(
+    (boardGame && (getPublishers().length || boardGame.infoLink || boardGame.previewLink)) ||
     (type === 'tv' && (content as any)?.tvDetails?.lastAirDate) ||
     ((type === 'movie' || type === 'tv') && content?.languages && content.languages.length > 0) ||
     (type === 'game' &&
@@ -247,8 +260,6 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
     (type === 'tv' && getNetworks && getNetworks().length > 0)
   );
 
-  const hasAnyTabsOrTrailer =
-    hasCast || hasProduction || hasDetail || hasReleases || (type !== 'book' && content?.trailerUrl);
   const releaseDateForNotification =
     content?.releaseDate || content?.firstAirDate || (content as any)?.publishedDate;
   const isUpcomingByDate = isFutureDate(releaseDateForNotification);
@@ -258,7 +269,15 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
   });
   const shouldShowReleaseNotificationButton = Boolean(isUpcomingByDate);
 
-  const getInitialTab = () => {
+  const tabs: { id: ContentInformationTab; label: string; enabled: boolean }[] = [
+    { id: 'cast', label: t('tabs.cast'), enabled: hasCast },
+    { id: 'detail', label: t('tabs.details'), enabled: hasDetail },
+    { id: 'releases', label: t('tabs.releases'), enabled: hasReleases },
+    { id: 'how-to-play', label: tBoardGames('howToPlay'), enabled: Boolean(boardGame) },
+    { id: 'production', label: t('tabs.production'), enabled: hasProduction },
+  ];
+  const visibleTabs = tabs.filter(({ enabled }) => enabled);
+  const getDefaultTab = (): ContentInformationTab | undefined => {
     if (type === 'movie' || type === 'tv') {
       if (hasCast) return 'cast';
       if (hasDetail) return 'detail';
@@ -268,26 +287,16 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
       if (hasProduction) return 'production';
       if (hasCast) return 'cast';
     }
-    return hasReleases ? 'releases' : '';
+    return boardGame ? 'how-to-play' : visibleTabs[0]?.id;
   };
 
-  const [activeTab, setActiveTab] = React.useState(getInitialTab());
+  const [selectedTab, setActiveTab] = React.useState<ContentInformationTab>();
+  const activeTab = visibleTabs.some(({ id }) => id === selectedTab)
+    ? selectedTab
+    : getDefaultTab();
   const [isPosterModalOpen, setIsPosterModalOpen] = React.useState(false);
   const [isTrailerModalOpen, setIsTrailerModalOpen] = React.useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = React.useState(false);
-
-  React.useEffect(() => {
-    if (
-      (activeTab === 'cast' && !hasCast) ||
-      (activeTab === 'detail' && !hasDetail) ||
-      (activeTab === 'production' && !hasProduction) ||
-      (activeTab === 'releases' && !hasReleases) ||
-      !activeTab
-    ) {
-      const fallback = hasCast ? 'cast' : hasDetail ? 'detail' : hasProduction ? 'production' : hasReleases ? 'releases' : '';
-      if (fallback !== activeTab) setActiveTab(fallback);
-    }
-  }, [hasCast, hasDetail, hasProduction, hasReleases, activeTab]);
 
   const hasBackdrop = Boolean(
     backdropUrl &&
@@ -395,8 +404,6 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
               </div>
               <ContentActionsMenu contentId={id} contentTitle={title} contentType={type} />
             </div>
-
-            {boardGame && <ContentBoardGameGuide key={boardGame.id} content={boardGame} />}
 
             <div className="content-detail-meta-row flex flex-wrap items-center gap-2 mb-4">
               {/* Director */}
@@ -607,66 +614,28 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
             {/* Description */}
             {description && <ContentDescription key={content?.id} description={description} />}
 
-            {/* Detailed Information - Collapsible */}
-            {hasAnyTabsOrTrailer && (
-              <div className="mb-6">
-                <div className="content-detail-information content-detail-tabs-card glass-card p-6">
-                  {/* Tab Buttons */}
-                  <div className="content-detail-tabs flex flex-wrap gap-2 mb-6 border-b border-white/10 pb-4">
-                    {/* Cast tab first - sadece film ve TV için */}
-                    {hasCast && (
+            {activeTab && (
+              <div className="content-detail-tabs-card glass-card mb-6">
+                <div className="content-detail-tabs flex flex-wrap">
+                  {visibleTabs.map(({ id: tab, label }) => {
+                    const Icon = informationTabIcons[tab];
+                    return (
                       <button
-                        onClick={() => setActiveTab('cast')}
-                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                          activeTab === 'cast'
-                            ? 'bg-violet-600 text-white'
-                            : 'text-white/50 hover:text-white hover:bg-white/10'
-                        }`}
-                      >
-                        {t('tabs.cast')}
-                      </button>
-                    )}
-                    {hasDetail && (
-                      <button
-                        onClick={() => setActiveTab('detail')}
-                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                          activeTab === 'detail'
-                            ? 'bg-violet-600 text-white'
-                            : 'text-white/50 hover:text-white hover:bg-white/10'
-                        }`}
-                      >
-                        {t('tabs.details')}
-                      </button>
-                    )}
-                    {hasReleases && (
-                      <button
+                        key={tab}
                         type="button"
-                        aria-pressed={activeTab === 'releases'}
-                        onClick={() => setActiveTab('releases')}
-                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                          activeTab === 'releases'
-                            ? 'bg-violet-600 text-white'
-                            : 'text-white/50 hover:text-white hover:bg-white/10'
-                        }`}
+                        aria-pressed={activeTab === tab}
+                        aria-controls="content-information-panel"
+                        onClick={() => setActiveTab(tab)}
+                        className="content-detail-tab inline-flex cursor-pointer items-center gap-2 px-2.5 py-3 text-sm font-semibold sm:px-4"
                       >
-                        {t('tabs.releases')}
+                        <Icon className="h-5 w-5 shrink-0 text-violet-300" aria-hidden="true" />
+                        {label}
                       </button>
-                    )}
-                    {hasProduction && (
-                      <button
-                        onClick={() => setActiveTab('production')}
-                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                          activeTab === 'production'
-                            ? 'bg-violet-600 text-white'
-                            : 'text-white/50 hover:text-white hover:bg-white/10'
-                        }`}
-                      >
-                        {t('tabs.production')}
-                      </button>
-                    )}
-                  </div>
+                    );
+                  })}
+                </div>
 
-                  {/* Tab Content */}
+                <div id="content-information-panel" className="p-4">
                   {activeTab === 'detail' && (
                     <ContentDetailTab
                       content={content}
@@ -683,12 +652,14 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
                     />
                   )}
 
-                  {activeTab === 'releases' && hasReleases && <ContentReleaseTab contentId={id} />}
+                  {activeTab === 'releases' && <ContentReleaseTab contentId={id} />}
 
-                  {/* Cast Tab */}
+                  {activeTab === 'how-to-play' && boardGame && (
+                    <ContentBoardGameGuide content={boardGame} />
+                  )}
+
                   {activeTab === 'cast' && <ContentCastTab cast={cast} hasRole={hasRole} />}
 
-                  {/* Production & Crew Tab */}
                   {activeTab === 'production' && (
                     <ContentProductionTab
                       type={type}

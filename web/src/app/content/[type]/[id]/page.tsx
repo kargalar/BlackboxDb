@@ -1205,16 +1205,14 @@ export default function ContentDetailPage() {
               return pubList;
             }
 
-            // Game publisher: 4
-            const roleId = 4;
+            const roleId = type === 'board-game' ? 2 : 4;
             const publishers =
               content.companies
-                ?.filter((d: any) => d.companyRoleId === roleId)
-                .map((d: any) => ({
-                  id: d.companyId.toString(),
-                  name: d.company.name,
-                  logoUrl: d.company.logoUrl,
-                })) || [];
+                ?.flatMap(({ companyRoleId, companyId, company }) =>
+                  companyRoleId === roleId && company
+                    ? [{ id: companyId.toString(), name: company.name, logoUrl: company.logoUrl }]
+                    : []
+                ) || [];
             return publishers;
           }}
           formatRuntime={(minutes: number | null) => {
@@ -1242,7 +1240,9 @@ export default function ContentDetailPage() {
               en: t('languages.en'),
               tr: t('languages.tr'),
             };
-            return languages[code] || code.toUpperCase();
+            return (
+              languages[code.toLowerCase()] || (/^[a-z]{2,3}$/.test(code) ? code.toUpperCase() : code)
+            );
           }}
           hideInlineVideos={true}
         />
