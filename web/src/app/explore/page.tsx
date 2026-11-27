@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import type { Route } from 'next';
+import { Dice5 } from 'lucide-react';
 import {
   FilmIcon,
   TvIcon,
@@ -50,6 +51,13 @@ export default function ExplorePage() {
       href: '/explore/book' as Route,
       icon: BookIcon,
     },
+    {
+      id: 'board-games',
+      title: t('categories.boardGames'),
+      description: t('categories.boardGamesDesc'),
+      href: '/explore/board-game' as Route,
+      icon: Dice5,
+    },
   ];
 
   const entityTypes = [
@@ -70,7 +78,7 @@ export default function ExplorePage() {
   ];
 
   const contentTypes = allContentTypes.filter((type) =>
-    preferredContentTypes.includes(type.typeId)
+    type.typeId === undefined || preferredContentTypes.includes(type.typeId)
   );
 
   // Combine filtered content types with entity types

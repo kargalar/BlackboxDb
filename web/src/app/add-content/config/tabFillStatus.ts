@@ -6,6 +6,8 @@ import { AddContentFormData } from '../types';
  */
 export function isTabFilled(tabId: string, formData: AddContentFormData): boolean {
   switch (tabId) {
+    case 'releases':
+      return (formData.releases?.length ?? 0) > 0;
     case 'basic':
       if (formData.contentTypeId === '4') {
         return !!(

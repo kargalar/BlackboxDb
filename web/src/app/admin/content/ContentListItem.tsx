@@ -44,7 +44,11 @@ export default function ContentListItem({
   const locale = useLocale();
 
   const typeId = Number(content.contentTypeId);
-  const meta = TYPE_META[typeId] || { icon: '📄', slug: content.contentTypeSlug || 'movie' };
+  const isBoardGame = content.contentTypeSlug === 'board-game';
+  const meta = TYPE_META[typeId] || {
+    icon: isBoardGame ? '🎲' : '📄',
+    slug: content.contentTypeSlug || 'movie',
+  };
   const contentHref = `/content/${content.contentTypeSlug || meta.slug}/${content.id}` as Route;
   const labelKey =
     typeId === 1
@@ -58,7 +62,7 @@ export default function ContentListItem({
             : typeId === 5
               ? 'types.music'
               : 'types.unknown';
-  const label = t(labelKey);
+  const label = t(isBoardGame ? 'types.boardGame' : labelKey);
 
   // Parse specific fields for richer UI
   let castArr: any[] = [];

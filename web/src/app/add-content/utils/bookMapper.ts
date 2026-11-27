@@ -1,3 +1,4 @@
+import { mergeContentReleases } from '@/lib/contentReleases';
 import type { AddContentFormData, PersonItem, SimpleItem } from '../types';
 import type { AutoFillBookDetailData } from '@/services/graphql/admin/adminAutoFill';
 
@@ -67,6 +68,7 @@ export function mapBookToFormData(detail: AutoFillBookDetailData): Partial<AddCo
     title: detail.title,
     description: cleanDescription,
     releaseDate: detail.releaseDate || '',
+    ...(detail.releases?.length ? { releases: mergeContentReleases(detail.releases) } : {}),
     posterUrl: detail.posterPath || '',
     genres: mapCategories(detail.categories),
     // Legacy fields mirror the first publication for older paths.

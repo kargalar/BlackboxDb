@@ -1,3 +1,4 @@
+import { readContentReleases } from "../../lib/contentReleases";
 import { Resolver, Query, Arg, Ctx, Authorized, Int, FieldResolver, Root } from "type-graphql";
 import { GraphQLContext } from "../../context";
 import { requireAdminOrModerator } from "../../lib/authGuard";
@@ -260,7 +261,11 @@ export class AdminContentQueryResolver {
         contentTypeId: true,
         contentType: { select: { slug: true } },
         releaseDate: true,
+        releases: true,
         description: true,
+        howToPlay: true,
+        minPlayers: true,
+        maxPlayers: true,
         runtime: true,
         posterImageId: true,
         backdropImageId: true,
@@ -391,6 +396,7 @@ export class AdminContentQueryResolver {
           select: {
             id: true,
             contentId: true,
+            detailContentId: true,
             name: true,
             description: true,
             posterUrl: true,
@@ -529,6 +535,7 @@ export class AdminContentQueryResolver {
       posterUrl,
       backdropUrl,
       releaseDate: content.releaseDate?.toISOString().split("T")[0] || null,
+      releases: readContentReleases(content.releases),
       firstAirDate: content.firstAirDate?.toISOString().split("T")[0] || null,
       lastAirDate: content.lastAirDate?.toISOString().split("T")[0] || null,
       budget: content.budget ? content.budget.toString() : null,

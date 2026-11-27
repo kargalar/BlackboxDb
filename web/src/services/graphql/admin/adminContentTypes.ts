@@ -1,8 +1,10 @@
+import type { ContentRelease } from '@/lib/contentReleases';
 // ==========================================
 // CONTENT TYPESCRIPT TYPES
 // ==========================================
 
 export interface AdminContent {
+  releases?: ContentRelease[] | null;
   id: string;
   title: string;
   tmdbId?: number;
@@ -254,6 +256,7 @@ export interface ImageInput {
 }
 
 export interface CreateContentInput {
+  releases?: ContentRelease[] | null;
   title: string;
   tmdbId?: number;
   igdbId?: number;

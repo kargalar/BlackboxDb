@@ -32,6 +32,13 @@ export const CONTENT_CONFIG: Record<string, ContentTypeConfig> = {
     itemsPerPage: 24,
     icon: '📚',
   },
+  'board-game': {
+    title: 'Masa Oyunları',
+    subtitle: 'Masa oyunlarını keşfedin',
+    defaultQuery: '',
+    itemsPerPage: 24,
+    icon: '🎲',
+  },
   game: {
     title: 'Oyunlar',
     subtitle: 'En popüler oyunları keşfedin',

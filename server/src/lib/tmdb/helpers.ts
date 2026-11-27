@@ -166,11 +166,11 @@ export function pickPreferredTvCertification(
   return undefined;
 }
 
-export async function tmdbFetch<T>(path: string): Promise<T> {
+export async function tmdbFetch<T>(path: string, signal?: AbortSignal): Promise<T> {
   const url = `${TMDB_BASE_URL}${path}`;
   logger.debug(`[TmdbFetcher] Fetching: ${url}`);
 
-  const response = await fetch(url, { headers: TMDB_HEADERS });
+  const response = await fetch(url, { headers: TMDB_HEADERS, signal });
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => "Unknown error");

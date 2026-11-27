@@ -1,3 +1,4 @@
+import { ContentRelease } from "../ContentRelease";
 import { ObjectType, Field, Int, Float } from "type-graphql";
 
 /**
@@ -282,6 +283,9 @@ export class TmdbDetailResult {
 
   @Field(() => String, { nullable: true })
   releaseDate?: string;
+
+  @Field(() => [ContentRelease], { nullable: true })
+  releases?: ContentRelease[] | null;
 
   @Field(() => Int, { nullable: true })
   runtime?: number;

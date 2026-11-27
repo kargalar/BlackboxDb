@@ -6,18 +6,39 @@
  */
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import ImageCropModal from '@/components/molecules/ImageCropModal';
 import { validateImageFile } from '@/lib/image-validation';
-import { EXPANSION_CONFIG, REMAKE_CONFIG } from './GameFieldsTypes';
+import { EXPANSION_CONFIG, REMAKE_CONFIG, type ExpansionConfig } from './GameFieldsTypes';
 import { useExpansionState } from './useExpansionState';
 import { ExpansionSection } from './ExpansionSection';
 
 interface GameExpansionFieldsProps {
   formData: any;
   setFormData: (data: any) => void;
+  boardGame?: boolean;
 }
 
-export function GameExpansionFields({ formData, setFormData }: GameExpansionFieldsProps) {
+export function GameExpansionFields({
+  formData,
+  setFormData,
+  boardGame = false,
+}: GameExpansionFieldsProps) {
+  const t = useTranslations('BoardGames');
+  const getConfig = (config: ExpansionConfig): ExpansionConfig => {
+    if (!boardGame) return config;
+    const item = t(config.type === 'expansion' ? 'expansion' : 'edition');
+    return {
+      ...config,
+      label: t(config.type === 'expansion' ? 'expansions' : 'editions'),
+      newButtonLabel: t('addPackage', { item }),
+      editLabel: t('editPackage', { item }),
+      addNewLabel: t('addPackage', { item }),
+      addButtonLabel: t('addPackage', { item }),
+      namePlaceholder: t('packageName', { item }),
+      emptyMessage: t('emptyPackages'),
+    };
+  };
   // Crop modal state (shared between Expansion and Remake)
   const [showCropModal, setShowCropModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -72,10 +93,10 @@ export function GameExpansionFields({ formData, setFormData }: GameExpansionFiel
   return (
     <div className="space-y-6">
       {/* Expansions */}
-      <ExpansionSection config={EXPANSION_CONFIG} state={expansionState} />
+      <ExpansionSection config={getConfig(EXPANSION_CONFIG)} state={expansionState} />
 
       {/* Remakes */}
-      <ExpansionSection config={REMAKE_CONFIG} state={remakeState} />
+      <ExpansionSection config={getConfig(REMAKE_CONFIG)} state={remakeState} />
 
       {/* Crop Modal */}
       {selectedFile && (

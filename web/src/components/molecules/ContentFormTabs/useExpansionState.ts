@@ -57,10 +57,7 @@ export function useExpansionState({
 
   // Find real index in the shared expansions array
   const getExpansionIndex = (expansion: ExpansionItem) => {
-    return (formData.expansions || []).findIndex(
-      (e: ExpansionItem) =>
-        e.name === expansion.name && String(e.type || 'expansion').toLowerCase() === type
-    );
+    return (formData.expansions || []).indexOf(expansion);
   };
 
   const handleAdd = () => {
@@ -94,7 +91,7 @@ export function useExpansionState({
       return;
     }
     const expansions = [...(formData.expansions || [])];
-    expansions[editingIndex] = { ...newItem, type };
+    expansions[editingIndex] = { ...expansions[editingIndex], ...newItem, type };
     setFormData({ ...formData, expansions });
     setNewItem({ name: '', description: '', posterUrl: '', releaseDate: '' });
     setShowForm(false);

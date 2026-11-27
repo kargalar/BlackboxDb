@@ -8,6 +8,7 @@ import {
   Field,
 } from "type-graphql";
 import { GraphQLContext } from "../../context";
+import type { Prisma } from "@prisma/client";
 import { GraphQLJSONObject } from "graphql-scalars";
 import { logger } from "../../lib/logger";
 import { getPeopleFilterCounts } from "../../lib/peopleFilterCounts";
@@ -71,8 +72,9 @@ export class FilterResolver {
       );
 
       // Basic where clause for content type
-      const contentWhere = {
+      const contentWhere: Prisma.ContentWhereInput = {
         isDeleted: false,
+        detailForExpansion: { is: null },
         ...(contentTypeId ? { contentTypeId } : {}),
       };
       const OTHER_FILTER_ID = "__other__";
@@ -262,7 +264,7 @@ export class FilterResolver {
       }
 
       // 8. People (Actors and Directors)
-      const peopleCounts = await getPeopleFilterCounts(prisma, contentTypeId);
+      const peopleCounts = await getPeopleFilterCounts(prisma, contentTypeId, true);
       counts.actors = peopleCounts.actors;
       counts.directors = peopleCounts.directors;
 
@@ -409,6 +411,7 @@ export class FilterResolver {
         FROM content_emotion_reaction r
         JOIN content c ON c.id = r.content_id
         WHERE c.is_deleted = FALSE
+          AND NOT EXISTS (SELECT 1 FROM expansion e WHERE e.detail_content_id = c.id)
           AND (${contentTypeId ?? null}::int IS NULL OR c.content_type_id = ${contentTypeId ?? null})
         GROUP BY r.emotion
       `;

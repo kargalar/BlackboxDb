@@ -103,7 +103,14 @@ export const GET_CONTENT_BY_ID = gql`
       contentTypeSlug
       additionalRatingCategories
       releaseDate
+      releases {
+        regionCode
+        date
+      }
       description
+      howToPlay
+      minPlayers
+      maxPlayers
       status
       runtime
       isbn
@@ -263,6 +270,7 @@ export const GET_CONTENT_BY_ID = gql`
       expansions {
         id
         contentId
+        detailContentId
         name
         description
         posterUrl

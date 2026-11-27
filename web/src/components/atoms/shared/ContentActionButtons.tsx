@@ -23,7 +23,7 @@ type SizeVariant = 'small' | 'medium' | 'large';
 type ActionType = 'watch' | 'read' | 'play';
 
 // Content type - filmler için devam ediyor butonu gizlenecek
-type ContentType = 'movie' | 'tv' | 'game' | 'book';
+type ContentType = 'movie' | 'tv' | 'game' | 'book' | 'board-game';
 
 interface ContentActionButtonsProps {
   size?: SizeVariant;

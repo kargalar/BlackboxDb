@@ -1,3 +1,4 @@
+import { ContentRelease } from "../ContentRelease";
 import { ObjectType, Field, Int } from "type-graphql";
 import { BookPublication, Content } from "../Content";
 import { ContentCitation } from "../ContentCitation";
@@ -48,8 +49,20 @@ export class AdminContent {
   @Field(() => String, { nullable: true })
   releaseDate?: string;
 
+  @Field(() => [ContentRelease], { nullable: true })
+  releases?: ContentRelease[] | null;
+
   @Field(() => String, { nullable: true })
   description?: string;
+
+  @Field(() => String, { nullable: true })
+  howToPlay?: string;
+
+  @Field(() => Int, { nullable: true })
+  minPlayers?: number;
+
+  @Field(() => Int, { nullable: true })
+  maxPlayers?: number;
 
   @Field(() => Int, { nullable: true })
   runtime?: number;

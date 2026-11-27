@@ -28,6 +28,7 @@ const relationOptions = {
   contentPlatforms: { include: { platform: true } },
   companies: { include: { company: true } },
   expansions: true,
+  detailForExpansion: { select: { contentId: true } },
   screenshots: { orderBy: { order: "asc" } },
   ageRating: true,
   images: {
@@ -56,6 +57,7 @@ const relationFields: Record<string, keyof typeof relationOptions> = {
   platforms: "contentPlatforms",
   companies: "companies",
   expansions: "expansions",
+  expansionParentId: "detailForExpansion",
   screenshots: "screenshots",
   ageRating: "ageRating",
   images: "images",

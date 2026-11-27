@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { apolloClient } from '@/lib/apollo-client';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -16,14 +18,17 @@ import {
 
 interface ContentExpansionsProps {
   contentId: string;
+  boardGame?: boolean;
   type?: 'expansion' | 'remake'; // expansion veya remake filtresi
 }
 
 export default function ContentExpansions({
   contentId,
+  boardGame = false,
   type = 'expansion',
 }: ContentExpansionsProps) {
   const { user } = useAuth();
+  const tBoardGames = useTranslations('BoardGames');
   const [expansions, setExpansions] = useState<Expansion[]>([]);
   const [userLogs, setUserLogs] = useState<Map<number, UserExpansionLog>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -31,7 +36,11 @@ export default function ContentExpansions({
   const [actionLoading, setActionLoading] = useState<Set<number>>(new Set());
 
   // Başlık ve ikon type'a göre değişir
-  const sectionTitle = type === 'remake' ? "Remake'ler" : 'Expansions';
+  const sectionTitle = boardGame
+    ? tBoardGames(type === 'remake' ? 'editions' : 'expansions')
+    : type === 'remake'
+      ? "Remake'ler"
+      : 'Expansions';
   const sectionIcon = type === 'remake' ? '🔄' : '🎮';
   const sectionSubtitle = type === 'remake' ? 'Remake' : 'Expansion';
 
@@ -248,7 +257,9 @@ export default function ContentExpansions({
           <div>
             <h2 className="text-xl font-bold text-white">{sectionTitle}</h2>
             <p className="text-sm text-white/50">
-              {expansions.length} {sectionSubtitle}
+              {boardGame
+                ? tBoardGames('packageCount', { count: expansions.length })
+                : `${expansions.length} ${sectionSubtitle}`}
             </p>
           </div>
         </div>
@@ -316,9 +327,9 @@ export default function ContentExpansions({
           const isLoading = actionLoading.has(expansionIdNum);
 
           return (
-            <div key={expansion.id} className="group relative flex-shrink-0">
+            <div key={expansion.id} className="relative w-[150px] flex-shrink-0">
               {/* Poster-focused Card - No border */}
-              <div className="relative overflow-hidden rounded-2xl transition-all duration-300">
+              <div className="group relative overflow-hidden rounded-2xl transition-all duration-300">
                 {/* Large Poster */}
                 <div className="relative w-[150px] h-[225px] overflow-hidden rounded-2xl">
                   {expansion.posterUrl ? (
@@ -453,6 +464,28 @@ export default function ContentExpansions({
                   </div>
                 </div>
               </div>
+              {boardGame && (
+                <div className="mt-2 text-sm">
+                  {expansion.detailContentId ? (
+                    <Link
+                      href={`/content/board-game/${expansion.detailContentId}`}
+                      className="block text-violet-200 hover:underline"
+                    >
+                      {expansion.name}
+                    </Link>
+                  ) : (
+                    <div className="text-white">{expansion.name}</div>
+                  )}
+                  {expansion.description && (
+                    <p
+                      className="mt-1 line-clamp-2 text-xs text-white/65"
+                      title={expansion.description}
+                    >
+                      {expansion.description}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}

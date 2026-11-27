@@ -115,6 +115,7 @@ export interface FetcherBookEdition {
 }
 
 export interface BookDetailData {
+  publishedDate?: string;
   sourceId: string;
   title: string;
   originalTitle?: string;
@@ -290,6 +291,7 @@ export async function fetchBookDetails(
     const { isbn, isbn13 } = extractIsbn(info.industryIdentifiers);
 
     const detail: BookDetailData = {
+      publishedDate: info.publishedDate,
       sourceId: item.id,
       title: info.title + (info.subtitle ? `: ${info.subtitle}` : ""),
       overview: info.description,

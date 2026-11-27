@@ -155,6 +155,7 @@ export class AdminTmdbResolver {
       detail.originalTitle = data.originalTitle;
       detail.overview = data.overview;
       detail.releaseDate = data.releaseDate;
+      detail.releases = data.releases;
       detail.runtime = data.runtime;
       detail.posterPath = data.posterPath;
       detail.backdropPath = data.backdropPath;

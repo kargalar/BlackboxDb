@@ -17,6 +17,8 @@ import ContentBookPublications from '@/app/content/components/ContentBookPublica
 import ContentStats from './ContentStats';
 import { ContentCastTab } from './ContentCastTab';
 import { ContentDetailTab } from './ContentDetailTab';
+import { ContentBoardGameGuide, ContentBoardGameSummary } from './ContentBoardGameGuide';
+import { ContentReleaseTab } from './ContentReleaseTab';
 import { ContentProductionTab } from './ContentProductionTab';
 import ContentActionsMenu from '@/components/organisms/content/ContentActionsMenu';
 import AgeRatingBadge from '@/components/atoms/AgeRatingBadge';
@@ -212,9 +214,10 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
     (getCreators && getCreators().length > 0) ||
     (getProductionCountries && getProductionCountries().length > 0);
 
+  const hasReleases = ['movie', 'tv', 'game', 'book', 'board-game'].includes(type);
+  const boardGame = content?.contentType?.slug === 'board-game' ? content : null;
+
   const hasDetail = !!(
-    (type === 'movie' && content?.releaseDate) ||
-    (type === 'tv' && (content as any)?.tvDetails?.firstAirDate) ||
     (type === 'tv' && (content as any)?.tvDetails?.lastAirDate) ||
     ((type === 'movie' || type === 'tv') && content?.languages && content.languages.length > 0) ||
     (type === 'game' &&
@@ -227,7 +230,6 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
     (type === 'book' &&
       ((content as any)?.isbn ||
         (content as any)?.pageCount ||
-        (content as any)?.publishedDate ||
         (getPublishers && getPublishers().length > 0) ||
         (content as any)?.language ||
         ((content as any)?.categories && (content as any).categories.length > 0) ||
@@ -246,7 +248,7 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
   );
 
   const hasAnyTabsOrTrailer =
-    hasCast || hasProduction || hasDetail || (type !== 'book' && content?.trailerUrl);
+    hasCast || hasProduction || hasDetail || hasReleases || (type !== 'book' && content?.trailerUrl);
   const releaseDateForNotification =
     content?.releaseDate || content?.firstAirDate || (content as any)?.publishedDate;
   const isUpcomingByDate = isFutureDate(releaseDateForNotification);
@@ -266,7 +268,7 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
       if (hasProduction) return 'production';
       if (hasCast) return 'cast';
     }
-    return '';
+    return hasReleases ? 'releases' : '';
   };
 
   const [activeTab, setActiveTab] = React.useState(getInitialTab());
@@ -275,13 +277,17 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
   const [isPreviewModalOpen, setIsPreviewModalOpen] = React.useState(false);
 
   React.useEffect(() => {
-    if (activeTab === 'cast' && !hasCast)
-      setActiveTab(hasDetail ? 'detail' : hasProduction ? 'production' : '');
-    if (activeTab === 'detail' && !hasDetail)
-      setActiveTab(hasCast ? 'cast' : hasProduction ? 'production' : '');
-    if (activeTab === 'production' && !hasProduction)
-      setActiveTab(hasCast ? 'cast' : hasDetail ? 'detail' : '');
-  }, [hasCast, hasDetail, hasProduction, activeTab]);
+    if (
+      (activeTab === 'cast' && !hasCast) ||
+      (activeTab === 'detail' && !hasDetail) ||
+      (activeTab === 'production' && !hasProduction) ||
+      (activeTab === 'releases' && !hasReleases) ||
+      !activeTab
+    ) {
+      const fallback = hasCast ? 'cast' : hasDetail ? 'detail' : hasProduction ? 'production' : hasReleases ? 'releases' : '';
+      if (fallback !== activeTab) setActiveTab(fallback);
+    }
+  }, [hasCast, hasDetail, hasProduction, hasReleases, activeTab]);
 
   const hasBackdrop = Boolean(
     backdropUrl &&
@@ -385,9 +391,12 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
                     )}
                   </p>
                 )}
+                {boardGame && <ContentBoardGameSummary content={boardGame} />}
               </div>
               <ContentActionsMenu contentId={id} contentTitle={title} contentType={type} />
             </div>
+
+            {boardGame && <ContentBoardGameGuide key={boardGame.id} content={boardGame} />}
 
             <div className="content-detail-meta-row flex flex-wrap items-center gap-2 mb-4">
               {/* Director */}
@@ -629,6 +638,20 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
                         {t('tabs.details')}
                       </button>
                     )}
+                    {hasReleases && (
+                      <button
+                        type="button"
+                        aria-pressed={activeTab === 'releases'}
+                        onClick={() => setActiveTab('releases')}
+                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                          activeTab === 'releases'
+                            ? 'bg-violet-600 text-white'
+                            : 'text-white/50 hover:text-white hover:bg-white/10'
+                        }`}
+                      >
+                        {t('tabs.releases')}
+                      </button>
+                    )}
                     {hasProduction && (
                       <button
                         onClick={() => setActiveTab('production')}
@@ -659,6 +682,8 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
                       getLanguageName={getLanguageName}
                     />
                   )}
+
+                  {activeTab === 'releases' && hasReleases && <ContentReleaseTab contentId={id} />}
 
                   {/* Cast Tab */}
                   {activeTab === 'cast' && <ContentCastTab cast={cast} hasRole={hasRole} />}

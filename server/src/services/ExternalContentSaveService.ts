@@ -2,6 +2,7 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import { Content } from "../types/Content";
 import { SaveContentInput } from "../types/SaveContentInput";
 import { inferNormalizedContentStatus } from "../lib/contentStatus";
+import { bookReleaseDates } from "../lib/contentReleases";
 import { generateContentSlug, slugify } from "../lib/slugUtils";
 import { convertContentForGraphQL } from "../resolvers/content/ContentUtils";
 import { localizeContentImage, type ContentImageKind } from "../lib/localContentImage";
@@ -159,6 +160,9 @@ async function generateStableId(
 function normalizeExternalData(input: SaveContentInput, raw: RawContent) {
   const isTv = input.contentTypeId === CONTENT_TYPE_TV;
   const isBook = input.contentTypeId === CONTENT_TYPE_BOOK;
+  const bookPublishedDate = isBook
+    ? bookReleaseDates([asString(readBookValue(raw, "publishedDate")) ?? input.releaseDate])[0]?.date
+    : undefined;
   const releaseDate = asDate(
     firstValue(
       input.releaseDate,
@@ -200,6 +204,7 @@ function normalizeExternalData(input: SaveContentInput, raw: RawContent) {
 
   return {
     releaseDate,
+    bookPublishedDate,
     firstAirDate: isTv ? firstAirDate : null,
     lastAirDate: isTv ? lastAirDate : null,
     inProduction: isTv ? inProduction : null,
@@ -316,9 +321,7 @@ export async function saveExternalContent(
                   title: bookTitle,
                   isbn: normalized.isbn,
                   pageCount: normalized.pageCount,
-                  publishedDate: normalized.releaseDate
-                    ? normalized.releaseDate.toISOString().slice(0, 10)
-                    : null,
+                  publishedDate: normalized.bookPublishedDate ?? normalized.releaseDate?.toISOString().slice(0, 10) ?? null,
                   coverUrl: imageRecords.find((record) => record.type === "poster")?.filePath || null,
                   isOriginal: true,
                 },

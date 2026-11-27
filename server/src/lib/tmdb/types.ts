@@ -85,6 +85,7 @@ export interface TmdbRawMovieDetail {
       iso_3166_1: string;
       release_dates?: Array<{
         certification?: string;
+        release_date?: string;
       }>;
     }>;
   };
@@ -303,6 +304,7 @@ export interface TmdbPersonDetail {
 }
 
 export interface TmdbDetailData {
+  releases?: import("../../types/ContentRelease").ContentRelease[];
   tmdbId: number;
   title: string;
   originalTitle?: string;

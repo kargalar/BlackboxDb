@@ -167,6 +167,7 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
           { id: 3, label: t('statuses.toRead') },
         ];
       case 'game':
+      case 'board-game':
         return [
           { id: 1, label: t('statuses.played') },
           { id: 2, label: t('statuses.playing') },

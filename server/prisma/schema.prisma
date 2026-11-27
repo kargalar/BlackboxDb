@@ -339,7 +339,11 @@ model Content {
   igdbId                      Int?                    @map("igdb_id")
   contentTypeId               Int                     @map("content_type_id")
   releaseDate                 DateTime?               @map("release_date") @db.Date
+  releases                    Json?
   description                 String?
+  howToPlay                   String?                 @map("how_to_play")
+  minPlayers                  Int?                    @map("min_players")
+  maxPlayers                  Int?                    @map("max_players")
   // Retained only for historical data; omitted from Prisma Client and all application APIs.
   legacyTagline               String?                 @map("tagline") @ignore
   status                      String?                 @db.VarChar(50)
@@ -417,7 +421,8 @@ model Content {
   translations                ContentTranslation[]
   contributions               Contribution[]
   discussions                 Discussion[]
-  expansions                  Expansion[]
+  expansions                  Expansion[]             @relation("ExpansionParent")
+  detailForExpansion          Expansion?              @relation("ExpansionDetails")
   citationsMade               ContentCitation[]       @relation("CitingContent")
   citationsReceived           ContentCitation[]       @relation("CitedContent")
 
@@ -830,6 +835,7 @@ model ContentPlatform {
 model Expansion {
   id                 Int                @id @default(autoincrement())
   contentId          String             @map("content_id") @db.VarChar(255)
+  detailContentId    String?            @unique @map("detail_content_id") @db.VarChar(255)
   name               String             @db.VarChar(255)
   description        String?
   posterUrl          String?            @map("poster_url")
@@ -839,7 +845,8 @@ model Expansion {
   ratingDistribution Int[]              @default([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) @map("rating_distribution")
   createdAt          DateTime           @default(now()) @map("created_at")
   updatedAt          DateTime           @updatedAt @map("updated_at")
-  content            Content            @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  content            Content            @relation("ExpansionParent", fields: [contentId], references: [id], onDelete: Cascade)
+  detailContent      Content?           @relation("ExpansionDetails", fields: [detailContentId], references: [id], onDelete: SetNull)
   userExpansionLogs  UserExpansionLog[]
 
   @@index([contentId])

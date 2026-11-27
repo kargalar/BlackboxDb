@@ -116,6 +116,7 @@ export function buildContentInput({
   isEditMode,
 }: BuildInputParams) {
   const contentType = parseInt(formData.contentTypeId);
+  const isBoardGame = formData.contentTypeSlug === 'board-game';
   const bookPublications = contentType === 4 ? getBookPublications(formData) : [];
   const originalBookPublication =
     contentType === 4 ? getOriginalBookPublication(bookPublications) : undefined;
@@ -142,7 +143,7 @@ export function buildContentInput({
   let inferredStatus = 'finished';
   let inferredIsContinuing = false;
 
-  if (contentType === 1 || contentType === 3 || contentType === 4 || contentType === 5) {
+  if (contentType === 1 || contentType === 3 || contentType === 4 || contentType === 5 || isBoardGame) {
     // Movies (1), Games (3), Books (4), Music (5)
     if (isFutureDate(effectiveReleaseDate)) {
       inferredStatus = 'upcoming';
@@ -174,7 +175,17 @@ export function buildContentInput({
     tmdbId: undefined,
     igdbId: undefined,
     description: formData.description.trim() || undefined,
+    ...(isBoardGame && {
+      howToPlay: formData.howToPlay.trim() || undefined,
+      minPlayers: formData.minPlayers ? Number(formData.minPlayers) : undefined,
+      maxPlayers: formData.maxPlayers ? Number(formData.maxPlayers) : undefined,
+      infoLink: formData.infoLink?.trim() || undefined,
+      previewLink: formData.previewLink?.trim() || undefined,
+    }),
     releaseDate: formData.releaseDate || undefined,
+    releases: formData.releases?.length
+      ? formData.releases.map(({ date, regionCode }) => ({ date, regionCode }))
+      : undefined,
     runtime: formData.runtime ? Number(formData.runtime) : undefined,
     posterUrl: contentType === 4 ? (isEditMode ? null : undefined) : getPosterUrlValue(),
     backdropUrl: contentType === 4 ? (isEditMode ? null : undefined) : getBackdropUrlValue(),
@@ -390,18 +401,17 @@ export function buildContentInput({
       }));
     }
     input.fileSize = formData.fileSize?.trim() || (isEditMode ? null : undefined);
-    // Expansions (DLC and Remakes) - boş array da gönderilmeli (silme için)
-    if (isEditMode || (formData.expansions && formData.expansions.length > 0)) {
-      input.expansions = (formData.expansions || []).map((e: any) => ({
-        id: e.id,
-        name: e.name,
-        description: e.description || undefined,
-        posterUrl: e.posterUrl || undefined,
-        releaseDate: e.releaseDate || undefined,
-        type: e.type || 'expansion',
-      }));
-      console.log('🎮 [AddContent] Expansions:', input.expansions.length, 'items');
-    }
+  }
+
+  if ((contentType === 3 || isBoardGame) && (isEditMode || formData.expansions.length > 0)) {
+    input.expansions = formData.expansions.map((expansion) => ({
+      id: expansion.id,
+      name: expansion.name,
+      description: expansion.description || undefined,
+      posterUrl: expansion.posterUrl || undefined,
+      releaseDate: expansion.releaseDate || undefined,
+      type: expansion.type || 'expansion',
+    }));
   }
 
   // --- Companies ---
@@ -423,6 +433,10 @@ export function buildContentInput({
       combinedCompanies.push(
         ...formData.publisherCompanies.map((c: any) => ({ ...c, companyRoleId: 4 }))
       );
+  } else if (isBoardGame) {
+    combinedCompanies.push(
+      ...(formData.publisherCompanies ?? []).map((company) => ({ ...company, companyRoleId: 2 }))
+    );
   } else if (contentType === 4) {
     // Books: publisher=3
     const seenPublisherIds = new Set<string>();

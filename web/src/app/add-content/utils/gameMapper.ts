@@ -1,3 +1,4 @@
+import { mergeContentReleases } from '@/lib/contentReleases';
 import type { AddContentFormData, SimpleItem, CompanyItem } from '../types';
 import type {
   AutoFillGameDetailData,
@@ -51,6 +52,7 @@ export function mapGameToFormData(detail: AutoFillGameDetailData): Partial<AddCo
     originalTitle: detail.originalTitle || '',
     description: cleanDescription,
     releaseDate: detail.releaseDate || '',
+    ...(detail.releases?.length ? { releases: mergeContentReleases(detail.releases) } : {}),
     posterUrl: detail.posterPath || '',
     backdropUrl: detail.backdropPath || '',
     trailerUrl: detail.trailerUrl || '',

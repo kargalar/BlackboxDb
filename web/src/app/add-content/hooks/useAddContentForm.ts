@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import { getContentById, getContentRequestById } from '@/services/adminService';
 import { apolloClient } from '@/lib/apollo-client';
@@ -17,6 +18,7 @@ import { mapContentToFormData } from '@/utils/mapContentToFormData';
  * Hook that manages the add-content form state, content loading, and validation.
  */
 export function useAddContentForm() {
+  const tBoardGames = useTranslations('BoardGames');
   const searchParams = useSearchParams();
   const { user, isPrivileged } = useAuth();
 
@@ -265,6 +267,24 @@ export function useAddContentForm() {
 
     // İçerik türüne göre validation
     const contentType = parseInt(formData.contentTypeId);
+    if (formData.contentTypeSlug === 'board-game') {
+      const { minPlayers, maxPlayers } = formData;
+      for (const field of ['minPlayers', 'maxPlayers', 'runtime'] as const) {
+        const value = formData[field];
+        if (value && (!/^\d+$/.test(value) || Number(value) < 1 || Number(value) > 2_147_483_647)) {
+          newErrors[field] = tBoardGames('positiveInteger');
+        }
+      }
+      if (
+        minPlayers &&
+        maxPlayers &&
+        !newErrors.minPlayers &&
+        !newErrors.maxPlayers &&
+        Number(minPlayers) > Number(maxPlayers)
+      ) {
+        newErrors.maxPlayers = tBoardGames('invalidPlayerRange');
+      }
+    }
     if (contentType === 4) {
       (formData.bookPublications || []).forEach((publication, index) => {
         if (publication.isbn && !/^\d{10}(\d{3})?$/.test(publication.isbn.replace(/-/g, ''))) {

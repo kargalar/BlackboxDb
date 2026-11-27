@@ -1,3 +1,5 @@
+import { normalizeContentReleases } from "./contentReleases";
+import type { ContentRelease } from "../types/ContentRelease";
 import { logger } from "./logger";
 import { normalizeThemeName } from "./themeNormalizer";
 
@@ -29,7 +31,7 @@ let tokenExpiresAt = 0;
 /**
  * Twitch OAuth2 token al (cache'li)
  */
-async function getAccessToken(): Promise<string> {
+async function getAccessToken(signal?: AbortSignal): Promise<string> {
   const now = Date.now();
   if (cachedToken && now < tokenExpiresAt - 60_000) {
     return cachedToken;
@@ -58,6 +60,7 @@ async function getAccessToken(): Promise<string> {
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: params.toString(),
+    signal,
   });
 
   if (!response.ok) {
@@ -79,8 +82,8 @@ async function getAccessToken(): Promise<string> {
 /**
  * IGDB API'ye POST isteği gönder (Apicalypse query body)
  */
-async function igdbRequest<T>(endpoint: string, body: string): Promise<T> {
-  const token = await getAccessToken();
+async function igdbRequest<T>(endpoint: string, body: string, signal?: AbortSignal): Promise<T> {
+  const token = await getAccessToken(signal);
 
   const response = await fetch(`${IGDB_BASE_URL}/${endpoint}`, {
     method: "POST",
@@ -90,6 +93,7 @@ async function igdbRequest<T>(endpoint: string, body: string): Promise<T> {
       "Content-Type": "text/plain",
     },
     body,
+    signal,
   });
 
   if (!response.ok) {
@@ -213,6 +217,7 @@ export interface IgdbSearchItem {
 }
 
 export interface IgdbGameDetailData {
+  releases?: ContentRelease[];
   sourceId: number;
   title: string;
   originalTitle?: string;
@@ -411,6 +416,54 @@ export async function searchIgdbGames(
 /**
  * IGDB'den oyun detayı çeker
  */
+const igdbReleaseRegions: Record<string, string> = {
+  europe: "150", north_america: "021", australia: "AU", new_zealand: "NZ",
+  japan: "JP", china: "CN", asia: "142", worldwide: "001", korea: "KR",
+  brazil: "BR",
+};
+
+const legacyIgdbRegions = ["", "150", "021", "AU", "NZ", "JP", "CN", "142", "001", "KR", "BR"];
+const legacyIgdbDateFormats = ["YYYYMMDD", "YYYYMM", "YYYY", "YYYYQ1", "YYYYQ2", "YYYYQ3", "YYYYQ4", "TBD"];
+
+interface IgdbReleaseDate {
+  date?: number;
+  y?: number;
+  m?: number;
+  category?: number;
+  date_format?: { format?: string };
+  region?: number;
+  release_region?: { region?: string };
+}
+
+export async function fetchIgdbReleaseDates(gameId: number) {
+  if (!Number.isSafeInteger(gameId) || gameId <= 0) throw new Error("Invalid IGDB game ID");
+  const signal = AbortSignal.timeout(8_000);
+  const rows = await igdbRequest<IgdbReleaseDate[]>(
+    "release_dates",
+    `fields date,y,m,category,date_format.format,region,release_region.region; where game = ${gameId}; limit 500;`,
+    signal,
+  );
+  return normalizeContentReleases(rows.flatMap((row) => {
+    const regionName = row.release_region?.region;
+    const regionCode = (regionName && igdbReleaseRegions[regionName]) || legacyIgdbRegions[row.region ?? 0];
+    const format = row.date_format?.format ?? legacyIgdbDateFormats[row.category ?? 0];
+    if (format === "TBD") return [];
+    const iso = typeof row.date === "number" && Number.isFinite(row.date)
+      ? new Date(row.date * 1000).toISOString().slice(0, 10)
+      : undefined;
+    const year = iso?.slice(0, 4) || row.y?.toString();
+    if (!year) return [];
+    let date = iso;
+    if (format === "YYYY") date = year;
+    else if (format === "YYYYMM") {
+      date = iso?.slice(0, 7) || (row.m ? `${year}-${String(row.m).padStart(2, "0")}` : year);
+    } else if (format?.startsWith("YYYYQ")) {
+      date = `${year}-${format.slice(4)}`;
+    }
+    return date ? [{ date, regionCode }] : [];
+  }));
+}
+
 export async function fetchIgdbGameDetails(
   gameId: number,
 ): Promise<IgdbGameDetailData> {
@@ -596,6 +649,10 @@ export async function fetchIgdbGameDetails(
         : undefined,
       backdropPath,
       releaseDate: unixToDate(game.first_release_date),
+      releases: await fetchIgdbReleaseDates(game.id).catch((error): undefined => {
+        logger.warn(`[IgdbFetcher] Could not fetch release dates for game ${game.id}`, error);
+        return undefined;
+      }),
       voteAverage: normalizeRating(
         game.total_rating || game.aggregated_rating || game.rating,
       ),

@@ -133,6 +133,7 @@ export function convertContentForGraphQL(content: any, overridePosterId?: number
   return {
     ...content,
     people: sortedPeople,
+    expansionParentId: content.detailForExpansion?.contentId ?? null,
     posterUrl,
     backdropUrl,
     isbn:

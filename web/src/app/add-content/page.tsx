@@ -138,8 +138,10 @@ function AddContentPageInner() {
         {/* Form or Bulk Interface */}
         {isBulkMode ? (
           <div className="glass-card border border-gray-700 rounded-2xl p-6 space-y-6">
-            <ContentTypeSelector formData={formData} setFormData={setFormData} errors={errors} />
-            {formData.contentTypeId && <BulkAddInterface contentTypeId={formData.contentTypeId} />}
+            <ContentTypeSelector formData={formData} setFormData={setFormData} errors={errors} bulkMode />
+            {formData.contentTypeId && formData.contentTypeSlug !== 'board-game' && (
+              <BulkAddInterface contentTypeId={formData.contentTypeId} />
+            )}
           </div>
         ) : (
           <form

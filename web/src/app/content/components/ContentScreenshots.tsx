@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import {
@@ -63,6 +63,33 @@ export default function ContentScreenshots({
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [localScreenshots, setLocalScreenshots] = useState<Screenshot[]>(screenshots ?? []);
   const { user } = useAuth();
+  const [showAll, setShowAll] = useState(false);
+  const [boxHeight, setBoxHeight] = useState<number | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  // Scroll kutusu yüksekliği = 2 satır
+  useEffect(() => {
+    const el = gridRef.current;
+    if (!el) return;
+    const measure = () => {
+      const first = el.firstElementChild as HTMLElement | null;
+      if (!first) return;
+      const gap = parseFloat(getComputedStyle(el).rowGap) || 12;
+      setBoxHeight(first.offsetHeight * 2 + gap);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [localScreenshots.length, selectedSeason, selectedEpisode]);
+
+  useEffect(() => {
+    if (!showAll) return;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showAll]);
 
   useEffect(() => {
     setLocalScreenshots(screenshots ?? []);
@@ -239,7 +266,10 @@ export default function ContentScreenshots({
         return;
       }
 
-      if (selectedIndex === null) return;
+      if (selectedIndex === null) {
+        if (e.key === 'Escape') setShowAll(false);
+        return;
+      }
 
       switch (e.key) {
         case 'Escape':
@@ -405,20 +435,11 @@ export default function ContentScreenshots({
           {/* Expand/Collapse Button - sadece 4'ten fazla görsel varsa göster */}
           {hasMore && !hasSeasonGroups && (
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={() => setShowAll(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
-              {isExpanded ? (
-                <>
-                  <ChevronUp className="w-4 h-4" />
-                  {t('collapse')}
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="w-4 h-4" />
-                  {t('showMore', { count: sortedScreenshots.length - previewCount })}
-                </>
-              )}
+              <ChevronDown className="w-4 h-4" />
+              {t('showMore', { count: sortedScreenshots.length - previewCount })}
             </button>
           )}
         </div>
@@ -444,6 +465,7 @@ export default function ContentScreenshots({
         </div>
       )}
 
+      <div>
       {hasSeasonGroups ? (
         <div className="space-y-8">
           {(() => {
@@ -474,7 +496,47 @@ export default function ContentScreenshots({
           })()}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">{(isExpanded ? sortedScreenshots : sortedScreenshots.slice(0, previewCount)).map((screenshot, index) => renderScreenshotCard(screenshot, index))}</div>
+        <div
+          className="overflow-y-auto overscroll-auto"
+          style={hasMore && boxHeight ? { maxHeight: boxHeight } : undefined}
+        >
+          <div ref={gridRef} className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+            {sortedScreenshots.map((screenshot, index) => renderScreenshotCard(screenshot, index))}
+          </div>
+        </div>
+      )}
+      </div>
+
+      {/* Tam ekran grid */}
+      {showAll && !hasSeasonGroups && (
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 px-4 py-6 sm:px-10 sm:py-10 lg:px-24"
+          onClick={() => setShowAll(false)}
+        >
+          <div
+            className="flex max-h-full w-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-900"
+            style={{ height: '100%' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-3 dark:border-gray-800">
+              <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                {t('title')} ({sortedScreenshots.length})
+              </span>
+              <button
+                onClick={() => setShowAll(false)}
+                className="p-1 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                title={t('close')}
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-5">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+                {sortedScreenshots.map((screenshot, index) => renderScreenshotCard(screenshot, index))}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Lightbox */}

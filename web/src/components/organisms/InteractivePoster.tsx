@@ -197,6 +197,7 @@ export default function InteractivePoster({
       );
     }
 
+    case 'board-game':
     case 'game': {
       // Game için uygun formatı hazırla
       const posterUrl = content.posterUrl || content.poster_path;
@@ -219,6 +220,7 @@ export default function InteractivePoster({
       return (
         <GameCard
           game={gameContent}
+          contentType={contentType}
           size={size}
           subtitleOverride={subtitleOverride}
           isConsumed={isConsumed}

@@ -1,3 +1,4 @@
+import { ContentRelease } from "../ContentRelease";
 import { InputType, Field, Int } from "type-graphql";
 import {
   ContentGenreInput,
@@ -56,7 +57,19 @@ export class CreateContentInput {
   description?: string;
 
   @Field(() => String, { nullable: true })
+  howToPlay?: string;
+
+  @Field(() => Int, { nullable: true })
+  minPlayers?: number;
+
+  @Field(() => Int, { nullable: true })
+  maxPlayers?: number;
+
+  @Field(() => String, { nullable: true })
   releaseDate?: string;
+
+  @Field(() => [ContentRelease], { nullable: true })
+  releases?: ContentRelease[] | null;
 
   @Field(() => Int, { nullable: true })
   runtime?: number;

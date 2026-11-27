@@ -563,7 +563,7 @@ export function useAddContentSubmit({
         '3': 'game',
         '4': 'book',
       };
-      const typeSlug = typeSlugMap[formData.contentTypeId] || 'movie';
+      const typeSlug = formData.contentTypeSlug || typeSlugMap[formData.contentTypeId] || 'movie';
 
       setTimeout(() => {
         if (savedContentId) {

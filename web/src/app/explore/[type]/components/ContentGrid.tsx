@@ -1,16 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import type { UnifiedContent } from '@/types/unified-content';
+import type { CatalogContentType, UnifiedContent } from '@/types/unified-content';
 import InteractivePoster from '@/components/organisms/InteractivePoster';
 import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useTranslations } from 'next-intl';
 
-type ContentType = 'movie' | 'tv' | 'game' | 'book';
 
 interface ContentGridProps {
   items: UnifiedContent[];
-  contentType: ContentType;
+  contentType: CatalogContentType;
   itemStates: Record<
     string,
     {

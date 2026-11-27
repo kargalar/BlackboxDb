@@ -1,3 +1,4 @@
+import type { ContentRelease } from '@/lib/contentReleases';
 import { gql } from '@apollo/client';
 
 export const SEARCH_LOCAL_CONTENT = gql`
@@ -46,6 +47,10 @@ const AUTO_FILL_BOOK_DETAIL_FRAGMENT = gql`
     overview
     posterPath
     releaseDate
+    releases {
+      regionCode
+      date
+    }
     voteAverage
     authors
     publisher
@@ -85,6 +90,10 @@ const AUTO_FILL_GAME_DETAIL_FRAGMENT = gql`
     posterPath
     backdropPath
     releaseDate
+    releases {
+      regionCode
+      date
+    }
     voteAverage
     metacritic
     genres {
@@ -224,6 +233,7 @@ export interface AutoFillBookEditionData {
 }
 
 export interface AutoFillBookDetailData {
+  releases?: ContentRelease[] | null;
   sourceId: string;
   title: string;
   overview?: string;
@@ -249,6 +259,7 @@ export interface AutoFillSimpleItemData {
 }
 
 export interface AutoFillGameDetailData {
+  releases?: ContentRelease[] | null;
   sourceId: number;
   title: string;
   originalTitle?: string;

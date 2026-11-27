@@ -9,6 +9,9 @@ export class Expansion {
   contentId: string;
 
   @Field(() => String, { nullable: true })
+  detailContentId?: string | null;
+
+  @Field(() => String, { nullable: true })
   contentTitle?: string;
 
   @Field(() => String)

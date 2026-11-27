@@ -24,6 +24,7 @@ const SEARCH_RELEVANCE = {
   titleThreshold: 0.1,
   descriptionThreshold: 0.05,
   originalTitleWeight: 0.9,
+  alternativeTitleWeight: 0.85,
   descriptionWeight: 0.5,
 } as const;
 
@@ -94,12 +95,26 @@ export async function getContentSearchPage(
   }
 
   const conditions: Prisma.Sql[] = [Prisma.sql`c.is_deleted = false`];
+  const expansionFilter = options.where.detailForExpansion;
+  const mainGamesOnly =
+    expansionFilter != null && "is" in expansionFilter && expansionFilter.is === null;
+  const searchPackages = mainGamesOnly && Boolean(query);
+  const packageMatch = searchPackages
+    ? Prisma.sql`c.id IN (SELECT id FROM matching_package_parents)`
+    : Prisma.sql`FALSE`;
+  if (mainGamesOnly) {
+    conditions.push(Prisma.sql`NOT EXISTS (
+      SELECT 1 FROM expansion e WHERE e.detail_content_id = c.id
+    )`);
+  }
   // Common searches need no candidate list. Complex relation filters retain Prisma's semantics.
   const hasComplexFilters =
     (options.where.contentTypeId !== undefined &&
       typeof options.where.contentTypeId !== "number") ||
     Object.keys(options.where).some(
-      (key) => !["isDeleted", "contentTypeId"].includes(key),
+      (key) =>
+        !["isDeleted", "contentTypeId"].includes(key) &&
+        !(mainGamesOnly && key === "detailForExpansion"),
     );
   if (hasComplexFilters) {
     const candidates = await prisma.content.findMany({
@@ -127,7 +142,9 @@ export async function getContentSearchPage(
       SIMILARITY(c.title, ${query}) > ${SEARCH_RELEVANCE.titleThreshold}
       OR SIMILARITY(c.description, ${query}) > ${SEARCH_RELEVANCE.descriptionThreshold}
       OR c.title ILIKE ${pattern} OR c.original_title ILIKE ${pattern} OR c.isbn ILIKE ${pattern}
+      OR EXISTS (SELECT 1 FROM unnest(c.alternative_titles) AS alt(title) WHERE alt.title ILIKE ${pattern})
       OR EXISTS (SELECT 1 FROM book_publication bp WHERE bp.content_id = c.id AND bp.isbn ILIKE ${pattern})
+      OR ${packageMatch}
     )`);
   }
 
@@ -142,7 +159,13 @@ export async function getContentSearchPage(
     ordering.push({ expression, direction: order, nulls });
   if (query && !options.sortBy) {
     add(
-      Prisma.sql`GREATEST(SIMILARITY(c.title, ${query}), SIMILARITY(c.original_title, ${query}) * ${SEARCH_RELEVANCE.originalTitleWeight}, SIMILARITY(c.description, ${query}) * ${SEARCH_RELEVANCE.descriptionWeight})`,
+      Prisma.sql`GREATEST(
+        SIMILARITY(c.title, ${query}),
+        SIMILARITY(c.original_title, ${query}) * ${SEARCH_RELEVANCE.originalTitleWeight},
+        (SELECT MAX(SIMILARITY(alt.title, ${query})) FROM unnest(c.alternative_titles) AS alt(title)) * ${SEARCH_RELEVANCE.alternativeTitleWeight},
+        SIMILARITY(c.description, ${query}) * ${SEARCH_RELEVANCE.descriptionWeight},
+        CASE WHEN ${packageMatch} THEN ${SEARCH_RELEVANCE.alternativeTitleWeight} ELSE 0 END
+      )`,
       Prisma.sql`DESC`,
     );
   } else if (needsUserDate) {
@@ -192,8 +215,26 @@ export async function getContentSearchPage(
     (order, index) =>
       Prisma.sql`${Prisma.raw(`order_${index}`)} ${order.direction} ${order.nulls ?? Prisma.empty}`,
   );
+  const packageParents = searchPackages
+    ? Prisma.sql`matching_package_parents(id) AS (
+        SELECT e.content_id
+        FROM expansion e
+        JOIN content detail ON detail.id = e.detail_content_id
+        WHERE NOT detail.is_deleted AND (
+          e.name ILIKE ${`%${query}%`}
+          OR detail.title ILIKE ${`%${query}%`}
+          OR EXISTS (
+            SELECT 1 FROM unnest(detail.alternative_titles) AS alt(title)
+            WHERE alt.title ILIKE ${`%${query}%`}
+          )
+        )
+        UNION
+        SELECT e.content_id FROM expansion e
+        JOIN matching_package_parents p ON p.id = e.detail_content_id
+      ),`
+    : Prisma.empty;
   const [result] = await prisma.$queryRaw<ContentSearchPage[]>(Prisma.sql`
-    WITH matches AS MATERIALIZED (
+    WITH RECURSIVE ${packageParents} matches AS MATERIALIZED (
       SELECT c.id, ${Prisma.join(projections)} FROM content c WHERE ${Prisma.join(conditions, " AND ")}
     )
     SELECT (SELECT COUNT(*)::int FROM matches) AS total,

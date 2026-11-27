@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import type { Route } from 'next';
-import { ArrowRight, Film, Search, Star } from 'lucide-react';
+import { ArrowRight, Dice5, Film, Search, Star } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from 'next-intl';
 import DashboardPage from './dashboard/page';
@@ -39,6 +39,7 @@ function LandingPage({ user, loading }: LandingPageProps) {
     { icon: TvIcon, label: t('contentTypes.tvShows'), href: '/explore/tv' },
     { icon: GamepadIcon, label: t('contentTypes.games'), href: '/explore/game' },
     { icon: BookIcon, label: t('contentTypes.books'), href: '/explore/book' },
+    { icon: Dice5, label: t('contentTypes.boardGames'), href: '/explore/board-game' },
   ];
 
   return (

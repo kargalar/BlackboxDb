@@ -4,6 +4,8 @@
  */
 
 export interface ExpansionItem {
+  id?: number;
+  detailContentId?: string | null;
   name: string;
   description?: string;
   posterUrl?: string;

@@ -32,6 +32,7 @@ interface ContentSimilarProps {
 // Helper to resolve content type id from item
 function resolveContentTypeId(item: UnifiedContent, fallbackType: string): number {
   if (item.contentTypeId) return item.contentTypeId;
+  if (item.contentType?.id) return item.contentType.id;
 
   const contentTypeName = item?.contentType?.name?.toLowerCase();
   if (contentTypeName === 'movie') return 1;
@@ -68,6 +69,7 @@ export default function ContentSimilar({
   const [showAll, setShowAll] = useState(false);
   const latestRequestIdRef = useRef(0);
   const t = useTranslations('ContentSimilar');
+  const tSidebar = useTranslations('Sidebar');
 
   // Use provided similar content or fetch local similar
   const displayContent = similarContent || localSimilar;
@@ -75,6 +77,7 @@ export default function ContentSimilar({
   const displayError = error || localError;
 
   const getResolvedType = (item: UnifiedContent) => {
+    if (item.contentType?.slug === 'board-game') return 'board-game';
     const contentTypeName = item?.contentType?.name?.toLowerCase();
     if (contentTypeName === 'movie') return 'movie';
     if (contentTypeName === 'tv show' || contentTypeName === 'tv') return 'tv';
@@ -249,6 +252,7 @@ export default function ContentSimilar({
             subtitleOverride={subtitleOverride}
           />
         );
+      case 'board-game':
       case 'game': {
         const gameCardItem = {
           ...cardItem,
@@ -258,6 +262,7 @@ export default function ContentSimilar({
           <GameCard
             key={item.id || index}
             game={gameCardItem}
+            contentType={resolvedType}
             size="medium"
             showRating={false}
             showActions={false}
@@ -296,7 +301,9 @@ export default function ContentSimilar({
   const sortedGroups = Object.entries(groupedContent)
     .map(([typeId, items]) => ({
       typeId: Number(typeId),
-      config: getContentTypeConfig(Number(typeId)),
+      config: items[0]?.contentType?.slug === 'board-game'
+        ? { label: tSidebar('boardGames'), emoji: '🎲', order: 5 }
+        : getContentTypeConfig(Number(typeId)),
       items,
     }))
     .sort((a, b) => a.config.order - b.config.order);

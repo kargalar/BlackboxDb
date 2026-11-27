@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState, useMemo, use } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import type { UnifiedContent } from '@/types/unified-content';
+import type { CatalogContentType, UnifiedContent } from '@/types/unified-content';
 import { SearchBar } from './components/SearchBar';
 import { ContentGrid } from './components/ContentGrid';
 import { Pagination } from './components/Pagination';
@@ -19,7 +19,6 @@ import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 import { getExplorePage } from '../exploreUrl';
 
-type ContentType = 'movie' | 'tv' | 'game' | 'book';
 const GET_CONTENT_TYPE_BY_SLUG = gql`
   query ExploreContentType($slug: String!) {
     contentTypeBySlug(slug: $slug) {
@@ -41,11 +40,12 @@ export default function ExplorePage({ params }: PageProps) {
 
 function ExplorePageInner({ params }: PageProps) {
   const { type } = use(params);
-  const contentType = type as ContentType;
+  const contentType = type as CatalogContentType;
   const config = CONTENT_CONFIG[contentType];
-  const { data: contentTypeData } = useQuery<{ contentTypeBySlug?: { id: number } | null }>(
+  const { data: contentTypeData, loading: typeLoading, error: typeError, refetch: refetchType } =
+    useQuery<{ contentTypeBySlug?: { id: number } | null }>(
     GET_CONTENT_TYPE_BY_SLUG,
-    { variables: { slug: contentType }, skip: Boolean(config?.contentTypeId) }
+    { variables: { slug: contentType }, skip: !config || Boolean(config.contentTypeId) }
   );
   const contentTypeId = config?.contentTypeId ?? contentTypeData?.contentTypeBySlug?.id ?? 0;
   const searchParams = useSearchParams();
@@ -191,9 +191,9 @@ function ExplorePageInner({ params }: PageProps) {
               onToggleWatchlist={handleToggleWatchlist}
               onToggleContinuing={handleToggleContinuing}
               onAddToList={handleAddToList}
-              loading={loading}
-              error={error}
-              onRetry={retry}
+              loading={typeLoading || (contentTypeId > 0 && loading)}
+              error={typeError || error}
+              onRetry={typeError ? () => void refetchType().catch(() => {}) : retry}
             />
 
             <Pagination currentPage={currentPage} totalPages={totalPages} />
@@ -201,12 +201,15 @@ function ExplorePageInner({ params }: PageProps) {
         </div>
 
         {/* Filter Sidebar */}
-        <FilterSidebar
-          contentType={contentType}
-          filters={filters}
-          onFilterChange={handleSidebarFilterChange}
-          filterCounts={filterCounts}
-        />
+        {contentTypeId > 0 && (
+          <FilterSidebar
+            contentType={contentType}
+            contentTypeId={contentTypeId}
+            filters={filters}
+            onFilterChange={handleSidebarFilterChange}
+            filterCounts={filterCounts}
+          />
+        )}
       </div>
 
       {/* Add to List Modal */}

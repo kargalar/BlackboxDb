@@ -1,3 +1,4 @@
+import { normalizeContentReleases } from "./contentReleases";
 import { generateContentSlug } from "./slugUtils";
 import { logger } from "./logger";
 import { fetchIgdbGameDetails, IgdbGameDetailData } from "./igdbFetcher";
@@ -120,6 +121,7 @@ export async function ensureGameContentFromIgdb(
       id: contentId,
       contentTypeId: 3,
       ...data,
+      releases: details.releases?.length ? normalizeContentReleases(details.releases) : undefined,
     },
   });
 

@@ -1,3 +1,4 @@
+import { normalizeContentReleases } from "./contentReleases";
 import { generateContentSlug } from "./slugUtils";
 import { logger } from "./logger";
 import {
@@ -87,6 +88,7 @@ function buildMovieCreateData(
     id,
     contentTypeId: 1,
     ...buildMovieUpdateData(details, franchiseId),
+    releases: details.releases?.length ? normalizeContentReleases(details.releases) : undefined,
   };
 }
 

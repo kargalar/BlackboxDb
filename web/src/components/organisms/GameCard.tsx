@@ -24,6 +24,7 @@ type Game = PosterRatingData & {
 
 interface GameCardProps {
   game: Game;
+  contentType?: 'game' | 'board-game';
   size?: 'small' | 'medium' | 'large';
   className?: string;
   showActions?: boolean;
@@ -54,6 +55,7 @@ interface GameCardProps {
 
 export default function GameCard({
   game,
+  contentType = 'game',
   size = 'medium',
   className = '',
   showActions = true,
@@ -113,13 +115,13 @@ export default function GameCard({
     console.error(`❌ [GameCard] Invalid game ID for "${gameName}":`, game.id);
   }
 
-  const href = `/content/game/${gameId}` as Route;
+  const href = `/content/${contentType}/${gameId}` as Route;
 
   // Ortak event handler'ları hook'tan al
   const { handleWatch, handleToggleFavorite, handleToggleWatchlist, handleToggleContinuing } =
     useContentActions({
       contentId: game.id,
-      contentType: 'game',
+      contentType,
       onWatch,
       onToggleFavorite,
       onToggleWatchlist,
@@ -138,7 +140,7 @@ export default function GameCard({
     <ContentActionButtons
       size={size}
       actionType="play"
-      contentType="game"
+      contentType={contentType}
       isConsumed={viewerIsConsumed ?? isConsumed}
       isFavorite={viewerIsFavorite ?? isFavorite}
       isConsumeLater={activeConsumeLater}

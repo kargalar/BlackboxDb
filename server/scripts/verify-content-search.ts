@@ -172,8 +172,14 @@ async function main() {
       SELECT c.id FROM content c WHERE c.is_deleted = false AND
       (SIMILARITY(c.title, ${searchQuery}) > 0.1 OR SIMILARITY(c.description, ${searchQuery}) > 0.05
         OR c.title ILIKE ${`%${searchQuery}%`} OR c.original_title ILIKE ${`%${searchQuery}%`}
+        OR EXISTS (SELECT 1 FROM unnest(c.alternative_titles) AS alt(title) WHERE alt.title ILIKE ${`%${searchQuery}%`})
         OR c.isbn ILIKE ${`%${searchQuery}%`} OR EXISTS (SELECT 1 FROM book_publication bp WHERE bp.content_id = c.id AND bp.isbn ILIKE ${`%${searchQuery}%`}))
-      ORDER BY GREATEST(SIMILARITY(c.title, ${searchQuery}), SIMILARITY(c.original_title, ${searchQuery}) * 0.9, SIMILARITY(c.description, ${searchQuery}) * 0.5) DESC, c.id ASC
+      ORDER BY GREATEST(
+        SIMILARITY(c.title, ${searchQuery}),
+        SIMILARITY(c.original_title, ${searchQuery}) * 0.9,
+        (SELECT MAX(SIMILARITY(alt.title, ${searchQuery})) FROM unnest(c.alternative_titles) AS alt(title)) * 0.85,
+        SIMILARITY(c.description, ${searchQuery}) * 0.5
+      ) DESC, c.id ASC
     `);
       const searchResult = await getContentSearchPage(prisma, {
         where: { isDeleted: false },

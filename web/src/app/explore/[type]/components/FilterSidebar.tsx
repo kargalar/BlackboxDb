@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
+import type { CatalogContentType } from '@/types/unified-content';
 import { apolloClient } from '@/lib/apollo-client';
 import {
   LIST_GENRES,
@@ -74,7 +75,8 @@ export interface FilterCounts {
 }
 
 interface FilterSidebarProps {
-  contentType: 'movie' | 'tv' | 'game' | 'book';
+  contentType: CatalogContentType;
+  contentTypeId?: number;
   filters: FilterState;
   onFilterChange: (filters: FilterState) => void;
   filterCounts?: FilterCounts;
@@ -120,6 +122,7 @@ const CONTENT_TYPE_IDS: Partial<Record<FilterSidebarProps['contentType'], number
 
 export function FilterSidebar({
   contentType,
+  contentTypeId = CONTENT_TYPE_IDS[contentType],
   filters,
   onFilterChange,
   filterCounts,
@@ -207,8 +210,6 @@ export function FilterSidebar({
     const fetchFilterData = async () => {
       try {
         setLoadingData(true);
-
-        const contentTypeId = CONTENT_TYPE_IDS[contentType];
 
         const [
           genresData,
@@ -305,7 +306,7 @@ export function FilterSidebar({
     return () => {
       cancelled = true;
     };
-  }, [contentType]);
+  }, [contentTypeId]);
 
   const handleGenreToggle = (genreId: string) => {
     const newGenres = filters.genres.includes(genreId)
@@ -979,7 +980,7 @@ export function FilterSidebar({
                   onClear={clearGenres}
                   filterCounts={filterCounts?.genres}
                   otherFilterId={OTHER_FILTER_ID}
-                  contentTypeId={CONTENT_TYPE_IDS[contentType]}
+                  contentTypeId={contentTypeId}
                 />
 
                 <ThemeFilter
@@ -991,7 +992,7 @@ export function FilterSidebar({
                   onClear={clearThemes}
                   filterCounts={filterCounts?.themes}
                   otherFilterId={OTHER_FILTER_ID}
-                  contentTypeId={CONTENT_TYPE_IDS[contentType]}
+                  contentTypeId={contentTypeId}
                 />
 
                 <MoodFilter
@@ -1003,7 +1004,7 @@ export function FilterSidebar({
                   onClear={clearMoods}
                   filterCounts={filterCounts?.moods}
                   otherFilterId={OTHER_FILTER_ID}
-                  contentTypeId={CONTENT_TYPE_IDS[contentType]}
+                  contentTypeId={contentTypeId}
                 />
 
                 <EmotionFilter
@@ -1133,7 +1134,7 @@ export function FilterSidebar({
                   />
                 )}
 
-                {contentType !== 'game' && contentType !== 'book' && (
+                {(contentType === 'movie' || contentType === 'tv') && (
                   <PersonFilter
                     title={t('labels.actor')}
                     type="actor"
@@ -1148,7 +1149,7 @@ export function FilterSidebar({
                   />
                 )}
 
-                {contentType !== 'game' && contentType !== 'book' && (
+                {(contentType === 'movie' || contentType === 'tv') && (
                   <PersonFilter
                     title={t('labels.director')}
                     type="director"
@@ -1172,7 +1173,7 @@ export function FilterSidebar({
                   onClear={clearCompanies}
                   filterCounts={filterCounts?.companies}
                   otherFilterId={OTHER_FILTER_ID}
-                  contentTypeId={CONTENT_TYPE_IDS[contentType]}
+                  contentTypeId={contentTypeId}
                 />
 
                 <LanguageFilter

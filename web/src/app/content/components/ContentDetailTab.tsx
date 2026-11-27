@@ -45,22 +45,6 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
       <div className="space-y-3">
         <h3 className="text-lg font-medium text-gray-200">{t('basicInfo')}</h3>
 
-        {/* Release Date */}
-        {type === 'movie' && content?.releaseDate && (
-          <div className="flex items-center gap-2">
-            <span className="text-gray-400">{t('releaseDate')}</span>
-            <span className="text-white">{formatDate(content.releaseDate)}</span>
-          </div>
-        )}
-
-        {/* First Air Date for TV */}
-        {type === 'tv' && content?.tvDetails?.firstAirDate && (
-          <div className="flex items-center gap-2">
-            <span className="text-gray-400">{t('firstAirDate')}</span>
-            <span className="text-white">{formatDate(content.tvDetails.firstAirDate)}</span>
-          </div>
-        )}
-
         {/* Last Air Date for TV */}
         {type === 'tv' && content?.tvDetails?.lastAirDate && (
           <div className="flex items-center gap-2">
@@ -263,20 +247,6 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
               <div className="flex items-center gap-2">
                 <span className="text-gray-400">{t('pageCount')}</span>
                 <span className="text-white">{content.pageCount}</span>
-              </div>
-            )}
-
-            {content?.releaseDate && (
-              <div className="flex items-center gap-2">
-                <span className="text-gray-400">{t('firstPublishDate')}</span>
-                <span className="text-white">{formatDate(content.releaseDate)}</span>
-              </div>
-            )}
-
-            {content?.publishedDate && (
-              <div className="flex items-center gap-2">
-                <span className="text-gray-400">{t('editionPublishDate')}</span>
-                <span className="text-white">{formatDate(content.publishedDate)}</span>
               </div>
             )}
 

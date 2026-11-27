@@ -1,3 +1,4 @@
+import { readContentReleases } from "../../lib/contentReleases";
 import { logger } from "../../lib/logger";
 import { getImageSource } from "../../lib/imageFocus";
 import { fetchTmdbPersonDetails } from "../../lib/tmdbFetcher";
@@ -1683,6 +1684,7 @@ export async function saveExpansions(
   contentId: string,
   expansions: Array<{
     id?: number;
+    detailContentId?: string | null;
     name: string;
     description?: string;
     posterUrl?: string;
@@ -1707,6 +1709,7 @@ export async function saveExpansions(
     }
     const data = {
       name: e.name,
+      ...(e.detailContentId !== undefined ? { detailContentId: e.detailContentId } : {}),
       description: e.description || null,
       posterUrl: finalPosterUrl,
       releaseDate: e.releaseDate ? new Date(e.releaseDate) : null,
@@ -2066,6 +2069,7 @@ export async function fetchAdminContent(prisma: any, id: string) {
     posterUrl,
     backdropUrl,
     releaseDate: content.releaseDate?.toISOString().split("T")[0] || null,
+    releases: readContentReleases(content.releases),
     firstAirDate: content.firstAirDate?.toISOString().split("T")[0] || null,
     lastAirDate: content.lastAirDate?.toISOString().split("T")[0] || null,
     budget: content.budget ? content.budget.toString() : null,

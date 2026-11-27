@@ -1,3 +1,4 @@
+import { mergeContentReleases } from '@/lib/contentReleases';
 import type { AddContentFormData, CompanyItem, PersonItem, SimpleItem, SeasonItem } from '../types';
 import type { TmdbDetailResultData } from '@/services/graphql/admin/adminTmdb';
 import { normalizeThemeName } from '@/lib/themeNormalizer';
@@ -147,6 +148,7 @@ export function mapTmdbMovieToFormData(detail: TmdbDetailResultData): Partial<Ad
     tmdbId: detail.tmdbId,
     description: detail.overview || '',
     releaseDate: detail.releaseDate || '',
+    ...(detail.releases?.length ? { releases: mergeContentReleases(detail.releases) } : {}),
     runtime: detail.runtime ? String(detail.runtime) : '',
     posterUrl: detail.posterPath || '',
     backdropUrl: detail.backdropPath || '',

@@ -362,14 +362,20 @@ export default function CompanyPage() {
   // Publisher: 3 (bookpublisher), 4 (gamepublisher)
   // Studio: 6 (moviestudio)
   const developerContents = contents.filter((c) => c.companyRoleId === 5);
-  const publisherContents = contents.filter((c) => c.companyRoleId === 3 || c.companyRoleId === 4);
+  const publisherContents = contents.filter(
+    (c) =>
+      c.companyRoleId === 3 ||
+      c.companyRoleId === 4 ||
+      (c.companyRoleId === 2 && c.contentType?.toLowerCase() === 'board-game')
+  );
   const studioContents = contents.filter((c) => c.companyRoleId === 6);
 
   const getContentTypeStr = (
     content: CompanyContentData
-  ): 'movie' | 'tv' | 'game' | 'book' | 'music' => {
+  ): 'movie' | 'tv' | 'game' | 'book' | 'music' | 'board-game' => {
     if (content.contentType) {
       const v = content.contentType.toLowerCase();
+      if (v === 'board-game') return 'board-game';
       if (v === 'movie' || v === 'film') return 'movie';
       if (v === 'tv' || v === 'series' || v === 'tv_show' || v === 'tvshow' || v === 'dizi')
         return 'tv';

@@ -1,3 +1,4 @@
+import { normalizeContentReleases } from "./contentReleases";
 import { generateContentSlug } from "./slugUtils";
 import { logger } from "./logger";
 import { fetchTmdbTvDetails, TmdbDetailData } from "./tmdbFetcher";
@@ -79,6 +80,7 @@ function buildTvCreateData(id: string, details: TmdbDetailData) {
     id,
     contentTypeId: 2,
     ...buildTvUpdateData(details),
+    releases: details.releases?.length ? normalizeContentReleases(details.releases) : undefined,
   };
 }
 

@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
 import { useTranslations } from 'next-intl';
-import { BookOpen, Film, Gamepad2, Tv, type LucideIcon } from 'lucide-react';
+import { BookOpen, Dice5, Film, Gamepad2, Tv, type LucideIcon } from 'lucide-react';
 import { AddContentFormData } from '../types';
 import { useGlobalSettings } from '@/contexts/GlobalSettingsContext';
 
@@ -26,15 +26,22 @@ const CONTENT_TYPE_ICONS: Record<string, LucideIcon> = {
   tv: Tv,
   game: Gamepad2,
   book: BookOpen,
+  'board-game': Dice5,
 };
 
 interface ContentTypeSelectorProps {
   formData: AddContentFormData;
   setFormData: React.Dispatch<React.SetStateAction<AddContentFormData>>;
   errors: Record<string, string>;
+  bulkMode?: boolean;
 }
 
-export function ContentTypeSelector({ formData, setFormData, errors }: ContentTypeSelectorProps) {
+export function ContentTypeSelector({
+  formData,
+  setFormData,
+  errors,
+  bulkMode = false,
+}: ContentTypeSelectorProps) {
   const { settings } = useGlobalSettings();
   const t = useTranslations('AddContent.typeSelector');
   const tSidebar = useTranslations('Sidebar');
@@ -48,6 +55,7 @@ export function ContentTypeSelector({ formData, setFormData, errors }: ContentTy
       tv: 'tvShows',
       game: 'games',
       book: 'books',
+      'board-game': 'boardGames',
     };
     const sidebarKey = sidebarKeys[type.slug];
     if (sidebarKey) return tSidebar(sidebarKey);
@@ -55,7 +63,8 @@ export function ContentTypeSelector({ formData, setFormData, errors }: ContentTy
   };
 
   const options = (data?.contentTypes || [])
-    .filter((type) => ['movie', 'tv', 'game', 'book'].includes(type.slug))
+    .filter((type) => Object.hasOwn(CONTENT_TYPE_ICONS, type.slug))
+    .filter((type) => !bulkMode || type.slug !== 'board-game')
     .filter((type) => type.slug !== 'book' || settings?.isBookEnabled !== false);
 
   return (
@@ -77,6 +86,7 @@ export function ContentTypeSelector({ formData, setFormData, errors }: ContentTy
                   ...formData,
                   contentTypeId: value,
                   contentTypeSlug: type.slug,
+                  releases: [],
                   genres: [],
                   themes: [],
                   moods: [],
@@ -92,6 +102,12 @@ export function ContentTypeSelector({ formData, setFormData, errors }: ContentTy
                   perspectives: [],
                   seasons: [],
                   expansions: [],
+                  howToPlay: '',
+                  minPlayers: '',
+                  maxPlayers: '',
+                  runtime: type.slug === 'board-game' || formData.contentTypeSlug === 'board-game'
+                    ? ''
+                    : formData.runtime,
                   screenshots: [],
                   tmdbId: undefined,
                   igdbId: undefined,

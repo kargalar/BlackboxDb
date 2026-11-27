@@ -13,6 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/explore/tv/', changeFrequency: 'weekly', priority: 0.8 },
     { path: '/explore/game/', changeFrequency: 'weekly', priority: 0.8 },
     { path: '/explore/book/', changeFrequency: 'weekly', priority: 0.8 },
+    { path: '/explore/board-game/', changeFrequency: 'weekly', priority: 0.8 },
     { path: '/explore/person/', changeFrequency: 'weekly', priority: 0.7 },
     { path: '/explore/company/', changeFrequency: 'weekly', priority: 0.7 },
     { path: '/quiz/', changeFrequency: 'weekly', priority: 0.7 },

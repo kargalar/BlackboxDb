@@ -1,3 +1,4 @@
+import { ContentRelease } from "../ContentRelease";
 import { InputType, Field, Int } from "type-graphql";
 import { GraphQLJSONObject } from "graphql-scalars";
 
@@ -336,8 +337,20 @@ export class UpdateContentInput {
   @Field(() => String, { nullable: true })
   releaseDate?: string;
 
+  @Field(() => [ContentRelease], { nullable: true })
+  releases?: ContentRelease[] | null;
+
   @Field(() => String, { nullable: true })
   status?: string;
+
+  @Field(() => String, { nullable: true })
+  howToPlay?: string;
+
+  @Field(() => Int, { nullable: true })
+  minPlayers?: number;
+
+  @Field(() => Int, { nullable: true })
+  maxPlayers?: number;
 
   @Field(() => Boolean, { nullable: true })
   autoSelectHighestVotedMedia?: boolean;

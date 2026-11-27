@@ -4,6 +4,7 @@ import { gql } from '@apollo/client';
 export interface Expansion {
   id: number;
   contentId: string;
+  detailContentId?: string | null;
   name: string;
   description?: string;
   posterUrl?: string;
@@ -32,6 +33,7 @@ export const GET_EXPANSIONS_BY_CONTENT = gql`
     getExpansionsByContent(contentId: $contentId, type: $type) {
       id
       contentId
+      detailContentId
       name
       description
       posterUrl

@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+import { normalizeContentReleases } from "../../lib/contentReleases";
 import { Resolver, Mutation, Arg, Ctx, Authorized, Int } from "type-graphql";
 import { GraphQLContext } from "../../context";
 import { requireAdmin, requireAdminOrModerator } from "../../lib/authGuard";
@@ -46,7 +48,11 @@ const contentAuditSelect = {
   alternativeTitles: true,
   contentTypeId: true,
   description: true,
+  howToPlay: true,
+  minPlayers: true,
+  maxPlayers: true,
   releaseDate: true,
+  releases: true,
   runtime: true,
   status: true,
   isContinuing: true,
@@ -142,6 +148,21 @@ function setNullableNumber(data: any, input: any, field: string) {
   if (hasField(input, field)) {
     data[field] = input[field] ?? null;
   }
+}
+
+async function inferAdminContentStatus(
+  prisma: GraphQLContext["prisma"],
+  input: Parameters<typeof inferNormalizedContentStatus>[0],
+) {
+  const status = inferNormalizedContentStatus(input);
+  if (status === "upcoming" && !input.releaseDate && input.contentTypeId > 4) {
+    const type = await prisma.contentTypeLookup.findUnique({
+      where: { id: input.contentTypeId },
+      select: { slug: true },
+    });
+    if (type?.slug === "board-game") return "finished";
+  }
+  return status;
 }
 
 function comparableAuditValue(field: string, value: any): string {
@@ -391,6 +412,7 @@ async function getContentRelationAuditSnapshot(
       where: { contentId },
       select: {
         id: true,
+        detailContentId: true,
         name: true,
         description: true,
         posterUrl: true,
@@ -554,7 +576,7 @@ export class AdminContentMutationResolver {
       const normalizedCrew = shouldNormalizeCredits
         ? await normalizeCrewJsonForSave(prisma, input.crew)
         : (input.crew || null);
-      const normalizedStatus = inferNormalizedContentStatus({
+      const normalizedStatus = await inferAdminContentStatus(prisma, {
         contentTypeId: input.contentTypeId,
         releaseDate: input.releaseDate,
         firstAirDate: input.firstAirDate,
@@ -579,7 +601,11 @@ export class AdminContentMutationResolver {
           alternativeTitles: Array.from(new Set((input.alternativeTitles || []).map((item) => item.trim()).filter(Boolean))),
           contentTypeId: input.contentTypeId,
           description: input.description || null,
+          howToPlay: input.howToPlay?.trim() || null,
+          minPlayers: input.minPlayers ?? null,
+          maxPlayers: input.maxPlayers ?? null,
           releaseDate: input.releaseDate ? new Date(input.releaseDate) : null,
+          releases: input.releases ? normalizeContentReleases(input.releases, true) : undefined,
           runtime: input.runtime || null,
           status: normalizedStatus,
           isContinuing: input.isContinuing ?? false,
@@ -853,7 +879,7 @@ export class AdminContentMutationResolver {
         hasField(input, "firstAirDate") ||
         hasField(input, "lastAirDate") ||
         hasField(input, "inProduction");
-      const normalizedStatus = inferNormalizedContentStatus({
+      const normalizedStatus = shouldRecalculateStatus ? await inferAdminContentStatus(prisma, {
         contentTypeId: effectiveContentTypeId,
         releaseDate: hasField(input, "releaseDate")
           ? input.releaseDate
@@ -867,7 +893,7 @@ export class AdminContentMutationResolver {
         inProduction: hasField(input, "inProduction")
           ? input.inProduction
           : existingContent?.inProduction,
-      });
+      }) : undefined;
       const castChanged =
         hasField(input, "cast") && normalizedCast !== (existingContent?.cast || null);
       const crewChanged =
@@ -895,6 +921,11 @@ export class AdminContentMutationResolver {
       if (hasField(input, "releaseDate")) {
         contentData.releaseDate = input.releaseDate ? new Date(input.releaseDate) : null;
       }
+      if (hasField(input, "releases")) {
+        contentData.releases = input.releases
+          ? normalizeContentReleases(input.releases, true)
+          : Prisma.DbNull;
+      }
       if (hasField(input, "firstAirDate")) {
         contentData.firstAirDate = input.firstAirDate ? new Date(input.firstAirDate) : null;
       }
@@ -916,6 +947,9 @@ export class AdminContentMutationResolver {
         );
       }
       setNullableString(contentData, input, "description");
+      if (hasField(input, "howToPlay")) contentData.howToPlay = input.howToPlay?.trim() || null;
+      setNullableNumber(contentData, input, "minPlayers");
+      setNullableNumber(contentData, input, "maxPlayers");
       setNullableString(contentData, input, "tvType");
       setNullableString(contentData, input, "isbn");
       setNullableString(contentData, input, "previewLink");

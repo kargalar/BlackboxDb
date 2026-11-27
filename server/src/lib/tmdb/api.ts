@@ -22,6 +22,7 @@ import {
   TmdbDetailData
 } from './types';
 import { logger } from '../logger';
+import { normalizeContentReleases } from '../contentReleases';
 import { normalizeThemeName } from '../themeNormalizer';
 import {
   tmdbFetch,
@@ -32,6 +33,28 @@ import {
 } from './helpers';
 
 // ─── Public API ───
+
+export async function fetchTmdbReleaseDates(tmdbId: number, type: "movie" | "tv") {
+  const signal = AbortSignal.timeout(8_000);
+  if (type === "tv") {
+    const data = await tmdbFetch<Pick<TmdbRawTvDetail, "first_air_date">>(`/tv/${tmdbId}`, signal);
+    return data.first_air_date ? normalizeContentReleases([{ date: data.first_air_date }]) : [];
+  }
+  const data = await tmdbFetch<NonNullable<TmdbRawMovieDetail["release_dates"]>>(
+    `/movie/${tmdbId}/release_dates`,
+    signal,
+  );
+  return mapTmdbMovieReleases(data);
+}
+
+function mapTmdbMovieReleases(data: TmdbRawMovieDetail["release_dates"]) {
+  return normalizeContentReleases((data?.results ?? []).flatMap((country) =>
+    (country.release_dates ?? []).map((release) => ({
+      regionCode: country.iso_3166_1,
+      date: release.release_date?.slice(0, 10) ?? "",
+    })),
+  ));
+}
 
 /**
  * TMDB'de film veya dizi arar
@@ -215,6 +238,7 @@ export async function fetchTmdbMovieDetails(
       originalTitle: data.original_title,
       overview: data.overview,
       releaseDate: data.release_date,
+      releases: mapTmdbMovieReleases(data.release_dates),
       runtime: data.runtime,
       posterPath: data.poster_path
         ? `https://image.tmdb.org/t/p/w500${data.poster_path}`
@@ -513,6 +537,7 @@ export async function fetchTmdbTvDetails(
       originalTitle: data.original_name,
       overview: data.overview,
       releaseDate: data.first_air_date,
+      releases: data.first_air_date ? normalizeContentReleases([{ date: data.first_air_date }]) : [],
       runtime: avgRuntime,
       posterPath: data.poster_path
         ? `https://image.tmdb.org/t/p/w500${data.poster_path}`

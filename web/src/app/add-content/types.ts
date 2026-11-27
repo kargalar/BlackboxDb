@@ -1,3 +1,4 @@
+import type { ContentRelease } from '@/lib/contentReleases';
 import { Screenshot } from '@/components/molecules/ScreenshotUpload';
 
 // --- Shared item interfaces ---
@@ -64,6 +65,7 @@ export interface SeasonItem {
 
 export interface ExpansionItem {
   id?: number;
+  detailContentId?: string | null;
   name: string;
   description?: string;
   posterUrl?: string;
@@ -103,6 +105,7 @@ export interface AddContentFormData {
   igdbId?: number;
   description: string;
   releaseDate: string;
+  releases: ContentRelease[];
   runtime: string;
   posterUrl?: string;
   backdropUrl?: string;
@@ -163,6 +166,10 @@ export interface AddContentFormData {
   fileSize: string;
   expansions: ExpansionItem[];
 
+  howToPlay: string;
+  minPlayers: string;
+  maxPlayers: string;
+
   // Screenshots
   screenshots: Screenshot[];
 
@@ -200,6 +207,7 @@ export const INITIAL_FORM_DATA: AddContentFormData = {
   igdbId: undefined,
   description: '',
   releaseDate: '',
+  releases: [],
   runtime: '',
   posterUrl: '',
   backdropUrl: '',
@@ -241,6 +249,9 @@ export const INITIAL_FORM_DATA: AddContentFormData = {
   developerCompanies: [],
   studios: [],
   expansions: [],
+  howToPlay: '',
+  minPlayers: '',
+  maxPlayers: '',
   screenshots: [],
   trailerUrl: '',
   reviewVideoUrl: '',

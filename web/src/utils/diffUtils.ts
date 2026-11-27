@@ -13,6 +13,10 @@ const FIELD_LABELS: Record<string, string> = {
   originalTitle: 'Orijinal Başlık',
   alternativeTitles: 'Alternatif İsimler',
   description: 'Açıklama',
+  howToPlay: 'Nasıl oynanır?',
+  minPlayers: 'En az oyuncu',
+  maxPlayers: 'En çok oyuncu',
+  releases: 'Yayın Tarihleri',
   releaseDate: 'Çıkış Tarihi',
   runtime: 'Süre',
   posterUrl: 'Afiş',
@@ -188,11 +192,17 @@ export function compareFormData(
 
 // Sekmelere göre değişen alanları filtrelemek için gruplandırmalar
 export const TAB_GROUPS: Record<string, string[]> = {
+  releases: ['releases'],
   basic: [
     'title',
     'originalTitle',
     'alternativeTitles',
     'description',
+    'howToPlay',
+    'minPlayers',
+    'maxPlayers',
+    'infoLink',
+    'previewLink',
     'releaseDate',
     'runtime',
     'status',

@@ -29,6 +29,7 @@ import {
   Film,
   Tv,
   Gamepad2,
+  Dice5,
   BookOpen,
   Music,
   FolderOpen,
@@ -80,7 +81,17 @@ const SEARCH_CONTENT_FOR_LIST = gql`
 `;
 
 /* ─── Content type styling ─── */
-const getContentTypeInfo = (contentTypeId: number) => {
+const getContentTypeInfo = (contentTypeId: number, typeName?: string) => {
+  if (typeName === 'BOARD-GAME') {
+    return {
+      name: 'Masa Oyunu',
+      bg: 'bg-violet-500/15 text-violet-400',
+      icon: <Dice5 size={18} />,
+      accentColor: 'border-violet-500/30',
+      solidBg: 'bg-violet-600',
+      path: 'board-game',
+    };
+  }
   switch (contentTypeId) {
     case 1:
       return {
@@ -1186,7 +1197,7 @@ export default function ListDetailPage() {
       toggleContinuing(item.id.toString())
     );
 
-  const typeInfo = list ? getContentTypeInfo(list.contentTypeId) : null;
+  const typeInfo = list ? getContentTypeInfo(list.contentTypeId, list.contentType?.name) : null;
 
   const handleLeaveList = async () => {
     if (!list) return;

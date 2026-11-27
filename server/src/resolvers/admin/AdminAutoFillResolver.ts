@@ -26,9 +26,12 @@ import {
 import {
   searchIgdbGames,
   fetchIgdbGameDetails,
+  fetchIgdbReleaseDates,
   fetchIgdbImages,
 } from "../../lib/igdbFetcher";
-import { fetchTmdbImages } from "../../lib/tmdbFetcher";
+import { bookReleaseDates } from "../../lib/contentReleases";
+import { ContentRelease } from "../../types/ContentRelease";
+import { fetchTmdbReleaseDates, fetchTmdbImages } from "../../lib/tmdbFetcher";
 
 /**
  * Auto-Fill Resolver — Kitap (Google Books) ve Oyun (IGDB) için
@@ -38,6 +41,30 @@ import { fetchTmdbImages } from "../../lib/tmdbFetcher";
  */
 @Resolver()
 export class AdminAutoFillResolver {
+  @Authorized()
+  @Query(() => [ContentRelease])
+  async fetchProviderReleases(
+    @Arg("source", () => String) source: string,
+    @Arg("sourceId", () => String) sourceId: string,
+    @Ctx() { user }: GraphQLContext,
+  ): Promise<ContentRelease[]> {
+    requireAdminOrModerator(user);
+    if (source === "googlebooks" || source === "openlibrary") {
+      const data = source === "googlebooks"
+        ? await fetchBookDetails(sourceId)
+        : await fetchOpenLibraryDetails(sourceId);
+      return bookReleaseDates([data.publishedDate, ...(data.editions ?? []).map((edition) => edition.publishedDate)]);
+    }
+
+    const id = Number(sourceId);
+    if (!Number.isSafeInteger(id) || id <= 0) throw new Error("Invalid external content ID");
+    if (source === "tmdb_movie" || source === "tmdb_tv") {
+      return fetchTmdbReleaseDates(id, source === "tmdb_movie" ? "movie" : "tv");
+    }
+    if (source === "igdb") return fetchIgdbReleaseDates(id);
+    throw new Error("Unsupported release provider");
+  }
+
   // ─── BOOK SEARCH ───
 
   @Authorized()
@@ -108,6 +135,9 @@ export class AdminAutoFillResolver {
       detail.overview = data.overview;
       detail.posterPath = data.posterPath;
       detail.releaseDate = data.releaseDate;
+      detail.releases = bookReleaseDates([
+        data.publishedDate, ...(data.editions ?? []).map((edition) => edition.publishedDate),
+      ]);
       detail.voteAverage = data.voteAverage;
       detail.authors = data.authors;
       detail.publisher = data.publisher;
@@ -230,6 +260,9 @@ export class AdminAutoFillResolver {
       detail.overview = data.overview;
       detail.posterPath = data.posterPath;
       detail.releaseDate = data.releaseDate;
+      detail.releases = bookReleaseDates([
+        data.publishedDate, ...(data.editions ?? []).map((edition) => edition.publishedDate),
+      ]);
       detail.voteAverage = data.voteAverage;
       detail.authors = data.authors;
       detail.publisher = data.publisher;
@@ -355,6 +388,7 @@ export class AdminAutoFillResolver {
       detail.posterPath = data.posterPath;
       detail.backdropPath = data.backdropPath;
       detail.releaseDate = data.releaseDate;
+      detail.releases = data.releases;
       detail.voteAverage = data.voteAverage;
       detail.esrbRating = data.esrbRating;
       detail.website = data.website;

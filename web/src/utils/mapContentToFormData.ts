@@ -103,10 +103,16 @@ export function mapContentToFormData(data: any): AddContentFormData {
     originalTitle: data.originalTitle || '',
     alternativeTitles: Array.isArray(data.alternativeTitles) ? data.alternativeTitles : [],
     contentTypeId: String(data.contentTypeId) || '',
-    contentTypeSlug: data.contentType?.slug || '',
+    contentTypeSlug: data.contentTypeSlug || data.contentType?.slug || '',
+    releases: Array.isArray(data.releases)
+      ? data.releases.map(({ date, regionCode }: { date: string; regionCode?: string | null }) => ({ date, regionCode }))
+      : [],
     tmdbId: data.tmdbId || undefined,
     igdbId: data.igdbId || undefined,
     description: data.description || '',
+    howToPlay: data.howToPlay ?? '',
+    minPlayers: data.minPlayers?.toString() ?? '',
+    maxPlayers: data.maxPlayers?.toString() ?? '',
     releaseDate: data.releaseDate || '',
     runtime: data.runtime?.toString() || '',
     posterUrl: data.posterUrl || '',
@@ -145,6 +151,8 @@ export function mapContentToFormData(data: any): AddContentFormData {
     // Book publisher from companies array (companyRoleId = 3)
     publisher: bookPublications[0]?.publisher || legacyBookPublisher,
     bookPublications,
+    previewLink: data.previewLink || '',
+    infoLink: data.infoLink || '',
 
     // Oyun-spesifik - array olarak parse et
     gameModes: Array.isArray(data.gameModes) ? data.gameModes : [],
@@ -166,10 +174,9 @@ export function mapContentToFormData(data: any): AddContentFormData {
             foundingYear: d.company?.foundingYear || d.foundingYear,
           }))
       : [],
-    // Game publisher: companyRoleId = 4
     publisherCompanies: Array.isArray(data.companies)
       ? data.companies
-          .filter((d: any) => d.companyRoleId === 4)
+          .filter((d: any) => d.companyRoleId === (data.contentTypeSlug === 'board-game' ? 2 : 4))
           .map((d: any) => ({
             id: d.company?.id || d.id,
             name: d.company?.name || d.name,
@@ -183,10 +190,11 @@ export function mapContentToFormData(data: any): AddContentFormData {
     expansions: Array.isArray(data.expansions)
       ? data.expansions.map((e: any) => ({
           id: e.id,
+          detailContentId: e.detailContentId ?? null,
           name: e.name,
           description: e.description || '',
           posterUrl: e.posterUrl || '',
-          releaseDate: e.releaseDate || '',
+          releaseDate: e.releaseDate?.slice(0, 10) || '',
           type: (e.type || 'expansion') as 'expansion' | 'remake', // expansion veya remake - explicit cast
         }))
       : [],

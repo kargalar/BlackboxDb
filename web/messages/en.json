@@ -87,6 +87,7 @@
     "tvShows": "TV Shows",
     "games": "Games",
     "books": "Books",
+    "boardGames": "Board Games",
     "music": "Music",
     "people": "People",
     "companies": "Companies",
@@ -140,7 +141,8 @@
       "movies": "Movies",
       "tvShows": "TV Shows",
       "games": "Games",
-      "books": "Books"
+      "books": "Books",
+      "boardGames": "Board Games"
     },
     "features": {
       "title": "What Can You Do?",
@@ -436,6 +438,38 @@
     },
     "emptyState": "Start by selecting a category!"
   },
+  "BoardGames": {
+    "parentGame": "Back to the parent game",
+    "packagesTab": "Expansions and Editions",
+    "expansions": "Expansions",
+    "editions": "Other Editions",
+    "expansion": "Expansion",
+    "edition": "Edition",
+    "packageCount": "{count, plural, one {# item} other {# items}}",
+    "addPackage": "Add {item}",
+    "editPackage": "Edit {item}",
+    "packageName": "{item} name",
+    "emptyPackages": "No entries yet.",
+    "recommendedAge": "Ages {age}",
+    "publishers": "Publishers",
+    "supportedLanguages": "Verified edition languages",
+    "productSource": "Product or game source",
+    "rulebook": "Game rules",
+    "relatedEditions": "{name} editions and expansions ({count})",
+    "howToPlay": "How to play",
+    "minPlayers": "Minimum players",
+    "maxPlayers": "Maximum players",
+    "runtime": "Estimated play time (minutes)",
+    "instructionsHint": "Describe the objective, setup, what happens on a turn, and how to win.",
+    "positiveInteger": "Enter a positive whole number.",
+    "invalidPlayerRange": "The maximum must be at least the minimum.",
+    "playerCount": "{count, plural, one {# player} other {# players}}",
+    "playerRange": "{min, number}–{max, number} players",
+    "atLeastPlayers": "At least {count, plural, one {# player} other {# players}}",
+    "upToPlayers": "Up to {count, plural, one {# player} other {# players}}",
+    "minutes": "About {count, number} min",
+    "noInstructions": "The rules haven’t been added yet."
+  },
   "ContentDetail": {
     "loading": "Loading...",
     "error": "Error: {error}",
@@ -456,6 +490,30 @@
       "mins": "{mins}m"
     }
   },
+  "ContentReleases": {
+    "formTitle": "Release dates",
+    "formDescription": "Add dates for individual countries or regions. You can also save dates without a region.",
+    "region": "Country or region",
+    "unspecifiedRegion": "Region unspecified",
+    "areas": "Regions",
+    "countries": "Countries and territories",
+    "date": "Date",
+    "dateFormat": "Use YYYY-MM-DD, YYYY-MM, YYYY or YYYY-Q1.",
+    "invalidDate": "Enter a valid date in one of the supported formats.",
+    "add": "Add date",
+    "apply": "Apply change",
+    "cancel": "Cancel",
+    "editRow": "Edit {label}",
+    "removeRow": "Remove {label}",
+    "formEmpty": "No release dates added yet.",
+    "empty": "No release dates available.",
+    "loading": "Loading release dates?",
+    "loadFailed": "Release dates could not be loaded.",
+    "import": "Import dates from API",
+    "providerEmpty": "The provider has no release dates for this title.",
+    "imported": "Release dates imported.",
+    "quarter": "Q{quarter} {year}"
+  },
   "ContentHeader": {
     "readMore": "Read more",
     "readLess": "Show less",
@@ -471,6 +529,7 @@
     "minsPerEpisode": "• {count} mins/episode",
     "previewBook": "📖 Preview Book",
     "tabs": {
+      "releases": "Release",
       "cast": "Cast",
       "details": "Details",
       "production": "Production & Crew"
@@ -1563,6 +1622,7 @@
       "tv": "TV Series",
       "game": "Game",
       "book": "Book",
+      "boardGame": "Board Game",
       "music": "Music",
       "unknown": "Unknown"
     },
@@ -2320,6 +2380,7 @@
       "tv": "Explore TV Shows",
       "game": "Explore Games",
       "book": "Explore Books",
+      "board-game": "Explore Board Games",
       "music": "Explore Music",
       "podcast": "Explore Podcasts",
       "theater": "Explore Theater"
@@ -2334,6 +2395,8 @@
       "gamesDesc": "Video games, platforms, and expansions",
       "books": "Books",
       "booksDesc": "Books, authors, and editions",
+      "boardGames": "Board Games",
+      "boardGamesDesc": "Board games, player counts, and rules",
       "music": "Music",
       "musicDesc": "Albums, tracks, and artists",
       "podcast": "Podcasts",

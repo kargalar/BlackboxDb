@@ -6,6 +6,7 @@ const FORM_TO_INPUT_KEYS: Record<string, string[]> = {
   alternativeTitles: ['alternativeTitles'],
   description: ['description'],
   releaseDate: ['releaseDate'],
+  releases: ['releases'],
   runtime: ['runtime'],
   posterUrl: ['posterUrl'],
   backdropUrl: ['backdropUrl'],
@@ -57,6 +58,7 @@ const FORM_TO_INPUT_KEYS: Record<string, string[]> = {
 
 const ARRAY_INPUT_KEYS = new Set([
   'alternativeTitles',
+  'releases',
   'genres',
   'languages',
   'themes',
@@ -79,6 +81,9 @@ const JSON_ARRAY_STRING_INPUT_KEYS = new Set(['cast', 'crew', 'seasons']);
 const NULLABLE_SCALAR_INPUT_KEYS = new Set([
   'originalTitle',
   'description',
+  'howToPlay',
+  'minPlayers',
+  'maxPlayers',
   'releaseDate',
   'runtime',
   'posterUrl',

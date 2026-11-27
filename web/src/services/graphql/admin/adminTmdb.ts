@@ -1,3 +1,4 @@
+import type { ContentRelease } from '@/lib/contentReleases';
 import { gql } from '@apollo/client';
 
 /**
@@ -27,6 +28,10 @@ const TMDB_DETAIL_RESULT_FRAGMENT = gql`
     originalTitle
     overview
     releaseDate
+    releases {
+      regionCode
+      date
+    }
     runtime
     posterPath
     backdropPath
@@ -278,6 +283,7 @@ export interface TmdbFranchiseData {
 }
 
 export interface TmdbDetailResultData {
+  releases?: ContentRelease[] | null;
   tmdbId: number;
   title: string;
   originalTitle?: string;

@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations, useLocale } from 'next-intl';
 import { usePageTitle } from '@/hooks/usePageTitle';
-import type { UnifiedContent } from '@/types/unified-content';
+import type { CatalogContentType, UnifiedContent } from '@/types/unified-content';
 import ContentHeader from '@/app/content/components/ContentHeader';
 import ContentCast from '@/app/content/components/ContentCast';
 import ContentTvSeasons from '@/app/content/components/ContentTvSeasons';
@@ -53,7 +53,6 @@ const GET_DISCUSSIONS_COUNT = gql`
   }
 `;
 
-type ContentType = 'movie' | 'tv' | 'game' | 'book';
 
 interface ContentStats {
   consume_count?: number;
@@ -68,7 +67,7 @@ interface ContentStats {
 
 export default function ContentDetailPage() {
   const params = useParams();
-  const type = params.type as ContentType;
+  const type = params.type as CatalogContentType;
   const id = params.id as string;
   const { user } = useAuth();
   const t = useTranslations('ContentDetail');
@@ -1282,16 +1281,16 @@ export default function ContentDetailPage() {
           )}
 
           {/* Expansions - Only for games */}
-          {type === 'game' && (
+          {(type === 'game' || content.contentType?.slug === 'board-game') && (
             <div className="content-detail-section content-expansions-section">
-              <ContentExpansions contentId={id} type="expansion" />
+              <ContentExpansions contentId={id} type="expansion" boardGame={type === 'board-game'} />
             </div>
           )}
 
           {/* Remakes - Only for games */}
-          {type === 'game' && (
+          {(type === 'game' || content.contentType?.slug === 'board-game') && (
             <div className="content-detail-section content-remakes-section">
-              <ContentExpansions contentId={id} type="remake" />
+              <ContentExpansions contentId={id} type="remake" boardGame={type === 'board-game'} />
             </div>
           )}
 

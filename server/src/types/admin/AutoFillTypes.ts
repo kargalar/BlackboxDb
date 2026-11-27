@@ -1,3 +1,4 @@
+import { ContentRelease } from "../ContentRelease";
 import { ObjectType, Field, Int, Float } from "type-graphql";
 
 /**
@@ -122,6 +123,9 @@ export class AutoFillBookDetail {
   @Field(() => String, { nullable: true })
   releaseDate?: string;
 
+  @Field(() => [ContentRelease], { nullable: true })
+  releases?: ContentRelease[] | null;
+
   @Field(() => Float, { nullable: true })
   voteAverage?: number;
 
@@ -184,6 +188,9 @@ export class AutoFillGameDetail {
 
   @Field(() => String, { nullable: true })
   releaseDate?: string;
+
+  @Field(() => [ContentRelease], { nullable: true })
+  releases?: ContentRelease[] | null;
 
   @Field(() => Float, { nullable: true })
   voteAverage?: number;

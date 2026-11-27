@@ -86,6 +86,7 @@ export const GET_FRANCHISE_CONTENT = gql`
       contentType {
         id
         name
+        slug
       }
     }
   }

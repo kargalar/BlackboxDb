@@ -87,6 +87,7 @@
     "tvShows": "Diziler",
     "games": "Oyunlar",
     "books": "Kitaplar",
+    "boardGames": "Masa Oyunları",
     "music": "Müzik",
     "people": "Kişiler",
     "companies": "Şirketler",
@@ -138,7 +139,8 @@
       "movies": "Filmler",
       "tvShows": "Diziler",
       "games": "Oyunlar",
-      "books": "Kitaplar"
+      "books": "Kitaplar",
+      "boardGames": "Masa Oyunları"
     },
     "features": {
       "title": "Neler Yapabilirsin?",
@@ -434,6 +436,38 @@
     },
     "emptyState": "Start by selecting a category!"
   },
+  "BoardGames": {
+    "parentGame": "Bağlı olduğu oyuna dön",
+    "packagesTab": "Ek Paketler ve Sürümler",
+    "expansions": "Ek Paketler",
+    "editions": "Diğer Sürümler",
+    "expansion": "Ek paket",
+    "edition": "Sürüm",
+    "packageCount": "{count} kayıt",
+    "addPackage": "{item} ekle",
+    "editPackage": "{item} düzenle",
+    "packageName": "{item} adı",
+    "emptyPackages": "Henüz kayıt yok.",
+    "recommendedAge": "{age} yaş",
+    "publishers": "Yayınevleri",
+    "supportedLanguages": "Doğrulanmış baskı dilleri",
+    "productSource": "Ürün veya oyun kaynağı",
+    "rulebook": "Oyun kılavuzu",
+    "relatedEditions": "{name} sürümleri ve ek paketleri ({count})",
+    "howToPlay": "Nasıl oynanır?",
+    "minPlayers": "En az oyuncu",
+    "maxPlayers": "En çok oyuncu",
+    "runtime": "Tahmini süre (dakika)",
+    "instructionsHint": "Oyunun amacını, kurulumu, bir turda neler yapıldığını ve nasıl kazanıldığını yazın.",
+    "positiveInteger": "Pozitif bir tam sayı girin.",
+    "invalidPlayerRange": "En çok oyuncu sayısı, en az oyuncu sayısından küçük olamaz.",
+    "playerCount": "{count, number} oyuncu",
+    "playerRange": "{min, number}–{max, number} oyuncu",
+    "atLeastPlayers": "En az {count, number} oyuncu",
+    "upToPlayers": "En çok {count, number} oyuncu",
+    "minutes": "Yaklaşık {count, number} dk",
+    "noInstructions": "Oyun kuralları henüz eklenmedi."
+  },
   "ContentDetail": {
     "loading": "Loading...",
     "error": "Error: {error}",
@@ -454,6 +488,30 @@
       "mins": "{mins}m"
     }
   },
+  "ContentReleases": {
+    "formTitle": "Yayın tarihleri",
+    "formDescription": "Ülke veya bölge bazında tarih ekleyin. Bölge belirtmeden de tarih kaydedebilirsiniz.",
+    "region": "Ülke veya bölge",
+    "unspecifiedRegion": "Bölge belirtilmemiş",
+    "areas": "Bölgeler",
+    "countries": "Ülkeler ve bağlı bölgeler",
+    "date": "Tarih",
+    "dateFormat": "YYYY-AA-GG, YYYY-AA, YYYY veya YYYY-Q1 biçimini kullanın.",
+    "invalidDate": "Desteklenen biçimlerden birinde geçerli bir tarih girin.",
+    "add": "Tarih ekle",
+    "apply": "Değişikliği uygula",
+    "cancel": "Vazgeç",
+    "editRow": "{label} kaydını düzenle",
+    "removeRow": "{label} kaydını kaldır",
+    "formEmpty": "Henüz yayın tarihi eklenmedi.",
+    "empty": "Yayın tarihi bulunamadı.",
+    "loading": "Yayın tarihleri yükleniyor…",
+    "loadFailed": "Yayın tarihleri yüklenemedi.",
+    "import": "API’den tarihleri al",
+    "providerEmpty": "Sağlayıcıda bu içerik için yayın tarihi bulunamadı.",
+    "imported": "Yayın tarihleri aktarıldı.",
+    "quarter": "{year} · {quarter}. çeyrek"
+  },
   "ContentHeader": {
     "readMore": "Devamını oku",
     "readLess": "Daha az göster",
@@ -469,6 +527,7 @@
     "minsPerEpisode": "• {count} mins/episode",
     "previewBook": "📖 Preview Book",
     "tabs": {
+      "releases": "Yayın",
       "cast": "Cast",
       "details": "Details",
       "production": "Production & Crew"
@@ -1561,6 +1620,7 @@
       "tv": "TV Series",
       "game": "Game",
       "book": "Book",
+      "boardGame": "Masa Oyunu",
       "music": "Müzik",
       "unknown": "Unknown"
     },
@@ -2318,6 +2378,7 @@
       "tv": "Dizileri Keşfet",
       "game": "Oyunları Keşfet",
       "book": "Kitapları Keşfet",
+      "board-game": "Masa Oyunlarını Keşfet",
       "music": "Müzikleri Keşfet",
       "podcast": "Podcast Programları",
       "theater": "Tiyatro Yapımları"
@@ -2332,6 +2393,8 @@
       "gamesDesc": "Video oyunları, platformlar ve eklentiler",
       "books": "Kitaplar",
       "booksDesc": "Kitaplar, yazarlar ve baskılar",
+      "boardGames": "Masa Oyunları",
+      "boardGamesDesc": "Masa oyunları, oyuncu sayıları ve oyun kuralları",
       "music": "Müzik",
       "musicDesc": "Albümler, parçalar ve sanatçılar",
       "podcast": "Podcast",

@@ -85,6 +85,7 @@ export function useExploreFilters(contentType: string, contentTypeId: number) {
   }, [user, contentTypeId]);
 
   useEffect(() => {
+    if (!contentTypeId) return;
     const loadFilterCounts = async () => {
       try {
         const counts = await getFilterCounts(contentTypeId);

@@ -5,6 +5,7 @@ type RoleBucket = "actors" | "directors";
 export async function getPeopleFilterCounts(
   prisma: PrismaClient,
   contentTypeId?: number,
+  mainGamesOnly = false,
 ) {
   const typeCondition = contentTypeId
     ? Prisma.sql`AND c.content_type_id = ${contentTypeId}`
@@ -21,6 +22,9 @@ export async function getPeopleFilterCounts(
       JOIN person_role pr ON pr.id = cp.person_role_id
       JOIN content c ON c.id = cp.content_id
       WHERE c.is_deleted = false ${typeCondition}
+        ${mainGamesOnly
+          ? Prisma.sql`AND NOT EXISTS (SELECT 1 FROM expansion e WHERE e.detail_content_id = c.id)`
+          : Prisma.empty}
         AND lower(pr.label) IN ('actor', 'voice', 'voice_actor', 'director')
       GROUP BY cp.person_id, bucket
     ) grouped

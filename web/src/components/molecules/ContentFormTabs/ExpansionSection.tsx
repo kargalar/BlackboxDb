@@ -6,6 +6,7 @@
  */
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { Upload, X } from 'lucide-react';
 import { ExpansionConfig, ExpansionItem } from './GameFieldsTypes';
 import type { ExpansionStateReturn } from './useExpansionState';
@@ -231,9 +232,18 @@ export function ExpansionSection({ config, state }: ExpansionSectionProps) {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                  {expansion.name}
-                </p>
+                {expansion.detailContentId ? (
+                  <Link
+                    href={`/content/board-game/${expansion.detailContentId}`}
+                    className="block truncate text-sm font-medium text-violet-700 hover:underline dark:text-violet-300"
+                  >
+                    {expansion.name}
+                  </Link>
+                ) : (
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {expansion.name}
+                  </p>
+                )}
                 {expansion.releaseDate && (
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     📅 {expansion.releaseDate}

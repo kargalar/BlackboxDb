@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { ReleaseFields } from '@/components/molecules/ContentFormTabs/ReleaseFields';
 import { CommonFields } from '@/components/molecules/ContentFormTabs/CommonFields';
 import { BookFields } from '@/components/molecules/ContentFormTabs/BookFields';
+import { BoardGameFields } from '@/components/molecules/ContentFormTabs/BoardGameFields';
 import { BookPublicationsFields } from '@/components/molecules/ContentFormTabs/BookPublicationsFields';
 import { MovieInfoFields } from '@/components/molecules/ContentFormTabs/MovieInfoFields';
 import { TvInfoFields } from '@/components/molecules/ContentFormTabs/TvInfoFields';
@@ -85,6 +87,9 @@ export function ContentFormLayout({
   originalData,
 }: ContentFormLayoutProps) {
   const t = useTranslations('AddContent.formLayout');
+  const tBoardGames = useTranslations('BoardGames');
+  const releaseTranslations = useTranslations('ContentReleases');
+  const isBoardGame = formData.contentTypeSlug === 'board-game';
   const [tabSelection, setTabSelection] = useState({
     contentTypeId: formData.contentTypeId,
     tabId: 'basic',
@@ -96,7 +101,13 @@ export function ContentFormLayout({
 
   const activeTab = tabSelection.tabId;
 
-  const tabs = getTabsForContentType(formData.contentTypeId);
+  const tabs = getTabsForContentType(formData.contentTypeId, formData.contentTypeSlug).map((tab) => {
+    if (tab.id === 'releases') return { ...tab, label: releaseTranslations('formTitle') };
+    if (isBoardGame && tab.id === 'game-expansions') {
+      return { ...tab, label: tBoardGames('packagesTab') };
+    }
+    return tab;
+  });
 
   // Auto-fill hook (TMDB / Google Books / IGDB — default source)
   const autoFill = useAutoFill({ formData, setFormData });
@@ -166,6 +177,13 @@ export function ContentFormLayout({
 
       {/* Tab Content Panel */}
       <div className="flex-1 min-w-0">
+        {validTab === 'releases' && (
+          <div className="space-y-4">
+            <DiffAlert diffs={getDiffForTab(allDiffs, 'releases')} onRevert={handleRevert} />
+            <ReleaseFields formData={formData} setFormData={setFormData} canImport={canDirectCreate} />
+          </div>
+        )}
+
         {/* Temel Bilgiler */}
         {validTab === 'basic' && (
           <div className="space-y-6">
@@ -225,6 +243,9 @@ export function ContentFormLayout({
                   : undefined
               }
             />
+            {formData.contentTypeSlug === 'board-game' && (
+              <BoardGameFields formData={formData} setFormData={setFormData} errors={errors} />
+            )}
             {canDirectCreate && (
               <AdditionalRatingCategories
                 categories={formData.additionalRatingCategories}
@@ -305,13 +326,17 @@ export function ContentFormLayout({
         )}
 
         {/* Eklentiler & Remake'ler */}
-        {validTab === 'game-expansions' && formData.contentTypeId === '3' && (
+        {validTab === 'game-expansions' && (formData.contentTypeId === '3' || isBoardGame) && (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {t('gameExpansions')}
+              {isBoardGame ? tBoardGames('packagesTab') : t('gameExpansions')}
             </h3>
             <DiffAlert diffs={getDiffForTab(allDiffs, 'relations')} onRevert={handleRevert} />
-            <GameExpansionFields formData={formData} setFormData={setFormData} />
+            <GameExpansionFields
+              formData={formData}
+              setFormData={setFormData}
+              boardGame={isBoardGame}
+            />
           </div>
         )}
 

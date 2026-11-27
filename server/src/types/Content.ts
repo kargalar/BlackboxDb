@@ -259,6 +259,18 @@ export class Content {
   @Field(() => String, { nullable: true })
   status?: string; // released, upcoming, in_production, cancelled
 
+  @Field(() => String, { nullable: true })
+  howToPlay?: string;
+
+  @Field(() => String, { nullable: true })
+  expansionParentId?: string | null;
+
+  @Field(() => Int, { nullable: true })
+  minPlayers?: number;
+
+  @Field(() => Int, { nullable: true })
+  maxPlayers?: number;
+
   @Field(() => Int, { nullable: true })
   runtime?: number; // Duration in minutes
 

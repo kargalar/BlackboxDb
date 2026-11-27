@@ -31,6 +31,7 @@ interface FranchiseContent {
   contentType?: {
     id: number;
     name: string;
+    slug: string;
   };
 }
 
@@ -69,6 +70,8 @@ export default function ContentFranchise({
 }: ContentFranchiseProps) {
   const { user } = useAuth();
   const t = useTranslations('ContentFranchise');
+  const tSidebar = useTranslations('Sidebar');
+  const tBoardGames = useTranslations('BoardGames');
   const [franchiseContent, setFranchiseContent] = useState<FranchiseContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +81,7 @@ export default function ContentFranchise({
   const [showAddToListModal, setShowAddToListModal] = useState(false);
   const [selectedItemForList, setSelectedItemForList] = useState<FranchiseContent | null>(null);
   const [selectedItemContentType, setSelectedItemContentType] = useState<
-    'movie' | 'tv' | 'game' | 'book' | 'music'
+    'movie' | 'tv' | 'game' | 'book' | 'music' | 'board-game'
   >('movie');
 
   // Map contentTypeId to contentType string
@@ -102,7 +105,7 @@ export default function ContentFranchise({
   // Handle add to list
   const handleAddToList = (
     item: FranchiseContent,
-    itemContentType: 'movie' | 'tv' | 'game' | 'book' | 'music'
+    itemContentType: 'movie' | 'tv' | 'game' | 'book' | 'music' | 'board-game'
   ) => {
     setSelectedItemForList(item);
     setSelectedItemContentType(itemContentType);
@@ -226,7 +229,9 @@ export default function ContentFranchise({
   const sortedGroups = Object.entries(groupedContent)
     .map(([typeId, items]) => ({
       typeId: Number(typeId),
-      config: getContentTypeConfig(Number(typeId)),
+      config: items[0]?.contentType?.slug === 'board-game'
+        ? { label: tSidebar('boardGames'), emoji: '🎲', order: 6 }
+        : getContentTypeConfig(Number(typeId)),
       items,
     }))
     .sort((a, b) => a.config.order - b.config.order);
@@ -307,7 +312,9 @@ export default function ContentFranchise({
   return (
     <div className="glass-card p-6 rounded-2xl">
       <h3 className="text-xl font-bold text-white flex items-center gap-2 mb-4 px-1">
-        {franchiseName
+        {contentType === 'board-game' && franchiseName
+          ? tBoardGames('relatedEditions', { name: franchiseName, count: franchiseContent.length })
+          : franchiseName
           ? t('otherContentFranchise', { franchiseName, count: franchiseContent.length })
           : t('otherContent', { count: franchiseContent.length })}
       </h3>
@@ -333,7 +340,8 @@ export default function ContentFranchise({
       {activeGroup && (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {activeGroup.items.map((item) => {
-            const itemContentType = getContentType(item.contentTypeId);
+            const itemContentType =
+              item.contentType?.slug === 'board-game' ? 'board-game' : getContentType(item.contentTypeId);
             const state = itemStates[item.id] || {
               isConsumed: false,
               isFavorite: false,

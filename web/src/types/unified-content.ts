@@ -207,6 +207,8 @@ export interface BookDetails {
 // Main Content Type (Unified)
 // ======================================
 
+export type CatalogContentType = 'movie' | 'tv' | 'game' | 'book' | 'board-game';
+
 export interface UnifiedContent {
   id: string;
   title: string;
@@ -223,6 +225,10 @@ export interface UnifiedContent {
   firstAirDate?: string; // ISO date string
   lastAirDate?: string; // ISO date string
   description?: string;
+  howToPlay?: string | null;
+  expansionParentId?: string | null;
+  minPlayers?: number | null;
+  maxPlayers?: number | null;
   status?: 'finished' | 'ongoing' | 'upcoming';
   runtime?: number; // Duration in minutes
   averageDuration?: number; // Average episode duration or average game playtime in minutes

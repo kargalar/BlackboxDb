@@ -10,6 +10,7 @@ interface ContentTypeFilterProps {
 }
 
 const ICONS: Record<string, string> = {
+  'board-game': '🎲',
   movie: '🎬',
   tv: '📺',
   game: '🎮',
@@ -17,6 +18,7 @@ const ICONS: Record<string, string> = {
 };
 
 const LABEL_KEYS: Record<string, string> = {
+  'board-game': 'types.boardGame',
   movie: 'types.movie',
   tv: 'types.tv',
   game: 'types.game',
@@ -30,11 +32,10 @@ export default function ContentTypeFilter({
   contentTypes,
 }: ContentTypeFilterProps) {
   const t = useTranslations('AdminContentPage');
-  const allowedSlugs = new Set(['movie', 'tv', 'game', 'book']);
   const types = [
     { id: 0, label: t('types.all'), icon: '📋' },
     ...contentTypes
-      .filter((type) => allowedSlugs.has(type.slug))
+      .filter((type) => Object.hasOwn(LABEL_KEYS, type.slug))
       .map((type) => ({
         id: type.id,
         label: LABEL_KEYS[type.slug] ? t(LABEL_KEYS[type.slug]) : type.name,

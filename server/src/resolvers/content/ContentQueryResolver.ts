@@ -11,7 +11,7 @@ import {
   Root,
   Info,
 } from "type-graphql";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import {
   getContentSearchPage,
   standardContentSearchOrder,
@@ -22,6 +22,10 @@ import {
   requestedContentFields,
 } from "../../lib/contentSelection";
 import { BookPublication, Content } from "../../types/Content";
+import { ContentRelease } from "../../types/ContentRelease";
+import { bookReleaseDates, normalizeContentReleases, readContentReleases } from "../../lib/contentReleases";
+import { fetchTmdbReleaseDates } from "../../lib/tmdbFetcher";
+import { fetchIgdbReleaseDates } from "../../lib/igdbFetcher";
 import { ContentCitation } from "../../types/ContentCitation";
 import { ContentEditHistory } from "../../types/admin";
 import { GraphQLContext } from "../../context";
@@ -60,6 +64,76 @@ export class SearchContentResult {
 
 @Resolver(Content)
 export class ContentQueryResolver {
+  @Query(() => [ContentRelease])
+  async contentReleases(
+    @Arg("id", () => String) id: string,
+    @Ctx() { prisma }: GraphQLContext,
+  ): Promise<ContentRelease[]> {
+    const content = await prisma.content.findFirst({
+      where: { id, isDeleted: false },
+      select: {
+        contentTypeId: true,
+        releases: true,
+        releaseDate: true,
+        firstAirDate: true,
+        tmdbId: true,
+        igdbId: true,
+        updatedAt: true,
+        lockedFields: true,
+      },
+    });
+    if (!content) return [];
+    const savedReleases = readContentReleases(content.releases);
+    if (savedReleases) return savedReleases;
+
+    try {
+      // Fetch regional dates for linked entries created before releases were stored.
+      const releases = content.lockedFields.includes("releases")
+        ? []
+        : content.contentTypeId === 1 && content.tmdbId
+          ? await fetchTmdbReleaseDates(content.tmdbId, "movie")
+          : content.contentTypeId === 3 && content.igdbId
+            ? await fetchIgdbReleaseDates(content.igdbId)
+            : [];
+      if (releases.length) {
+        const updated = await prisma.content.updateMany({
+          where: {
+            id,
+            isDeleted: false,
+            releases: { equals: Prisma.DbNull },
+            contentTypeId: content.contentTypeId,
+            tmdbId: content.tmdbId,
+            igdbId: content.igdbId,
+            updatedAt: content.updatedAt,
+            NOT: { lockedFields: { has: "releases" } },
+          },
+          data: { releases, updatedAt: content.updatedAt },
+        });
+        if (updated.count) return releases;
+        const current = await prisma.content.findFirst({
+          where: { id, isDeleted: false },
+          select: { releases: true },
+        });
+        if (!current) return [];
+        return readContentReleases(current.releases) ?? releases;
+      }
+    } catch (error) {
+      logger.warn(`Could not load provider release dates for ${id}`, error);
+    }
+
+    if (content.contentTypeId === 4) {
+      const publications = await prisma.bookPublication.findMany({
+        where: { contentId: id },
+        select: { publishedDate: true },
+      });
+      const releases = bookReleaseDates(publications.map(({ publishedDate }) => publishedDate));
+      if (releases.length) return releases;
+    }
+
+    const date = content.firstAirDate ?? content.releaseDate;
+    return date ? normalizeContentReleases([{ date: date.toISOString().slice(0, 10) }]) : [];
+  }
+
   @Query(() => Content, { nullable: true })
   async content(
     @Arg("id", () => String) id: string,
@@ -406,7 +480,7 @@ export class ContentQueryResolver {
 
       // Build Prisma where condition for filters
       const buildFilterWhere = (): any => {
-        const where: any = { isDeleted: false };
+        const where: any = { isDeleted: false, detailForExpansion: { is: null } };
         const emptyFilterSet = new Set(emptyFilters || []);
         const addFilterCondition = (condition: any) => {
           where.AND = [...(where.AND || []), condition];
@@ -773,7 +847,7 @@ export class ContentQueryResolver {
         excludeContentId,
       });
 
-      const where: any = { franchiseId };
+      const where: any = { franchiseId, detailForExpansion: { is: null } };
       if (excludeContentId) {
         where.id = { not: excludeContentId };
       }

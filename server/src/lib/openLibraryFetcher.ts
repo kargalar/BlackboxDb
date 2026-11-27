@@ -141,6 +141,7 @@ export interface FetcherBookEdition {
 }
 
 export interface BookDetailData {
+  publishedDate?: string;
   sourceId: string;
   title: string;
   originalTitle?: string;
@@ -422,6 +423,7 @@ export async function fetchOpenLibraryDetails(
     }
 
     const detail: BookDetailData = {
+      publishedDate: work.first_publish_date || publishDate,
       sourceId: workKey,
       title: work.title,
       overview,

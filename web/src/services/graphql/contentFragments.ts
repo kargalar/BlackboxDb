@@ -33,6 +33,10 @@ export const CONTENT_DETAIL_FIELDS = gql`
     ...ContentBasicFields
     awards
     status
+    howToPlay
+    expansionParentId
+    minPlayers
+    maxPlayers
     isbn
     pageCount
     isContinuing

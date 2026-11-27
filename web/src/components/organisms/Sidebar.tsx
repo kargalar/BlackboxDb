@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from 'next-intl';
 import type { Route } from 'next';
-import { TrendingUp, Network } from 'lucide-react';
+import { Dice5, TrendingUp, Network } from 'lucide-react';
 import {
   FilmIcon,
   TvIcon,
@@ -109,6 +109,7 @@ export default function Sidebar({ isOpen: isOpenProp = true, onClose }: SidebarP
     ...(settings?.isBookEnabled !== false
       ? [{ href: '/explore/book' as Route, icon: BookIcon, label: t('books'), typeId: 4 }]
       : []),
+    { href: '/explore/board-game' as Route, icon: Dice5, label: t('boardGames') },
     { href: '/explore/person' as Route, icon: UserIcon, label: t('people') },
     { href: '/explore/company' as Route, icon: BuildingIcon, label: t('companies') },
   ];

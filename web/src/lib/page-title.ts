@@ -3,6 +3,7 @@ const CONTENT_TYPE_TITLES: Record<string, string> = {
   tv: 'Dizi',
   game: 'Oyun',
   book: 'Kitap',
+  'board-game': 'Masa Oyunları',
 };
 
 const STATIC_ROUTE_TITLES: Record<string, string> = {

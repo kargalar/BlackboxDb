@@ -263,6 +263,7 @@ export function useExploreContent({
   const latestRequestRef = useRef(0);
 
   useEffect(() => {
+    if (!contentTypeId) return;
     const requestId = latestRequestRef.current + 1;
     latestRequestRef.current = requestId;
     const controller = new AbortController();
