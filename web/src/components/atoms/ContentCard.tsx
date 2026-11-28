@@ -28,6 +28,7 @@ export type ContentCardProps = {
   rightTop?: React.ReactNode; // badges at top-right
   useNextImage?: boolean; // pass to PosterCard
   aspectClassName?: string; // e.g. 'aspect-square' or 'aspect-[2/3]'
+  containPoster?: boolean;
 };
 
 /**
@@ -46,8 +47,10 @@ export function ContentCard({
   communityRating,
   useNextImage = true,
   aspectClassName,
+  containPoster = false,
 }: ContentCardProps) {
   const sz = sizeMap[size];
+  const [failedPosterSrc, setFailedPosterSrc] = React.useState<string>();
   const { posterZoomEnabled, posterIconsBelow, posterIconsPosition, posterRatingEnabled } =
     useUserPreferences();
   const iconsPosition = posterIconsPosition ?? (posterIconsBelow ? 'below' : 'above');
@@ -58,7 +61,12 @@ export function ContentCard({
       : null;
 
   return (
-    <PosterZoomPreview src={posterSrc} alt={title} enabled={posterZoomEnabled}>
+    <PosterZoomPreview
+      src={posterSrc === failedPosterSrc ? null : posterSrc}
+      alt={title}
+      enabled={posterZoomEnabled}
+      containImage={containPoster}
+    >
       <Link
         href={href}
         className={cn('content-card group relative cursor-pointer block', className)}
@@ -69,8 +77,14 @@ export function ContentCard({
             src={posterSrc ?? undefined}
             alt={title}
             aspectClassName={aspectClassName}
-            className="bg-gray-900/50 transition-transform duration-300 group-hover:scale-105"
+            imageClassName={containPoster ? 'object-contain' : undefined}
+            hoverZoom={!containPoster}
+            className={cn(
+              'bg-gray-900/50',
+              !containPoster && 'transition-transform duration-300 group-hover:scale-105'
+            )}
             useNextImage={useNextImage}
+            onImageError={setFailedPosterSrc}
             fallback={
               <div className="h-full w-full grid place-items-center px-3">
                 <div

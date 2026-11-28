@@ -14,6 +14,7 @@ interface PosterZoomPreviewProps {
   alt: string;
   children: React.ReactNode;
   enabled?: boolean;
+  containImage?: boolean;
   /** Delay in ms before showing zoom preview */
   delay?: number;
 }
@@ -28,8 +29,10 @@ export default function PosterZoomPreview({
   alt,
   children,
   enabled = true,
+  containImage = false,
   delay = 1000,
 }: PosterZoomPreviewProps) {
+  const previewAspectRatio = containImage ? 1 : 2 / 3;
   const [showPreview, setShowPreview] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -44,10 +47,10 @@ export default function PosterZoomPreview({
         const widthLimit = Math.max(0, window.innerWidth - VIEWPORT_PADDING * 2);
         const heightLimit = Math.max(
           0,
-          ((window.innerHeight - PREVIEW_CAPTION_HEIGHT - VIEWPORT_PADDING * 2) * 2) / 3
+          (window.innerHeight - PREVIEW_CAPTION_HEIGHT - VIEWPORT_PADDING * 2) * previewAspectRatio
         );
         const previewWidth = Math.min(PREVIEW_MAX_WIDTH, widthLimit, heightLimit);
-        const previewHeight = (previewWidth * 3) / 2 + PREVIEW_CAPTION_HEIGHT;
+        const previewHeight = previewWidth / previewAspectRatio + PREVIEW_CAPTION_HEIGHT;
         const previewLeft = rect.left + rect.width / 2 - previewWidth / 2;
 
         const clampedLeft = Math.max(
@@ -69,7 +72,7 @@ export default function PosterZoomPreview({
         console.log('🔍 [PosterZoom] Showing preview for:', alt);
       }
     }, delay);
-  }, [enabled, src, alt, delay]);
+  }, [enabled, src, alt, delay, previewAspectRatio]);
 
   const handleMouseLeave = useCallback(() => {
     if (timerRef.current) {
@@ -107,14 +110,15 @@ export default function PosterZoomPreview({
             onMouseEnter={handleMouseLeave}
           >
             <div className="rounded-xl overflow-hidden shadow-2xl shadow-black/60 border border-white/20 bg-black">
-              <div className="relative w-full aspect-[2/3]">
+              <div className="relative w-full" style={{ aspectRatio: previewAspectRatio }}>
                 <Image
                   src={src}
                   alt={alt}
                   fill
                   sizes={`${Math.ceil(position.width)}px`}
                   unoptimized
-                  className="object-cover"
+                  className={containImage ? 'object-contain' : 'object-cover'}
+                  onError={handleMouseLeave}
                 />
               </div>
               <div className="px-3 py-2 bg-black/90">

@@ -183,6 +183,8 @@ export default function GameCard({
       rightTop={badges}
       communityRating={game}
       useNextImage={false}
+      aspectClassName={contentType === 'board-game' ? 'aspect-square' : undefined}
+      containPoster={contentType === 'board-game'}
     />
   );
 }

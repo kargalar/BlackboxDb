@@ -1,3 +1,5 @@
+'use client';
+
 import { useTranslations as useUiTranslations } from 'next-intl';
 import * as React from 'react';
 import Image from 'next/image';
@@ -11,7 +13,8 @@ type PosterCardProps = {
   hoverZoom?: boolean;
   className?: string;
   imageClassName?: string;
-  fallback?: React.ReactNode; // fallback content when no src
+  fallback?: React.ReactNode;
+  onImageError?: (src: string) => void;
   useNextImage?: boolean; // allow opting-out for external domains not whitelisted
 };
 
@@ -28,9 +31,16 @@ export function PosterCard({
   className,
   imageClassName,
   fallback,
+  onImageError,
   useNextImage = true,
 }: PosterCardProps) {
   const translateUi = useUiTranslations('Ui');
+  const [failedSrc, setFailedSrc] = React.useState<string>();
+  const handleError = () => {
+    if (!src) return;
+    setFailedSrc(src);
+    onImageError?.(src);
+  };
   const roundedCls =
     rounded === 'xl' ? 'rounded-xl' : rounded === 'md' ? 'rounded-md' : 'rounded-lg';
   const zoomCls = hoverZoom ? 'group-hover:scale-105 transition-transform' : '';
@@ -44,7 +54,7 @@ export function PosterCard({
         className
       )}
     >
-      {src ? (
+      {src && src !== failedSrc ? (
         useNextImage ? (
           <Image
             src={src}
@@ -52,13 +62,18 @@ export function PosterCard({
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
             className={cn('object-cover', zoomCls, imageClassName)}
+            onError={handleError}
           />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img
+            ref={(image) => {
+              if (image?.complete && image.naturalWidth === 0) handleError();
+            }}
             src={src}
             alt={alt}
             className={cn('h-full w-full object-cover', zoomCls, imageClassName)}
+            onError={handleError}
           />
         )
       ) : (

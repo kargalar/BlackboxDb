@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Clapperboard,
   Tv2,
@@ -81,6 +82,7 @@ export function DetailedMetrics({
   mostActiveMonth: { month: string; count: number };
   t: any;
 }) {
+  const tCards = useTranslations('ProfileStatsTab.cards');
   const activeRate = totalDays > 0 ? ((activeDaysCount / totalDays) * 100).toFixed(1) : '0';
 
   return (
@@ -109,7 +111,7 @@ export function DetailedMetrics({
           {t('longestStreak')}
         </div>
         <div className="text-xl font-bold text-white">{longestStreak}</div>
-        <div className="text-[11px] text-amber-300/70">{t('daysCount', { count: longestStreak })}</div>
+        <div className="text-[11px] text-amber-300/70">{tCards('days', { count: longestStreak })}</div>
       </div>
 
       <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3 space-y-1">

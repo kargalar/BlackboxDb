@@ -6,7 +6,7 @@ import { formattingLocale } from '@/i18n/locales';
 import { useTranslations as useUiTranslations } from 'next-intl';
 
 import { useEffect, useMemo, useState } from 'react';
-import Image from 'next/image';
+import PosterCard from '@/components/atoms/PosterCard';
 import type { BookPublication } from '@/types/unified-content';
 import { BookOpen, Tablet, Headphones, Sparkles, Check, Building2, User } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -156,23 +156,20 @@ export default function ContentBookPublications({
             >
               <div className="p-4 flex gap-4">
                 {/* Kapak Görseli */}
-                <div className="w-24 aspect-[2/3] rounded-xl overflow-hidden bg-white/5 flex-shrink-0 border border-white/10 shadow-md relative group">
-                  {publication.coverUrl ? (
-                    <Image
-                      src={publication.coverUrl}
-                      alt={publication.title || translateUi("kitap_kapagi_4128e39")}
-                      fill
-                      sizes="96px"
-                      unoptimized
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  ) : (
+                <PosterCard
+                  src={publication.coverUrl}
+                  alt={publication.title || translateUi("kitap_kapagi_4128e39")}
+                  rounded="xl"
+                  className="group w-24 flex-shrink-0 border-white/10 bg-white/5 shadow-md dark:border-white/10 dark:bg-white/5"
+                  imageClassName="duration-300"
+                  useNextImage={false}
+                  fallback={
                     <div className="w-full h-full flex flex-col items-center justify-center text-xs text-white/30 p-2 text-center">
                       <BookOpen className="w-6 h-6 mb-1 opacity-40" />
                       <span>{translateUi("kapak_yok_1e7d66e")}</span>
                     </div>
-                  )}
-                </div>
+                  }
+                />
 
                 {/* Edisyon Detayları */}
                 <div className="min-w-0 flex-1 flex flex-col justify-between">

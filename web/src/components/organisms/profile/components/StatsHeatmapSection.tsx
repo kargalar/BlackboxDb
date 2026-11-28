@@ -37,8 +37,8 @@ export function StatsHeatmapSection({
   const locale = formattingLocale(useLocale());
   const isCompact = variant === 'compact';
 
-  const MONTH_LABELS = t.raw('months') as string[];
-  const DAY_LABELS = t.raw('days') as string[];
+  const monthLabels = useMemo(() => Array.from({ length: 12 }, (_, i) => t(`months.${i}`)), [t]);
+  const dayLabels = Array.from({ length: 7 }, (_, i) => t(`days.${i}`));
 
   const fallbackYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(fallbackYear);
@@ -177,10 +177,10 @@ export function StatsHeatmapSection({
     const maxVal = Math.max(...monthlyCounts);
     const maxIdx = monthlyCounts.indexOf(maxVal);
     return {
-      month: MONTH_LABELS[maxIdx] ?? '',
+      month: monthLabels[maxIdx] ?? '',
       count: maxVal,
     };
-  }, [monthlyCounts, MONTH_LABELS]);
+  }, [monthlyCounts, monthLabels]);
 
   // Active days count
   const activeDaysCount = useMemo(() => {
@@ -228,12 +228,12 @@ export function StatsHeatmapSection({
       if (!firstFilledDay) return;
       const m = new Date(firstFilledDay).getMonth();
       if (m !== lastMonth) {
-        positions.push({ label: MONTH_LABELS[m] ?? '', col: colIdx });
+        positions.push({ label: monthLabels[m] ?? '', col: colIdx });
         lastMonth = m;
       }
     });
     return positions;
-  }, [weeks, MONTH_LABELS]);
+  }, [weeks, monthLabels]);
 
   // Selected day items for inspector
   const selectedDayItems = useMemo(() => {
@@ -304,7 +304,7 @@ export function StatsHeatmapSection({
         <HeatmapGrid
           weeks={weeks}
           monthPositions={monthPositions}
-          dayLabels={DAY_LABELS}
+          dayLabels={dayLabels}
           heatmap={heatmap}
           selectedDay={selectedDay}
           onSelectDay={handleSelectDay}
@@ -335,7 +335,7 @@ export function StatsHeatmapSection({
         {!isCompact && (
           <MonthlyDistributionChart
             monthlyCounts={monthlyCounts}
-            monthLabels={MONTH_LABELS}
+            monthLabels={monthLabels}
             title={t('monthlyDistribution')}
           />
         )}

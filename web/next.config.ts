@@ -27,6 +27,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'res.cloudinary.com' },
       { protocol: 'https', hostname: 'books.googleusercontent.com' },
       { protocol: 'https', hostname: 'covers.openlibrary.org' },
+      { protocol: 'https', hostname: 'images.isbndb.com', pathname: '/covers/**' },
       { protocol: 'http', hostname: 'localhost', port: '4000' },
       { protocol: 'http', hostname: '127.0.0.1', port: '4000' },
     ],

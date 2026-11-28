@@ -298,6 +298,12 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
     ? selectedTab
     : getDefaultTab();
   const [isPosterModalOpen, setIsPosterModalOpen] = React.useState(false);
+  const [failedPosterUrl, setFailedPosterUrl] = React.useState<string>();
+  const posterUrl = imageUrl === failedPosterUrl ? null : imageUrl;
+  const handlePosterError = () => {
+    setFailedPosterUrl(imageUrl);
+    setIsPosterModalOpen(false);
+  };
   const [isTrailerModalOpen, setIsTrailerModalOpen] = React.useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = React.useState(false);
 
@@ -335,18 +341,19 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
         <div className="content-detail-layout flex flex-col lg:flex-row gap-8 lg:gap-12">
           {/* Poster */}
           <div className="content-detail-poster flex-shrink-0">
-            {imageUrl ? (
+            {posterUrl ? (
               <div
                 className="cursor-pointer group relative inline-block"
                 onClick={() => setIsPosterModalOpen(true)}
               >
                 <Image
-                  src={imageUrl}
+                  src={posterUrl}
                   alt={title}
                   width={300}
                   height={450}
                   className="rounded-2xl shadow-2xl transition-transform duration-300 group-hover:scale-[1.02]"
                   priority
+                  onError={handlePosterError}
                 />
                 {isConsumed && userConsumeCount && userConsumeCount > 1 ? (
                   <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md rounded-full px-2.5 py-1 flex items-center justify-center border border-white/20 shadow-[0_0_15px_rgba(0,0,0,0.5)] z-10">
@@ -831,19 +838,20 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
       </div>
 
       {/* Poster Modal */}
-      {isPosterModalOpen && imageUrl && (
+      {isPosterModalOpen && posterUrl && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm cursor-pointer"
           onClick={() => setIsPosterModalOpen(false)}
         >
           <div className="relative max-w-4xl max-h-[90vh] p-4">
             <Image
-              src={imageUrl}
+              src={posterUrl}
               alt={title}
               width={600}
               height={900}
               className="max-h-[85vh] w-auto rounded-2xl shadow-2xl object-contain"
               priority
+              onError={() => setIsPosterModalOpen(false)}
             />
           </div>
         </div>

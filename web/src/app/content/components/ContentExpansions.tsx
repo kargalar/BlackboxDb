@@ -342,7 +342,9 @@ export default function ContentExpansions({
                       fill
                       sizes="150px"
                       unoptimized
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className={`w-full h-full transition-transform duration-500 ${
+                        boardGame ? 'object-contain' : 'object-cover group-hover:scale-105'
+                      }`}
                     />
                   ) : (
                     /* Gray background with title only */
