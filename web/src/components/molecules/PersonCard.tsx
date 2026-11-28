@@ -30,11 +30,9 @@ export const PersonCard: React.FC<PersonCardProps> = ({ person }) => {
               <UserIcon className="w-16 h-16 opacity-50" />
             </div>
           )}
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-black/90 opacity-80 group-hover:opacity-100 transition-opacity" />
         </div>
 
-        <div className="p-4 flex-1 flex flex-col justify-end z-10 -mt-16 bg-black">
+        <div className="p-4 flex-1 flex flex-col justify-end bg-black">
           <h3 className="text-lg font-bold text-white mb-1 line-clamp-1 group-hover:text-amber-400 transition-colors">
             {person.name}
           </h3>
