@@ -96,6 +96,7 @@ export const GET_CONTENT_BY_ID = gql`
       id
       title
       originalTitle
+      translations { language title description }
       alternativeTitles
       tmdbId
       igdbId

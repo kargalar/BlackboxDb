@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -37,15 +39,12 @@ import {
   type NotificationType,
 } from '@/services/graphql/notificationService';
 import { refreshNotificationBadge } from '@/features/notifications/hooks/useUnreadNotificationsCount';
-import { useTranslations, useFormatter } from 'next-intl';
+import { useTranslations } from 'next-intl';
+import { useRelativeTime } from '@/i18n/use-relative-time';
 
 const EMPTY_NOTIFICATIONS: Notification[] = [];
 
 /* ─── Relative time ─── */
-function timeAgo(dateStr: string, format: any, now: Date): string {
-  return format.relativeTime(new Date(dateStr), now);
-}
-
 /* ─── Notification type → icon + colour ─── */
 type IconStyle = { icon: React.ReactNode; bg: string };
 
@@ -128,10 +127,11 @@ function getNotificationLabel(typeId: number, t: any): string {
 }
 
 export default function NotificationsPage() {
+  const translateUi = useUiTranslations('Ui');
   const { user } = useAuth();
   const router = useRouter();
   const t = useTranslations('Notifications');
-  const format = useFormatter();
+  const formatRelativeTime = useRelativeTime();
   const translateNotification: NotificationTranslator = (key, values) => t(key, values as never);
   const [notificationState, setNotificationState] = useState<{
     userId: string | null;
@@ -358,7 +358,7 @@ export default function NotificationsPage() {
                     <div className="h-11 w-11 overflow-hidden rounded-full ring-2 ring-gray-800/80">
                       <PosterCard
                         src={n.actor?.picturePath ?? undefined}
-                        alt={n.actor?.username ? `${n.actor.username} avatar` : t('userAvatar')}
+                        alt={n.actor?.username ? translateUi("value1_avatar_e729f5c", { value1: String(n.actor.username) }) : t('userAvatar')}
                         aspectClassName="aspect-square"
                         hoverZoom={false}
                         useNextImage={false}
@@ -390,7 +390,7 @@ export default function NotificationsPage() {
                       </span>
                       <span className="text-[10px] text-gray-600">·</span>
                       <span className="text-[10px] text-gray-500">
-                        {timeAgo(n.createdAt, format, now)}
+                        {formatRelativeTime(n.createdAt, now)}
                       </span>
                     </div>
 

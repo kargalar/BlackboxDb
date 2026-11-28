@@ -43,6 +43,8 @@
     "script:backfill-content-franchises": "tsx src/scripts/backfillContentFranchises.ts",
     "script:backfill-game-platforms": "tsx src/scripts/backfillGamePlatforms.ts",
     "script:backfill-content-status": "tsx src/scripts/backfillContentStatus.ts",
+    "script:backfill-content-translations": "tsx src/scripts/backfillContentTranslations.ts",
+    "script:seed-catalog-translations": "tsx src/scripts/seedCatalogTranslations.ts",
     "script:backfill-movie-tv-studios": "tsx src/scripts/backfillMovieTvStudios.ts",
     "script:backfill-game-engines": "tsx src/scripts/backfillGameEngines.ts",
     "db:verify-search": "tsx scripts/verify-content-search.ts"

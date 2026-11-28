@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -18,7 +20,7 @@ import {
 } from 'lucide-react';
 import { getPosterUrl } from '@/lib/image-utils';
 import { useRouter } from 'next/navigation';
-import { formatRelativeTime } from '@/lib/date-utils';
+import { useRelativeTime } from '@/i18n/use-relative-time';
 import { useHorizontalDragScroll } from '@/hooks/useHorizontalDragScroll';
 
 const GET_POPULAR_REVIEWS = gql`
@@ -137,6 +139,7 @@ export default function PopularReviewsSection({
   layout = 'carousel',
   showViewAll = true,
 }: PopularReviewsSectionProps) {
+  const translateUi = useUiTranslations('Ui');
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsByType, setReviewsByType] = useState<Record<number, Review[]>>({});
   const [loading, setLoading] = useState(true);
@@ -260,8 +263,8 @@ export default function PopularReviewsSection({
       <section className="space-y-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-xl font-bold">⭐ Popular Reviews</h2>
-            <p className="text-sm text-white/50">Most liked reviews by content types</p>
+            <h2 className="text-xl font-bold">{translateUi("popular_reviews_67bdf2a")}</h2>
+            <p className="text-sm text-white/50">{translateUi("most_liked_reviews_by_content_types_f48c368")}</p>
           </div>
           <button
             onClick={() => setTimeRangeIndex((prev) => (prev + 1) % TIME_RANGES.length)}
@@ -286,11 +289,11 @@ export default function PopularReviewsSection({
                   href={`/discussions?type=reviews&contentType=${type.slug}` as any}
                   className="text-xs text-white/40 hover:text-white/70"
                 >
-                  See All
+                  {translateUi("see_all_8196e42")}
                 </Link>
               </div>
               {loading ? (
-                <div className="glass-card p-4 text-sm text-white/60">Loading reviews...</div>
+                <div className="glass-card p-4 text-sm text-white/60">{translateUi("loading_reviews_5da4417")}</div>
               ) : (
                 <div className="flex gap-4 overflow-x-auto pb-2 pr-1 scrollbar-hide">
                   {typeReviews.map((review) => (
@@ -318,8 +321,8 @@ export default function PopularReviewsSection({
     <section className="space-y-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 className="text-xl font-bold">⭐ Popular Reviews</h2>
-          <p className="text-sm text-white/50">Most liked reviews</p>
+          <h2 className="text-xl font-bold">{translateUi("popular_reviews_67bdf2a")}</h2>
+          <p className="text-sm text-white/50">{translateUi("most_liked_reviews_69def13")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {layout === 'carousel' && reviews.length > 0 && (
@@ -328,8 +331,8 @@ export default function PopularReviewsSection({
                 type="button"
                 onClick={() => scrollReviews('left')}
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
-                aria-label="Scroll left"
-                title="Scroll left"
+                aria-label={translateUi("scroll_left_2c9e5a6")}
+                title={translateUi("scroll_left_2c9e5a6")}
               >
                 <ChevronLeft size={16} />
               </button>
@@ -337,8 +340,8 @@ export default function PopularReviewsSection({
                 type="button"
                 onClick={() => scrollReviews('right')}
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
-                aria-label="Scroll right"
-                title="Scroll right"
+                aria-label={translateUi("scroll_right_2994b49")}
+                title={translateUi("scroll_right_2994b49")}
               >
                 <ChevronRight size={16} />
               </button>
@@ -371,7 +374,7 @@ export default function PopularReviewsSection({
           </button>
           {showViewAll && (
             <Link href="/discussions?type=reviews" className="btn-secondary text-sm px-4 py-2">
-              See All
+              {translateUi("see_all_8196e42")}
             </Link>
           )}
         </div>
@@ -381,14 +384,14 @@ export default function PopularReviewsSection({
         <div className="glass-card p-6">
           <div className="flex items-center gap-3">
             <div className="w-5 h-5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-white/60">Loading reviews...</p>
+            <p className="text-white/60">{translateUi("loading_reviews_5da4417")}</p>
           </div>
         </div>
       ) : reviews.length === 0 ? (
         <div className="glass-card p-6 text-center text-white/50">
           {selectedFilter.id !== 0
-            ? `No reviews found in this content type.`
-            : `No reviews found in this time period.`}
+            ? translateUi("no_reviews_found_in_this_content_e258959")
+            : translateUi("no_reviews_found_in_this_time_50bb954")}
         </div>
       ) : layout === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -418,6 +421,7 @@ export default function PopularReviewsSection({
 }
 
 function ReviewViewAllCard() {
+  const translateUi = useUiTranslations('Ui');
   return (
     <Link
       href={'/discussions?type=reviews' as any}
@@ -428,13 +432,15 @@ function ReviewViewAllCard() {
         <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-white/[0.05] text-lg font-black">
           +
         </span>
-        <span className="text-sm font-semibold leading-6">See All</span>
+        <span className="text-sm font-semibold leading-6">{translateUi("see_all_8196e42")}</span>
       </div>
     </Link>
   );
 }
 
 function ReviewCard({ review }: { review: Review }) {
+  const formatRelativeTime = useRelativeTime();
+  const translateUi = useUiTranslations('Ui');
   const router = useRouter();
   const [imageError, setImageError] = useState(false);
   const posterUrl = review.content?.posterUrl
@@ -507,7 +513,7 @@ function ReviewCard({ review }: { review: Review }) {
                 {review.author.username}
               </span>
             </Link>
-            <span className="text-xs text-white/40 shrink-0">&bull;</span>
+            <span className="text-xs text-white/40 shrink-0">{translateUi("bull_3bd1c9c")}</span>
             <span className="text-xs text-white/40 shrink-0">
               {formatRelativeTime(review.createdAt)}
             </span>
@@ -526,7 +532,7 @@ function ReviewCard({ review }: { review: Review }) {
           {/* Review text */}
           <div className="flex gap-2 text-xs text-white/70 italic mt-auto">
             <MessageSquare size={13} className="text-violet-400 flex-shrink-0 mt-0.5" />
-            <p className="line-clamp-2 leading-relaxed">&quot;{review.description}&quot;</p>
+            <p className="line-clamp-2 leading-relaxed">{translateUi("quot_e2bbf20")}{review.description}{translateUi("quot_e2bbf20")}</p>
           </div>
         </div>
       </div>

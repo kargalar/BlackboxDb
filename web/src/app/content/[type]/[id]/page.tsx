@@ -1,5 +1,8 @@
 'use client';
 
+import { formatLanguageName } from '@/i18n/language-names';
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -66,6 +69,7 @@ interface ContentStats {
 }
 
 export default function ContentDetailPage() {
+  const translateUi = useUiTranslations('Ui');
   const params = useParams();
   const type = params.type as CatalogContentType;
   const id = params.id as string;
@@ -772,7 +776,7 @@ export default function ContentDetailPage() {
       } catch (e: any) {
         if (!isMounted) return;
         console.error('❌ [ContentDetail] Error loading content:', e);
-        setError(e.message || 'Failed to load content');
+        setError(e.message || translateUi("failed_to_load_content_e887593"));
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -1235,15 +1239,7 @@ export default function ContentDetailPage() {
             if (!dateString) return '';
             return new Intl.DateTimeFormat(locale).format(new Date(dateString));
           }}
-          getLanguageName={(code: string) => {
-            const languages: Record<string, string> = {
-              en: t('languages.en'),
-              tr: t('languages.tr'),
-            };
-            return (
-              languages[code.toLowerCase()] || (/^[a-z]{2,3}$/.test(code) ? code.toUpperCase() : code)
-            );
-          }}
+          getLanguageName={(code: string) => formatLanguageName(code, locale)}
           hideInlineVideos={true}
         />
       </div>

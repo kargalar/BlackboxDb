@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { Suspense } from 'react';
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
@@ -75,14 +77,16 @@ const GET_MY_ENTRY = gql`
 `;
 
 export default function LeaderboardPage() {
+  const translateUi = useUiTranslations('Ui');
   return (
-    <Suspense fallback={<div className="p-6 text-white">Yükleniyor...</div>}>
+    <Suspense fallback={<div className="p-6 text-white">{translateUi("yukleniyor_317109f")}</div>}>
       <LeaderboardPageInner />
     </Suspense>
   );
 }
 
 function LeaderboardPageInner() {
+  const translateUi = useUiTranslations('Ui');
   const { user } = useAuth();
 
   const selectedType = 1;
@@ -127,9 +131,9 @@ function LeaderboardPageInner() {
           <div>
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
               <Trophy className="w-8 h-8 text-yellow-500" />
-              Liderlik Tablosu
+              {translateUi("liderlik_tablosu_134b746")}
             </h1>
-            <p className="text-gray-400 mt-1">Yalnızca günün quizi puanları sıralanır</p>
+            <p className="text-gray-400 mt-1">{translateUi("yalnizca_gunun_quizi_puanlari_siralanir_f8514b9")}</p>
           </div>
         </div>
 
@@ -138,7 +142,7 @@ function LeaderboardPageInner() {
           <div className="mb-8 p-6 bg-white/5.02] rounded-2xl border border-white/10">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
               <User className="w-5 h-5" />
-              Senin Sıralamanız
+              {translateUi("senin_siralamaniz_a75b832")}
             </h3>
 
             <div className="flex items-center gap-6">
@@ -177,11 +181,11 @@ function LeaderboardPageInner() {
                 <div className="flex gap-4 mt-2 text-sm text-gray-400">
                   <span className="flex items-center gap-1">
                     <Target className="w-4 h-4" />
-                    {myEntry.totalQuizzes} quiz
+                    {myEntry.totalQuizzes} {" " + translateUi("quiz_d501d3e")}
                   </span>
                   <span className="flex items-center gap-1">
                     <Percent className="w-4 h-4" />
-                    {Math.round((myEntry.correctAnswers / myEntry.totalQuestions) * 100)}% doğru
+                    {Math.round((myEntry.correctAnswers / myEntry.totalQuestions) * 100)}{translateUi("dogru_ad60a57")}
                   </span>
                 </div>
               </div>
@@ -191,8 +195,8 @@ function LeaderboardPageInner() {
                 <div className="text-3xl font-bold text-white">
                   {myEntry.totalScore.toLocaleString()}
                 </div>
-                <div className="text-sm text-gray-400">toplam puan</div>
-                <div className="text-sm text-green-400 mt-1">En iyi: {myEntry.bestScore}</div>
+                <div className="text-sm text-gray-400">{translateUi("toplam_puan_866209b")}</div>
+                <div className="text-sm text-green-400 mt-1">{translateUi("en_iyi_f3ebea3") + " "} {myEntry.bestScore}</div>
               </div>
             </div>
           </div>
@@ -203,10 +207,10 @@ function LeaderboardPageInner() {
           {/* Table Header */}
           <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gray-700/50 text-sm font-semibold text-gray-400">
             <div className="col-span-1">#</div>
-            <div className="col-span-5">Oyuncu</div>
-            <div className="col-span-2 text-center">Quiz</div>
-            <div className="col-span-2 text-center">Başarı</div>
-            <div className="col-span-2 text-right">Puan</div>
+            <div className="col-span-5">{translateUi("oyuncu_57674cb")}</div>
+            <div className="col-span-2 text-center">{translateUi("quiz_25c86f6")}</div>
+            <div className="col-span-2 text-center">{translateUi("basari_9108a82")}</div>
+            <div className="col-span-2 text-right">{translateUi("puan_cb061dd")}</div>
           </div>
 
           {/* Loading */}
@@ -220,12 +224,12 @@ function LeaderboardPageInner() {
           {!loading && leaderboard.length === 0 && (
             <div className="text-center py-12">
               <Trophy className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-400 text-lg">Henüz kimse oynamadı</p>
+              <p className="text-gray-400 text-lg">{translateUi("henuz_kimse_oynamadi_dd22f15")}</p>
               <Link
                 href="/quiz/play?type=1&daily=1"
                 className="inline-block mt-4 px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold"
               >
-                İlk Sen Oyna!
+                {translateUi("ilk_sen_oyna_60b6656")}
               </Link>
             </div>
           )}
@@ -276,11 +280,11 @@ function LeaderboardPageInner() {
                         {entry.username}
                         {isCurrentUser && (
                           <span className="text-xs bg-gray-600 text-white px-2 py-0.5 rounded-full">
-                            Sen
+                            {translateUi("sen_f422ba8")}
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-gray-500">En iyi: {entry.bestScore}</div>
+                      <div className="text-xs text-gray-500">{translateUi("en_iyi_f3ebea3") + " "} {entry.bestScore}</div>
                     </div>
                   </Link>
 
@@ -318,7 +322,7 @@ function LeaderboardPageInner() {
             href="/quiz/play?type=1&daily=1"
             className="inline-flex items-center gap-2 px-8 py-4 bg-gray-700 hover:bg-gray-600 hover: text-white text-lg font-bold rounded-xl transition-all"
           >
-            🎬 Günün Quizine Başla
+            {translateUi("gunun_quizine_basla_8fb6d6e")}
           </Link>
         </div>
       </div>

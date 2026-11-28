@@ -28,13 +28,14 @@ async function main() {
           id: true,
           totalRatingScore: true,
           totalRatingVotes: true,
+          tmdbRating: true,
           createdAt: true,
         },
       });
       const average = (content: (typeof candidates)[number]) =>
         content.totalRatingVotes > 0
           ? Number(content.totalRatingScore) / content.totalRatingVotes
-          : 0;
+          : Number(content.tmdbRating ?? 0);
       let cases = 0;
       const measurements: Record<string, unknown>[] = [];
       for (const sortOrder of ["asc", "desc"]) {
@@ -173,11 +174,16 @@ async function main() {
       (SIMILARITY(c.title, ${searchQuery}) > 0.1 OR SIMILARITY(c.description, ${searchQuery}) > 0.05
         OR c.title ILIKE ${`%${searchQuery}%`} OR c.original_title ILIKE ${`%${searchQuery}%`}
         OR EXISTS (SELECT 1 FROM unnest(c.alternative_titles) AS alt(title) WHERE alt.title ILIKE ${`%${searchQuery}%`})
-        OR c.isbn ILIKE ${`%${searchQuery}%`} OR EXISTS (SELECT 1 FROM book_publication bp WHERE bp.content_id = c.id AND bp.isbn ILIKE ${`%${searchQuery}%`}))
+        OR EXISTS (SELECT 1 FROM content_translation ct WHERE ct.content_id = c.id AND ct.title ILIKE ${`%${searchQuery}%`})
+        OR c.isbn ILIKE ${`%${searchQuery}%`} OR EXISTS (
+          SELECT 1 FROM book_publication bp WHERE bp.content_id = c.id AND (bp.isbn ILIKE ${`%${searchQuery}%`} OR bp.title ILIKE ${`%${searchQuery}%`})
+        ))
       ORDER BY GREATEST(
         SIMILARITY(c.title, ${searchQuery}),
         SIMILARITY(c.original_title, ${searchQuery}) * 0.9,
         (SELECT MAX(SIMILARITY(alt.title, ${searchQuery})) FROM unnest(c.alternative_titles) AS alt(title)) * 0.85,
+        (SELECT MAX(SIMILARITY(ct.title, ${searchQuery})) FROM content_translation ct WHERE ct.content_id = c.id),
+        (SELECT MAX(SIMILARITY(bp.title, ${searchQuery})) FROM book_publication bp WHERE bp.content_id = c.id),
         SIMILARITY(c.description, ${searchQuery}) * 0.5
       ) DESC, c.id ASC
     `);
@@ -193,6 +199,21 @@ async function main() {
         relevance.slice(0, 20).map((content) => content.id),
       );
       cases++;
+
+      const translated = await transaction.contentTranslation.findFirst({
+        where: { language: "tr", title: "Dövüş Kulübü", content: { isDeleted: false } },
+        select: { contentId: true, title: true },
+      });
+      if (translated?.title) {
+        const localizedSearch = await getContentSearchPage(prisma, {
+          where: { isDeleted: false },
+          searchQuery: translated.title,
+          limit: 5,
+          offset: 0,
+        });
+        assert.equal(localizedSearch.ids[0], translated.contentId);
+        cases++;
+      }
 
       const activeUser = await transaction.userContentLog.groupBy({
         by: ["userId"],

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { use } from 'react';
 import { useQuery, useMutation } from '@apollo/client/react';
 import {
@@ -26,6 +28,7 @@ interface ListsPageProps {
 const ITEMS_PER_PAGE = 12;
 
 export default function ListsPage({ params }: ListsPageProps) {
+  const translateUi = useUiTranslations('Ui');
   const { type, id } = use(params);
   const searchParams = useSearchParams();
   const pageParam = searchParams.get('page');
@@ -95,7 +98,7 @@ export default function ListsPage({ params }: ListsPageProps) {
           className="inline-flex items-center text-sm font-medium text-foreground hover:text-accent transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          {contentTitle} Sayfasına Dön
+          {contentTitle} {" " + translateUi("sayfasina_don_2a67383")}
         </Link>
       </div>
 
@@ -103,9 +106,9 @@ export default function ListsPage({ params }: ListsPageProps) {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
             <List className="w-6 h-6 md:w-8 md:h-8 text-accent" />
-            {contentTitle} {type !== 'person' ? 'İçeren Listeler' : 'Barındıran Listeler'}
+            {contentTitle} {type !== 'person' ? translateUi("iceren_listeler_afea370") : translateUi("barindiran_listeler_0192440")}
           </h1>
-          <p className="text-foreground/60 mt-2">Toplam {totalCount} adet liste bulundu</p>
+          <p className="text-foreground/60 mt-2">{translateUi("toplam_ae3a712") + " "} {totalCount} {" " + translateUi("adet_liste_bulundu_6457c1c")}</p>
         </div>
       </div>
 
@@ -115,12 +118,12 @@ export default function ListsPage({ params }: ListsPageProps) {
         </div>
       ) : error ? (
         <div className="text-center py-12 bg-destructive/10 text-destructive rounded-lg">
-          <p>Listeler yüklenirken bir hata oluştu.</p>
+          <p>{translateUi("listeler_yuklenirken_bir_hata_olustu_9047538")}</p>
         </div>
       ) : lists.length === 0 ? (
         <div className="text-center py-12 bg-secondary/20 rounded-lg text-foreground/60">
           <List className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>Henüz bu içeriği barındıran bir liste yok.</p>
+          <p>{translateUi("henuz_bu_icerigi_barindiran_bir_liste_bdce626")}</p>
         </div>
       ) : (
         <>

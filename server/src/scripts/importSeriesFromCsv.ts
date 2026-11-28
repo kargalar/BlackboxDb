@@ -1,3 +1,4 @@
+import { fillContentTranslations } from "../lib/contentTranslations";
 import "dotenv/config";
 import fs from "fs";
 import path from "path";
@@ -129,6 +130,8 @@ async function main() {
                     numberOfEpisodes: details.numberOfEpisodes || null,
                 }
             });
+
+            await fillContentTranslations(prisma, series.id, details.translations);
 
             // 6. Link Relations
             if (details.genres && details.genres.length > 0) {

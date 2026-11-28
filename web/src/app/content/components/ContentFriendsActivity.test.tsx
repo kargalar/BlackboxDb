@@ -14,9 +14,7 @@ const { mockUseAuth, mockQuery } = vi.hoisted(() => ({
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string, values?: Record<string, unknown>) =>
     values ? `${key}:${JSON.stringify(values)}` : key,
-  useFormatter: () => ({
-    relativeTime: () => '2d ago',
-  }),
+  useLocale: () => 'en',
 }));
 
 vi.mock('next/image', () => ({

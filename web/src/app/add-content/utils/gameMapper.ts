@@ -50,6 +50,7 @@ export function mapGameToFormData(detail: AutoFillGameDetailData): Partial<AddCo
   const mapped: Partial<AddContentFormData> = {
     title: detail.title,
     originalTitle: detail.originalTitle || '',
+    translations: detail.translations,
     description: cleanDescription,
     releaseDate: detail.releaseDate || '',
     ...(detail.releases?.length ? { releases: mergeContentReleases(detail.releases) } : {}),

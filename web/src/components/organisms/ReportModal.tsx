@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import { useMutation } from '@apollo/client/react';
 import { CREATE_REPORT } from '@/services/graphql/report';
@@ -26,6 +27,7 @@ export default function ReportModal({
   targetType,
   targetTitle,
 }: ReportModalProps) {
+  const translateUi = useUiTranslations('Ui');
   const [selectedReason, setSelectedReason] = useState(REPORT_REASONS[0]);
   const [customReason, setCustomReason] = useState('');
   const [createReport, { loading }] = useMutation(CREATE_REPORT);
@@ -46,14 +48,14 @@ export default function ReportModal({
         },
       });
       alert(
-        'Raporunuz başarıyla gönderildi. İnceleme ekiplerimiz en kısa sürede değerlendirecektir.'
+        translateUi("raporunuz_basariyla_gonderildi_inceleme_ekiplerimiz_en_b4b43d1")
       );
       onClose();
       setSelectedReason(REPORT_REASONS[0]);
       setCustomReason('');
     } catch (error) {
       console.error('Rapor gönderilirken hata oluştu:', error);
-      alert('Raporunuz gönderilirken bir hata oluştu. Lütfen tekrar deneyin.');
+      alert(translateUi("raporunuz_gonderilirken_bir_hata_olustu_lutfen_8700d15"));
     }
   };
 
@@ -62,21 +64,20 @@ export default function ReportModal({
       <div className="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl relative">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-red-500">Raporla</h2>
+            <h2 className="text-xl font-bold text-red-500">{translateUi("raporla_36d9ae7")}</h2>
             <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
               <X className="w-6 h-6" />
             </button>
           </div>
 
           <p className="text-gray-400 text-sm mb-6">
-            <span className="font-semibold text-white">{targetTitle}</span> ile ilgili kurallarımıza
-            aykırı bir durum olduğunu düşünüyorsanız lütfen bildirin.
+            <span className="font-semibold text-white">{targetTitle}</span> {" " + translateUi("ile_ilgili_kurallarimiza_aykiri_bir_durum_296da63")}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Raporlama Nedeni
+                {translateUi("raporlama_nedeni_af63461")}
               </label>
               <div className="space-y-2">
                 {REPORT_REASONS.map((reason) => (
@@ -104,13 +105,13 @@ export default function ReportModal({
                   htmlFor="customReason"
                   className="block text-sm font-medium text-gray-300 mb-2"
                 >
-                  Lütfen detaylı açıklayın:
+                  {translateUi("lutfen_detayli_aciklayin_28b9247")}
                 </label>
                 <textarea
                   id="customReason"
                   value={customReason}
                   onChange={(e) => setCustomReason(e.target.value)}
-                  placeholder="Raporlama nedeninizi detaylı bir şekilde açıklayın..."
+                  placeholder={translateUi("raporlama_nedeninizi_detayli_bir_sekilde_aciklayin_a243edb")}
                   rows={3}
                   className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all"
                   required
@@ -125,14 +126,14 @@ export default function ReportModal({
                 disabled={loading}
                 className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
               >
-                İptal
+                {translateUi("iptal_85e2d08")}
               </button>
               <button
                 type="submit"
                 disabled={loading || (selectedReason === 'Diğer' && !customReason.trim())}
                 className="px-6 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors shadow-[0_0_15px_rgba(220,38,38,0.3)]"
               >
-                {loading ? 'Gönderiliyor...' : 'Raporla'}
+                {loading ? translateUi("gonderiliyor_6486efe") : translateUi("raporla_36d9ae7")}
               </button>
             </div>
           </form>

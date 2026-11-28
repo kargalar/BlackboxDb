@@ -103,6 +103,7 @@ export interface GameEngineInput {
 
 export const LIST_GAME_MODES = gql`
   query ListGameModes(
+    $localized: Boolean
     $limit: Int
     $offset: Int
     $search: String
@@ -117,7 +118,7 @@ export const LIST_GAME_MODES = gql`
       sortOrder: $sortOrder
     ) {
       id
-      name
+      name(localized: $localized)
       createdAt
       contentCount
     }
@@ -216,6 +217,7 @@ export interface PerspectiveInput {
 
 export const LIST_PERSPECTIVES = gql`
   query ListPerspectives(
+    $localized: Boolean
     $limit: Int
     $offset: Int
     $search: String
@@ -230,7 +232,7 @@ export const LIST_PERSPECTIVES = gql`
       sortOrder: $sortOrder
     ) {
       id
-      name
+      name(localized: $localized)
       createdAt
       contentCount
     }

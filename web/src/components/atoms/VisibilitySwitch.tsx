@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { Globe2, Lock } from 'lucide-react';
 
 interface VisibilitySwitchProps {
@@ -21,6 +23,7 @@ export default function VisibilitySwitch({
   className = '',
   iconOnly = false,
 }: VisibilitySwitchProps) {
+  const translateUi = useUiTranslations('Ui');
   const currentLabel = isPublic ? publicLabel : privateLabel;
 
   if (iconOnly) {
@@ -28,7 +31,7 @@ export default function VisibilitySwitch({
       <button
         type="button"
         aria-pressed={isPublic}
-        aria-label={`Yorum görünürlüğü: ${currentLabel}`}
+        aria-label={translateUi("yorum_gorunurlugu_value1_0df1091", { value1: String(currentLabel) })}
         title={currentLabel}
         onClick={() => onChange(!isPublic)}
         disabled={disabled}
@@ -58,7 +61,7 @@ export default function VisibilitySwitch({
         type="button"
         role="switch"
         aria-checked={isPublic}
-        aria-label={`Yorum görünürlüğü: ${currentLabel}`}
+        aria-label={translateUi("yorum_gorunurlugu_value1_0df1091", { value1: String(currentLabel) })}
         onClick={() => onChange(!isPublic)}
         disabled={disabled}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-60 ${

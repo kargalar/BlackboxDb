@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { GET_REPORTS, UPDATE_REPORT_STATUS } from '@/services/graphql/admin/adminReport';
@@ -9,6 +11,7 @@ import { CheckCircle, XCircle, AlertCircle, Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function ReportsAdminPage() {
+  const translateUi = useUiTranslations('Ui');
   const [filter, setFilter] = useState<string>('pending');
   const t = useTranslations('AdminReportsPage');
   const locale = useLocale();
@@ -27,7 +30,7 @@ export default function ReportsAdminPage() {
       refetch();
     } catch (e) {
       console.error('Failed to update report status:', e);
-      alert('Failed to update report status.');
+      alert(translateUi("failed_to_update_report_status_6ec2e87"));
     }
   };
 
@@ -38,8 +41,8 @@ export default function ReportsAdminPage() {
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
             <span className="text-3xl">🔒</span>
           </div>
-          <h1 className="text-xl font-bold mb-2">Erişim Reddedildi</h1>
-          <p className="text-white/50">Bu sayfayı görüntülemek için yetkiniz yok.</p>
+          <h1 className="text-xl font-bold mb-2">{translateUi("erisim_reddedildi_d3b426c")}</h1>
+          <p className="text-white/50">{translateUi("bu_sayfayi_goruntulemek_icin_yetkiniz_yok_3a1b980")}</p>
         </div>
       </div>
     );
@@ -63,7 +66,7 @@ export default function ReportsAdminPage() {
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Rapor Yönetimi</h1>
+        <h1 className="text-2xl font-semibold">{translateUi("rapor_yonetimi_d7d8478")}</h1>
       </div>
 
       {/* Filters */}
@@ -86,11 +89,11 @@ export default function ReportsAdminPage() {
         </div>
       ) : error ? (
         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 flex items-center justify-center text-red-400">
-          Raporlar yüklenirken bir hata oluştu: {error.message}
+          {translateUi("raporlar_yuklenirken_bir_hata_olustu_d47dccf") + " "} {error.message}
         </div>
       ) : reports.length === 0 ? (
         <div className="text-center py-12 bg-white/5 rounded-xl border border-white/10">
-          <p className="text-white/60">Bu filtreye uygun rapor bulunamadı.</p>
+          <p className="text-white/60">{translateUi("bu_filtreye_uygun_rapor_bulunamadi_182d8c5")}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -114,7 +117,7 @@ export default function ReportsAdminPage() {
                   </div>
                   <div>
                     <p className="font-medium text-white">
-                      {report.reporter?.username || 'Bilinmeyen Kullanıcı'}
+                      {report.reporter?.username || translateUi("bilinmeyen_kullanici_a5f83a8")}
                     </p>
                     <p className="text-xs text-white/40">
                       {new Intl.DateTimeFormat(locale, {
@@ -151,14 +154,14 @@ export default function ReportsAdminPage() {
                     className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white/80 rounded-lg transition-colors text-sm font-medium"
                   >
                     <XCircle className="w-4 h-4" />
-                    Reddet
+                    {translateUi("reddet_ceddb0c")}
                   </button>
                   <button
                     onClick={() => handleUpdateStatus(report.id, 'resolved')}
                     className="flex items-center gap-2 px-4 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/20 rounded-lg transition-colors text-sm font-medium"
                   >
                     <CheckCircle className="w-4 h-4" />
-                    Çözüldü
+                    {translateUi("cozuldu_79acb25")}
                   </button>
                 </div>
               )}

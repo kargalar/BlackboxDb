@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 /**
  * Shared Component: ContentActionButtons
  *
@@ -86,6 +87,7 @@ export function ContentActionButtons({
   onToggleContinuing,
   onAddToList,
 }: ContentActionButtonsProps) {
+  const translateUi = useUiTranslations('Ui');
   const sizeClass = sizeClasses[size];
   const labels = actionLabels[actionType];
   const isWatchLaterActive = Boolean(isConsumeLater || watchLater || isWatchLater);
@@ -110,7 +112,7 @@ export function ContentActionButtons({
         className={`${sizeClass.buttons} flex items-center justify-center rounded-full backdrop-blur-sm poster-action-button ${
           isFavorite ? 'bg-red-600 text-white' : inactiveButtonClass
         } transition-colors`}
-        title={isFavorite ? 'Favoriden Çıkar' : 'Favori'}
+        title={isFavorite ? translateUi("favoriden_cikar_6724382") : translateUi("favori_5321195")}
       >
         <HeartIcon className={sizeClass.icons} />
       </button>
@@ -122,7 +124,7 @@ export function ContentActionButtons({
         className={`${sizeClass.buttons} flex items-center justify-center rounded-full backdrop-blur-sm poster-action-button ${
           isWatchLaterActive ? 'poster-watch-later-active text-white' : inactiveButtonClass
         } transition-colors`}
-        title={isWatchLaterActive ? 'Sonra İzle Listesinden Çıkar' : 'Sonra İzle'}
+        title={isWatchLaterActive ? translateUi("sonra_izle_listesinden_cikar_24a2592") : translateUi("sonra_izle_c348497")}
       >
         <BookmarkIcon className={sizeClass.icons} solid={isWatchLaterActive} />
       </button>
@@ -134,7 +136,7 @@ export function ContentActionButtons({
           className={`${sizeClass.buttons} flex items-center justify-center rounded-full backdrop-blur-sm poster-action-button ${
             isInList ? 'bg-yellow-600 text-white' : inactiveButtonClass
           } transition-colors`}
-          title={isInList ? 'Listede' : 'Listeye Ekle'}
+          title={isInList ? translateUi("listede_8ad1c21") : translateUi("listeye_ekle_64facf2")}
         >
           <ListIcon className={sizeClass.icons} />
         </button>

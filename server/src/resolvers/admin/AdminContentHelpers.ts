@@ -1,3 +1,4 @@
+import { matchesLocalizedCatalogName } from "../../lib/catalogTranslations";
 import { readContentReleases } from "../../lib/contentReleases";
 import { logger } from "../../lib/logger";
 import { getImageSource } from "../../lib/imageFocus";
@@ -391,7 +392,10 @@ export async function linkGenres(
     }
     genre = await prisma.genre.findFirst({ where });
 
-    // Provider IDs are not local lookup IDs. Resolve by canonical name only.
+    if (!genre && await matchesLocalizedCatalogName(prisma, "genre", g.id, normalizedName)) {
+      const { name: _name, ...typeFilter } = where;
+      genre = await prisma.genre.findFirst({ where: { ...typeFilter, id: g.id } });
+    }
     if (!genre) {
       try {
         genre = await prisma.genre.create({
@@ -441,6 +445,12 @@ export async function linkLookups(
     let record = await (prisma as any)[modelName].findFirst({
       where: { name: { equals: normalizedName, mode: "insensitive" } },
     });
+
+    const translatedCatalogs: Record<string, string> = { mood: "mood", gameMode: "game_mode", perspective: "perspective" };
+    const catalog = translatedCatalogs[modelName];
+    if (!record && catalog && await matchesLocalizedCatalogName(prisma, catalog, item.id, normalizedName)) {
+      record = await prisma[modelName].findUnique({ where: { id: item.id } });
+    }
 
     // 3. Create if still not found (with duplicate handling)
     if (!record) {
@@ -602,6 +612,10 @@ export async function linkThemes(
           data: { name: normalizedName },
         });
       }
+    }
+
+    if (!theme && await matchesLocalizedCatalogName(prisma, "theme", item.id, item.name.trim())) {
+      theme = await prisma.theme.findUnique({ where: { id: item.id } });
     }
 
     if (!theme) {

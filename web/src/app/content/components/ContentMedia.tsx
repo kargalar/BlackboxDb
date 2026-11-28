@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import ContentScreenshots from './ContentScreenshots';
@@ -14,6 +16,7 @@ interface ContentMediaProps {
 }
 
 export default function ContentMedia({ content, isWatched, seasons }: ContentMediaProps) {
+  const translateUi = useUiTranslations('Ui');
   const tHeader = useTranslations('ContentHeader');
   const tScreenshots = useTranslations('ContentScreenshots');
 
@@ -127,7 +130,7 @@ export default function ContentMedia({ content, isWatched, seasons }: ContentMed
               }`}
             >
               <ImageIcon className="w-4 h-4" />
-              Posterler ({posters.length})
+              {translateUi("posterler_f0c13b8")}{posters.length})
             </button>
           )}
           {hasBackdrops && (
@@ -140,7 +143,7 @@ export default function ContentMedia({ content, isWatched, seasons }: ContentMed
               }`}
             >
               <ImageIcon className="w-4 h-4" />
-              Arkaplanlar ({backdrops.length})
+              {translateUi("arkaplanlar_445d112")}{backdrops.length})
             </button>
           )}
         </div>

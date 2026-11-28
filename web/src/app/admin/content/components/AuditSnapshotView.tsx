@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState } from 'react';
 
 const FIELD_LABELS: Record<string, string> = {
@@ -63,6 +65,7 @@ function redactImageUrls(value: unknown, key = ''): unknown {
 }
 
 function AuditImagePreview({ image, deleted }: { image: AuditImage; deleted: boolean }) {
+  const translateUi = useUiTranslations('Ui');
   const [failed, setFailed] = useState(false);
 
   return (
@@ -77,13 +80,13 @@ function AuditImagePreview({ image, deleted }: { image: AuditImage; deleted: boo
             onError={() => setFailed(true)}
           />
         ) : (
-          <span className="px-2 text-center text-xs text-white/40">Görsel yüklenemiyor</span>
+          <span className="px-2 text-center text-xs text-white/40">{translateUi("gorsel_yuklenemiyor_a9e5412")}</span>
         )}
       </div>
       <p className="truncate text-[11px] text-white/50" title={image.path}>
         {formatAuditFieldLabel(image.path.split('.').at(-1) || image.path)}
       </p>
-      {deleted && <p className="mt-1 text-xs font-medium text-red-300">Bu düzenlemede silindi</p>}
+      {deleted && <p className="mt-1 text-xs font-medium text-red-300">{translateUi("bu_duzenlemede_silindi_75e2f73")}</p>}
     </div>
   );
 }

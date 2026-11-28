@@ -70,6 +70,9 @@ export class AppUser {
   showSensitiveContent?: boolean;
 
   @Field(() => Boolean, { nullable: true })
+  showOriginalTitles?: boolean;
+
+  @Field(() => Boolean, { nullable: true })
   notifyOnFollows?: boolean;
 
   @Field(() => Boolean, { nullable: true })

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -10,6 +12,7 @@ import { SearchIcon } from '@/components/atoms/icons/SearchIcon';
 import NotificationsMenu from '@/components/organisms/NotificationsMenu';
 
 export default function Header() {
+  const translateUi = useUiTranslations('Ui');
   const { user, loading, signInWithGoogle, signOut, isPrivileged } = useAuth();
   const router = useRouter();
   const [isSigningIn, setIsSigningIn] = useState(false);
@@ -123,31 +126,31 @@ export default function Header() {
               href="/explore/movie"
               className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
             >
-              Movies
+              {translateUi("movies_d301bc4")}
             </Link>
             <Link
               href="/explore/tv"
               className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
             >
-              TV Shows
+              {translateUi("tv_shows_09bb08e")}
             </Link>
             <Link
               href="/explore/game"
               className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
             >
-              Games
+              {translateUi("games_398ed32")}
             </Link>
             <Link
               href="/explore/book"
               className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
             >
-              Books
+              {translateUi("books_4a7fdd8")}
             </Link>
             <Link
               href="/quiz"
               className="text-sm font-medium text-yellow-500 hover:text-yellow-400 transition-colors flex items-center gap-1"
             >
-              🎯 Quiz
+              {translateUi("quiz_baed8ff")}
             </Link>
           </nav>
 
@@ -160,7 +163,7 @@ export default function Header() {
               <Link
                 href="/add-content"
                 className="rounded-full bg-green-600 hover:bg-green-700 p-2 text-white transition-colors"
-                title="Add Content"
+                title={translateUi("add_content_4cca03c")}
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -181,17 +184,17 @@ export default function Header() {
                   className="px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   defaultValue="movie"
                 >
-                  <option value="movie">Movie</option>
-                  <option value="tv">TV Show</option>
-                  <option value="game">Game</option>
-                  <option value="book">Book</option>
+                  <option value="movie">{translateUi("movie_0e65bd9")}</option>
+                  <option value="tv">{translateUi("tv_show_25e94eb")}</option>
+                  <option value="game">{translateUi("game_e3e8284")}</option>
+                  <option value="book">{translateUi("book_f69f233")}</option>
                 </select>
                 <input
                   id="search-input"
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search..."
+                  placeholder={translateUi("search_6d7a30a")}
                   className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                   autoComplete="off"
                 />
@@ -242,19 +245,19 @@ export default function Header() {
                     href="/admin"
                     className="rounded-lg px-3 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors"
                   >
-                    Admin
+                    {translateUi("admin_4e7afeb")}
                   </Link>
                 )}
                 <Link
                   href={hasUsername ? (`/profile/${user!.username}` as const) : '/profile'}
                   className="rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
                 >
-                  {user?.username ?? 'Profile'}
+                  {user?.username ?? translateUi("profile_ff4fc02")}
                 </Link>
                 <Link
                   href="/settings"
                   className="rounded-full p-2 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
-                  title="Settings"
+                  title={translateUi("settings_c7f73bb")}
                 >
                   <SettingsIcon className="h-5 w-5" />
                 </Link>
@@ -262,7 +265,7 @@ export default function Header() {
                   onClick={handleSignOut}
                   className="text-sm font-medium text-gray-700 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400 transition-colors"
                 >
-                  Logout
+                  {translateUi("logout_e43d612")}
                 </button>
               </div>
             ) : (
@@ -271,13 +274,13 @@ export default function Header() {
                   href="/auth/login"
                   className="text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
                 >
-                  Login
+                  {translateUi("login_4e5a289")}
                 </Link>
                 <Link
                   href="/auth/register"
                   className="rounded-lg bg-gray-700 dark:bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 dark:hover:bg-gray-500 transition-colors"
                 >
-                  Sign Up
+                  {translateUi("sign_up_2ba4023")}
                 </Link>
               </>
             )}

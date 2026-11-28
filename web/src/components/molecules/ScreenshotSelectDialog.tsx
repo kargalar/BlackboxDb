@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { useState } from 'react';
 import { X, Monitor, Check } from 'lucide-react';
 import { createPortal } from 'react-dom';
@@ -30,6 +32,7 @@ export default function ScreenshotSelectDialog({
   screenshots,
   title = 'Ekran Görüntüsünden Seç',
 }: ScreenshotSelectDialogProps) {
+  const translateUi = useUiTranslations('Ui');
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [mounted, setMounted] = React.useState(false);
 
@@ -56,7 +59,7 @@ export default function ScreenshotSelectDialog({
             <div>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Arkaplan olarak kullanmak istediğiniz ekran görüntüsünü seçin
+                {translateUi("arkaplan_olarak_kullanmak_istediginiz_ekran_goruntusunu_849f402")}
               </p>
             </div>
           </div>
@@ -83,7 +86,7 @@ export default function ScreenshotSelectDialog({
                 <div className="aspect-video relative">
                   <Image
                     src={screenshot.imageUrl}
-                    alt={`Ekran görüntüsü ${index + 1}`}
+                    alt={translateUi("ekran_goruntusu_value1_f5b5e3f", { value1: String(index + 1) })}
                     fill
                     className="object-cover"
                     sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
@@ -115,7 +118,7 @@ export default function ScreenshotSelectDialog({
         {/* Footer */}
         <div className="px-5 py-3 border-t border-gray-200 dark:border-gray-700 shrink-0">
           <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-            {screenshots.length} ekran görüntüsü mevcut • Seçilen görüntü kırpma ekranında açılacak
+            {screenshots.length} {" " + translateUi("ekran_goruntusu_mevcut_secilen_goruntu_kirpma_69108c9")}
           </p>
         </div>
       </div>

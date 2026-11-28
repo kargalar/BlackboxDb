@@ -4,6 +4,8 @@
 
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React from 'react';
 
 interface Props {
@@ -38,11 +40,12 @@ function avgLengthBadge(avg: number): { label: string; color: string } {
 }
 
 export function StatsReviewSection({ reviewCount, avgReviewLength }: Props) {
+  const translateUi = useUiTranslations('Ui');
   if (reviewCount === 0) {
     return (
       <div className="glass-card p-5 space-y-2">
-        <h3 className="text-lg font-semibold text-white">✍️ İncelemeler</h3>
-        <p className="text-sm text-white/40">Veri yok — henüz inceleme yazılmamış.</p>
+        <h3 className="text-lg font-semibold text-white">{translateUi("incelemeler_1b93864")}</h3>
+        <p className="text-sm text-white/40">{translateUi("veri_yok_henuz_inceleme_yazilmamis_c4c0ba9")}</p>
       </div>
     );
   }
@@ -55,8 +58,8 @@ export function StatsReviewSection({ reviewCount, avgReviewLength }: Props) {
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-white">✍️ İncelemeler</h3>
-        <p className="text-sm text-white/50">Yorum alışkanlıklarına dair istatistikler</p>
+        <h3 className="text-lg font-semibold text-white">{translateUi("incelemeler_1b93864")}</h3>
+        <p className="text-sm text-white/50">{translateUi("yorum_aliskanliklarina_dair_istatistikler_e82d5ed")}</p>
       </div>
 
       <div className="glass-card p-5 space-y-4">
@@ -65,14 +68,14 @@ export function StatsReviewSection({ reviewCount, avgReviewLength }: Props) {
           <span className="text-2xl">🖊️</span>
           <div>
             <div className="text-sm font-semibold text-white">{title}</div>
-            <div className="text-xs text-white/40">{reviewCount} inceleme yazdın</div>
+            <div className="text-xs text-white/40">{reviewCount} {" " + translateUi("inceleme_yazdin_b8f3100")}</div>
           </div>
         </div>
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <StatCard value={String(reviewCount)} label="Toplam İnceleme" icon="📝" />
-          <StatCard value={`~${avgReviewLength}`} label="Ort. Karakter" icon="🔤" />
+          <StatCard value={String(reviewCount)} label={translateUi("toplam_inceleme_4e54560")} icon="📝" />
+          <StatCard value={`~${avgReviewLength}`} label={translateUi("ort_karakter_382363a")} icon="🔤" />
           <div
             className="flex flex-col items-center justify-center rounded-2xl py-5 px-4 gap-2"
             style={{ background: `${badge.color}15`, border: `1px solid ${badge.color}30` }}
@@ -81,7 +84,7 @@ export function StatsReviewSection({ reviewCount, avgReviewLength }: Props) {
             <span className="text-2xl font-bold" style={{ color: badge.color }}>
               {badge.label}
             </span>
-            <span className="text-xs text-white/50 text-center">Yazı Tarzı</span>
+            <span className="text-xs text-white/50 text-center">{translateUi("yazi_tarzi_291b5dd")}</span>
           </div>
         </div>
       </div>

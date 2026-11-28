@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import { Star } from 'lucide-react';
 import { FilterSection } from './FilterSection';
 
@@ -18,6 +19,7 @@ export function RatingFilter({
   onScroll,
   onClear,
 }: RatingFilterProps) {
+  const translateUi = useUiTranslations('Ui');
   const minVal = rating.min === '' ? 0 : rating.min;
   const maxVal = rating.max === '' ? 10 : rating.max;
   const isFiltered = minVal > 0 || maxVal < 10;
@@ -34,7 +36,7 @@ export function RatingFilter({
 
   return (
     <FilterSection
-      title="Puan"
+      title={translateUi("puan_cb061dd")}
       icon={<Star className="w-4 h-4 text-amber-400" />}
       isExpanded={isExpanded}
       onToggle={onToggleSection}

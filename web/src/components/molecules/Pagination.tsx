@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { useMemo } from 'react';
 
 interface PaginationProps {
@@ -20,6 +22,7 @@ export function Pagination({
   onPageChange,
   className = 'mt-6',
 }: PaginationProps) {
+  const translateUi = useUiTranslations('Ui');
   const pageNumbers = useMemo(() => {
     const pages: number[] = [];
     const maxVisible = 5; // current + 2 before + 2 after
@@ -51,7 +54,7 @@ export function Pagination({
         onClick={() => handleClick(1)}
         disabled={currentPage === 1}
         className="px-3 py-1.5 text-sm rounded-lg bg-white/5 text-white/60 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        aria-label="İlk sayfa"
+        aria-label={translateUi("ilk_sayfa_8d7a093")}
       >
         «
       </button>
@@ -61,9 +64,9 @@ export function Pagination({
         onClick={() => handleClick(Math.max(1, currentPage - 1))}
         disabled={currentPage === 1}
         className="px-3 py-1.5 text-sm rounded-lg bg-white/5 text-white/60 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        aria-label="Önceki sayfa"
+        aria-label={translateUi("onceki_sayfa_739180f")}
       >
-        ‹ Önceki
+        {translateUi("onceki_5f9fd62")}
       </button>
 
       {/* Page numbers */}
@@ -87,9 +90,9 @@ export function Pagination({
         onClick={() => handleClick(Math.min(totalPages, currentPage + 1))}
         disabled={currentPage === totalPages}
         className="px-3 py-1.5 text-sm rounded-lg bg-white/5 text-white/60 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        aria-label="Sonraki sayfa"
+        aria-label={translateUi("sonraki_sayfa_d82b57e")}
       >
-        Sonraki ›
+        {translateUi("sonraki_59807ab")}
       </button>
 
       {/* Last page */}
@@ -97,7 +100,7 @@ export function Pagination({
         onClick={() => handleClick(totalPages)}
         disabled={currentPage === totalPages}
         className="px-3 py-1.5 text-sm rounded-lg bg-white/5 text-white/60 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-        aria-label="Son sayfa"
+        aria-label={translateUi("son_sayfa_eb7d6ee")}
       >
         »
       </button>

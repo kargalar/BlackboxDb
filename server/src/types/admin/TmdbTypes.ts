@@ -1,3 +1,4 @@
+import { ContentTranslationText } from "../ContentTranslation";
 import { ContentRelease } from "../ContentRelease";
 import { ObjectType, Field, Int, Float } from "type-graphql";
 
@@ -269,6 +270,9 @@ export class TmdbFranchise {
  */
 @ObjectType()
 export class TmdbDetailResult {
+  @Field(() => [ContentTranslationText], { nullable: true })
+  translations?: ContentTranslationText[];
+
   @Field(() => Int)
   tmdbId!: number;
 

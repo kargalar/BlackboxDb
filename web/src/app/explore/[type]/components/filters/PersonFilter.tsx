@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { User, Clapperboard, Loader2 } from 'lucide-react';
 import { FilterSection } from './FilterSection';
@@ -36,6 +37,7 @@ export function PersonFilter({
   filterCounts,
   otherFilterId,
 }: PersonFilterProps) {
+  const translateUi = useUiTranslations('Ui');
   const isActor = type === 'actor';
   const Icon = isActor ? User : Clapperboard;
   const colorClass = isActor ? 'text-green-400' : 'text-orange-400';
@@ -183,7 +185,7 @@ export function PersonFilter({
         type="text"
         value={searchTerm}
         onChange={(e) => handleSearchChange(e.target.value)}
-        placeholder={`${isActor ? 'Oyuncu' : 'Yönetmen'} ara...`}
+        placeholder={translateUi("value1_ara_ff6dced", { value1: String(isActor ? 'Oyuncu' : 'Yönetmen') })}
         className="w-full px-2 py-1.5 text-xs bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-white/20"
       />
       <div
@@ -194,7 +196,7 @@ export function PersonFilter({
         {isSearching && displayPersons.length === 0 ? (
           <div className="flex items-center justify-center py-3">
             <Loader2 className="w-4 h-4 animate-spin text-white/40" />
-            <span className="ml-2 text-xs text-white/40">Aranıyor...</span>
+            <span className="ml-2 text-xs text-white/40">{translateUi("araniyor_1f83d73")}</span>
           </div>
         ) : displayPersons.length > 0 ? (
           <>
@@ -227,7 +229,7 @@ export function PersonFilter({
             {isLoadingMore && (
               <div className="flex items-center justify-center py-2">
                 <Loader2 className="w-3 h-3 animate-spin text-white/30" />
-                <span className="ml-1 text-xs text-white/30">Yükleniyor...</span>
+                <span className="ml-1 text-xs text-white/30">{translateUi("yukleniyor_317109f")}</span>
               </div>
             )}
             {hasMore && !isLoadingMore && (
@@ -235,12 +237,12 @@ export function PersonFilter({
                 onClick={loadMore}
                 className={`w-full text-center text-xs ${colorClass} ${hoverClass} py-1.5 ${bgHoverClass} rounded transition-colors`}
               >
-                Daha fazla yükle...
+                {translateUi("daha_fazla_yukle_d36c840")}
               </button>
             )}
           </>
         ) : (
-          <p className="text-sm text-white/30 py-2">{isActor ? 'Oyuncu' : 'Yönetmen'} bulunamadı</p>
+          <p className="text-sm text-white/30 py-2">{isActor ? translateUi("oyuncu_57674cb") : translateUi("yonetmen_7c52188")} {" " + translateUi("bulunamadi_f5d205c")}</p>
         )}
       </div>
       <label className="flex items-center cursor-pointer group p-1.5 rounded-lg hover:bg-white/5 transition-colors border-t border-white/5 pt-2 mt-1">
@@ -251,7 +253,7 @@ export function PersonFilter({
           className={`w-4 h-4 rounded ${borderClass} bg-white/5 ${textClass} ${focusClass} focus:ring-offset-0`}
         />
         <span className="ml-2 text-sm text-white/50 group-hover:text-white/70 transition-colors italic flex-1">
-          Diğer ({isActor ? 'oyuncu' : 'yönetmen'} belirtilmemiş)
+          {translateUi("diger_6c35af7")}{isActor ? translateUi("oyuncu_7b7f8fc") : translateUi("yonetmen_8925363")} {" " + translateUi("belirtilmemis_1038056")}
         </span>
         {(filterCounts?.[otherFilterId] || 0) > 0 && (
           <span className="text-xs text-white/30 bg-white/5 px-1.5 py-0.5 rounded-full ml-1">

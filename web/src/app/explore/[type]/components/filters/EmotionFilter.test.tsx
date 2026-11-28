@@ -2,10 +2,8 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EmotionFilter } from './EmotionFilter';
 import { CONTENT_EMOTIONS } from '@/services/graphql/emotions';
-
-vi.mock('next-intl', () => ({
-  useTranslations: (ns: string) => (key: string) => `${ns}.${key}`,
-}));
+import { NextIntlClientProvider } from 'next-intl';
+import messages from '../../../../../../messages/tr.json';
 
 afterEach(() => {
   cleanup();
@@ -17,30 +15,32 @@ describe('EmotionFilter', () => {
     const onClear = vi.fn();
 
     render(
-      <EmotionFilter
+      <NextIntlClientProvider locale="tr" messages={messages} timeZone="UTC">
+        <EmotionFilter
         selectedEmotions={['romantic']}
         isExpanded={true}
         onToggleSection={vi.fn()}
         onToggleEmotion={onToggleEmotion}
         onClear={onClear}
         filterCounts={{ romantic: 12, scary: 4 }}
-      />
+        />
+      </NextIntlClientProvider>
     );
 
     const emotionButtons = CONTENT_EMOTIONS.map(({ id }) =>
-      screen.getByRole('button', { name: new RegExp(`EmotionReactions\\.emotions\\.${id}`) })
+      screen.getByRole('button', { name: new RegExp(messages.EmotionReactions.emotions[id]) })
     );
     expect(emotionButtons).toHaveLength(8);
 
     const romanticBtn = screen.getByRole('button', {
-      name: /EmotionReactions\.emotions\.romantic/,
+      name: new RegExp(messages.EmotionReactions.emotions.romantic),
     });
     expect(romanticBtn).toHaveAttribute('aria-pressed', 'true');
     expect(romanticBtn).toHaveTextContent('😍');
     expect(romanticBtn).toHaveTextContent('12');
 
     const inspiringBtn = screen.getByRole('button', {
-      name: /EmotionReactions\.emotions\.inspiring/,
+      name: new RegExp(messages.EmotionReactions.emotions.inspiring),
     });
     expect(inspiringBtn).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(inspiringBtn);

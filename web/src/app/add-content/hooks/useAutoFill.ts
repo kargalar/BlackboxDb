@@ -1,34 +1,31 @@
 'use client';
 
+import { mergeContentTranslations } from '@/types/content-translation';
+
 import { useState, useCallback, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import toast from 'react-hot-toast';
 import { apolloClient } from '@/lib/apollo-client';
 import {
   SEARCH_TMDB,
-  FETCH_TMDB_DETAILS,
   type TmdbSearchResultData,
   type TmdbDetailResultData,
 } from '@/services/graphql/admin/adminTmdb';
 import {
   SEARCH_BOOKS,
-  FETCH_BOOK_DETAILS,
   SEARCH_IGDB_GAMES,
-  FETCH_IGDB_GAME_DETAILS,
   SEARCH_OPEN_LIBRARY,
-  FETCH_OPEN_LIBRARY_DETAILS,
   SEARCH_LOCAL_CONTENT,
   type AutoFillSearchResultData,
-  type AutoFillBookDetailData,
-  type AutoFillGameDetailData,
 } from '@/services/graphql/admin/adminAutoFill';
-import { updateContent } from '@/services/admin/contentService';
+import { getContentById, updateContent } from '@/services/admin/contentService';
+import { compareFormData } from '@/utils/diffUtils';
+import { mapContentToFormData } from '@/utils/mapContentToFormData';
+import { buildContentInput } from '../utils/buildContentInput';
+import { buildPatchInput } from '../utils/buildContentPatch';
 import type { UnifiedSearchResult } from '@/components/molecules/TmdbSearchResults';
 import { autoFillToUnified, tmdbToUnified } from './autoFillSearchResults';
 import { fetchAndMapAutoFillDetails } from './fetchAndMapAutoFillDetails';
-import { mapTmdbToFormData } from '../utils/tmdbMapper';
-import { mapBookToFormData } from '../utils/bookMapper';
-import { mapOpenLibraryToFormData } from '../utils/openLibraryMapper';
-import { mapGameToFormData } from '../utils/gameMapper';
 import type { AddContentFormData } from '../types';
 
 /**
@@ -125,6 +122,7 @@ export function useAutoFill({
   setFormData,
   source = 'auto',
 }: UseAutoFillOptions): UseAutoFillReturn {
+  const t = useTranslations('AddContent.autoFill');
   const searchRequestId = useRef(0);
   const localSearchRequestId = useRef(0);
   const [searchResults, setSearchResults] = useState<UnifiedSearchResult[]>([]);
@@ -175,6 +173,7 @@ export function useAutoFill({
         posterPath: item.posterUrl,
         releaseDate: item.releaseDate,
         mediaType: item.contentType?.name,
+        mediaTypeSlug: item.contentType?.slug,
       }));
       if (requestId === localSearchRequestId.current) {
         setLocalResults(mappedLocal);
@@ -182,14 +181,14 @@ export function useAutoFill({
     } catch (err) {
       console.error('[useAutoFill] Local search error:', err);
       if (requestId === localSearchRequestId.current) {
-        setError('Veritabanında arama yapılırken hata oluştu.');
+        setError(t('localSearchFailed'));
       }
     } finally {
       if (requestId === localSearchRequestId.current) {
         setIsSearchingLocal(false);
       }
     }
-  }, [formData.title, formData.contentTypeId]);
+  }, [formData.title, formData.contentTypeId, t]);
   const getEffectiveSource = useCallback(
     (contentTypeId: string): string => {
       if (source !== 'auto') return source;
@@ -277,7 +276,7 @@ export function useAutoFill({
         setIsSearchingLocal(false);
         setIsLoadingMore(false);
         console.warn('[useAutoFill] Empty title, skipping search');
-        setError('Lütfen bir başlık girin');
+        setError(t('titleRequired'));
         return;
       }
 
@@ -317,6 +316,7 @@ export function useAutoFill({
             posterPath: item.posterUrl,
             releaseDate: item.releaseDate,
             mediaType: item.contentType?.name,
+            mediaTypeSlug: item.contentType?.slug,
           }));
           if (localRequestId === localSearchRequestId.current) {
             setLocalResults(mappedLocal);
@@ -389,7 +389,7 @@ export function useAutoFill({
         setHasMoreResults(unified.length === SEARCH_PAGE_SIZE);
 
         if (unified.length === 0) {
-          setError('Sonuç bulunamadı');
+          setError(t('noResults'));
           console.log('[useAutoFill] No results found');
         } else {
           console.log(`[useAutoFill] Found ${unified.length} results from ${effectiveSource}`);
@@ -398,7 +398,7 @@ export function useAutoFill({
         if (requestId !== searchRequestId.current) return;
         const message = err instanceof Error ? err.message : 'Bilinmeyen hata';
         console.error('[useAutoFill] Search failed:', message);
-        setError(`Arama başarısız: ${message}`);
+        setError(t('searchFailed'));
       } finally {
         if (requestId === searchRequestId.current) {
           setIsSearching(false);
@@ -445,13 +445,13 @@ export function useAutoFill({
       if (requestId !== searchRequestId.current) return;
       const message = err instanceof Error ? err.message : 'Bilinmeyen hata';
       console.error('[useAutoFill] Load more failed:', message);
-      setError(`Daha fazla sonuç alınamadı: ${message}`);
+      setError(t('loadMoreFailed'));
     } finally {
       if (requestId === searchRequestId.current) {
         setIsLoadingMore(false);
       }
     }
-  }, [fetchExternalResults, hasMoreResults, isLoadingMore, lastSearch]);
+  }, [fetchExternalResults, hasMoreResults, isLoadingMore, lastSearch, t]);
 
   /**
    * Detay çekip mappedData döndüren standalone yardımcı fonksiyon (Toplu ekleme vb. için)
@@ -476,6 +476,7 @@ export function useAutoFill({
         setFormData((prev) => ({
           ...prev,
           ...mappedData,
+          translations: mergeContentTranslations(prev.translations ?? [], mappedData.translations),
           tmdbId: effectiveSource === 'tmdb' ? parseInt(sourceId, 10) : prev.tmdbId,
           igdbId: effectiveSource === 'igdb' ? parseInt(sourceId, 10) : prev.igdbId,
           autoFillSourceId: sourceId,
@@ -488,19 +489,19 @@ export function useAutoFill({
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Bilinmeyen hata';
         console.error('[useAutoFill] Detail fetch failed:', message);
-        setError(`Detay alınamadı: ${message}`);
+        setError(t('fetchFailed'));
       } finally {
         setIsFetchingDetails(false);
       }
     },
-    [formData.contentTypeId, setFormData, fetchAndMapDetails]
+    [formData.contentTypeId, setFormData, fetchAndMapDetails, t]
   );
 
   const handleUpdateExisting = useCallback(
     async (localContentId: string, sourceId: string) => {
       const contentTypeId = formData.contentTypeId;
       if (!contentTypeId) {
-        const errorMessage = 'Content tipi belirlenemedi.';
+        const errorMessage = t('typeRequired');
         toast.error(errorMessage);
         setError(errorMessage);
         return;
@@ -511,83 +512,55 @@ export function useAutoFill({
       setError(null);
 
       try {
-        const effectiveSource = getEffectiveSource(contentTypeId);
-        let mappedData: Partial<AddContentFormData> = {};
+        const [currentResult, { mappedData, autoFillSource }] = await Promise.all([
+          getContentById(localContentId),
+          fetchAndMapDetails(sourceId, contentTypeId),
+        ]);
+        if (!currentResult.data) throw new Error('Content not found');
 
-        if (effectiveSource === 'tmdb') {
-          const mediaType = contentTypeId === '2' ? 'tv' : 'movie';
-          const tmdbId = parseInt(sourceId, 10);
-          const { data } = await apolloClient.query<{
-            fetchTmdbDetails: TmdbDetailResultData;
-          }>({
-            query: FETCH_TMDB_DETAILS,
-            variables: { tmdbId, type: mediaType },
-            fetchPolicy: 'network-only',
-          });
-          const detail = data?.fetchTmdbDetails;
-          if (!detail) throw new Error('TMDB detayları alınamadı.');
-          mappedData = mapTmdbToFormData(detail, contentTypeId);
-        } else if (effectiveSource === 'googlebooks') {
-          const { data } = await apolloClient.query<{
-            fetchBookDetails: AutoFillBookDetailData;
-          }>({
-            query: FETCH_BOOK_DETAILS,
-            variables: { volumeId: sourceId },
-            fetchPolicy: 'network-only',
-          });
-          const detail = data?.fetchBookDetails;
-          if (!detail) throw new Error('Google Books detayları alınamadı.');
-          mappedData = mapBookToFormData(detail);
-        } else if (effectiveSource === 'igdb') {
-          const gameId = parseInt(sourceId, 10);
-          const { data } = await apolloClient.query<{
-            fetchIgdbGameDetails: AutoFillGameDetailData;
-          }>({
-            query: FETCH_IGDB_GAME_DETAILS,
-            variables: { gameId },
-            fetchPolicy: 'network-only',
-          });
-          const detail = data?.fetchIgdbGameDetails;
-          if (!detail) throw new Error('IGDB oyun detayları alınamadı.');
-          mappedData = mapGameToFormData(detail);
-        } else if (effectiveSource === 'openlibrary') {
-          const { data } = await apolloClient.query<{
-            fetchOpenLibraryDetails: AutoFillBookDetailData;
-          }>({
-            query: FETCH_OPEN_LIBRARY_DETAILS,
-            variables: { workKey: sourceId },
-            fetchPolicy: 'network-only',
-          });
-          const detail = data?.fetchOpenLibraryDetails;
-          if (!detail) throw new Error('Open Library kitap detayları alınamadı.');
-          mappedData = mapOpenLibraryToFormData(detail);
-        } else {
-          throw new Error('Desteklenmeyen kaynak.');
-        }
-
-        const input: any = {
-          ...mappedData,
-          contentTypeId: parseInt(contentTypeId, 10),
+        const current = mapContentToFormData(currentResult.data);
+        const provided = Object.fromEntries(
+          Object.entries(mappedData).filter(([, value]) =>
+            value !== undefined && value !== null && value !== '' &&
+            (!Array.isArray(value) || value.length > 0)
+          ),
+        );
+        const updated = {
+          ...current,
+          ...provided,
+          autoFillSource,
+          autoFillSourceId: sourceId,
         };
+        const { input } = buildContentInput({
+          formData: updated,
+          posterUrl: updated.posterUrl ?? '',
+          backdropUrl: updated.backdropUrl ?? '',
+          isEditMode: true,
+        });
+        const changedKeys = compareFormData(current, updated).map(({ key }) => key);
+        const patch = buildPatchInput(input, changedKeys);
+        const result = await updateContent(localContentId, {
+          ...patch,
+          contentTypeId: input.contentTypeId,
+          tmdbId: input.tmdbId,
+          igdbId: input.igdbId,
+          importTranslations: true,
+        });
+        if (result.error || !result.data) throw result.error ?? new Error('Content update failed');
 
-        const result = await updateContent(localContentId, input);
-        if (result.error) {
-          throw result.error;
-        }
-
-        toast.success('İçerik API verileriyle güncellendi.');
+        toast.success(t('updateSuccess'));
         await searchLocal();
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Güncelleme başarısız oldu.';
-        setError(`Güncelleme başarısız: ${message}`);
+      } catch (error) {
+        const message = t('updateFailed');
+        setError(message);
         toast.error(message);
-        console.error('[useAutoFill] Update existing failed:', err);
+        console.error('[useAutoFill] Update existing failed:', error);
       } finally {
         setIsUpdatingExisting(false);
         setUpdatingLocalId(null);
       }
     },
-    [formData.contentTypeId, getEffectiveSource, searchLocal]
+    [formData.contentTypeId, fetchAndMapDetails, searchLocal, t]
   );
 
   /**

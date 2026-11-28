@@ -1,3 +1,4 @@
+import { fillContentTranslations } from "./contentTranslations";
 import { normalizeContentReleases } from "./contentReleases";
 import { generateContentSlug } from "./slugUtils";
 import { logger } from "./logger";
@@ -181,6 +182,8 @@ export async function ensureMovieContentFromTmdb(
     update: buildMovieUpdateData(details, franchiseId),
     create: buildMovieCreateData(contentId, details, franchiseId),
   });
+
+  await fillContentTranslations(prisma, contentId, details.translations);
 
   if (details.genres?.length) {
     await linkGenres(

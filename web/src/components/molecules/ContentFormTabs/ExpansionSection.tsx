@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 /**
  * Reusable expansion section UI component (DLC or Remake).
  * Single Responsibility: Renders expansion form, image upload, and item list.
@@ -17,6 +19,7 @@ interface ExpansionSectionProps {
 }
 
 export function ExpansionSection({ config, state }: ExpansionSectionProps) {
+  const translateUi = useUiTranslations('Ui');
   const {
     newItem,
     setNewItem,
@@ -66,7 +69,7 @@ export function ExpansionSection({ config, state }: ExpansionSectionProps) {
               : 'bg-amber-100 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/30'
           }`}
         >
-          {showForm ? '✕ İptal' : config.newButtonLabel}
+          {showForm ? translateUi("iptal_ed41a6f") : config.newButtonLabel}
         </button>
       </div>
 
@@ -101,7 +104,7 @@ export function ExpansionSection({ config, state }: ExpansionSectionProps) {
             className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-surface-panel border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
           />
           <textarea
-            placeholder="Açıklama (opsiyonel)"
+            placeholder={translateUi("aciklama_opsiyonel_2bc107e")}
             value={newItem.description}
             onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
             rows={2}
@@ -109,7 +112,7 @@ export function ExpansionSection({ config, state }: ExpansionSectionProps) {
           />
           <input
             type="date"
-            placeholder="Çıkış Tarihi"
+            placeholder={translateUi("cikis_tarihi_14a6568")}
             value={newItem.releaseDate}
             onChange={(e) => setNewItem({ ...newItem, releaseDate: e.target.value })}
             className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-surface-panel border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
@@ -118,13 +121,13 @@ export function ExpansionSection({ config, state }: ExpansionSectionProps) {
           {/* Image Upload with Drag & Drop */}
           <div className="space-y-2">
             <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-              Kapak Görseli
+              {translateUi("kapak_gorseli_032958c")}
             </label>
             {newItem.posterUrl ? (
               <div className="relative w-20 h-28 rounded overflow-hidden group">
                 <Image
                   src={newItem.posterUrl}
-                  alt={`${config.type.toUpperCase()} Poster`}
+                  alt={translateUi("value1_poster_047e6a1", { value1: String(config.type.toUpperCase()) })}
                   fill
                   className="object-cover"
                 />
@@ -133,7 +136,7 @@ export function ExpansionSection({ config, state }: ExpansionSectionProps) {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     className="p-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
-                    title="Değiştir"
+                    title={translateUi("degistir_ddc61e1")}
                   >
                     <Upload className="w-3 h-3" />
                   </button>
@@ -141,7 +144,7 @@ export function ExpansionSection({ config, state }: ExpansionSectionProps) {
                     type="button"
                     onClick={() => setNewItem({ ...newItem, posterUrl: '' })}
                     className="p-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
-                    title="Kaldır"
+                    title={translateUi("kaldir_d38bc7b")}
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -165,9 +168,9 @@ export function ExpansionSection({ config, state }: ExpansionSectionProps) {
                 `}
               >
                 <Upload className="w-6 h-6 mx-auto mb-2 text-gray-400 dark:text-gray-500" />
-                <p className="text-xs text-gray-400 dark:text-gray-500">Sürükle bırak veya tıkla</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">{translateUi("surukle_birak_veya_tikla_f0c5e37")}</p>
                 <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">
-                  2:3 oranında kırpılacak
+                  {translateUi("2_3_oraninda_kirpilacak_5a26bc3")}
                 </p>
               </div>
             )}
@@ -183,14 +186,14 @@ export function ExpansionSection({ config, state }: ExpansionSectionProps) {
                   disabled={!newItem.name.trim()}
                   className="flex-1 py-2 rounded bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  ✓ Kaydet
+                  {translateUi("kaydet_3d5e0fa")}
                 </button>
                 <button
                   type="button"
                   onClick={handleCancelEdit}
                   className="flex-1 py-2 rounded bg-gray-600 text-white text-sm font-medium hover:bg-gray-700 transition-colors"
                 >
-                  İptal
+                  {translateUi("iptal_85e2d08")}
                 </button>
               </>
             ) : (
@@ -260,7 +263,7 @@ export function ExpansionSection({ config, state }: ExpansionSectionProps) {
                   type="button"
                   onClick={() => handleEdit(expansion)}
                   className="p-1 text-gray-400 dark:text-gray-500 hover:text-violet-500 transition-colors"
-                  title="Düzenle"
+                  title={translateUi("duzenle_525fd6f")}
                 >
                   ✏️
                 </button>
@@ -268,7 +271,7 @@ export function ExpansionSection({ config, state }: ExpansionSectionProps) {
                   type="button"
                   onClick={() => handleRemove(expansion)}
                   className="p-1 text-red-400 hover:text-red-300 transition-colors"
-                  title="Sil"
+                  title={translateUi("sil_353ad5e")}
                 >
                   🗑️
                 </button>

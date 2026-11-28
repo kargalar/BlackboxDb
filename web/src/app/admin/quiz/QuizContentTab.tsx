@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Search, Trash2, ChevronDown, ChevronUp, CheckCircle, AlertCircle } from 'lucide-react';
@@ -61,6 +63,7 @@ export function QuizContentTab({
   filterMode,
   setFilterMode,
 }: QuizContentTabProps) {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('AdminQuizPage');
 
   // filterMode is lifted to the parent hook so server-side filtering is used
@@ -201,7 +204,7 @@ export function QuizContentTab({
                       href={contentHref as any}
                       onClick={(e) => e.stopPropagation()}
                       className="block rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-neutral-900"
-                      aria-label={`${content.title} içerik sayfasına git`}
+                      aria-label={translateUi("value1_icerik_sayfasina_git_a791b56", { value1: String(content.title) })}
                     >
                       {content.posterUrl ? (
                         <Image
@@ -325,7 +328,7 @@ export function QuizContentTab({
                             <div className="aspect-video relative">
                               <Image
                                 src={screenshot.imageUrl}
-                                alt="Screenshot"
+                                alt={translateUi("screenshot_60c152d")}
                                 fill
                                 className="object-cover"
                               />

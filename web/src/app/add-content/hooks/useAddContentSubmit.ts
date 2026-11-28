@@ -2,6 +2,7 @@
 
 import { MutableRefObject } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   createContent,
   updateContent,
@@ -25,6 +26,7 @@ import {
   REVIEW_CONTRIBUTION,
 } from '@/services/graphql/contribution';
 import { compareFormData } from '@/utils/diffUtils';
+import { changedContentTranslations } from '@/types/content-translation';
 
 interface UseAddContentSubmitParams {
   formData: AddContentFormData;
@@ -73,6 +75,7 @@ export function useAddContentSubmit({
   setUploadProgress,
   validateForm,
 }: UseAddContentSubmitParams) {
+  const t = useTranslations('AddContent.feedback');
   const router = useRouter();
   const [createContribution] = useMutation(CREATE_CONTRIBUTION);
   const [updateContribution] = useMutation(UPDATE_CONTRIBUTION);
@@ -85,7 +88,7 @@ export function useAddContentSubmit({
 
     if (!validateForm()) {
       console.log('❌ [AddContent] Validation failed');
-      toast.error('Lütfen zorunlu alanları doldurunuz');
+      toast.error(t('requiredFields'));
       return;
     }
 
@@ -118,7 +121,7 @@ export function useAddContentSubmit({
 
       // Poster upload (eğer base64 ise)
       if (posterUrl?.startsWith('data:') && pendingPoster) {
-        setUploadProgress('📤 Poster yükleniyor...');
+        setUploadProgress(t('uploadingPoster'));
         console.log('📤 [AddContent] Uploading poster...');
         try {
           posterUrl = await uploadContentImage(
@@ -129,7 +132,7 @@ export function useAddContentSubmit({
           console.log('✅ [AddContent] Poster uploaded:', posterUrl);
         } catch (err: any) {
           console.error('❌ [AddContent] Poster upload failed:', err);
-          toast.error('Poster yüklenemedi: ' + err.message);
+          toast.error(t('posterFailed'));
           setLoading(false);
           setUploadProgress('');
           return;
@@ -142,7 +145,7 @@ export function useAddContentSubmit({
 
       // Backdrop upload (eğer base64 ise)
       if (backdropUrl?.startsWith('data:') && pendingBackdrop) {
-        setUploadProgress('📤 Arka plan görseli yükleniyor...');
+        setUploadProgress(t('uploadingBackdrop'));
         console.log('📤 [AddContent] Uploading backdrop...');
         try {
           backdropUrl = await uploadContentImage(
@@ -153,7 +156,7 @@ export function useAddContentSubmit({
           console.log('✅ [AddContent] Backdrop uploaded:', backdropUrl);
         } catch (err: any) {
           console.error('❌ [AddContent] Backdrop upload failed:', err);
-          toast.error('Arka plan görseli yüklenemedi: ' + err.message);
+          toast.error(t('backdropFailed'));
           setLoading(false);
           setUploadProgress('');
           return;
@@ -170,7 +173,7 @@ export function useAddContentSubmit({
           ? []
           : formData.screenshots.filter((s) => s.isNew && (s.base64 || s.file));
       if (newScreenshots.length > 0) {
-        setUploadProgress(`📤 Ekran görüntüleri yükleniyor (0/${newScreenshots.length})...`);
+        setUploadProgress(t('uploadingScreenshots', { completed: 0, total: newScreenshots.length }));
         console.log(`📤 [AddContent] Uploading ${newScreenshots.length} screenshots...`);
 
         let completedCount = 0;
@@ -220,7 +223,7 @@ export function useAddContentSubmit({
 
                 completedCount++;
                 setUploadProgress(
-                  `📤 Ekran görüntüleri yükleniyor (${completedCount}/${newScreenshots.length})...`
+                  t('uploadingScreenshots', { completed: completedCount, total: newScreenshots.length })
                 );
                 console.log(
                   `✅ [AddContent] Screenshot ${i + chunkIndex + 1} uploaded:`,
@@ -233,7 +236,7 @@ export function useAddContentSubmit({
           } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Bilinmeyen yükleme hatası';
             console.error(`❌ [AddContent] Screenshot chunk upload failed:`, message);
-            toast.error(`Ekran görüntüleri yüklenemedi: ${message}`);
+            toast.error(t('screenshotsFailed'));
             setLoading(false);
             setUploadProgress('');
             return;
@@ -244,7 +247,7 @@ export function useAddContentSubmit({
       // Alternative Images upload (yeni olanlar için)
       const newImages = formData.images?.filter((img) => img.isNew && img.file) || [];
       if (newImages.length > 0) {
-        setUploadProgress(`📤 Alternatif görseller yükleniyor (0/${newImages.length})...`);
+        setUploadProgress(t('uploadingImages', { completed: 0, total: newImages.length }));
         console.log(`📤 [AddContent] Uploading ${newImages.length} alternative images...`);
 
         let completedImagesCount = 0;
@@ -282,7 +285,7 @@ export function useAddContentSubmit({
 
                 completedImagesCount++;
                 setUploadProgress(
-                  `📤 Alternatif görseller yükleniyor (${completedImagesCount}/${newImages.length})...`
+                  t('uploadingImages', { completed: completedImagesCount, total: newImages.length })
                 );
                 console.log(
                   `✅ [AddContent] Alternative image ${i + chunkIndex + 1} uploaded:`,
@@ -292,7 +295,7 @@ export function useAddContentSubmit({
             );
           } catch (err: any) {
             console.error(`❌ [AddContent] Alternative image chunk upload failed:`, err);
-            toast.error(`Alternatif görseller yüklenemedi: ${err.message}`);
+            toast.error(t('imagesFailed'));
             setLoading(false);
             setUploadProgress('');
             return;
@@ -307,14 +310,14 @@ export function useAddContentSubmit({
 
       if (publicationsWithPendingCover.length > 0) {
         setUploadProgress(
-          `Kitap yayin kapaklari yukleniyor (0/${publicationsWithPendingCover.length})...`
+          t('uploadingBookCovers', { completed: 0, total: publicationsWithPendingCover.length })
         );
 
         for (let i = 0; i < publicationsWithPendingCover.length; i++) {
           const publication = publicationsWithPendingCover[i];
           try {
             setUploadProgress(
-              `Kitap yayin kapaklari yukleniyor (${i + 1}/${publicationsWithPendingCover.length})...`
+              t('uploadingBookCovers', { completed: i + 1, total: publicationsWithPendingCover.length })
             );
 
             const uploadedUrl = await uploadContentImage(
@@ -334,7 +337,7 @@ export function useAddContentSubmit({
             }
           } catch (err: any) {
             console.error(`[AddContent] Book publication cover ${i + 1} upload failed:`, err);
-            toast.error(`Kitap yayin kapagi ${i + 1} yuklenemedi: ${err.message}`);
+            toast.error(t('bookCoverFailed', { index: i + 1 }));
             setLoading(false);
             setUploadProgress('');
             return;
@@ -342,7 +345,7 @@ export function useAddContentSubmit({
         }
       }
 
-      setUploadProgress('💾 İçerik kaydediliyor...');
+      setUploadProgress(t('saving'));
 
       // === PHASE 2: Build input and save ===
       const { input, allScreenshots } = buildContentInput({
@@ -356,6 +359,11 @@ export function useAddContentSubmit({
           ? compareFormData(originalData, formData).map((diff) => diff.key)
           : [];
       const patchInput = isEditMode && originalData ? buildPatchInput(input, changedKeys) : input;
+      if (isEditMode && originalData && changedKeys.includes('translations')) {
+        const translationChanges = changedContentTranslations(originalData.translations, formData.translations);
+        if (translationChanges.length) patchInput.translations = translationChanges;
+        else delete patchInput.translations;
+      }
 
       // Explicit admin edits may update values protected from external API imports.
       // Send the current lock list to preserve it while marking this as a manual edit.
@@ -409,7 +417,7 @@ export function useAddContentSubmit({
             message: 'Content request oluşturulamadı',
             data: requestResult.error,
           });
-          toast.error('İçerik talebi gönderilemedi');
+          toast.error(t('requestFailed'));
           return;
         }
 
@@ -421,7 +429,7 @@ export function useAddContentSubmit({
           message: 'Content request oluşturuldu',
           data: { requestId: requestResult.data?.id },
         });
-        toast.success('🎉 İçerik talebiniz gönderildi! Onay bekliyor.');
+        toast.success(t('requestSubmitted'));
 
         setTimeout(() => {
           router.push('/content-request' as any);
@@ -438,7 +446,7 @@ export function useAddContentSubmit({
         const payload = { ...formPayload, __updateInput: patchInput };
 
         if (Object.keys(formPayload).filter((key) => key !== 'contentTypeId').length === 0) {
-          toast.error('Gönderilecek değişiklik bulunamadı');
+          toast.error(t('noChanges'));
           setLoading(false);
           setUploadProgress('');
           return;
@@ -464,7 +472,7 @@ export function useAddContentSubmit({
             scope: 'AddContent',
             message: 'Edit contribution oluşturuldu',
           });
-          toast.success('🎉 Düzenleme talebiniz gönderildi! Onay bekliyor.');
+          toast.success(t('editRequestSubmitted'));
 
           setTimeout(() => {
             // Başarılı olduktan sonra içeriğe veya profile geri dön
@@ -473,7 +481,7 @@ export function useAddContentSubmit({
           return;
         } catch (error) {
           console.error('❌ [AddContent] Edit contribution failed:', error);
-          toast.error('Düzenleme talebi gönderilemedi');
+          toast.error(t('editRequestFailed'));
           setLoading(false);
           setUploadProgress('');
           return;
@@ -483,7 +491,7 @@ export function useAddContentSubmit({
       let result;
       if (isEditMode && contentId) {
         if (Object.keys(patchInput).length === 0) {
-          toast.error('Kaydedilecek değişiklik bulunamadı');
+          toast.error(t('noChanges'));
           setLoading(false);
           setUploadProgress('');
           return;
@@ -497,10 +505,10 @@ export function useAddContentSubmit({
 
       const { data, error } = result;
 
-      if (error) {
+      if (error || !data) {
         const action = isEditMode ? 'İçerik güncelleme' : 'İçerik oluşturma';
         console.error(`❌ [AddContent] ${action} başarısız:`, error);
-        toast.error(`${action} başarısız oldu`);
+        toast.error(t(isEditMode ? 'updateFailed' : 'createFailed'));
         return;
       }
 
@@ -508,8 +516,8 @@ export function useAddContentSubmit({
         ? '✅ [AddContent] Content updated successfully'
         : '✅ [AddContent] Content created successfully';
       const successToast = isEditMode
-        ? '📝 İçerik başarıyla güncellendi!'
-        : '🎉 İçerik başarıyla oluşturuldu!';
+        ? t('updated')
+        : t('created');
 
       console.log(successMessage, data);
       toast.success(successToast);
@@ -526,7 +534,7 @@ export function useAddContentSubmit({
           await approveContentRequest(requestId, data?.id);
           refreshPendingContentRequestsBadge();
           console.log('✅ [AddContent] Content request approved');
-          toast.success('Talep onaylandı!');
+          toast.success(t('requestApproved'));
         } catch (approveError) {
           console.error('⚠️ [AddContent] Failed to approve request:', approveError);
           // İçerik eklendi ama talep onaylanamadı - kritik değil
@@ -547,7 +555,7 @@ export function useAddContentSubmit({
           });
           refreshPendingContentRequestsBadge();
           console.log('✅ [AddContent] Contribution approved');
-          toast.success('Düzenleme talebi başarıyla onaylandı!');
+          toast.success(t('editRequestApproved'));
         } catch (approveError) {
           console.error('⚠️ [AddContent] Failed to approve contribution:', approveError);
         }
@@ -576,7 +584,7 @@ export function useAddContentSubmit({
       resetForm();
     } catch (error) {
       console.error('❌ [AddContent] Exception:', error);
-      toast.error('Bir hata oluştu');
+      toast.error(t('genericError'));
     } finally {
       setLoading(false);
       setUploadProgress('');

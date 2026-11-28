@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import type { Content } from '@/types/content';
 import type { ItemStatesMap, FeaturedType, ContentActionHandlers } from '../HomeTabTypes';
 import { DEFAULT_ITEM_STATE } from '../HomeTabTypes';
@@ -31,6 +32,7 @@ export default function FeaturedContentSection({
   handlers,
   onOpenDialog,
 }: FeaturedContentSectionProps) {
+  const translateUi = useUiTranslations('Ui');
   const allFeaturedCount =
     featuredMovies.length +
     featuredTv.length +
@@ -93,12 +95,12 @@ export default function FeaturedContentSection({
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold">Öne Çıkarılan İçerikler</h3>
+        <h3 className="text-xl font-bold">{translateUi("one_cikarilan_icerikler_b30eab3")}</h3>
         {isOwnProfile && onOpenDialog && (
           <button
             onClick={onOpenDialog}
             className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-            title="Düzenle"
+            title={translateUi("duzenle_525fd6f")}
           >
             <MoreVertical className="w-5 h-5" />
           </button>
@@ -126,7 +128,7 @@ export default function FeaturedContentSection({
 
       {featured.length === 0 ? (
         <div className="text-center text-gray-400 py-8">
-          <p>Bu kategoride içerik bulunmuyor.</p>
+          <p>{translateUi("bu_kategoride_icerik_bulunmuyor_0ac991f")}</p>
         </div>
       ) : (
         <div className={`grid ${gridClassName} gap-2`}>

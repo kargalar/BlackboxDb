@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 /**
  * Shared Component: ContentBadges
  *
@@ -87,6 +88,7 @@ export function StatusBadges({
   userConsumeCount,
   transparent = false,
 }: StatusBadgesProps) {
+  const translateUi = useUiTranslations('Ui');
   const isWatchLaterActive = Boolean(isConsumeLater || watchLater || isWatchLater);
 
   // Hiç badge yoksa null döndür
@@ -170,7 +172,7 @@ export function StatusBadges({
           className={`rounded-full flex items-center justify-center ${
             transparent ? 'text-blue-400' : 'bg-blue-600/80 backdrop-blur-sm p-1 text-white'
           }`}
-          title="Sonra İzle"
+          title={translateUi("sonra_izle_c348497")}
         >
           <BookmarkIcon className={iconSize} solid />
         </div>

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React from 'react';
 
 type AgeRatingValue = { id?: number | string; name: string } | string;
@@ -36,12 +38,13 @@ function getAgeRatingPalette(name: string) {
 }
 
 export default function AgeRatingBadge({ rating, className = '' }: AgeRatingBadgeProps) {
+  const translateUi = useUiTranslations('Ui');
   const name = getRatingName(rating);
 
   return (
     <span
       className={`inline-flex min-h-10 items-center justify-center rounded-xl border px-3 py-1 text-sm font-semibold tracking-wide ${getAgeRatingPalette(name)} ${className}`.trim()}
-      aria-label={`Age rating ${name}`}
+      aria-label={translateUi("age_rating_value1_aef8c58", { value1: String(name) })}
     >
       {name}
     </span>

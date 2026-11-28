@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -104,6 +106,7 @@ function TrackerSection({
 }
 
 function ContinuingSeriesListSection({ items }: { items: ContinuingSeriesItem[] }) {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('TvTracker');
 
   return (
@@ -121,7 +124,7 @@ function ContinuingSeriesListSection({ items }: { items: ContinuingSeriesItem[] 
 
       {items.length === 0 ? (
         <div className="rounded-[24px] border border-dashed border-white/10 bg-white/[0.02] p-8 text-center">
-          <p className="text-sm text-white/45">Devam eden dizi bulunmuyor.</p>
+          <p className="text-sm text-white/45">{translateUi("devam_eden_dizi_bulunmuyor_7fe923f")}</p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -145,23 +148,23 @@ function ContinuingSeriesListSection({ items }: { items: ContinuingSeriesItem[] 
                 </h3>
                 <div className="mt-1 flex flex-col gap-0.5 text-xs text-white/60">
                   <p>
-                    Bekleyen toplam bölüm:{' '}
+                    {translateUi("bekleyen_toplam_bolum_f7d96a7")}{' '}
                     <span className="font-semibold text-white/90">{item.expectedEpisodeCount}</span>
                   </p>
                   {item.airedUnwatchedCount > 0 && (
                     <p>
-                      Sıradaki Bölüm:{' '}
+                      {translateUi("siradaki_bolum_2213185")}{' '}
                       <span className="font-medium text-white/80">{item.airedUnwatchedCount}</span>
                     </p>
                   )}
                   {item.unairedCount > 0 && (
                     <p>
-                      Bekleyen Bölüm:{' '}
+                      {translateUi("bekleyen_bolum_4162902")}{' '}
                       <span className="font-medium text-white/80">{item.unairedCount}</span>
                     </p>
                   )}
                   {item.airedUnwatchedCount === 0 && item.unairedCount === 0 && (
-                    <p>Bekleyen bölüm yok</p>
+                    <p>{translateUi("bekleyen_bolum_yok_5f23e25")}</p>
                   )}
                 </div>
               </div>

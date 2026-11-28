@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import { ChevronDown, ChevronUp, X } from 'lucide-react';
 import { ReactNode } from 'react';
 
@@ -24,6 +25,7 @@ export function FilterSection({
   children,
   colorClass = 'text-violet-400',
 }: FilterSectionProps) {
+  const translateUi = useUiTranslations('Ui');
   const hasTotalCount = typeof totalCount === 'number' && totalCount > 0;
   const showCountBadge = activeCount > 0 || hasTotalCount;
   const countText = hasTotalCount ? `${activeCount}/${totalCount}` : `${activeCount}`;
@@ -51,7 +53,7 @@ export function FilterSection({
                 onClear();
               }}
               className="p-1 hover:bg-white/10 rounded-md transition-colors"
-              title="Temizle"
+              title={translateUi("temizle_021e622")}
             >
               <X className="w-3.5 h-3.5 text-white/40 hover:text-white" />
             </button>

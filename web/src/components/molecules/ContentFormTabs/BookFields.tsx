@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { FormInput } from '@/components/atoms/FormInput';
 import { CompactTagSelector } from '@/components/molecules/CompactTagSelector';
@@ -26,6 +28,7 @@ interface BookFieldsProps {
 }
 
 export function BookFields({ formData, setFormData, errors }: BookFieldsProps) {
+  const translateUi = useUiTranslations('Ui');
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState<Author[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -125,7 +128,7 @@ export function BookFields({ formData, setFormData, errors }: BookFieldsProps) {
         <>
           {/* Page Count */}
           <FormInput
-            label="Sayfa Sayısı"
+            label={translateUi("sayfa_sayisi_92c8679")}
             name="pageCount"
             type="number"
             value={formData.pageCount || ''}
@@ -135,22 +138,22 @@ export function BookFields({ formData, setFormData, errors }: BookFieldsProps) {
           />
 
           <FormInput
-            label="Cevirmen(ler)"
+            label={translateUi("cevirmen_ler_450c427")}
             name="translators"
             value={formData.translators || ''}
             onChange={(value) => setFormData({ ...formData, translators: value })}
-            placeholder="Cevirmenleri virgul ile ayir"
+            placeholder={translateUi("cevirmenleri_virgul_ile_ayir_6c770d6")}
             error={errors?.translators}
           />
 
           {/* Publisher - as Company using CompactTagSelector with listQuery */}
           <div className="space-y-2">
             <CompactTagSelector
-              label="Yayınevi"
+              label={translateUi("yayinevi_442e7f5")}
               icon="🏢"
               value={formData.publisher ? [formData.publisher] : []}
               onChange={(items) => setFormData({ ...formData, publisher: items[0] || null })}
-              placeholder="Yayınevi ara..."
+              placeholder={translateUi("yayinevi_ara_afa12b7")}
               listQuery={LIST_COMPANIES}
               queryKey="listCompanies"
               queryVariables={{ roleIds: [3] }}
@@ -175,7 +178,7 @@ export function BookFields({ formData, setFormData, errors }: BookFieldsProps) {
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
             <span className="text-sm">✍️</span>
-            Yazarlar
+            {translateUi("yazarlar_306e672")}
           </span>
         </div>
 
@@ -211,7 +214,7 @@ export function BookFields({ formData, setFormData, errors }: BookFieldsProps) {
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {author.name}
               </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">(yazar)</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{translateUi("yazar_546e56a")}</span>
               <button
                 type="button"
                 onClick={(e) => {
@@ -227,7 +230,7 @@ export function BookFields({ formData, setFormData, errors }: BookFieldsProps) {
 
           {authors.length === 0 && (
             <span className="text-sm text-gray-400 dark:text-gray-500 italic">
-              Henüz yazar eklenmedi
+              {translateUi("henuz_yazar_eklenmedi_7b1bc48")}
             </span>
           )}
 
@@ -241,7 +244,7 @@ export function BookFields({ formData, setFormData, errors }: BookFieldsProps) {
               }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-surface-raised hover:border-violet-500 dark:hover:border-violet-500 hover:text-violet-600 dark:hover:text-violet-400 transition-all"
             >
-              + Ekle
+              {translateUi("ekle_64b2d35")}
             </button>
 
             {/* Dropdown */}
@@ -264,7 +267,7 @@ export function BookFields({ formData, setFormData, errors }: BookFieldsProps) {
                         }
                       }
                     }}
-                    placeholder="Yazar adı ara..."
+                    placeholder={translateUi("yazar_adi_ara_c8f9a0f")}
                     className="flex-1 px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 bg-white dark:bg-surface-panel text-gray-900 dark:text-white"
                   />
                   {searchTerm.trim() && (
@@ -273,7 +276,7 @@ export function BookFields({ formData, setFormData, errors }: BookFieldsProps) {
                       onClick={() => setShowAuthorDialog(true)}
                       className="px-2.5 py-1.5 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap font-medium"
                     >
-                      + Yeni
+                      {translateUi("yeni_f0678d4")}
                     </button>
                   )}
                 </div>
@@ -282,7 +285,7 @@ export function BookFields({ formData, setFormData, errors }: BookFieldsProps) {
                 <div className="max-h-48 overflow-y-auto">
                   {isLoading ? (
                     <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                      Yükleniyor...
+                      {translateUi("yukleniyor_317109f")}
                     </div>
                   ) : suggestions.length > 0 ? (
                     suggestions.map((person) => (
@@ -311,11 +314,11 @@ export function BookFields({ formData, setFormData, errors }: BookFieldsProps) {
                     ))
                   ) : searchTerm.trim() ? (
                     <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                      Sonuç yok - &quot;Yeni&quot; ile ekleyebilirsiniz
+                      {translateUi("sonuc_yok_quot_yeni_quot_ile_fc6e1f0")}
                     </div>
                   ) : (
                     <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                      Kayıtlı kişi yok
+                      {translateUi("kayitli_kisi_yok_b0739b7")}
                     </div>
                   )}
                 </div>
@@ -367,7 +370,7 @@ export function BookFields({ formData, setFormData, errors }: BookFieldsProps) {
             setSearchTerm('');
             setShowDropdown(false);
           }}
-          title="Yeni Yazar Ekle"
+          title={translateUi("yeni_yazar_ekle_c941c34")}
         />
       )}
 
@@ -408,7 +411,7 @@ export function BookFields({ formData, setFormData, errors }: BookFieldsProps) {
             setEditingAuthorIndex(null);
             setEditingAuthorData(null);
           }}
-          title="Yazar Düzenle"
+          title={translateUi("yazar_duzenle_1e4066e")}
         />
       )}
     </div>

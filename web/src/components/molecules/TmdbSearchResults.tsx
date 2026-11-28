@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useEffect, useRef, useState, UIEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,6 +19,7 @@ export interface UnifiedSearchResult {
   releaseDate?: string;
   voteAverage?: number;
   mediaType?: string;
+  mediaTypeSlug?: string;
   extraInfo?: string[];
   tmdbId?: number;
   igdbId?: number;
@@ -91,6 +94,7 @@ function TmdbSearchResultsDropdown({
   isLoadingMore = false,
   editingContentId,
 }: Omit<AutoFillSearchResultsProps, 'isOpen'>) {
+  const translateUi = useUiTranslations('Ui');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<'external' | 'local'>('external');
 
@@ -161,7 +165,7 @@ function TmdbSearchResultsDropdown({
               : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
           }`}
         >
-          Sistemde Zaten Kayıtlı
+          {translateUi("sistemde_zaten_kayitli_9e48ea5")}
         </button>
       </div>
 
@@ -172,8 +176,8 @@ function TmdbSearchResultsDropdown({
             <LoadingSpinner />
             <span>
               {isSearchingLocal && activeTab === 'local'
-                ? 'Veritabanında aranıyor...'
-                : `${sourceName} aranıyor...`}
+                ? translateUi("veritabaninda_araniyor_75ab39d")
+                : translateUi("value1_araniyor_59c4954", { value1: String(sourceName) })}
             </span>
           </div>
         )}
@@ -182,7 +186,7 @@ function TmdbSearchResultsDropdown({
         {isFetchingDetails && (
           <div className="flex items-center justify-center gap-2 p-4 text-sm text-blue-600 dark:text-blue-400">
             <LoadingSpinner />
-            <span>Detaylar yükleniyor...</span>
+            <span>{translateUi("detaylar_yukleniyor_cfd1361")}</span>
           </div>
         )}
 
@@ -198,7 +202,7 @@ function TmdbSearchResultsDropdown({
           activeTab === 'external' &&
           results.length === 0 && (
             <div className="p-4 text-sm text-gray-500 dark:text-gray-400 text-center">
-              {sourceName} üzerinde sonuç bulunamadı
+              {sourceName} {" " + translateUi("uzerinde_sonuc_bulunamadi_b32b329")}
             </div>
           )}
         {!isSearching &&
@@ -207,7 +211,7 @@ function TmdbSearchResultsDropdown({
           activeTab === 'local' &&
           localResults.length === 0 && (
             <div className="p-4 text-sm text-gray-500 dark:text-gray-400 text-center">
-              Veritabanında sonuç bulunamadı
+              {translateUi("veritabaninda_sonuc_bulunamadi_f171c92")}
             </div>
           )}
 
@@ -217,7 +221,7 @@ function TmdbSearchResultsDropdown({
             {localResults.map((item) => (
               <li key={item.sourceId}>
                 <Link
-                  href={`/content/${getTypeSlug(item.mediaType)}/${item.sourceId}`}
+                  href={`/content/${getTypeSlug(item.mediaTypeSlug ?? item.mediaType)}/${item.sourceId}`}
                   className="w-full flex items-start gap-4 p-3 transition-colors text-left hover:bg-gray-100 dark:hover:bg-surface-hover cursor-pointer"
                 >
                   {/* Poster Thumbnail */}
@@ -237,7 +241,7 @@ function TmdbSearchResultsDropdown({
                       </div>
                     )}
                     <div className="absolute inset-x-0 bottom-0 bg-blue-500/80 text-white text-[10px] text-center py-0.5">
-                      Görüntüle
+                      {translateUi("goruntule_1ab5a3f")}
                     </div>
                   </div>
 
@@ -279,7 +283,9 @@ function TmdbSearchResultsDropdown({
                   (item.igdbId && localItem.igdbId === item.igdbId) ||
                   (item.googleBooksId && localItem.googleBooksId === item.googleBooksId) ||
                   // fallback to title and year if no IDs match
-                  (localItem.title === item.title &&
+                  ([localItem.title, localItem.originalTitle].some(
+                    (title) => Boolean(title && (title === item.title || title === item.originalTitle)),
+                  ) &&
                     localItem.releaseDate &&
                     item.releaseDate &&
                     localItem.releaseDate.substring(0, 4) === item.releaseDate.substring(0, 4))
@@ -292,7 +298,7 @@ function TmdbSearchResultsDropdown({
                   {isLocalMatch && matchedLocalItem ? (
                     <div className="w-full flex items-start gap-4 p-3 transition-colors bg-yellow-50/50 dark:bg-yellow-900/10 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 rounded-xl">
                       <Link
-                        href={`/content/${getTypeSlug(matchedLocalItem.mediaType)}/${matchedLocalItem.sourceId}`}
+                        href={`/content/${getTypeSlug(matchedLocalItem.mediaTypeSlug ?? matchedLocalItem.mediaType)}/${matchedLocalItem.sourceId}`}
                         className="flex-1 flex items-start gap-4 text-left"
                       >
                         {/* Poster Thumbnail */}
@@ -312,7 +318,7 @@ function TmdbSearchResultsDropdown({
                             </div>
                           )}
                           <div className="absolute inset-x-0 bottom-0 bg-yellow-500/90 text-white text-[10px] text-center py-0.5">
-                            İncele
+                            {translateUi("incele_25274a7")}
                           </div>
                         </div>
 
@@ -321,7 +327,7 @@ function TmdbSearchResultsDropdown({
                           <div className="font-medium text-sm text-gray-900 dark:text-white truncate">
                             {item.title}{' '}
                             <span className="text-yellow-600 dark:text-yellow-500 ml-1 text-xs">
-                              ✓ Zaten Kayıtlı
+                              {translateUi("zaten_kayitli_690d6e9")}
                             </span>
                           </div>
                           {item.originalTitle && item.originalTitle !== item.title && (
@@ -365,7 +371,7 @@ function TmdbSearchResultsDropdown({
                           }}
                           className="self-start rounded-md border border-yellow-400 bg-yellow-100 text-yellow-800 px-3 py-1.5 text-xs font-semibold hover:bg-yellow-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          Güncelle
+                          {translateUi("guncelle_e9a7033")}
                         </button>
                       )}
                     </div>
@@ -448,7 +454,7 @@ function TmdbSearchResultsDropdown({
               disabled={isLoadingMore}
               className="w-full rounded-lg bg-gray-100 dark:bg-gray-800 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50"
             >
-              {isLoadingMore ? 'Yükleniyor...' : 'Daha fazla göster'}
+              {isLoadingMore ? translateUi("yukleniyor_317109f") : translateUi("daha_fazla_goster_4a97783")}
             </button>
           </div>
         )}
@@ -465,7 +471,7 @@ function TmdbSearchResultsDropdown({
               onClick={onClose}
               className="w-full text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 py-1"
             >
-              Kapat
+              {translateUi("kapat_9e6ecd5")}
             </button>
           </div>
         )}

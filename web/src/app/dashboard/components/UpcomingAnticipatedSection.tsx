@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect } from 'react';
 import InteractivePoster from '@/components/organisms/InteractivePoster';
 import { useHorizontalDragScroll } from '@/hooks/useHorizontalDragScroll';
@@ -71,6 +73,7 @@ export default function UpcomingAnticipatedSection({
   isLoading,
   splitByContentType = false,
 }: UpcomingAnticipatedSectionProps) {
+  const translateUi = useUiTranslations('Ui');
   // Get active tabs based on user preferences
   const activeTabs = preferredContentTypes.map((id) => TAB_MAPPING[id]).filter(Boolean);
   const availableTabs = splitByContentType ? activeTabs : [ALL_TAB, ...activeTabs];
@@ -163,7 +166,7 @@ export default function UpcomingAnticipatedSection({
       <section className="dashboard-upcoming-section space-y-6">
         <h2 className="text-xl font-bold flex items-center gap-2.5">
           <span className="text-xl">🚀</span>
-          <span className="gradient-text">Upcoming Releases</span>
+          <span className="gradient-text">{translateUi("upcoming_releases_4186c38")}</span>
         </h2>
         {activeTabs.map((tab) => {
           const typeItems = itemsByType[tab.type];
@@ -219,7 +222,7 @@ export default function UpcomingAnticipatedSection({
                               }`}
                             >
                               {timeUntil.isReleased
-                                ? 'Released'
+                                ? translateUi("released_35d9bc5")
                                 : timeUntil.days === 0 && timeUntil.hours === 0
                                   ? `${timeUntil.minutes}m`
                                   : `${timeUntil.days}d ${timeUntil.hours}h`}
@@ -228,7 +231,7 @@ export default function UpcomingAnticipatedSection({
                           {count > 0 && (
                             <span
                               className="text-white/60 text-[10px] font-medium flex items-center gap-0.5 bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/5"
-                              title={`${count} waiting`}
+                              title={translateUi("value1_waiting_5edad48", { value1: String(count) })}
                             >
                               <span className="opacity-70">👤</span>
                               <span className="font-semibold text-white/80">{count}</span>
@@ -252,7 +255,7 @@ export default function UpcomingAnticipatedSection({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-white/5">
         <h2 className="text-xl font-bold flex items-center gap-2.5">
           <span className="text-xl">🚀</span>
-          <span className="gradient-text">Upcoming Releases</span>
+          <span className="gradient-text">{translateUi("upcoming_releases_4186c38")}</span>
         </h2>
 
         {/* Premium Tab Selectors */}
@@ -325,7 +328,7 @@ export default function UpcomingAnticipatedSection({
                       }`}
                     >
                       {timeUntil.isReleased
-                        ? 'Released'
+                        ? translateUi("released_35d9bc5")
                         : timeUntil.days === 0 && timeUntil.hours === 0
                           ? `${timeUntil.minutes}m`
                           : `${timeUntil.days}d ${timeUntil.hours}h`}
@@ -335,7 +338,7 @@ export default function UpcomingAnticipatedSection({
                   {count > 0 && (
                     <span
                       className="text-white/60 text-[10px] font-medium flex items-center gap-0.5 bg-white/[0.04] px-1.5 py-0.5 rounded border border-white/5"
-                      title={`${count} waiting`}
+                      title={translateUi("value1_waiting_5edad48", { value1: String(count) })}
                     >
                       <span className="opacity-70">👤</span>
                       <span className="font-semibold text-white/80">{count}</span>
@@ -347,7 +350,7 @@ export default function UpcomingAnticipatedSection({
           })}
         </div>
       ) : (
-        <EmptyState message="No upcoming content found." />
+        <EmptyState message={translateUi("no_upcoming_content_found_83692d8")} />
       )}
     </section>
   );

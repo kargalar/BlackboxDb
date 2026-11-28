@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 /**
  * StatsTab — Main orchestrator
  * Composes chart sections from extracted components.
@@ -339,12 +341,13 @@ export default function StatsTab({
 // ── Skeleton placeholder ──────────────────────────────────
 
 function SectionSkeleton({ title, t }: { title: string; t: any }) {
+  const translateUi = useUiTranslations('Ui');
   return (
     <div className="glass-card p-5 animate-pulse">
       <div className="h-4 w-40 bg-white/10 rounded mb-3" />
       <div className="h-32 bg-white/5 rounded-xl" />
       <p className="text-xs text-white/20 mt-2">
-        {t ? t('skeletons.loading', { title }) : `${title} loading...`}
+        {t ? t('skeletons.loading', { title }) : translateUi("value1_loading_6fa9344", { value1: String(title) })}
       </p>
     </div>
   );

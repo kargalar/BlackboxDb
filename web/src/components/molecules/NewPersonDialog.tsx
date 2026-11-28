@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 /**
  * Unified Person Dialog — create or edit a person.
  * Dark/gray theme, wide layout, supports local & API save modes.
@@ -37,6 +39,7 @@ export function NewPersonDialog({
   apiMode = 'local',
   title,
 }: NewPersonDialogProps) {
+  const translateUi = useUiTranslations('Ui');
   const isEdit = mode === 'edit';
 
   const formatDate = (d?: string | null): string => {
@@ -90,12 +93,12 @@ export function NewPersonDialog({
 
   const handleTmdbAutofill = async () => {
     if (!name.trim()) {
-      toast.error('Önce kişinin adını yazmalısınız!');
+      toast.error(translateUi("once_kisinin_adini_yazmalisiniz_6d081eb"));
       return;
     }
 
     setAutofilling(true);
-    const loadingToast = toast.loading("TMDB'den aranıyor...");
+    const loadingToast = toast.loading(translateUi("tmdb_den_araniyor_738b7a3"));
 
     try {
       // 1. Arama
@@ -107,7 +110,7 @@ export function NewPersonDialog({
 
       const tmdbPersonId = searchRes.data?.searchTmdbPersonQuery;
       if (!tmdbPersonId) {
-        toast.error("TMDB'de bu isimde kişi bulunamadı.", { id: loadingToast });
+        toast.error(translateUi("tmdb_de_bu_isimde_kisi_bulunamadi_f1368fb"), { id: loadingToast });
         return;
       }
 
@@ -122,7 +125,7 @@ export function NewPersonDialog({
 
       const personInfo = detailRes.data?.fetchTmdbPersonInfo;
       if (!personInfo) {
-        toast.error('Kişi detayları alınamadı.', { id: loadingToast });
+        toast.error(translateUi("kisi_detaylari_alinamadi_53371d7"), { id: loadingToast });
         return;
       }
 
@@ -137,7 +140,7 @@ export function NewPersonDialog({
       else if (personInfo.gender === 2) setGender('male');
       else if (personInfo.gender === 3) setGender('other');
 
-      toast.success("Kişi bilgileri TMDB'den dolduruldu!", { id: loadingToast });
+      toast.success(translateUi("kisi_bilgileri_tmdb_den_dolduruldu_5e047da"), { id: loadingToast });
     } catch (err: any) {
       console.error('❌ [NewPersonDialog] TMDB Autofill Error:', err);
       toast.error("TMDB'den bilgi çekilirken hata oluştu: " + (err.message || ''), {
@@ -197,7 +200,7 @@ export function NewPersonDialog({
           return;
         }
 
-        toast.success('Kişi bilgileri güncellendi');
+        toast.success(translateUi("kisi_bilgileri_guncellendi_63b3dd4"));
         console.log('✅ [NewPersonDialog] Person updated via API');
         onSave(personData);
       } catch (err: any) {
@@ -247,28 +250,28 @@ export function NewPersonDialog({
           {/* Row 1: Name + Gender */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">
-              <label className={labelCls}>Ad Soyad *</label>
+              <label className={labelCls}>{translateUi("ad_soyad_604bcee")}</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Örn: Christopher Nolan"
+                placeholder={translateUi("orn_christopher_nolan_1dc5fcb")}
                 className={inputCls}
                 autoFocus
               />
             </div>
             <div>
-              <label className={labelCls}>Cinsiyet</label>
+              <label className={labelCls}>{translateUi("cinsiyet_77664b1")}</label>
               <select
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
                 className={`${inputCls} appearance-none`}
               >
-                <option value="">Seçin</option>
-                <option value="male">Erkek</option>
-                <option value="female">Kadın</option>
-                <option value="other">Diğer</option>
-                <option value="unknown">Bilinmiyor</option>
+                <option value="">{translateUi("secin_c16e2a9")}</option>
+                <option value="male">{translateUi("erkek_81975d0")}</option>
+                <option value="female">{translateUi("kadin_3d78aad")}</option>
+                <option value="other">{translateUi("diger_861fed1")}</option>
+                <option value="unknown">{translateUi("bilinmiyor_7e644fb")}</option>
               </select>
             </div>
           </div>
@@ -276,7 +279,7 @@ export function NewPersonDialog({
           {/* Row 2: Dates */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>Doğum Tarihi</label>
+              <label className={labelCls}>{translateUi("dogum_tarihi_336e137")}</label>
               <input
                 type="date"
                 value={birthDate}
@@ -285,7 +288,7 @@ export function NewPersonDialog({
               />
             </div>
             <div>
-              <label className={labelCls}>Ölüm Tarihi</label>
+              <label className={labelCls}>{translateUi("olum_tarihi_df91405")}</label>
               <input
                 type="date"
                 value={deathDate}
@@ -297,23 +300,23 @@ export function NewPersonDialog({
 
           {/* Place of Birth */}
           <div>
-            <label className={labelCls}>Doğum Yeri</label>
+            <label className={labelCls}>{translateUi("dogum_yeri_dbd4acd")}</label>
             <input
               type="text"
               value={placeOfBirth}
               onChange={(e) => setPlaceOfBirth(e.target.value)}
-              placeholder="Örn: London, UK"
+              placeholder={translateUi("orn_london_uk_b8f019f")}
               className={inputCls}
             />
           </div>
 
           {/* Biography */}
           <div>
-            <label className={labelCls}>Biyografi</label>
+            <label className={labelCls}>{translateUi("biyografi_78f55f7")}</label>
             <textarea
               value={biography}
               onChange={(e) => setBiography(e.target.value)}
-              placeholder="Kişi hakkında kısa bilgi..."
+              placeholder={translateUi("kisi_hakkinda_kisa_bilgi_844069e")}
               rows={4}
               className={`${inputCls} resize-none`}
             />
@@ -322,7 +325,7 @@ export function NewPersonDialog({
           {/* Role — searchable dropdown (only when roles available) */}
           {roles.length > 0 && (
             <div>
-              <label className={labelCls}>Rol</label>
+              <label className={labelCls}>{translateUi("rol_a73f134")}</label>
               <div className="relative">
                 <input
                   type="text"
@@ -332,7 +335,7 @@ export function NewPersonDialog({
                     setShowRoleDropdown(true);
                   }}
                   onFocus={() => setShowRoleDropdown(true)}
-                  placeholder={selectedRole?.label || 'Rol seçin veya arayın...'}
+                  placeholder={selectedRole?.label || translateUi("rol_secin_veya_arayin_0bef491")}
                   className={inputCls}
                 />
                 {selectedRole && (
@@ -373,11 +376,11 @@ export function NewPersonDialog({
                           }}
                           className="w-full text-left px-3 py-2 text-sm text-green-400 hover:bg-gray-800 transition-colors"
                         >
-                          + &quot;{roleSearchTerm}&quot; oluştur
+                          {translateUi("quot_79ebfa3")}{roleSearchTerm}{translateUi("quot_olustur_980dac8")}
                         </button>
                       )}
                     {filteredRoles.length === 0 && !roleSearchTerm.trim() && (
-                      <div className="px-3 py-2 text-sm text-gray-500">Henüz rol yok</div>
+                      <div className="px-3 py-2 text-sm text-gray-500">{translateUi("henuz_rol_yok_2c8909c")}</div>
                     )}
                   </div>
                 )}
@@ -388,12 +391,12 @@ export function NewPersonDialog({
           {/* Character */}
           {showCharacterField && (
             <div>
-              <label className={labelCls}>Karakter Adı</label>
+              <label className={labelCls}>{translateUi("karakter_adi_c2f8074")}</label>
               <input
                 type="text"
                 value={character}
                 onChange={(e) => setCharacter(e.target.value)}
-                placeholder="Örn: Tony Stark"
+                placeholder={translateUi("orn_tony_stark_e026272")}
                 className={inputCls}
               />
             </div>
@@ -402,7 +405,7 @@ export function NewPersonDialog({
           {/* Profile Photo */}
           <div>
             <ImageUploadField
-              label="Profil Fotoğrafı"
+              label={translateUi("profil_fotografi_2259a81")}
               name="profileUrl"
               value={profileUrl}
               onChange={(url) => setProfileUrl(url)}
@@ -431,7 +434,7 @@ export function NewPersonDialog({
                 />
               </svg>
             )}
-            TMDB&apos;den Doldur
+            {translateUi("tmdb_apos_den_doldur_0a4619d")}
           </button>
           <div className="flex gap-3">
             <button
@@ -439,7 +442,7 @@ export function NewPersonDialog({
               onClick={onClose}
               className="px-5 py-2.5 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors font-medium"
             >
-              İptal
+              {translateUi("iptal_85e2d08")}
             </button>
             <button
               type="button"
@@ -450,7 +453,7 @@ export function NewPersonDialog({
               {saving ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Kaydediliyor...
+                  {translateUi("kaydediliyor_5bb599b")}
                 </>
               ) : (
                 <>

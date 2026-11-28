@@ -4,6 +4,8 @@
 
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -62,6 +64,7 @@ const MOOD_COLORS = [
 type TabKey = 'themes' | 'moods';
 
 export function StatsThemeMoodSection({ topThemes, topMoods, contentTypeFilter }: Props) {
+  const translateUi = useUiTranslations('Ui');
   const [activeTab, setActiveTab] = useState<TabKey>('themes');
   const router = useRouter();
 
@@ -69,9 +72,9 @@ export function StatsThemeMoodSection({ topThemes, topMoods, contentTypeFilter }
   if (!hasData) {
     return (
       <div className="glass-card p-5 space-y-2">
-        <h3 className="text-lg font-semibold text-white">🎭 Tema & Ruh Hali</h3>
+        <h3 className="text-lg font-semibold text-white">{translateUi("tema_ruh_hali_b33487f")}</h3>
         <p className="text-sm text-white/40">
-          Veri yok — içeriklerde tema/ruh hali bilgisi bulunamadı.
+          {translateUi("veri_yok_iceriklerde_tema_ruh_hali_2b8f81e")}
         </p>
       </div>
     );
@@ -103,8 +106,8 @@ export function StatsThemeMoodSection({ topThemes, topMoods, contentTypeFilter }
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-white">🎭 Tema & Ruh Hali</h3>
-        <p className="text-sm text-white/50">En çok tükettiğin içerik temaları ve duygu tonları</p>
+        <h3 className="text-lg font-semibold text-white">{translateUi("tema_ruh_hali_b33487f")}</h3>
+        <p className="text-sm text-white/50">{translateUi("en_cok_tukettigin_icerik_temalari_ve_d540c0c")}</p>
       </div>
 
       <div className="glass-card p-5 space-y-4">
@@ -182,7 +185,7 @@ export function StatsThemeMoodSection({ topThemes, topMoods, contentTypeFilter }
 
             {/* Tag cloud / list */}
             <div className="space-y-2">
-              <div className="text-xs text-white/40 uppercase tracking-wider mb-3">Tam liste</div>
+              <div className="text-xs text-white/40 uppercase tracking-wider mb-3">{translateUi("tam_liste_f2cc288")}</div>
               <div className="flex flex-wrap gap-2">
                 {data.map((d, i) => (
                   <Link
@@ -203,7 +206,7 @@ export function StatsThemeMoodSection({ topThemes, topMoods, contentTypeFilter }
             </div>
           </div>
         ) : (
-          <div className="text-xs text-white/40 py-6 text-center">Bu kategori için veri yok</div>
+          <div className="text-xs text-white/40 py-6 text-center">{translateUi("bu_kategori_icin_veri_yok_07c4278")}</div>
         )}
       </div>
     </div>

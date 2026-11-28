@@ -58,6 +58,7 @@ const FORM_TO_INPUT_KEYS: Record<string, string[]> = {
 
 const ARRAY_INPUT_KEYS = new Set([
   'alternativeTitles',
+  'translations',
   'releases',
   'genres',
   'languages',

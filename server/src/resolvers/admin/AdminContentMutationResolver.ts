@@ -1,3 +1,4 @@
+import { fillContentTranslations, saveContentTranslations, type LocalizedContentText } from "../../lib/contentTranslations";
 import { Prisma } from "@prisma/client";
 import { normalizeContentReleases } from "../../lib/contentReleases";
 import { Resolver, Mutation, Arg, Ctx, Authorized, Int } from "type-graphql";
@@ -254,6 +255,7 @@ async function resolveAgeRatingId(
 
 function getRelationChangedFields(input: UpdateContentInput, contentTypeId: number): string[] {
   return [
+    input.translations?.length ? "translations" : null,
     input.posterUrl !== undefined ? "posterUrl" : null,
     input.backdropUrl !== undefined ? "backdropUrl" : null,
     input.genres !== undefined ? "genres" : null,
@@ -284,6 +286,14 @@ async function getContentRelationAuditSnapshot(
 ): Promise<Record<string, any>> {
   const fieldSet = new Set(fields);
   const snapshot: Record<string, any> = {};
+
+  if (fieldSet.has("translations")) {
+    snapshot.translations = await prisma.contentTranslation.findMany({
+      where: { contentId, OR: [{ title: { not: null } }, { description: { not: null } }] },
+      orderBy: { language: "asc" },
+      select: { language: true, title: true, description: true },
+    });
+  }
 
   if (fieldSet.has("posterUrl") || fieldSet.has("backdropUrl")) {
     const content = await prisma.content.findUnique({
@@ -645,6 +655,8 @@ export class AdminContentMutationResolver {
         },
       });
 
+      await saveContentTranslations(prisma, id, input.translations);
+
       // 2. Many-to-many relations
       if (input.genres && input.genres.length > 0) {
         await linkGenres(prisma, id, input.genres, input.contentTypeId);
@@ -994,6 +1006,12 @@ export class AdminContentMutationResolver {
             })
           : existingContent;
 
+      if (input.importTranslations) {
+        await fillContentTranslations(prisma, id, input.translations);
+      } else {
+        await saveContentTranslations(prisma, id, input.translations);
+      }
+
       // 2. Delete old relations before re-creating
       if (castChanged) {
         await prisma.contentPerson.deleteMany({
@@ -1281,6 +1299,15 @@ export class AdminContentMutationResolver {
         else if (field === "genres" || field === "themes" || field === "moods" ||
           field === "gameModes" || field === "gameEngines" || field === "perspectives" ||
           field === "platforms" || field === "companies") input[field] = value;
+        else if (field === "translations") {
+          const priorLanguages = new Set(value.map((row: { language: string }) => row.language));
+          input.translations = [
+            ...value,
+            ...after.translations
+              .filter((row: { language: string }) => !priorLanguages.has(row.language))
+              .map(({ language }: { language: string }): LocalizedContentText => ({ language, title: null, description: null })),
+          ];
+        }
         else if (field === "screenshots") input.screenshots = value;
         else if (field === "expansions") input.expansions = value;
         else if (field === "bookPublications") input.bookPublications = value;

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useId, useState, useEffect, useRef, type KeyboardEvent } from 'react';
 import { apolloClient } from '@/lib/apollo-client';
 import { DocumentNode } from 'graphql';
@@ -180,6 +182,7 @@ export function CompactTagSelector({
   renderItemLabel,
   fetchItems,
 }: CompactTagSelectorProps) {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('Accessibility');
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState<SimpleItem[]>([]);
@@ -412,7 +415,7 @@ export function CompactTagSelector({
               }}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-surface-raised hover:border-violet-500 dark:hover:border-violet-500 hover:text-violet-600 dark:hover:text-violet-400 transition-all"
             >
-              + Ekle
+              {translateUi("ekle_64b2d35")}
             </button>
 
             {/* Dropdown */}
@@ -447,7 +450,7 @@ export function CompactTagSelector({
                       disabled={isCreating}
                       className="px-2.5 py-1 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 whitespace-nowrap font-medium"
                     >
-                      {isCreating ? '...' : '+ Oluştur'}
+                      {isCreating ? '...' : translateUi("olustur_762008e")}
                     </button>
                   )}
                 </div>
@@ -456,7 +459,7 @@ export function CompactTagSelector({
                 <div className="max-h-48 overflow-y-auto">
                   {isLoading ? (
                     <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                      Yükleniyor...
+                      {translateUi("yukleniyor_317109f")}
                     </div>
                   ) : suggestions.length > 0 ? (
                     suggestions.map((item) => (
@@ -476,11 +479,11 @@ export function CompactTagSelector({
                     ))
                   ) : searchTerm.trim() ? (
                     <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                      Sonuç bulunamadı
+                      {translateUi("sonuc_bulunamadi_cdf964e")}
                     </div>
                   ) : (
                     <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                      Henüz seçenek yok
+                      {translateUi("henuz_secenek_yok_2c36acb")}
                     </div>
                   )}
                 </div>

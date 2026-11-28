@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import Link from 'next/link';
 import { useHorizontalDragScroll } from '@/hooks/useHorizontalDragScroll';
 import InteractivePoster from '@/components/organisms/InteractivePoster';
@@ -35,6 +37,7 @@ export default function ContentSection({
   timeRange?: string;
   onTimeRangeChange?: (newRange: string) => void;
 }) {
+  const translateUi = useUiTranslations('Ui');
   const { dragScrollProps } = useHorizontalDragScroll();
   const displayItems = items.slice(0, maxItems);
 
@@ -105,7 +108,7 @@ export default function ContentSection({
               <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-white/[0.05] text-lg font-black">
                 +
               </span>
-              <span className="text-sm font-semibold leading-6">Show All</span>
+              <span className="text-sm font-semibold leading-6">{translateUi("show_all_b3f8542")}</span>
             </div>
           </Link>
         </div>

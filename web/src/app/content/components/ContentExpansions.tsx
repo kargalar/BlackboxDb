@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -27,6 +29,7 @@ export default function ContentExpansions({
   boardGame = false,
   type = 'expansion',
 }: ContentExpansionsProps) {
+  const translateUi = useUiTranslations('Ui');
   const { user } = useAuth();
   const tBoardGames = useTranslations('BoardGames');
   const [expansions, setExpansions] = useState<Expansion[]>([]);
@@ -64,7 +67,7 @@ export default function ContentExpansions({
       );
     } catch (err) {
       console.error('❌ [ContentExpansions] Error loading expansions:', err);
-      setError(err instanceof Error ? err.message : 'Expansion yüklenemedi');
+      setError(err instanceof Error ? err.message : translateUi("expansion_yuklenemedi_d07dc4c"));
     } finally {
       setLoading(false);
     }
@@ -271,7 +274,7 @@ export default function ContentExpansions({
               <p className="text-sm font-medium text-white">
                 {completedCount}/{expansions.length}
               </p>
-              <p className="text-xs text-white/50">tamamlandı</p>
+              <p className="text-xs text-white/50">{translateUi("tamamlandi_530f5bb")}</p>
             </div>
             <div className="relative w-12 h-12">
               <svg className="w-12 h-12 transform -rotate-90">
@@ -407,7 +410,7 @@ export default function ContentExpansions({
                           {isLoading ? (
                             <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
                           ) : (
-                            <span>{isConsumed ? '✓ Tamamlandı' : '○ Tamamla'}</span>
+                            <span>{isConsumed ? translateUi("tamamlandi_31b5c86") : translateUi("tamamla_f4d454b")}</span>
                           )}
                         </button>
 
@@ -453,7 +456,7 @@ export default function ContentExpansions({
                                   ? 'cursor-not-allowed opacity-50'
                                   : 'cursor-pointer hover:scale-110'
                               }`}
-                              title="Puanı kaldır"
+                              title={translateUi("puani_kaldir_1181512")}
                             >
                               <span className="text-white text-[10px] font-bold">✕</span>
                             </button>

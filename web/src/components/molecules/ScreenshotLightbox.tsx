@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight, AlertTriangle, Eye, EyeOff, Trash2 } from 'lucide-react';
@@ -41,6 +43,7 @@ export default function ScreenshotLightbox({
   onNavigate,
   onDelete,
 }: ScreenshotLightboxProps) {
+  const translateUi = useUiTranslations('Ui');
   const goPrev = useCallback(() => {
     const prev = (selectedIndex - 1 + screenshots.length) % screenshots.length;
     onNavigate(prev);
@@ -120,7 +123,7 @@ export default function ScreenshotLightbox({
         <button
           onClick={onClose}
           className="p-2 text-white/70 hover:text-white transition-colors"
-          aria-label="Kapat"
+          aria-label={translateUi("kapat_9e6ecd5")}
         >
           <X size={28} />
         </button>
@@ -136,7 +139,7 @@ export default function ScreenshotLightbox({
               goPrev();
             }}
             className="absolute left-2 p-2 text-white/60 hover:text-white transition-colors z-10"
-            aria-label="Önceki"
+            aria-label={translateUi("onceki_cbdd13a")}
           >
             <ChevronLeft size={44} />
           </button>
@@ -147,7 +150,7 @@ export default function ScreenshotLightbox({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={screenshot.imageUrl}
-            alt={`Screenshot ${selectedIndex + 1}`}
+            alt={translateUi("screenshot_value1_520ca5e", { value1: String(selectedIndex + 1) })}
             className="max-w-full max-h-full object-contain pointer-events-auto"
             onClick={(e) => e.stopPropagation()}
           />
@@ -159,7 +162,7 @@ export default function ScreenshotLightbox({
               onClick={(e) => e.stopPropagation()}
             >
               <AlertTriangle className="w-4 h-4" />
-              Spoiler
+              {translateUi("spoiler_875786e")}
             </div>
           )}
 
@@ -170,7 +173,7 @@ export default function ScreenshotLightbox({
               onClick={(e) => e.stopPropagation()}
             >
               <EyeOff className="w-4 h-4" />
-              Hassas
+              {translateUi("hassas_f97f12b")}
             </div>
           )}
 
@@ -181,7 +184,7 @@ export default function ScreenshotLightbox({
               onClick={(e) => e.stopPropagation()}
             >
               <Eye className="w-4 h-4" />
-              Test: {DIFFICULTY_LABELS[screenshot.difficulty - 1]}
+              {translateUi("test_5d3e237") + " "} {DIFFICULTY_LABELS[screenshot.difficulty - 1]}
             </div>
           )}
         </div>
@@ -194,7 +197,7 @@ export default function ScreenshotLightbox({
               goNext();
             }}
             className="absolute right-2 p-2 text-white/60 hover:text-white transition-colors z-10"
-            aria-label="Sonraki"
+            aria-label={translateUi("sonraki_7de1741")}
           >
             <ChevronRight size={44} />
           </button>
@@ -215,7 +218,7 @@ export default function ScreenshotLightbox({
             }`}
           >
             <AlertTriangle className="w-4 h-4" />
-            {screenshot.isSpoiler ? 'Spoiler ✓' : 'Spoiler'}
+            {screenshot.isSpoiler ? translateUi("spoiler_5ea6761") : translateUi("spoiler_875786e")}
           </button>
 
           {/* Sensitive Toggle */}
@@ -229,7 +232,7 @@ export default function ScreenshotLightbox({
             }`}
           >
             <EyeOff className="w-4 h-4" />
-            {screenshot.isSensitive ? 'Hassas ✓' : 'Hassas'}
+            {screenshot.isSensitive ? translateUi("hassas_4ce493a") : translateUi("hassas_f97f12b")}
           </button>
 
           {/* Quiz Toggle */}
@@ -247,7 +250,7 @@ export default function ScreenshotLightbox({
             ) : (
               <EyeOff className="w-4 h-4" />
             )}
-            {screenshot.isEnabledForQuiz ? 'Testte ✓' : 'Teste Ekle'}
+            {screenshot.isEnabledForQuiz ? translateUi("testte_d6173d8") : translateUi("teste_ekle_32f9fe7")}
           </button>
 
           {/* Delete Button */}
@@ -258,14 +261,14 @@ export default function ScreenshotLightbox({
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg transition-colors text-sm font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30"
             >
               <Trash2 className="w-4 h-4" />
-              Sil
+              {translateUi("sil_353ad5e")}
             </button>
           )}
 
           {/* Difficulty Selector - only when quiz enabled */}
           {screenshot.isEnabledForQuiz && (
             <div className="flex items-center gap-2">
-              <span className="text-white/60 text-sm mr-1">Seviye:</span>
+              <span className="text-white/60 text-sm mr-1">{translateUi("seviye_d1c5877")}</span>
               {[1, 2, 3, 4, 5].map((level) => {
                 const isActive = screenshot.difficulty === level;
                 return (

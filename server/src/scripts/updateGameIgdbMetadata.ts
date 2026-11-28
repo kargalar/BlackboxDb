@@ -1,3 +1,4 @@
+import { fillContentTranslations } from "../lib/contentTranslations";
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { fetchIgdbGameDetails } from "../lib/igdbFetcher";
@@ -50,6 +51,8 @@ async function main() {
                         : (game.franchiseId || null),
                 }
             });
+
+            await fillContentTranslations(prisma, game.id, details.translations);
 
             // 2. Clear and update relations
             // We use surgical cleanup to avoid wiping out manual edits if needed, 

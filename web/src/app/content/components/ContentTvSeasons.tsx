@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { formattingLocale } from '@/i18n/locales';
 import { useMemo } from 'react';
 import Image from 'next/image';
 import Stars from './Stars';
@@ -60,12 +62,12 @@ const getDateKey = (value?: unknown): number | null => {
   return parsed.getFullYear() * 10000 + (parsed.getMonth() + 1) * 100 + parsed.getDate();
 };
 
-const formatAirDate = (value?: unknown): string | null => {
+const formatAirDate = (value: unknown, locale: string): string | null => {
   if (!value) return null;
 
   const parsed = new Date(String(value));
   if (!Number.isNaN(parsed.getTime())) {
-    return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return parsed.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   return null;
@@ -94,6 +96,7 @@ const ContentTvSeasons = ({
   onRateEpisode,
 }: ContentTvSeasonsProps) => {
   const t = useTranslations('ContentTvSeasons');
+  const locale = formattingLocale(useLocale());
   const todayKey = useMemo(() => {
     const now = new Date();
     return now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
@@ -308,7 +311,7 @@ const ContentTvSeasons = ({
                       )}
                     </div>
                     <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs text-white/50">
-                      <span>{formatAirDate(season.airDate) || t('episode.noDate')}</span>
+                      <span>{formatAirDate(season.airDate, locale) || t('episode.noDate')}</span>
                       <span>
                         {t('stats.episodesCount', {
                           count: metrics?.totalEpisodes ?? season.episodeCount,
@@ -449,7 +452,7 @@ const ContentTvSeasons = ({
                                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/45">
                                       <span>S{season.seasonNumber}</span>
                                       <span>
-                                        {formatAirDate(episode.airDate) || t('episode.noDate')}
+                                        {formatAirDate(episode.airDate, locale) || t('episode.noDate')}
                                       </span>
                                       {episode.runtime && episode.runtime > 0 && (
                                         <span>

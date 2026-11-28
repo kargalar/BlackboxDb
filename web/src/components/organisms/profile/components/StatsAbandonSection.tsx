@@ -4,6 +4,8 @@
 
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React from 'react';
 import {
   BarChart,
@@ -52,11 +54,12 @@ function typeColor(name: string): string {
 }
 
 export function StatsAbandonSection({ abandonedCount, abandonedByType, totalConsumed }: Props) {
+  const translateUi = useUiTranslations('Ui');
   if (abandonedCount === 0) {
     return (
       <div className="glass-card p-5 space-y-2">
-        <h3 className="text-lg font-semibold text-white">🚪 Yarıda Bırakılanlar</h3>
-        <p className="text-sm text-white/40">Veri yok — yarıda bırakılan içerik bulunmuyor.</p>
+        <h3 className="text-lg font-semibold text-white">{translateUi("yarida_birakilanlar_f049355")}</h3>
+        <p className="text-sm text-white/40">{translateUi("veri_yok_yarida_birakilan_icerik_bulunmuyor_6ae3dda")}</p>
       </div>
     );
   }
@@ -77,8 +80,8 @@ export function StatsAbandonSection({ abandonedCount, abandonedByType, totalCons
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-white">🚪 Yarıda Bırakılanlar</h3>
-        <p className="text-sm text-white/50">Tamamlamadığın içerikler</p>
+        <h3 className="text-lg font-semibold text-white">{translateUi("yarida_birakilanlar_f049355")}</h3>
+        <p className="text-sm text-white/50">{translateUi("tamamlamadigin_icerikler_f4e4141")}</p>
       </div>
 
       <div className="glass-card p-5 space-y-4">
@@ -86,15 +89,15 @@ export function StatsAbandonSection({ abandonedCount, abandonedByType, totalCons
         <div className="flex flex-wrap gap-4">
           <div className="flex flex-col items-center justify-center bg-red-500/10 border border-red-500/20 rounded-2xl px-6 py-4 min-w-[120px]">
             <span className="text-3xl font-bold text-red-400">{abandonedCount}</span>
-            <span className="text-xs text-white/50 mt-1">Bırakılan</span>
+            <span className="text-xs text-white/50 mt-1">{translateUi("birakilan_f0bb33a")}</span>
           </div>
           <div className="flex flex-col items-center justify-center bg-orange-500/10 border border-orange-500/20 rounded-2xl px-6 py-4 min-w-[120px]">
             <span className="text-3xl font-bold text-orange-400">%{abandonRate}</span>
-            <span className="text-xs text-white/50 mt-1">Bırakma Oranı</span>
+            <span className="text-xs text-white/50 mt-1">{translateUi("birakma_orani_971e6f0")}</span>
           </div>
           <div className="flex flex-col items-center justify-center bg-white/5 border border-white/10 rounded-2xl px-6 py-4 min-w-[120px]">
             <span className="text-3xl font-bold text-white">{totalConsumed}</span>
-            <span className="text-xs text-white/50 mt-1">Tamamlanan</span>
+            <span className="text-xs text-white/50 mt-1">{translateUi("tamamlanan_90c01c9")}</span>
           </div>
         </div>
 
@@ -119,8 +122,8 @@ export function StatsAbandonSection({ abandonedCount, abandonedByType, totalCons
 
         {barData.length === 1 && (
           <div className="text-sm text-white/50 pt-1">
-            Tüm bırakılan içerikler{' '}
-            <span className="text-white font-medium">{barData[0].name}</span> türünde.
+            {translateUi("tum_birakilan_icerikler_2766834")}{' '}
+            <span className="text-white font-medium">{barData[0].name}</span> {" " + translateUi("turunde_e5b8351")}
           </div>
         )}
       </div>

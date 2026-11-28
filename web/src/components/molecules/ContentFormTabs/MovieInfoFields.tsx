@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 /**
  * MovieInfoFields - Movie-specific info fields (runtime, budget, revenue, studios).
  * Cast & Crew are in a separate tab via CastCrewFields.
@@ -15,6 +17,7 @@ interface MovieInfoFieldsProps {
 }
 
 export function MovieInfoFields({ formData, setFormData }: MovieInfoFieldsProps) {
+  const translateUi = useUiTranslations('Ui');
   console.log('🎬 [MovieInfoFields] Render');
 
   return (
@@ -30,47 +33,47 @@ export function MovieInfoFields({ formData, setFormData }: MovieInfoFieldsProps)
             tmdbId: value ? Number(value) : undefined,
           })
         }
-        placeholder="Örn: 603"
+        placeholder={translateUi("orn_603_56f08c2")}
       />
 
       {/* Film Süresi */}
       <FormInput
-        label="Süre (dakika)"
+        label={translateUi("sure_dakika_9fe8aa6")}
         name="runtime"
         type="number"
         value={formData.runtime}
         onChange={(value) => setFormData({ ...formData, runtime: value })}
-        placeholder="Örn: 120"
+        placeholder={translateUi("orn_120_5c87396")}
       />
 
       {/* Finansal Bilgiler */}
       <div className="space-y-4">
         <FormInput
-          label="Bütçe (USD)"
+          label={translateUi("butce_usd_4122d66")}
           name="budget"
           type="number"
           value={formData.budget}
           onChange={(value) => setFormData({ ...formData, budget: value })}
-          placeholder="Örn: 100000000"
+          placeholder={translateUi("orn_100000000_9dc1714")}
         />
 
         <FormInput
-          label="Kasa Geliri (USD)"
+          label={translateUi("kasa_geliri_usd_374b5d5")}
           name="revenue"
           type="number"
           value={formData.revenue}
           onChange={(value) => setFormData({ ...formData, revenue: value })}
-          placeholder="Örn: 500000000"
+          placeholder={translateUi("orn_500000000_dbfa053")}
         />
       </div>
 
       {/* Studios */}
       <CompactTagSelector
-        label="Stüdyolar / Yapım Şirketleri"
+        label={translateUi("studyolar_yapim_sirketleri_e26f2c9")}
         icon="🏢"
         value={formData.studios || []}
         onChange={(companies) => setFormData({ ...formData, studios: companies })}
-        placeholder="Warner Bros, Universal Pictures..."
+        placeholder={translateUi("warner_bros_universal_pictures_9115c42")}
         listQuery={LIST_COMPANIES}
         queryKey="listCompanies"
         queryVariables={{ roleIds: [6] }}

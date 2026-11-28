@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -21,7 +23,7 @@ import {
   ListPlus,
 } from 'lucide-react';
 import { getPosterUrl } from '@/lib/image-utils';
-import { formatRelativeTime } from '@/lib/date-utils';
+import { useRelativeTime } from '@/i18n/use-relative-time';
 import { formatRating } from '@/lib/formatRating';
 import { useHorizontalDragScroll } from '@/hooks/useHorizontalDragScroll';
 import InteractivePoster from '@/components/organisms/InteractivePoster';
@@ -211,6 +213,8 @@ function ActivityPosterColumn({
   onContinuingToggle?: (item: any, type: any) => void;
   onAddToList?: (item: any, type: any) => void;
 }) {
+  const formatRelativeTime = useRelativeTime();
+  const translateUi = useUiTranslations('Ui');
   const user = act.user;
   const contentType = getContentTypeSlug(act.content?.contentTypeId);
   const unifiedContent = {
@@ -266,14 +270,14 @@ function ActivityPosterColumn({
           <div className="flex items-center gap-1.5 min-w-0">
             <Link
               href={user.username ? `/profile/${user.username}` : '#'}
-              title={user.username || 'Unknown'}
+              title={user.username || translateUi("unknown_bc7819b")}
               className="shrink-0"
             >
               <div className="w-6 h-6 rounded-full bg-violet-500 overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.7)] hover:scale-110 transition-transform">
                 {user.picturePath ? (
                   <Image
                     src={user.picturePath}
-                    alt={user.username || 'User'}
+                    alt={user.username || translateUi("user_9f8a238")}
                     width={24}
                     height={24}
                     className="object-cover w-full h-full"
@@ -351,6 +355,7 @@ function ReviewActivityCard(props: {
   onContinuingToggle?: (item: any, type: any) => void;
   onAddToList?: (item: any, type: any) => void;
 }) {
+  const translateUi = useUiTranslations('Ui');
   const { act } = props;
   const rawReview = act.review || act.reviewDiscussion?.description || '';
   const cleanedReview = rawReview.replace(/^["'“‘\s]+|["'”’\s]+$/g, '').trim() || rawReview;
@@ -368,11 +373,11 @@ function ReviewActivityCard(props: {
             href={discussionHref as any}
             className="text-xs sm:text-sm text-white/80 hover:text-white transition-colors italic line-clamp-8 leading-relaxed block"
           >
-            &ldquo;{cleanedReview}&rdquo;
+            {translateUi("ldquo_7458eb2")}{cleanedReview}{translateUi("rdquo_55f8f15")}
           </Link>
         ) : (
           <p className="text-xs sm:text-sm text-white/80 italic line-clamp-8 leading-relaxed">
-            &ldquo;{cleanedReview}&rdquo;
+            {translateUi("ldquo_7458eb2")}{cleanedReview}{translateUi("rdquo_55f8f15")}
           </p>
         )}
       </div>
@@ -427,6 +432,7 @@ function ActivityCardItem({
 }
 
 function ViewAllCard() {
+  const translateUi = useUiTranslations('Ui');
   return (
     <Link
       href={'/dashboard/friends-activity' as any}
@@ -437,7 +443,7 @@ function ViewAllCard() {
         <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-white/[0.05] text-lg font-black">
           +
         </span>
-        <span className="text-sm font-semibold leading-6">See All</span>
+        <span className="text-sm font-semibold leading-6">{translateUi("see_all_8196e42")}</span>
       </div>
     </Link>
   );
@@ -473,6 +479,7 @@ export default function FriendsActivitySection({
   showViewAll = true,
   splitByContentType = false,
 }: FriendsActivitySectionProps) {
+  const translateUi = useUiTranslations('Ui');
   const [selectedFilterId, setSelectedFilterId] = useState(0);
   const { containerRef, dragScrollProps } = useHorizontalDragScroll();
 
@@ -521,8 +528,8 @@ export default function FriendsActivitySection({
     <section className="space-y-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 className="text-xl font-bold">Friends&apos; Activity</h2>
-          <p className="text-sm text-white/50">Recent activity and reviews of people you follow</p>
+          <h2 className="text-xl font-bold">{translateUi("friends_apos_activity_336f39e")}</h2>
+          <p className="text-sm text-white/50">{translateUi("recent_activity_and_reviews_of_people_1933a8d")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {layout === 'carousel' && filteredActivities.length > 0 && (
@@ -531,8 +538,8 @@ export default function FriendsActivitySection({
                 type="button"
                 onClick={() => scrollActivities('left')}
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
-                aria-label="Scroll left"
-                title="Scroll left"
+                aria-label={translateUi("scroll_left_2c9e5a6")}
+                title={translateUi("scroll_left_2c9e5a6")}
               >
                 <ChevronLeft size={16} />
               </button>
@@ -540,8 +547,8 @@ export default function FriendsActivitySection({
                 type="button"
                 onClick={() => scrollActivities('right')}
                 className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:bg-white/10 hover:text-white"
-                aria-label="Scroll right"
-                title="Scroll right"
+                aria-label={translateUi("scroll_right_2994b49")}
+                title={translateUi("scroll_right_2994b49")}
               >
                 <ChevronRight size={16} />
               </button>
@@ -572,7 +579,7 @@ export default function FriendsActivitySection({
               href={'/dashboard/friends-activity' as any}
               className="btn-secondary px-4 py-2 text-sm"
             >
-              See All
+              {translateUi("see_all_8196e42")}
             </Link>
           )}
         </div>
@@ -581,16 +588,16 @@ export default function FriendsActivitySection({
       {loading ? (
         <div className="glass-card p-6 flex items-center gap-3">
           <div className="w-5 h-5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-white/60">Loading activities...</p>
+          <p className="text-white/60">{translateUi("loading_activities_680f819")}</p>
         </div>
       ) : error ? (
         <div className="glass-card p-6">
-          <p className="text-red-300 font-medium">Failed to load activities</p>
+          <p className="text-red-300 font-medium">{translateUi("failed_to_load_activities_92793ee")}</p>
           <p className="text-white/60 text-sm mt-1">{error}</p>
         </div>
       ) : splitByContentType ? (
         filteredActivities.length === 0 ? (
-          <div className="glass-card p-6 text-center text-white/50">No friend activity yet.</div>
+          <div className="glass-card p-6 text-center text-white/50">{translateUi("no_friend_activity_yet_ab06075")}</div>
         ) : (
           <div className="space-y-6">
             {splitFilters.map((filter) => {
@@ -629,8 +636,8 @@ export default function FriendsActivitySection({
       ) : filteredActivities.length === 0 ? (
         <div className="glass-card p-6 text-center text-white/50">
           {selectedFilter.id !== 0
-            ? 'No friend activity in this content type.'
-            : 'No friend activity yet.'}
+            ? translateUi("no_friend_activity_in_this_content_1c7b245")
+            : translateUi("no_friend_activity_yet_ab06075")}
         </div>
       ) : layout === 'grid' ? (
         <div className="flex flex-wrap gap-4 items-start">

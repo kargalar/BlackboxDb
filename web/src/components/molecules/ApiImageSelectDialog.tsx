@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 /**
  * ApiImageSelectDialog
  *
@@ -43,6 +45,7 @@ export default function ApiImageSelectDialog({
   sourceId,
   title,
 }: ApiImageSelectDialogProps) {
+  const translateUi = useUiTranslations('Ui');
   const [images, setImages] = useState<ContentImageOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,11 +73,11 @@ export default function ApiImageSelectDialog({
       console.log(`✅ [ApiImageSelect] Loaded ${items.length} ${category}`);
 
       if (items.length === 0) {
-        setError(`Bu içerik için ${categoryLabel.toLowerCase()} bulunamadı.`);
+        setError(translateUi("bu_icerik_icin_value1_bulunamadi_06a7da3", { value1: String(categoryLabel.toLowerCase()) }));
       }
     } catch (err: any) {
       console.error('❌ [ApiImageSelect] Fetch failed:', err);
-      setError('Görseller yüklenirken hata oluştu.');
+      setError(translateUi("gorseller_yuklenirken_hata_olustu_af6a4ae"));
     } finally {
       setLoading(false);
     }
@@ -115,7 +118,7 @@ export default function ApiImageSelectDialog({
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{dialogTitle}</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Bir görsel seçmek için tıklayın
+                {translateUi("bir_gorsel_secmek_icin_tiklayin_ddb5aed")}
               </p>
             </div>
           </div>
@@ -133,7 +136,7 @@ export default function ApiImageSelectDialog({
             <div className="flex flex-col items-center justify-center py-16 gap-3">
               <Loader2 size={32} className="animate-spin text-blue-500" />
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {sourceLabel} görselleri yükleniyor...
+                {sourceLabel} {" " + translateUi("gorselleri_yukleniyor_9772791")}
               </p>
             </div>
           )}
@@ -181,7 +184,7 @@ export default function ApiImageSelectDialog({
                   {/* Hover overlay */}
                   <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/20 transition-colors duration-200 flex items-center justify-center">
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg">
-                      Seç
+                      {translateUi("sec_a958cab")}
                     </div>
                   </div>
 
@@ -205,13 +208,13 @@ export default function ApiImageSelectDialog({
         {/* Footer */}
         <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <p className="text-xs text-gray-400">
-            {images.length > 0 ? `${images.length} görsel bulundu` : ''}
+            {images.length > 0 ? translateUi("value1_gorsel_bulundu_80319fc", { value1: String(images.length) }) : ''}
           </p>
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
           >
-            Kapat
+            {translateUi("kapat_9e6ecd5")}
           </button>
         </div>
       </div>

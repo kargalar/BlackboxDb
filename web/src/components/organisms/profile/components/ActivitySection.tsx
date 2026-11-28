@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useHorizontalDragScroll } from '@/hooks/useHorizontalDragScroll';
 import type { Content } from '@/types/content';
@@ -65,6 +66,7 @@ export default function ActivitySection({
   onShowAll,
   subtitle,
 }: ActivitySectionProps) {
+  const translateUi = useUiTranslations('Ui');
   console.log(`🎬 [ActivitySection:${contentType}] Rendering ${items.length} items`);
   const { dragScrollProps } = useHorizontalDragScroll();
   const visibleItems = items.slice(0, maxItems);
@@ -95,7 +97,7 @@ export default function ActivitySection({
                   }}
                   className="inline-flex items-center rounded-full border border-white/15 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white"
                 >
-                  Tümünü Gör
+                  {translateUi("tumunu_gor_56eb0fa")}
                 </button>
               )}
             </div>
@@ -170,7 +172,7 @@ export default function ActivitySection({
                   <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-white/[0.05] text-lg font-black">
                     +
                   </span>
-                  <span className="text-sm font-semibold leading-6">Tümünü Göster</span>
+                  <span className="text-sm font-semibold leading-6">{translateUi("tumunu_goster_b8328f2")}</span>
                 </button>
               </div>
             )}

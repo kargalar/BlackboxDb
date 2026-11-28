@@ -1,5 +1,9 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { formattingLocale } from '@/i18n/locales';
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -155,6 +159,8 @@ function getInitialStateFromUserStatus(userStatus?: PersonContentData['userStatu
 }
 
 export default function PersonPage() {
+  const locale = formattingLocale(useLocale());
+  const translateUi = useUiTranslations('Ui');
   const params = useParams();
   const id = params?.id as string;
   const personId = id;
@@ -315,7 +321,7 @@ export default function PersonPage() {
         // Fetch person details
         const personData = await fetchPerson(personId);
         if (!personData) {
-          setError('Kişi bulunamadı');
+          setError(translateUi("kisi_bulunamadi_8595ae5"));
           console.error(`❌ [PersonPage] Person not found: ${personId}`);
           return;
         }
@@ -349,7 +355,7 @@ export default function PersonPage() {
         setItemStates(nextStates);
         console.log(`✅ [PersonPage] Item states initialized: ${Object.keys(nextStates).length}`);
       } catch (err) {
-        setError('Veri yüklenirken hata oluştu');
+        setError(translateUi("veri_yuklenirken_hata_olustu_a99ded2"));
         console.error(`❌ [PersonPage] Error loading person data:`, err);
       } finally {
         setLoading(false);
@@ -502,7 +508,7 @@ export default function PersonPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="glass-card p-8 text-center">
           <div className="w-12 h-12 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-white/60">Kişi bilgileri yükleniyor...</p>
+          <p className="text-white/60">{translateUi("kisi_bilgileri_yukleniyor_6c294a6")}</p>
         </div>
       </div>
     );
@@ -524,10 +530,10 @@ export default function PersonPage() {
                 </svg>
               </div>
             </div>
-            <h1 className="text-4xl font-bold mb-4">Kişi Bulunamadı</h1>
-            <p className="text-xl text-white/50 mb-8">{error || 'Beklenmedik bir hata oluştu'}</p>
+            <h1 className="text-4xl font-bold mb-4">{translateUi("kisi_bulunamadi_37b20fd")}</h1>
+            <p className="text-xl text-white/50 mb-8">{error || translateUi("beklenmedik_bir_hata_olustu_c89067d")}</p>
             <Link href="/" className="btn-gradient inline-block">
-              Ana Sayfaya Dön
+              {translateUi("ana_sayfaya_don_203b670")}
             </Link>
           </div>
         </div>
@@ -586,7 +592,7 @@ export default function PersonPage() {
                     <button
                       onClick={openEditModal}
                       className="px-4 py-2 bg-violet-600 text-white rounded-xl hover:bg-violet-500 hover: transition-all text-sm font-medium flex items-center gap-2"
-                      title="Kişi bilgilerini düzenle"
+                      title={translateUi("kisi_bilgilerini_duzenle_9c3faf5")}
                     >
                       <svg
                         className="w-4 h-4"
@@ -601,7 +607,7 @@ export default function PersonPage() {
                           d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                         />
                       </svg>
-                      Düzenle
+                      {translateUi("duzenle_525fd6f")}
                     </button>
                   )}
                   {user && (
@@ -613,20 +619,20 @@ export default function PersonPage() {
                           ? 'bg-amber-500/15 text-amber-300 border border-amber-400/30'
                           : 'bg-white/5 hover:bg-white/10 text-white border border-white/10'
                       }`}
-                      title="Favori oyunculara ekle"
+                      title={translateUi("favori_oyunculara_ekle_aa38f37")}
                     >
                       <span>{person.isFavorite ? '★' : '☆'}</span>
-                      {person.isFavorite ? 'Favorilerde' : 'Favori Oyuncu'}
+                      {person.isFavorite ? translateUi("favorilerde_51d8a68") : translateUi("favori_oyuncu_08393d1")}
                     </button>
                   )}
                   {user && (
                     <button
                       onClick={() => setIsReportModalOpen(true)}
                       className="px-4 py-2 bg-white/5 hover:bg-white/10 text-red-400 border border-white/10 rounded-xl transition-all text-sm font-medium flex items-center gap-2"
-                      title="Bu kişiyi raporla"
+                      title={translateUi("bu_kisiyi_raporla_5307b2d")}
                     >
                       <Flag className="w-4 h-4" />
-                      Raporla
+                      {translateUi("raporla_36d9ae7")}
                     </button>
                   )}
                 </div>
@@ -642,21 +648,21 @@ export default function PersonPage() {
                 <div className="flex flex-wrap gap-4 mb-6 text-gray-300">
                   {person.birthDate && (
                     <div>
-                      <p className="text-xs text-gray-500 uppercase">Doğum Tarihi</p>
+                      <p className="text-xs text-gray-500 uppercase">{translateUi("dogum_tarihi_336e137")}</p>
                       <p className="text-lg">
-                        {new Date(person.birthDate).toLocaleDateString('tr-TR')}
+                        {new Date(person.birthDate).toLocaleDateString(locale)}
                       </p>
                     </div>
                   )}
                   {person.placeOfBirth && (
                     <div>
-                      <p className="text-xs text-gray-500 uppercase">Doğum Yeri</p>
+                      <p className="text-xs text-gray-500 uppercase">{translateUi("dogum_yeri_dbd4acd")}</p>
                       <p className="text-lg">{person.placeOfBirth}</p>
                     </div>
                   )}
                   {person.gender && (
                     <div>
-                      <p className="text-xs text-gray-500 uppercase">Cinsiyet</p>
+                      <p className="text-xs text-gray-500 uppercase">{translateUi("cinsiyet_77664b1")}</p>
                       <p className="text-lg capitalize">{person.gender}</p>
                     </div>
                   )}
@@ -665,7 +671,7 @@ export default function PersonPage() {
                 {/* Roles */}
                 {person.roles && person.roles.length > 0 && (
                   <div className="mb-6">
-                    <p className="text-xs text-gray-500 uppercase mb-2">Roller</p>
+                    <p className="text-xs text-gray-500 uppercase mb-2">{translateUi("roller_71cbf64")}</p>
                     <div className="flex flex-wrap gap-2">
                       {Array.from(new Set(person.roles.map((r) => formatRoles([r])))).map(
                         (role) => (
@@ -701,8 +707,7 @@ export default function PersonPage() {
                         </svg>
                       </div>
                       <p className="text-sm">
-                        <strong className="text-white text-base">{person.roleCount}</strong> projede
-                        yer almıştır
+                        <strong className="text-white text-base">{person.roleCount}</strong> {" " + translateUi("projede_yer_almistir_edde4a8")}
                       </p>
                     </div>
 
@@ -740,7 +745,7 @@ export default function PersonPage() {
                                 }
                               </strong>
                               <span className="mx-1">/</span>
-                              {Object.keys(itemStates).length} tüketildi
+                              {Object.keys(itemStates).length} {" " + translateUi("tuketildi_d33d0ac")}
                             </p>
                             <div className="flex items-center gap-2 mt-0.5">
                               <div className="h-1.5 w-24 bg-gray-800 rounded-full overflow-hidden">
@@ -852,7 +857,7 @@ export default function PersonPage() {
                   <div className="mt-1">
                     {content.characters.length > 0 && (
                       <p className="text-xs text-white/70 truncate">
-                        &quot;{content.characters.join('", "')}&quot;
+                        {translateUi("quot_e2bbf20")}{content.characters.join('", "')}{translateUi("quot_e2bbf20")}
                       </p>
                     )}
                     <p className="text-xs text-gray-500">{roleLabel}</p>
@@ -865,7 +870,7 @@ export default function PersonPage() {
 
         {availableTabs.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-400">Bu kişinin herhangi bir rolü bulunamadı</p>
+            <p className="text-gray-400">{translateUi("bu_kisinin_herhangi_bir_rolu_bulunamadi_a528fe3")}</p>
           </div>
         )}
       </div>

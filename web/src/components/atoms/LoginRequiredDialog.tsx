@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import {
   createContext,
   useContext,
@@ -25,6 +27,7 @@ function LoginRequiredDialogComponent({
   message = 'Bu işlemi gerçekleştirmek için giriş yapmalısın.',
   returnUrl,
 }: LoginRequiredDialogProps) {
+  const translateUi = useUiTranslations('Ui');
   const loginUrl = returnUrl
     ? `/auth/login?returnUrl=${encodeURIComponent(returnUrl)}`
     : '/auth/login';
@@ -95,7 +98,7 @@ function LoginRequiredDialogComponent({
           <div className="mx-auto w-16 h-16 rounded-full bg-violet-500 flex items-center justify-center mb-4">
             <LogIn className="w-8 h-8 text-white" />
           </div>
-          <h3 className="text-xl font-bold text-white">Giriş Gerekli</h3>
+          <h3 className="text-xl font-bold text-white">{translateUi("giris_gerekli_3e56260")}</h3>
           <p className="mt-2 text-sm text-white/60">{message}</p>
         </div>
 
@@ -106,7 +109,7 @@ function LoginRequiredDialogComponent({
             className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-violet-600 hover:bg-violet-500 hover: text-white font-medium rounded-xl transition-all duration-200 shadow-lg shadow-violet-500/20"
           >
             <LogIn className="w-5 h-5" />
-            <span>Giriş Yap</span>
+            <span>{translateUi("giris_yap_159a112")}</span>
           </Link>
 
           <Link
@@ -114,7 +117,7 @@ function LoginRequiredDialogComponent({
             className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-white/5 hover:bg-white/10 text-white font-medium rounded-xl border border-white/10 transition-all duration-200"
           >
             <UserPlus className="w-5 h-5" />
-            <span>Hesap Oluştur</span>
+            <span>{translateUi("hesap_olustur_c46a72d")}</span>
           </Link>
         </div>
 
@@ -124,7 +127,7 @@ function LoginRequiredDialogComponent({
             <div className="w-full border-t border-white/10"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-slate-900 text-white/40">veya</span>
+            <span className="px-2 bg-slate-900 text-white/40">{translateUi("veya_a8c8ca1")}</span>
           </div>
         </div>
 
@@ -133,7 +136,7 @@ function LoginRequiredDialogComponent({
           onClick={onClose}
           className="w-full py-2 px-4 text-sm text-white/50 hover:text-white transition-colors"
         >
-          Misafir olarak devam et
+          {translateUi("misafir_olarak_devam_et_145956d")}
         </button>
       </div>
     </div>

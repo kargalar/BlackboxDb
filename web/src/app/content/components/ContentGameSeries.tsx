@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React from 'react';
 
 interface ContentGameSeriesProps {
@@ -13,6 +15,7 @@ interface ContentGameSeriesProps {
 // This component requires related games data from our database
 // Currently disabled until backend support is added
 export const ContentGameSeries: React.FC<ContentGameSeriesProps> = ({ content }) => {
+  const translateUi = useUiTranslations('Ui');
   // Check if we have collection info
   const hasCollection = content?.gameDetails?.collection;
 
@@ -23,13 +26,13 @@ export const ContentGameSeries: React.FC<ContentGameSeriesProps> = ({ content })
   return (
     <div className="mb-8">
       <div className="bg-gray-800 rounded-lg p-6">
-        <h2 className="text-2xl font-bold mb-4">Seri & Koleksiyon</h2>
+        <h2 className="text-2xl font-bold mb-4">{translateUi("seri_koleksiyon_2528700")}</h2>
         <p className="text-gray-400">
-          Bu oyun bir koleksiyonun parçası. İlgili oyunlar yakında eklenecek.
+          {translateUi("bu_oyun_bir_koleksiyonun_parcasi_ilgili_5033123")}
         </p>
 
         <div className="mt-2">
-          <p className="text-sm text-gray-500">Collection ID: {content.gameDetails?.collection}</p>
+          <p className="text-sm text-gray-500">{translateUi("collection_id_c020d4b") + " "} {content.gameDetails?.collection}</p>
         </div>
       </div>
     </div>

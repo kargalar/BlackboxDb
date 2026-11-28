@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import { Calendar } from 'lucide-react';
 import { FilterSection } from './FilterSection';
 
@@ -18,6 +19,7 @@ export function YearFilter({
   onScroll,
   onClear,
 }: YearFilterProps) {
+  const translateUi = useUiTranslations('Ui');
   const currentYear = new Date().getFullYear();
   const minVal = year.min === '' ? 1900 : year.min;
   const maxVal = year.max === '' ? currentYear : year.max;
@@ -35,7 +37,7 @@ export function YearFilter({
 
   return (
     <FilterSection
-      title="Yıl"
+      title={translateUi("yil_fa47a8d")}
       icon={<Calendar className="w-4 h-4 text-fuchsia-400" />}
       isExpanded={isExpanded}
       onToggle={onToggleSection}

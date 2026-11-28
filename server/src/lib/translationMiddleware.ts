@@ -3,7 +3,7 @@ import { PrismaClient, Prisma } from "@prisma/client";
 /**
  * Models that support translations.
  */
-const TRANSLATION_MODELS: Prisma.ModelName[] = ["Content", "Person", "Company"];
+const TRANSLATION_MODELS: Prisma.ModelName[] = ["Person", "Company"];
 
 export function addTranslations(args: any, model: Prisma.ModelName) {
   const nextArgs = { ...(args || {}) };

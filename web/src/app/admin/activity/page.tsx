@@ -1,5 +1,9 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { formattingLocale } from '@/i18n/locales';
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@apollo/client/react';
 import Image from 'next/image';
@@ -28,6 +32,7 @@ const CONTENT_TYPE_SLUGS: Record<number, string> = {
 };
 
 export default function AdminActivityPage() {
+  const translateUi = useUiTranslations('Ui');
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -54,7 +59,7 @@ export default function AdminActivityPage() {
 
   useEffect(() => {
     if (!error) return;
-    toast.error('Aktiviteler yüklenirken bir hata oluştu.');
+    toast.error(translateUi("aktiviteler_yuklenirken_bir_hata_olustu_aa6123a"));
   }, [error]);
 
   const logs = data?.adminContentActivityLogs.items || [];
@@ -65,9 +70,9 @@ export default function AdminActivityPage() {
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Aktivite İzleme</h1>
+          <h1 className="text-2xl font-bold text-white">{translateUi("aktivite_izleme_309c871")}</h1>
           <p className="text-white/60">
-            Sistemdeki içerik değişikliklerini ve eklemelerini takip edin.
+            {translateUi("sistemdeki_icerik_degisikliklerini_ve_eklemelerini_takip_dd5b640")}
           </p>
         </div>
 
@@ -75,7 +80,7 @@ export default function AdminActivityPage() {
           <div className="relative flex-1 md:w-64">
             <input
               type="text"
-              placeholder="İçerik adı veya ID ara..."
+              placeholder={translateUi("icerik_adi_veya_id_ara_5899f4d")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-violet-500"
@@ -94,7 +99,7 @@ export default function AdminActivityPage() {
             type="submit"
             className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors"
           >
-            Ara
+            {translateUi("ara_b07bcee")}
           </button>
         </form>
       </div>
@@ -104,11 +109,11 @@ export default function AdminActivityPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-white/5 border-b border-white/10 text-white/60 text-sm">
-                <th className="p-4 font-medium">Tarih</th>
-                <th className="p-4 font-medium">Kullanıcı</th>
-                <th className="p-4 font-medium">İşlem</th>
-                <th className="p-4 font-medium">İçerik</th>
-                <th className="p-4 font-medium">Detay</th>
+                <th className="p-4 font-medium">{translateUi("tarih_6ddab1b")}</th>
+                <th className="p-4 font-medium">{translateUi("kullanici_07075ba")}</th>
+                <th className="p-4 font-medium">{translateUi("islem_b35a486")}</th>
+                <th className="p-4 font-medium">{translateUi("icerik_a560e02")}</th>
+                <th className="p-4 font-medium">{translateUi("detay_6e65f38")}</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-white/5">
@@ -117,14 +122,14 @@ export default function AdminActivityPage() {
                   <td colSpan={5} className="p-8 text-center text-white/40">
                     <div className="flex items-center justify-center gap-2">
                       <div className="w-4 h-4 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
-                      Yükleniyor...
+                      {translateUi("yukleniyor_317109f")}
                     </div>
                   </td>
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="p-8 text-center text-white/40">
-                    Aktivite kaydı bulunamadı.
+                    {translateUi("aktivite_kaydi_bulunamadi_67d7de0")}
                   </td>
                 </tr>
               ) : (
@@ -138,8 +143,7 @@ export default function AdminActivityPage() {
         {totalPages > 1 && (
           <div className="p-4 border-t border-white/10 flex items-center justify-between">
             <span className="text-sm text-white/40">
-              Toplam {total} kayıttan {(page - 1) * limit + 1}-{Math.min(page * limit, total)} arası
-              gösteriliyor
+              {translateUi("toplam_ae3a712") + " "} {total} {" " + translateUi("kayittan_9824b52") + " "} {(page - 1) * limit + 1}-{Math.min(page * limit, total)} {" " + translateUi("arasi_gosteriliyor_8e7c20b")}
             </span>
             <div className="flex gap-1">
               <button
@@ -147,14 +151,14 @@ export default function AdminActivityPage() {
                 disabled={page === 1}
                 className="px-3 py-1 bg-white/5 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white text-sm transition-colors"
               >
-                Önceki
+                {translateUi("onceki_cbdd13a")}
               </button>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
                 className="px-3 py-1 bg-white/5 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white text-sm transition-colors"
               >
-                Sonraki
+                {translateUi("sonraki_7de1741")}
               </button>
             </div>
           </div>
@@ -165,11 +169,13 @@ export default function AdminActivityPage() {
 }
 
 function ActivityRow({ log }: { log: any }) {
+  const locale = formattingLocale(useLocale());
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('AdminContentPage');
   const [expanded, setExpanded] = useState(false);
 
   const date = new Date(Number(log.createdAt) || log.createdAt);
-  const formattedDate = date.toLocaleString('tr-TR', {
+  const formattedDate = date.toLocaleString(locale, {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -202,7 +208,7 @@ function ActivityRow({ log }: { log: any }) {
               )}
             </div>
             <div>
-              <div className="text-white font-medium">{log.actor?.username || 'Bilinmeyen'}</div>
+              <div className="text-white font-medium">{log.actor?.username || translateUi("bilinmeyen_b6048d4")}</div>
               <div className="text-white/40 text-xs">{log.actor?.email}</div>
             </div>
           </div>
@@ -251,7 +257,7 @@ function ActivityRow({ log }: { log: any }) {
               </div>
             </div>
           ) : (
-            <span className="text-white/40 italic">İçerik Bulunamadı ({log.contentId})</span>
+            <span className="text-white/40 italic">{translateUi("icerik_bulunamadi_daf63d3")}{log.contentId})</span>
           )}
         </td>
         <td className="p-4">
@@ -259,7 +265,7 @@ function ActivityRow({ log }: { log: any }) {
             onClick={() => setExpanded(!expanded)}
             className="text-violet-400 hover:text-violet-300 text-sm font-medium transition-colors"
           >
-            {expanded ? 'Gizle' : 'Detayları Gör'}
+            {expanded ? translateUi("gizle_3c92047") : translateUi("detaylari_gor_75bf608")}
           </button>
         </td>
       </tr>
@@ -269,7 +275,7 @@ function ActivityRow({ log }: { log: any }) {
           <td colSpan={5} className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h4 className="text-white/80 font-medium mb-3 text-sm">Değişen Alanlar</h4>
+                <h4 className="text-white/80 font-medium mb-3 text-sm">{translateUi("degisen_alanlar_0a3de80")}</h4>
                 {log.changedFields?.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {log.changedFields.map((field: string) => (
@@ -282,12 +288,12 @@ function ActivityRow({ log }: { log: any }) {
                     ))}
                   </div>
                 ) : (
-                  <span className="text-white/40 text-sm italic">Belirtilmemiş</span>
+                  <span className="text-white/40 text-sm italic">{translateUi("belirtilmemis_e89f4d8")}</span>
                 )}
 
                 {log.summary && (
                   <div className="mt-4">
-                    <h4 className="text-white/80 font-medium mb-2 text-sm">Özet</h4>
+                    <h4 className="text-white/80 font-medium mb-2 text-sm">{translateUi("ozet_915daef")}</h4>
                     <p className="text-white/60 text-sm">{log.summary}</p>
                   </div>
                 )}
@@ -296,7 +302,7 @@ function ActivityRow({ log }: { log: any }) {
               <div className="space-y-4">
                 {log.before && Object.keys(log.before).length > 0 && (
                   <div>
-                    <h4 className="text-red-400 font-medium mb-2 text-sm">Önceki Değerler</h4>
+                    <h4 className="text-red-400 font-medium mb-2 text-sm">{translateUi("onceki_degerler_4d31673")}</h4>
                     <AuditSnapshotView
                       value={log.before}
                       comparisonValue={log.after}
@@ -307,7 +313,7 @@ function ActivityRow({ log }: { log: any }) {
 
                 {log.after && Object.keys(log.after).length > 0 && (
                   <div>
-                    <h4 className="text-green-400 font-medium mb-2 text-sm">Yeni Değerler</h4>
+                    <h4 className="text-green-400 font-medium mb-2 text-sm">{translateUi("yeni_degerler_5b0caf0")}</h4>
                     <AuditSnapshotView
                       value={log.after}
                       comparisonValue={log.before}

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useCallback } from 'react';
 import { ReleaseFields } from '@/components/molecules/ContentFormTabs/ReleaseFields';
 import { CommonFields } from '@/components/molecules/ContentFormTabs/CommonFields';
@@ -86,6 +88,7 @@ export function ContentFormLayout({
   enableTitleAutoFill = true,
   originalData,
 }: ContentFormLayoutProps) {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('AddContent.formLayout');
   const tBoardGames = useTranslations('BoardGames');
   const releaseTranslations = useTranslations('ContentReleases');
@@ -106,7 +109,7 @@ export function ContentFormLayout({
     if (isBoardGame && tab.id === 'game-expansions') {
       return { ...tab, label: tBoardGames('packagesTab') };
     }
-    return tab;
+    return { ...tab, label: t(tab.messageKey).replace(/^\p{Extended_Pictographic}\uFE0F?\s+/u, '') };
   });
 
   // Auto-fill hook (TMDB / Google Books / IGDB — default source)
@@ -121,7 +124,10 @@ export function ContentFormLayout({
     formData.contentTypeId === '4';
 
   // Diffs
-  const allDiffs: DiffResult[] = originalData ? compareFormData(originalData, formData) : [];
+  const diffLabels = useTranslations('DiffUtils');
+  const allDiffs: DiffResult[] = originalData
+    ? compareFormData(originalData, formData, (key) => diffLabels.has(key) ? diffLabels(key) : key)
+    : [];
 
   const handleRevert = useCallback(
     (key: string) => {
@@ -449,7 +455,7 @@ export function ContentFormLayout({
         {validTab === 'citations' && (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Atıf Yapan İçerikler
+              {translateUi("atif_yapan_icerikler_c5d49b3")}
             </h3>
             <DiffAlert diffs={getDiffForTab(allDiffs, 'relations')} onRevert={handleRevert} />
             <CitationsFields formData={formData} setFormData={setFormData} />

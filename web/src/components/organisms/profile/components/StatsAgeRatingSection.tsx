@@ -4,6 +4,8 @@
 
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React from 'react';
 import Link from 'next/link';
 import {
@@ -55,11 +57,12 @@ function ageRatingColor(ratingName: string): string {
 }
 
 export function StatsAgeRatingSection({ ageRatingDistribution, contentTypeFilter }: Props) {
+  const translateUi = useUiTranslations('Ui');
   if (!ageRatingDistribution || ageRatingDistribution.length === 0) {
     return (
       <div className="glass-card p-5 space-y-2">
-        <h3 className="text-lg font-semibold text-white">🔞 Yaş Sınıflandırması</h3>
-        <p className="text-sm text-white/40">Veri yok — yaş sınıfı bilgisi bulunamadı.</p>
+        <h3 className="text-lg font-semibold text-white">{translateUi("yas_siniflandirmasi_9f2d510")}</h3>
+        <p className="text-sm text-white/40">{translateUi("veri_yok_yas_sinifi_bilgisi_bulunamadi_f501a46")}</p>
       </div>
     );
   }
@@ -79,8 +82,8 @@ export function StatsAgeRatingSection({ ageRatingDistribution, contentTypeFilter
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-white">🔞 Yaş Sınıflandırması</h3>
-        <p className="text-sm text-white/50">İçeriklerin yaş sınıflarına göre dağılımı</p>
+        <h3 className="text-lg font-semibold text-white">{translateUi("yas_siniflandirmasi_9f2d510")}</h3>
+        <p className="text-sm text-white/50">{translateUi("iceriklerin_yas_siniflarina_gore_dagilimi_6302094")}</p>
       </div>
 
       <div className="glass-card p-5 space-y-4">
@@ -120,7 +123,7 @@ export function StatsAgeRatingSection({ ageRatingDistribution, contentTypeFilter
                     {d.name.slice(0, 3)}
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-white">{d.value} içerik</div>
+                    <div className="text-sm font-semibold text-white">{d.value} {" " + translateUi("icerik_cc7ccd1")}</div>
                     <div className="text-xs text-white/40">%{pct}</div>
                   </div>
                 </Link>

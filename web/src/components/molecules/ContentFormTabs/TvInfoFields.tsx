@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 /**
  * TvInfoFields - TV-specific info fields (studios).
  * Dates are in CommonFields, Seasons and Cast & Crew are in separate tabs.
@@ -15,6 +17,7 @@ interface TvInfoFieldsProps {
 }
 
 export function TvInfoFields({ formData, setFormData }: TvInfoFieldsProps) {
+  const translateUi = useUiTranslations('Ui');
   console.log('📺 [TvInfoFields] Render');
 
   return (
@@ -30,16 +33,16 @@ export function TvInfoFields({ formData, setFormData }: TvInfoFieldsProps) {
             tmdbId: value ? Number(value) : undefined,
           })
         }
-        placeholder="Örn: 1399"
+        placeholder={translateUi("orn_1399_d5d894d")}
       />
 
       {/* Studios */}
       <CompactTagSelector
-        label="Stüdyolar / Yapım Şirketleri"
+        label={translateUi("studyolar_yapim_sirketleri_e26f2c9")}
         icon="🏢"
         value={formData.studios || []}
         onChange={(companies) => setFormData({ ...formData, studios: companies })}
-        placeholder="HBO, Netflix, AMC..."
+        placeholder={translateUi("hbo_netflix_amc_56f3032")}
         listQuery={LIST_COMPANIES}
         queryKey="listCompanies"
         queryVariables={{ roleIds: [6] }}

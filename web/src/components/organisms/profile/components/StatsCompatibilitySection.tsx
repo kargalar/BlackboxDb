@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import type { UserCompatibilityStat } from '../StatsTabTypes';
@@ -38,6 +40,7 @@ function CompatibilityAvatar({
 }
 
 function CompatibilityRow({ item, rank }: { item: UserCompatibilityStat; rank: number }) {
+  const translateUi = useUiTranslations('Ui');
   return (
     <Link
       href={`/profile/${item.username}`}
@@ -48,12 +51,12 @@ function CompatibilityRow({ item, rank }: { item: UserCompatibilityStat; rank: n
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-semibold text-white">{item.username}</div>
         <div className="text-xs text-white/45">
-          {item.sharedRatingsCount} ortak puan · Ort. fark {item.avgRatingDiff.toFixed(2)}
+          {item.sharedRatingsCount} {" " + translateUi("ortak_puan_ort_fark_23792e1") + " "} {item.avgRatingDiff.toFixed(2)}
         </div>
       </div>
       <div className="text-right">
         <div className="text-lg font-bold text-emerald-300">%{item.score}</div>
-        <div className="text-[11px] uppercase tracking-wide text-white/30">Uyum</div>
+        <div className="text-[11px] uppercase tracking-wide text-white/30">{translateUi("uyum_0e225e7")}</div>
       </div>
     </Link>
   );
@@ -93,27 +96,28 @@ function CompatibilityList({
 }
 
 export function StatsCompatibilitySection({ friendCompatibility, globalCompatibility }: Props) {
+  const translateUi = useUiTranslations('Ui');
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-white">Uyumluluk</h3>
+        <h3 className="text-lg font-semibold text-white">{translateUi("uyumluluk_2ca3a98")}</h3>
         <p className="text-sm text-white/50">
-          Ortak puan verdiğiniz içeriklerdeki yakınlığa göre hesaplanan eşleşmeler
+          {translateUi("ortak_puan_verdiginiz_iceriklerdeki_yakinliga_gore_c36060d")}
         </p>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <CompatibilityList
-          title="Karşılıklı Takipte En Uyumlu"
-          subtitle="Karşılıklı takip ettiğin kullanıcılar arasında"
+          title={translateUi("karsilikli_takipte_en_uyumlu_68c108d")}
+          subtitle={translateUi("karsilikli_takip_ettigin_kullanicilar_arasinda_f8a420d")}
           items={friendCompatibility}
-          emptyText="Yeterli ortak puanlı karşılıklı takip yok."
+          emptyText={translateUi("yeterli_ortak_puanli_karsilikli_takip_yok_7d37997")}
         />
         <CompatibilityList
-          title="Globalde En Uyumlu"
-          subtitle="Platform genelindeki en yakın puan eşleşmeleri"
+          title={translateUi("globalde_en_uyumlu_a127591")}
+          subtitle={translateUi("platform_genelindeki_en_yakin_puan_eslesmeleri_6da24e8")}
           items={globalCompatibility}
-          emptyText="Yeterli ortak puanlı kullanıcı yok."
+          emptyText={translateUi("yeterli_ortak_puanli_kullanici_yok_89ae82b")}
         />
       </div>
     </div>

@@ -5,58 +5,58 @@
 
 export interface TabDefinition {
   id: string;
-  label: string;
+  messageKey: string;
   icon: string;
 }
 
-const RELEASES_TAB: TabDefinition = { id: 'releases', label: '', icon: 'Calendar' };
+const RELEASES_TAB: TabDefinition = { id: 'releases', messageKey: 'releases', icon: 'Calendar' };
 
 const MOVIE_TABS: TabDefinition[] = [
-  { id: 'basic', label: 'Temel Bilgiler', icon: 'Info' },
-  { id: 'movie-info', label: 'Film Bilgileri', icon: 'Film' },
+  { id: 'basic', messageKey: 'basic', icon: 'Info' },
+  { id: 'movie-info', messageKey: 'movieInfo', icon: 'Film' },
   RELEASES_TAB,
-  { id: 'cast-crew', label: 'Oyuncular & Ekip', icon: 'Users' },
-  { id: 'media', label: 'Kapak & Poster', icon: 'Image' },
-  { id: 'videos', label: 'Videolar', icon: 'Video' },
-  { id: 'screenshots', label: 'Ekran Goruntuleri', icon: 'Images' },
-  { id: 'soundtrack', label: 'Soundtrack', icon: 'Music' },
-  { id: 'similar-contents', label: 'Benzer Icerikler', icon: 'Link' },
-  { id: 'citations', label: 'Atıf Yapan İçerikler', icon: 'Quote' },
+  { id: 'cast-crew', messageKey: 'castCrew', icon: 'Users' },
+  { id: 'media', messageKey: 'media', icon: 'Image' },
+  { id: 'videos', messageKey: 'videos', icon: 'Video' },
+  { id: 'screenshots', messageKey: 'screenshots', icon: 'Images' },
+  { id: 'soundtrack', messageKey: 'soundtrack', icon: 'Music' },
+  { id: 'similar-contents', messageKey: 'similarContents', icon: 'Link' },
+  { id: 'citations', messageKey: 'citations', icon: 'Quote' },
 ];
 
 const TV_TABS: TabDefinition[] = [
-  { id: 'basic', label: 'Temel Bilgiler', icon: 'Info' },
-  { id: 'tv-info', label: 'Dizi Bilgileri', icon: 'Tv' },
+  { id: 'basic', messageKey: 'basic', icon: 'Info' },
+  { id: 'tv-info', messageKey: 'tvInfo', icon: 'Tv' },
   RELEASES_TAB,
-  { id: 'tv-seasons', label: 'Sezonlar', icon: 'Calendar' },
-  { id: 'cast-crew', label: 'Oyuncular & Ekip', icon: 'Users' },
-  { id: 'media', label: 'Kapak & Poster', icon: 'Image' },
-  { id: 'videos', label: 'Videolar', icon: 'Video' },
-  { id: 'screenshots', label: 'Ekran Goruntuleri', icon: 'Images' },
-  { id: 'soundtrack', label: 'Soundtrack', icon: 'Music' },
-  { id: 'similar-contents', label: 'Benzer Icerikler', icon: 'Link' },
-  { id: 'citations', label: 'Atıf Yapan İçerikler', icon: 'Quote' },
+  { id: 'tv-seasons', messageKey: 'tvSeasons', icon: 'Calendar' },
+  { id: 'cast-crew', messageKey: 'castCrew', icon: 'Users' },
+  { id: 'media', messageKey: 'media', icon: 'Image' },
+  { id: 'videos', messageKey: 'videos', icon: 'Video' },
+  { id: 'screenshots', messageKey: 'screenshots', icon: 'Images' },
+  { id: 'soundtrack', messageKey: 'soundtrack', icon: 'Music' },
+  { id: 'similar-contents', messageKey: 'similarContents', icon: 'Link' },
+  { id: 'citations', messageKey: 'citations', icon: 'Quote' },
 ];
 
 const GAME_TABS: TabDefinition[] = [
-  { id: 'basic', label: 'Temel Bilgiler', icon: 'Info' },
-  { id: 'game-info', label: 'Oyun Bilgileri', icon: 'Gamepad2' },
+  { id: 'basic', messageKey: 'basic', icon: 'Info' },
+  { id: 'game-info', messageKey: 'gameInfo', icon: 'Gamepad2' },
   RELEASES_TAB,
-  { id: 'game-expansions', label: "Eklentiler & Remake'ler", icon: 'Puzzle' },
-  { id: 'media', label: 'Kapak & Poster', icon: 'Image' },
-  { id: 'videos', label: 'Videolar', icon: 'Video' },
-  { id: 'screenshots', label: 'Ekran Goruntuleri', icon: 'Images' },
-  { id: 'soundtrack', label: 'Soundtrack', icon: 'Music' },
-  { id: 'similar-contents', label: 'Benzer Icerikler', icon: 'Link' },
-  { id: 'citations', label: 'Atıf Yapan İçerikler', icon: 'Quote' },
+  { id: 'game-expansions', messageKey: 'gameExpansions', icon: 'Puzzle' },
+  { id: 'media', messageKey: 'media', icon: 'Image' },
+  { id: 'videos', messageKey: 'videos', icon: 'Video' },
+  { id: 'screenshots', messageKey: 'screenshots', icon: 'Images' },
+  { id: 'soundtrack', messageKey: 'soundtrack', icon: 'Music' },
+  { id: 'similar-contents', messageKey: 'similarContents', icon: 'Link' },
+  { id: 'citations', messageKey: 'citations', icon: 'Quote' },
 ];
 
 const BOOK_TABS: TabDefinition[] = [
-  { id: 'basic', label: 'Temel Bilgiler', icon: 'Info' },
-  { id: 'book-info', label: 'Kitap Bilgileri', icon: 'BookOpen' },
-  { id: 'book-publications', label: 'Yayinlar', icon: 'Library' },
+  { id: 'basic', messageKey: 'basic', icon: 'Info' },
+  { id: 'book-info', messageKey: 'bookInfo', icon: 'BookOpen' },
+  { id: 'book-publications', messageKey: 'bookPublications', icon: 'Library' },
   RELEASES_TAB,
-  { id: 'similar-contents', label: 'Benzer Icerikler', icon: 'Link' },
+  { id: 'similar-contents', messageKey: 'similarContents', icon: 'Link' },
 ];
 
 const TAB_CONFIG: Record<string, TabDefinition[]> = {
@@ -67,11 +67,11 @@ const TAB_CONFIG: Record<string, TabDefinition[]> = {
 };
 
 const BOARD_GAME_TABS: TabDefinition[] = [
-  { id: 'basic', label: 'Temel Bilgiler', icon: 'Info' },
+  { id: 'basic', messageKey: 'basic', icon: 'Info' },
   RELEASES_TAB,
-  { id: 'game-expansions', label: '', icon: 'Puzzle' },
-  { id: 'media', label: 'Kapak & Poster', icon: 'Image' },
-  { id: 'similar-contents', label: 'Benzer Icerikler', icon: 'Link' },
+  { id: 'game-expansions', messageKey: 'gameExpansions', icon: 'Puzzle' },
+  { id: 'media', messageKey: 'media', icon: 'Image' },
+  { id: 'similar-contents', messageKey: 'similarContents', icon: 'Link' },
 ];
 
 export function getTabsForContentType(

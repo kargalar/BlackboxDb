@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect, useMemo } from 'react';
@@ -20,7 +22,7 @@ import { gql } from '@apollo/client';
 import { apolloClient } from '@/lib/apollo-client';
 import { MoreVertical, Edit2, Trash2, Flag } from 'lucide-react';
 import type { Route } from 'next';
-import { formatRelativeTime } from '@/lib/date-utils';
+import { useRelativeTime } from '@/i18n/use-relative-time';
 import ReportModal from '../ReportModal';
 import { useTranslations } from 'next-intl';
 
@@ -123,6 +125,8 @@ const REVIEWS_FETCH_BATCH_SIZE = 100;
 const REVIEWS_PER_PAGE = 20;
 
 export default function ReviewsTab({ userId, username }: ReviewsTabProps) {
+  const formatRelativeTime = useRelativeTime();
+  const translateUi = useUiTranslations('Ui');
   const { user } = useAuth();
   const router = useRouter();
   const [comments, setComments] = useState<Discussion[]>([]);
@@ -591,7 +595,7 @@ export default function ReviewsTab({ userId, username }: ReviewsTabProps) {
                             {comment.authorRating && (
                               <span
                                 className="flex items-center text-xs text-gray-400 font-medium"
-                                title="Puan"
+                                title={translateUi("puan_cb061dd")}
                               >
                                 <svg
                                   className="w-3 h-3 mr-0.5"
@@ -604,7 +608,7 @@ export default function ReviewsTab({ userId, username }: ReviewsTabProps) {
                               </span>
                             )}
                             {comment.authorIsFavorite && (
-                              <span className="flex items-center text-gray-400" title="Favori">
+                              <span className="flex items-center text-gray-400" title={translateUi("favori_5321195")}>
                                 <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                   <path
                                     fillRule="evenodd"
@@ -617,7 +621,7 @@ export default function ReviewsTab({ userId, username }: ReviewsTabProps) {
                             {comment.authorIsAbandoned && (
                               <span
                                 className="flex items-center text-red-400"
-                                title="Yarıda Bırakıldı"
+                                title={translateUi("yarida_birakildi_884fd06")}
                               >
                                 <svg
                                   className="w-3.5 h-3.5"

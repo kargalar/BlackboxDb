@@ -145,6 +145,7 @@ export function mapTmdbMovieToFormData(detail: TmdbDetailResultData): Partial<Ad
   const mapped: Partial<AddContentFormData> = {
     title: detail.title,
     originalTitle: detail.originalTitle || '',
+    translations: detail.translations,
     tmdbId: detail.tmdbId,
     description: detail.overview || '',
     releaseDate: detail.releaseDate || '',
@@ -194,6 +195,7 @@ export function mapTmdbTvToFormData(detail: TmdbDetailResultData): Partial<AddCo
   const mapped: Partial<AddContentFormData> = {
     title: detail.title,
     originalTitle: detail.originalTitle || '',
+    translations: detail.translations,
     tmdbId: detail.tmdbId,
     description: detail.overview || '',
     runtime: detail.runtime ? String(detail.runtime) : '',

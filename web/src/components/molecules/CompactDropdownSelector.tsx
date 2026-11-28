@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect, useRef, useCallback, ReactNode } from 'react';
 import { apolloClient } from '@/lib/apollo-client';
 import { DocumentNode } from 'graphql';
@@ -58,6 +60,7 @@ export function CompactDropdownSelector({
   dropdownWidthClass,
   dropdownHeightClass,
 }: CompactDropdownSelectorProps) {
+  const translateUi = useUiTranslations('Ui');
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState<SimpleItem[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -316,9 +319,9 @@ export function CompactDropdownSelector({
               type="button"
               onClick={() => void handleEditItem(value)}
               disabled={isUpdating}
-              aria-label={`${label} adını düzenle`}
+              aria-label={translateUi("value1_adini_duzenle_7a677ec", { value1: String(label) })}
               className="shrink-0 text-gray-400 hover:text-violet-500 transition-colors p-1 disabled:opacity-50"
-              title="Adı düzenle"
+              title={translateUi("adi_duzenle_aa92907")}
             >
               {editingItemId === value.id ? (
                 <Loader2 size={14} className="animate-spin" />
@@ -332,7 +335,7 @@ export function CompactDropdownSelector({
             <button
               type="button"
               onClick={clearValue}
-              aria-label={`${label} seçimini temizle`}
+              aria-label={translateUi("value1_secimini_temizle_0180eac", { value1: String(label) })}
               className="shrink-0 text-gray-400 hover:text-red-500 transition-colors p-1"
             >
               ×
@@ -366,7 +369,7 @@ export function CompactDropdownSelector({
                     }
                   }
                 }}
-                placeholder="Ara..."
+                placeholder={translateUi("ara_a9d91ab")}
                 disabled={isUpdating}
                 className="flex-1 px-2 py-1 text-sm border-0 focus:outline-none focus:ring-0 bg-transparent text-gray-900 dark:text-white placeholder-gray-400"
               />
@@ -377,7 +380,7 @@ export function CompactDropdownSelector({
                   disabled={isCreating}
                   className="px-2.5 py-1 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 whitespace-nowrap font-medium"
                 >
-                  {isCreating ? '...' : '+ Olustur'}
+                  {isCreating ? '...' : translateUi("olustur_9160ddf")}
                 </button>
               )}
             </div>
@@ -385,7 +388,7 @@ export function CompactDropdownSelector({
             <div className={`${dropdownHeightClass || 'max-h-48'} overflow-y-auto`}>
               {isLoading ? (
                 <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                  Yukleniyor...
+                  {translateUi("yukleniyor_dc383aa")}
                 </div>
               ) : suggestions.length > 0 ? (
                 suggestions.map((item) => (
@@ -415,7 +418,7 @@ export function CompactDropdownSelector({
                         onClick={() => void handleEditItem(item)}
                         disabled={isUpdating}
                         className="mr-2 inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-violet-600 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-surface-panel dark:hover:text-violet-300"
-                        title="Adi duzenle"
+                        title={translateUi("adi_duzenle_d8e18a3")}
                       >
                         {editingItemId === item.id ? (
                           <Loader2 size={14} className="animate-spin" />
@@ -428,11 +431,11 @@ export function CompactDropdownSelector({
                 ))
               ) : searchTerm.trim() ? (
                 <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                  Sonuc bulunamadi
+                  {translateUi("sonuc_bulunamadi_4908e9e")}
                 </div>
               ) : (
                 <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                  Henuz secenek yok
+                  {translateUi("henuz_secenek_yok_d37c9c8")}
                 </div>
               )}
             </div>

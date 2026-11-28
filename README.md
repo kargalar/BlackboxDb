@@ -59,6 +59,25 @@ npm run build
 
 Keep real environment files, database backups, private media catalogs, and API secrets out of version control. Configure production credentials through your hosting provider's secret store.
 
+## Localization
+
+The sidebar offers 16 languages, including Turkish. English is the default. An account can prefer original titles independently of its interface language.
+
+Apply the schema migration and populate the translated catalog labels from `server/`.
+
+```sh
+npm run prisma:migrate:deploy
+npm run script:seed-catalog-translations
+```
+
+To fill translations for existing content, run the commands below with the corresponding provider credentials in `.env`. Re-running them fills missing fields and preserves existing translations and content IDs.
+
+```sh
+npm run script:backfill-content-translations
+npm run script:backfill-content-translations -- --igdb
+npm run script:backfill-content-translations -- --books --open-library
+```
+
 ## Admin backups
 
 The admin backup downloads one `.tar.gz` archive containing a PostgreSQL database dump,

@@ -1,5 +1,15 @@
 import "dotenv/config";
 import "reflect-metadata";
+import {
+  GenreNameResolver,
+  ThemeNameResolver,
+  MoodNameResolver,
+  GameModeNameResolver,
+  PerspectiveNameResolver,
+  ContentTypeNameResolver,
+  PersonRoleNameResolver,
+  CompanyRoleNameResolver,
+} from "./resolvers/CatalogNameResolvers";
 import express from "express";
 import cors from "cors";
 import { ApolloServer } from "@apollo/server";
@@ -49,7 +59,7 @@ import { CompanyResolver } from "./resolvers/CompanyResolver";
 import { UserContentQueryResolver } from "./resolvers/userContent/UserContentQueryResolver";
 import { UserContentMutationResolver } from "./resolvers/userContent/UserContentMutationResolver";
 import { UserContentLogFieldsResolver } from "./resolvers/userContent/UserContentFieldResolver";
-import { UserContentStatsResolver } from "./resolvers/userContent/UserContentStatsResolver";
+import { UserContentStatsResolver, TagStatNameResolver } from "./resolvers/userContent/UserContentStatsResolver";
 import { LookupResolver } from "./resolvers/LookupResolver";
 import { ContentTypeResolver } from "./resolvers/ContentTypeResolver";
 import { ImportQueryResolver } from "./resolvers/import/ImportQueryResolver";
@@ -61,6 +71,15 @@ import {
   PersonFieldResolver,
   CompanyFieldResolver,
 } from "./resolvers/content/ContentFieldResolver";
+import {
+  ExpansionTextResolver,
+  QuizOptionTextResolver,
+  QuizContentTextResolver,
+  QuizAnswerTextResolver,
+  QuizSessionTextResolver,
+  QuizSessionV2TextResolver,
+  ContentRatingTitleResolver,
+} from "./resolvers/content/RelatedContentTextResolvers";
 import { DynamicListResolver } from "./resolvers/content/DynamicListResolver";
 import {
   MediaVoteResolver,
@@ -226,6 +245,7 @@ async function bootstrap() {
       UserContentMutationResolver,
       UserContentLogFieldsResolver,
       UserContentStatsResolver,
+      TagStatNameResolver,
       UserContentPreferenceResolver,
       LookupResolver,
       ContentTypeResolver,
@@ -238,6 +258,21 @@ async function bootstrap() {
       ImportMutationResolver,
       ReportResolver,
       ContentFieldResolver,
+      ExpansionTextResolver,
+      QuizOptionTextResolver,
+      QuizContentTextResolver,
+      QuizAnswerTextResolver,
+      QuizSessionTextResolver,
+      QuizSessionV2TextResolver,
+      ContentRatingTitleResolver,
+      GenreNameResolver,
+      ThemeNameResolver,
+      MoodNameResolver,
+      GameModeNameResolver,
+      PerspectiveNameResolver,
+      ContentTypeNameResolver,
+      PersonRoleNameResolver,
+      CompanyRoleNameResolver,
       PersonFieldResolver,
       CompanyFieldResolver,
       MediaVoteResolver,

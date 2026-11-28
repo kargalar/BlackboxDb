@@ -1,5 +1,9 @@
 'use client';
 
+import { useRelativeTime } from '@/i18n/use-relative-time';
+
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -23,22 +27,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-export function formatRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const minutes = Math.floor(diff / (1000 * 60));
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-  const weeks = Math.floor(days / 7);
 
-  if (minutes < 1) return 'Şimdi';
-  if (minutes < 60) return `${minutes} dk önce`;
-  if (hours < 24) return `${hours} saat önce`;
-  if (days < 7) return `${days} gün önce`;
-  if (weeks < 4) return `${weeks} hafta önce`;
-  return date.toLocaleDateString('tr-TR');
-}
 
 // ==========================================
 // VOTE BUTTON COMPONENT
@@ -53,6 +42,7 @@ export function VoteButtons({
   onVote: (listId: number, voteType: number) => void;
   disabled: boolean;
 }) {
+  const translateUi = useUiTranslations('Ui');
   return (
     <div className="inline-flex min-w-[44px] flex-col items-center gap-0.5 self-start">
       <button
@@ -65,7 +55,7 @@ export function VoteButtons({
         className={`rounded-lg p-1 transition-all duration-200 ${
           list.userVote === 1 ? 'text-orange-400' : 'text-white/30 hover:text-orange-400'
         } ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
-        title="Olumlu oy"
+        title={translateUi("olumlu_oy_cffd16f")}
       >
         <ChevronUp size={22} strokeWidth={2.5} />
       </button>
@@ -88,7 +78,7 @@ export function VoteButtons({
         className={`rounded-lg p-1 transition-all duration-200 ${
           list.userVote === -1 ? 'text-blue-400' : 'text-white/30 hover:text-blue-400'
         } ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
-        title="Olumsuz oy"
+        title={translateUi("olumsuz_oy_b78d951")}
       >
         <ChevronDown size={22} strokeWidth={2.5} />
       </button>
@@ -97,6 +87,7 @@ export function VoteButtons({
 }
 
 export function BrowseListPreview({ list }: { list: UserList }) {
+  const translateUi = useUiTranslations('Ui');
   const previewItems = [...(list.items ?? [])]
     .sort(
       (a, b) =>
@@ -112,9 +103,9 @@ export function BrowseListPreview({ list }: { list: UserList }) {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.04] text-gray-500">
             <FolderOpen size={20} />
           </div>
-          <p className="text-sm font-medium text-gray-300">Henüz içerik yok</p>
+          <p className="text-sm font-medium text-gray-300">{translateUi("henuz_icerik_yok_6cf86f6")}</p>
           <p className="mt-1 text-xs leading-5 text-gray-500">
-            İçerikler eklendikçe görseller burada görünecek.
+            {translateUi("icerikler_eklendikce_gorseller_burada_gorunecek_84f0e08")}
           </p>
         </div>
       </div>
@@ -164,6 +155,8 @@ export function PublicListCard({
   voteDisabled: boolean;
   isOwner: boolean;
 }) {
+  const formatRelativeTime = useRelativeTime();
+  const translateUi = useUiTranslations('Ui');
   const router = useRouter();
   const t = useTranslations('ProfileListCard');
   const contentInfo = getContentTypeInfo(list.contentTypeId, t);
@@ -194,7 +187,7 @@ export function PublicListCard({
               </span>
               <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-gray-300">
                 <span className="font-semibold text-white">{list.itemCount}</span>
-                içerik
+                {translateUi("icerik_cc7ccd1")}
               </span>
             </div>
 
@@ -204,7 +197,7 @@ export function PublicListCard({
                   {list.name}
                 </h3>
                 <p className="line-clamp-3 min-h-[3.75rem] text-sm leading-6 text-gray-400">
-                  {list.description?.trim() || 'Bu liste için henüz bir açıklama eklenmemiş.'}
+                  {list.description?.trim() || translateUi("bu_liste_icin_henuz_bir_aciklama_f29074a")}
                 </p>
               </div>
 
@@ -224,7 +217,7 @@ export function PublicListCard({
                     {list.score}
                   </span>
                   <span className="mt-1 text-[10px] uppercase tracking-[0.18em] text-white/25">
-                    oy
+                    {translateUi("oy_4b3032e")}
                   </span>
                 </div>
               )}
@@ -256,7 +249,7 @@ export function PublicListCard({
                 />
               </div>
               <div className="min-w-0">
-                <p className="text-xs uppercase tracking-[0.18em] text-gray-500">Oluşturan</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-gray-500">{translateUi("olusturan_2bee8f4")}</p>
                 <p className="truncate font-medium text-white">{list.owner.username}</p>
               </div>
             </Link>
@@ -264,7 +257,7 @@ export function PublicListCard({
             <div className="flex items-center gap-2 text-sm text-gray-300">
               <div
                 className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/8 bg-white/[0.03]"
-                title={list.isPublic ? 'Herkese açık' : 'Gizli'}
+                title={list.isPublic ? translateUi("herkese_acik_6608583") : translateUi("gizli_7db89ca")}
               >
                 {list.isPublic ? (
                   <Globe2 size={15} className="text-emerald-300" />
@@ -274,7 +267,7 @@ export function PublicListCard({
               </div>
               <div
                 className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/8 bg-white/[0.03]"
-                title={list.isOrdered ? 'Sıralı' : 'Serbest'}
+                title={list.isOrdered ? translateUi("sirali_bb4928b") : translateUi("serbest_cd17e80")}
               >
                 {list.isOrdered ? (
                   <ListOrdered size={15} className="text-blue-300" />
@@ -292,7 +285,7 @@ export function PublicListCard({
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.18em] text-gray-500">
                   <Users size={13} />
-                  Katkıda bulunanlar
+                  {translateUi("katkida_bulunanlar_dea84cc")}
                 </div>
                 <CollaboratorAvatarGroup users={contributorUsers} />
               </div>

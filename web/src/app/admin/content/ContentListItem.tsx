@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Route } from 'next';
@@ -40,6 +42,7 @@ export default function ContentListItem({
   onShowHistory,
   saving,
 }: ContentListItemProps) {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('AdminContentPage');
   const locale = useLocale();
 
@@ -157,7 +160,7 @@ export default function ContentListItem({
                       <div
                         key={actor.id || idx}
                         className="group/actor flex items-center bg-white/5 rounded-full pr-3 pl-1 py-1 border border-white/5 hover:bg-white/10 transition-colors cursor-default"
-                        title={actor.character ? `${actor.name} as ${actor.character}` : actor.name}
+                        title={actor.character ? translateUi("value1_as_value2_4d8eea4", { value1: String(actor.name), value2: String(actor.character) }) : actor.name}
                       >
                         <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 flex-shrink-0 mr-2 border border-white/10 shadow-sm">
                           {actor.profileUrl ? (

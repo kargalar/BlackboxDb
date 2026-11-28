@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -8,6 +10,7 @@ import { getCurrentUserProfile } from '@/services/database/userService';
 import { useTranslations } from 'next-intl';
 
 export default function ProfilePage() {
+  const translateUi = useUiTranslations('Ui');
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -35,7 +38,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="profile-gate page-loading min-h-screen" role="status" aria-label="Loading">
+      <div className="profile-gate page-loading min-h-screen" role="status" aria-label={translateUi("loading_8f26c65")}>
         <div className="loading-spinner h-12 w-12 rounded-full border-4 border-violet-500 border-t-transparent" />
       </div>
     );
@@ -64,7 +67,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="profile-gate page-loading min-h-screen" role="status" aria-label="Loading">
+    <div className="profile-gate page-loading min-h-screen" role="status" aria-label={translateUi("loading_8f26c65")}>
       <div className="loading-spinner h-16 w-16 rounded-full border-4 border-violet-500 border-t-transparent" />
     </div>
   );

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -199,6 +201,7 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
   getLanguageName,
   hideInlineVideos = false,
 }) => {
+  const translateUi = useUiTranslations('Ui');
   const router = useRouter();
   const { user, isPrivileged } = useAuth();
   const t = useTranslations('ContentHeader');
@@ -449,7 +452,7 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
               {/* Authors - For Books */}
               {type === 'book' && filterByRole(crew, 'author').length > 0 && (
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm text-white/50">Yazar:</span>
+                  <span className="text-sm text-white/50">{translateUi("yazar_3840c33")}</span>
                   {filterByRole(crew, 'author').map((author, index) => (
                     <Link
                       key={author.id}
@@ -465,7 +468,7 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
               {/* Translators - For Books */}
               {type === 'book' && filterByRole(crew, 'translator').length > 0 && (
                 <div className="flex flex-wrap items-center gap-1.5 text-sm">
-                  <span className="text-white/50">Çeviri:</span>
+                  <span className="text-white/50">{translateUi("ceviri_ccc85ad")}</span>
                   {filterByRole(crew, 'translator').map((translator, index) => (
                     <Link
                       key={translator.id}
@@ -481,7 +484,7 @@ export const ContentHeader: React.FC<ContentHeaderProps> = ({
               {/* Publisher - For Books */}
               {type === 'book' && getPublishers().length > 0 && (
                 <div className="flex flex-wrap items-center gap-1.5 text-sm">
-                  <span className="text-white/50">Yayınevi:</span>
+                  <span className="text-white/50">{translateUi("yayinevi_5bc43d8")}</span>
                   {getPublishers().map((publisher, index) => (
                     <Link
                       key={index}

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import Image from 'next/image';
 import type { PersonRole } from '@/services/graphql/admin';
 import type { Person, AddPersonDropdownProps } from './personListTypes';
@@ -29,6 +31,7 @@ export function AddPersonDropdown({
   inputRef,
   roleInputRef,
 }: AddPersonDropdownProps) {
+  const translateUi = useUiTranslations('Ui');
   const showCreateButton = tempName.trim().length >= 1;
 
   console.log(
@@ -48,7 +51,7 @@ export function AddPersonDropdown({
         }}
         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-surface-raised hover:border-violet-500 dark:hover:border-violet-500 hover:text-violet-600 dark:hover:text-violet-400 transition-all"
       >
-        + Ekle
+        {translateUi("ekle_64b2d35")}
       </button>
 
       {/* Dropdown */}
@@ -71,7 +74,7 @@ export function AddPersonDropdown({
                   onClick={() => onShowDialog()}
                   className="px-2.5 py-1.5 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap font-medium"
                 >
-                  + Yeni Kişi
+                  {translateUi("yeni_kisi_9ec5a2a")}
                 </button>
               )}
             </div>
@@ -88,7 +91,7 @@ export function AddPersonDropdown({
                     setShowRoleDropdown(true);
                   }}
                   onFocus={() => setShowRoleDropdown(true)}
-                  placeholder={tempRole?.label || 'Rol seçin...'}
+                  placeholder={tempRole?.label || translateUi("rol_secin_018c2f9")}
                   className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 bg-white dark:bg-surface-panel text-gray-900 dark:text-white"
                 />
                 {/* Role dropdown */}
@@ -121,11 +124,11 @@ export function AddPersonDropdown({
                           onClick={() => onCreateRole(roleSearchTerm.trim())}
                           className="w-full text-left px-2 py-1.5 text-xs bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 text-green-700 dark:text-green-400"
                         >
-                          + &quot;{roleSearchTerm}&quot; oluştur
+                          {translateUi("quot_79ebfa3")}{roleSearchTerm}{translateUi("quot_olustur_980dac8")}
                         </button>
                       )}
                     {roles.length === 0 && !roleSearchTerm.trim() && (
-                      <div className="px-2 py-1.5 text-xs text-gray-500">Henüz rol yok</div>
+                      <div className="px-2 py-1.5 text-xs text-gray-500">{translateUi("henuz_rol_yok_2c8909c")}</div>
                     )}
                   </div>
                 )}
@@ -135,7 +138,7 @@ export function AddPersonDropdown({
                   type="text"
                   value={tempCharacter}
                   onChange={(e) => setTempCharacter(e.target.value)}
-                  placeholder="Karakter adı"
+                  placeholder={translateUi("karakter_adi_ad4d041")}
                   className="flex-1 px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 bg-white dark:bg-surface-panel text-gray-900 dark:text-white"
                 />
               )}
@@ -146,10 +149,10 @@ export function AddPersonDropdown({
           <div className="max-h-64 overflow-y-auto">
             {isInitialLoading ? (
               <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                Yükleniyor...
+                {translateUi("yukleniyor_317109f")}
               </div>
             ) : isSearching ? (
-              <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">Aranıyor...</div>
+              <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">{translateUi("araniyor_1f83d73")}</div>
             ) : suggestions.length > 0 ? (
               suggestions.map((person) => (
                 <button
@@ -190,11 +193,11 @@ export function AddPersonDropdown({
               ))
             ) : tempName.trim().length > 0 ? (
               <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                Sonuç bulunamadı - &quot;Yeni Kişi&quot; butonuyla ekleyebilirsiniz
+                {translateUi("sonuc_bulunamadi_quot_yeni_kisi_quot_9c7c894")}
               </div>
             ) : (
               <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                Henüz kayıtlı kişi yok
+                {translateUi("henuz_kayitli_kisi_yok_c9b1a25")}
               </div>
             )}
           </div>

@@ -69,6 +69,7 @@ export function mapOpenLibraryToFormData(
 
   const mapped: Partial<AddContentFormData> = {
     title: detail.title,
+    translations: detail.translations,
     description: cleanDescription,
     releaseDate: detail.releaseDate || '',
     ...(detail.releases?.length ? { releases: mergeContentReleases(detail.releases) } : {}),

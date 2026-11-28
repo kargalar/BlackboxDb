@@ -1,3 +1,4 @@
+import { bookTitleTranslations } from "../../lib/bookTranslations";
 import { Resolver, Query, Arg, Ctx, Authorized, Int } from "type-graphql";
 import { GraphQLContext } from "../../context";
 import { requireAdminOrModerator } from "../../lib/authGuard";
@@ -130,6 +131,10 @@ export class AdminAutoFillResolver {
       const data = await fetchBookDetails(volumeId);
 
       const detail = new AutoFillBookDetail();
+      detail.translations = bookTitleTranslations([
+        { title: data.title, description: data.overview, language: data.language },
+        ...(data.editions ?? []),
+      ]);
       detail.sourceId = data.sourceId;
       detail.title = data.title;
       detail.overview = data.overview;
@@ -255,6 +260,7 @@ export class AdminAutoFillResolver {
       const data = await fetchOpenLibraryDetails(workKey);
 
       const detail = new AutoFillBookDetail();
+      detail.translations = data.translations;
       detail.sourceId = data.sourceId;
       detail.title = data.title;
       detail.overview = data.overview;
@@ -384,6 +390,7 @@ export class AdminAutoFillResolver {
       detail.sourceId = data.sourceId;
       detail.title = data.title;
       detail.originalTitle = data.originalTitle;
+      detail.translations = data.translations;
       detail.overview = data.overview;
       detail.posterPath = data.posterPath;
       detail.backdropPath = data.backdropPath;

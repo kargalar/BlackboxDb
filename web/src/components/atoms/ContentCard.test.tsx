@@ -1,4 +1,7 @@
-import { render, screen, cleanup } from '@testing-library/react';
+import { render as renderComponent, screen, cleanup } from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
+import type { ReactNode } from 'react';
+import messages from '../../../messages/en.json';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import ContentCard from './ContentCard';
 import type { Route } from 'next';
@@ -19,6 +22,14 @@ afterEach(() => {
 });
 
 const props = { href: '/content/movie/1' as Route, title: 'Example' };
+
+function render(children: ReactNode) {
+  return renderComponent(
+    <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
+      {children}
+    </NextIntlClientProvider>
+  );
+}
 
 describe('poster community rating', () => {
   it('prefers the weighted AVG over TMDB without using the personal rating badge', () => {

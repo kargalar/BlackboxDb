@@ -1,3 +1,4 @@
+import { fillContentTranslations } from "../../lib/contentTranslations";
 import {
   Resolver,
   Mutation,
@@ -1042,6 +1043,7 @@ export class ImportMutationResolver {
                     OR: [
                       { title: { equals: item.name, mode: "insensitive" } },
                       { originalTitle: { equals: item.name, mode: "insensitive" } },
+                      { translations: { some: { title: { equals: item.name, mode: "insensitive" } } } },
                     ],
                   },
                   select: { id: true },
@@ -1068,6 +1070,8 @@ export class ImportMutationResolver {
                           const details = await fetchIgdbGameDetails(
                             igdbResults[0].sourceId,
                           );
+
+                          await fillContentTranslations(prisma, contentId, details.translations);
 
                           if (hasGameCompanies === 0) {
                             const companies: Array<{
@@ -1408,6 +1412,7 @@ export class ImportMutationResolver {
                 OR: [
                   { title: { equals: movie.title, mode: "insensitive" } },
                   { originalTitle: { equals: movie.title, mode: "insensitive" } },
+                  { translations: { some: { title: { equals: movie.title, mode: "insensitive" } } } },
                 ],
               },
               select: { id: true }

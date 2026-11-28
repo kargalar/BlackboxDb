@@ -1,4 +1,6 @@
 'use client';
+
+import { useTranslations as useUiTranslations } from 'next-intl';
 import React, { useState, useEffect, useRef } from 'react';
 import { useAddLogForm } from '../hooks/useAddLogForm';
 import { createPortal } from 'react-dom';
@@ -91,6 +93,7 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
   contentId,
   supportedPlatforms = EMPTY_SUPPORTED_PLATFORMS,
 }) => {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('AddLogDialog');
   const {
     formData,
@@ -286,7 +289,7 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
                             <Search className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
                             <input
                               type="text"
-                              placeholder="Platform ara..."
+                              placeholder={translateUi("platform_ara_eb6ff0b")}
                               value={platformSearch}
                               onChange={(e) => setPlatformSearch(e.target.value)}
                               className="w-full bg-transparent border-none text-xs text-neutral-300 focus:outline-none focus:ring-0 p-0"
@@ -511,28 +514,28 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
                         onClick={() => addPlaytime(30)}
                         className="px-2.5 py-1 text-xs bg-neutral-900 hover:bg-neutral-800 text-neutral-300 rounded-lg border border-neutral-800 transition-all font-medium hover:border-neutral-700 active:scale-95"
                       >
-                        +30 dk
+                        {translateUi("30_dk_e0e21b8")}
                       </button>
                       <button
                         type="button"
                         onClick={() => addPlaytime(60)}
                         className="px-2.5 py-1 text-xs bg-neutral-900 hover:bg-neutral-800 text-neutral-300 rounded-lg border border-neutral-800 transition-all font-medium hover:border-neutral-700 active:scale-95"
                       >
-                        +1 sa
+                        {translateUi("1_sa_05a762a")}
                       </button>
                       <button
                         type="button"
                         onClick={() => addPlaytime(120)}
                         className="px-2.5 py-1 text-xs bg-neutral-900 hover:bg-neutral-800 text-neutral-300 rounded-lg border border-neutral-800 transition-all font-medium hover:border-neutral-700 active:scale-95"
                       >
-                        +2 sa
+                        {translateUi("2_sa_c163027")}
                       </button>
                       <button
                         type="button"
                         onClick={() => addPlaytime(300)}
                         className="px-2.5 py-1 text-xs bg-neutral-900 hover:bg-neutral-800 text-neutral-300 rounded-lg border border-neutral-800 transition-all font-medium hover:border-neutral-700 active:scale-95"
                       >
-                        +5 sa
+                        {translateUi("5_sa_c1ab7d3")}
                       </button>
                     </div>
                     {formData.playtime_minutes ? (
@@ -560,7 +563,7 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
                         ? 'bg-[#22C55E] text-white border-2 border-[#16A34A] shadow-lg shadow-[#22C55E]/50'
                         : 'bg-neutral-800/40 text-neutral-400 border border-transparent hover:bg-neutral-800 hover:text-neutral-300'
                     }`}
-                    title="İzlendi"
+                    title={translateUi("izlendi_8b84f29")}
                   >
                     <div
                       className={`transition-transform duration-300 ${
@@ -615,7 +618,7 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
                         ? 'bg-red-600 text-white border-2 border-red-500 shadow-lg shadow-red-900/50'
                         : 'bg-neutral-800/40 text-neutral-400 border border-transparent hover:bg-neutral-800 hover:text-neutral-300'
                     }`}
-                    title="Favori"
+                    title={translateUi("favori_5321195")}
                   >
                     <div
                       className={`transition-transform duration-300 ${
@@ -666,7 +669,7 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
                         ? 'bg-blue-600 text-white border-2 border-blue-500 shadow-lg shadow-blue-900/50'
                         : 'bg-neutral-800/40 text-neutral-400 border border-transparent hover:bg-neutral-800 hover:text-neutral-300'
                     }`}
-                    title="Sonra İzle"
+                    title={translateUi("sonra_izle_c348497")}
                   >
                     <div
                       className={`transition-transform duration-300 ${
@@ -717,7 +720,7 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
                           ? 'bg-purple-600 text-white border-2 border-purple-500 shadow-lg shadow-purple-900/50'
                           : 'bg-neutral-800/40 text-neutral-400 border border-transparent hover:bg-neutral-800 hover:text-neutral-300'
                       }`}
-                      title="Devam Ediyor"
+                      title={translateUi("devam_ediyor_8a73224")}
                     >
                       <div
                         className={`transition-transform duration-300 ${formData.is_continuing ? 'scale-110' : 'group-hover:scale-110'}`}
@@ -772,7 +775,7 @@ const AddLogDialog: React.FC<AddLogDialogProps> = ({
                           ? 'bg-[#EF4444] text-white border-2 border-[#DC2626] shadow-lg shadow-[#EF4444]/50'
                           : 'bg-neutral-800/40 text-neutral-400 border border-transparent hover:bg-neutral-800 hover:text-neutral-300'
                       }`}
-                      title="Yarıda Bıraktım"
+                      title={translateUi("yarida_biraktim_ea78211")}
                     >
                       <div
                         className={`transition-transform duration-300 ${formData.is_abandoned ? 'scale-110' : 'group-hover:scale-110'}`}

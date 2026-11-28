@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useMemo } from 'react';
 
 interface ContentSoundtrackProps {
@@ -26,6 +28,7 @@ function parseSpotifyUrl(url: string): { type: string; id: string } | null {
  * Premium glassmorphism design with Spotify-green accents.
  */
 export function ContentSoundtrack({ spotifyPlaylistUrl }: ContentSoundtrackProps) {
+  const translateUi = useUiTranslations('Ui');
   const spotifyData = useMemo(() => parseSpotifyUrl(spotifyPlaylistUrl), [spotifyPlaylistUrl]);
 
   if (!spotifyData) return null;
@@ -49,7 +52,7 @@ export function ContentSoundtrack({ spotifyPlaylistUrl }: ContentSoundtrackProps
           </svg>
         </div>
         <div>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Soundtrack</h3>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">{translateUi("soundtrack_5ea1bbc")}</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">{typeLabel}</p>
         </div>
       </div>
@@ -64,7 +67,7 @@ export function ContentSoundtrack({ spotifyPlaylistUrl }: ContentSoundtrackProps
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           loading="lazy"
           className="block"
-          title="Spotify Player"
+          title={translateUi("spotify_player_d0707e4")}
         />
       </div>
     </section>

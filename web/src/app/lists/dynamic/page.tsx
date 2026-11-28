@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Route } from 'next';
@@ -96,6 +98,7 @@ const LIST_TYPES = [
 ];
 
 export default function DynamicListsPage() {
+  const translateUi = useUiTranslations('Ui');
   const [contentFilter, setContentFilter] = useState<ContentTypeFilter>('all');
   const [listType, setListType] = useState<ListType>('consumed');
   const [contents, setContents] = useState<UnifiedContent[]>([]);
@@ -134,9 +137,9 @@ export default function DynamicListsPage() {
           <TrendingUp size={24} className="text-white" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-white">Dinamik Listeler</h1>
+          <h1 className="text-3xl font-bold text-white">{translateUi("dinamik_listeler_c4cedd3")}</h1>
           <p className="text-white/50 mt-1">
-            Platform genelindeki topluluk istatistiklerine dayalı otomatik listeler
+            {translateUi("platform_genelindeki_topluluk_istatistiklerine_dayali_otomatik_26d9d72")}
           </p>
         </div>
       </div>
@@ -199,8 +202,8 @@ export default function DynamicListsPage() {
       ) : contents.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white/5 rounded-3xl border border-white/10">
           <Gamepad size={48} className="text-white/20 mb-4" />
-          <h2 className="text-xl font-semibold text-white mb-2">Gösterilecek içerik yok</h2>
-          <p className="text-white/40">Bu kriterlere uygun bir içerik henüz bulunamadı.</p>
+          <h2 className="text-xl font-semibold text-white mb-2">{translateUi("gosterilecek_icerik_yok_66f8b95")}</h2>
+          <p className="text-white/40">{translateUi("bu_kriterlere_uygun_bir_icerik_henuz_7947a78")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -221,7 +224,7 @@ export default function DynamicListsPage() {
               >
                 <PosterCard
                   src={content.posterUrl}
-                  alt={content.title || 'Unknown'}
+                  alt={content.title || translateUi("unknown_bc7819b")}
                   hoverZoom
                   useNextImage={false}
                 />

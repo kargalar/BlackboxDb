@@ -1,3 +1,4 @@
+import { GraphQLError } from "graphql";
 import { Resolver, Mutation, Arg, Ctx } from "type-graphql";
 import { AppUser } from "../types/User";
 import { GraphQLContext } from "../context";
@@ -163,7 +164,7 @@ export class AuthResolver {
     try {
       // Validate password
       if (!password || password.length < 6) {
-        const err = new Error("Şifre en az 6 karakter olmalı");
+        const err = new GraphQLError("Password is too short", { extensions: { code: "PASSWORD_TOO_SHORT" } });
 
         throw err;
       }
@@ -177,11 +178,11 @@ export class AuthResolver {
 
       if (existingUser) {
         if (existingUser.email === email) {
-          const err = new Error("Bu email adı zaten kayıtlı");
+          const err = new GraphQLError("Email is already registered", { extensions: { code: "EMAIL_IN_USE" } });
 
           throw err;
         }
-        const err = new Error("Bu kullanıcı adı zaten alınmış");
+        const err = new GraphQLError("Username is already taken", { extensions: { code: "USERNAME_IN_USE" } });
 
         throw err;
       }
@@ -234,7 +235,7 @@ export class AuthResolver {
     });
 
     if (!user) {
-      throw new Error("Bu email adıyla bir kullanıcı bulunamadı");
+      throw new GraphQLError("The email or password is incorrect", { extensions: { code: "INVALID_CREDENTIALS" } });
     }
 
     if (!user.passwordHash) {
@@ -248,7 +249,7 @@ export class AuthResolver {
     const valid = await bcrypt.compare(password, user.passwordHash);
 
     if (!valid) {
-      throw new Error("Şifre yanlış");
+      throw new GraphQLError("The email or password is incorrect", { extensions: { code: "INVALID_CREDENTIALS" } });
     }
 
     // Generate tokens

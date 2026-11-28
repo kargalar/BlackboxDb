@@ -34,6 +34,7 @@ import { useUnthankedRecommendationsCount } from '@/features/recommendations/hoo
 import { usePendingContentRequestsCount } from '@/features/admin/hooks/usePendingContentRequestsCount';
 import { useGlobalSettings } from '@/contexts/GlobalSettingsContext';
 import { useSidebarCollapsed } from '@/hooks/useSidebarCollapsed';
+import LanguageSwitcher from '../molecules/LanguageSwitcher';
 
 // Logout Icon
 const LogoutIcon = ({ className }: { className?: string }) => (
@@ -155,10 +156,10 @@ export default function Sidebar({ isOpen: isOpenProp = true, onClose }: SidebarP
 
   const otherNavItems = [
     { href: '/leaderboard' as Route, icon: LeaderboardIcon, label: t('leaderboard') },
-    { href: '/lists/dynamic' as Route, icon: TrendingUp as any, label: 'Dynamic Lists' },
+    { href: '/lists/dynamic' as Route, icon: TrendingUp as any, label: t('dynamicLists') },
     { href: '/quiz' as Route, icon: TrophyIcon, label: t('quiz') },
     { href: '/movie-finder' as Route, icon: SearchIcon, label: t('movieFinder') },
-    { href: '/citation-network' as Route, icon: Network as any, label: 'Film Citation Network' },
+    { href: '/citation-network' as Route, icon: Network as any, label: t('citationNetwork') },
   ];
 
   return (
@@ -298,8 +299,6 @@ export default function Sidebar({ isOpen: isOpenProp = true, onClose }: SidebarP
           )}
         </nav>
 
-        {/* Language Switcher */}
-
         {/* Footer - User Info & Logout */}
         <div className="sidebar-footer">
           {user ? (
@@ -352,6 +351,9 @@ export default function Sidebar({ isOpen: isOpenProp = true, onClose }: SidebarP
               <LogoutIcon className="w-5 h-5 sidebar-login-icon" />
             </Link>
           )}
+        </div>
+        <div className="shrink-0 border-t border-white/10 px-3 py-2">
+          <LanguageSwitcher />
         </div>
       </aside>
 
@@ -407,6 +409,9 @@ export default function Sidebar({ isOpen: isOpenProp = true, onClose }: SidebarP
             <span>{t('actions.login')}</span>
           </Link>
         )}
+        <div className="w-11 shrink-0">
+          <LanguageSwitcher />
+        </div>
       </nav>
     </>
   );

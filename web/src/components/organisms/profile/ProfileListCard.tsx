@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
@@ -92,6 +94,7 @@ const formatRelativeTime = (dateString: string, t: any, locale: string) => {
 };
 
 export function CollaboratorAvatarGroup({ users }: { users: UserListOwner[] }) {
+  const translateUi = useUiTranslations('Ui');
   const visibleUsers = users.slice(0, 4);
   const extraCount = users.length - visibleUsers.length;
   const t = useTranslations('ProfileListCard');
@@ -107,7 +110,7 @@ export function CollaboratorAvatarGroup({ users }: { users: UserListOwner[] }) {
           >
             <PosterCard
               src={user.picturePath ? getPersonImageUrl(user.picturePath, 45) : undefined}
-              alt={`${user.username} avatar`}
+              alt={translateUi("value1_avatar_e729f5c", { value1: String(user.username) })}
               aspectClassName="aspect-square"
               hoverZoom={false}
               useNextImage={false}

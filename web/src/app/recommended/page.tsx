@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -34,6 +36,7 @@ function getContentTypePath(contentTypeId: number): 'movie' | 'tv' | 'game' | 'b
 }
 
 export default function RecommendedPage() {
+  const translateUi = useUiTranslations('Ui');
   const { user } = useAuth();
   const t = useTranslations('Recommended');
   const locale = useLocale();
@@ -68,7 +71,7 @@ export default function RecommendedPage() {
       if (activeTab === 'received') {
         const result = await getMyRecommendations(100);
         if (result.error) {
-          toast.error('Failed to load received recommendations');
+          toast.error(translateUi("failed_to_load_received_recommendations_0d9ae6e"));
           setItems([]);
         } else {
           setItems(result.data);
@@ -77,7 +80,7 @@ export default function RecommendedPage() {
       } else {
         const result = await getMySentRecommendations(100);
         if (result.error) {
-          toast.error('Failed to load sent recommendations');
+          toast.error(translateUi("failed_to_load_sent_recommendations_c5fa831"));
           setSentItems([]);
         } else {
           setSentItems(result.data);
@@ -100,17 +103,17 @@ export default function RecommendedPage() {
 
     const numericId = Number(recommendationId);
     if (Number.isNaN(numericId)) {
-      toast.error('Invalid recommendation');
+      toast.error(translateUi("invalid_recommendation_42ae366"));
       return;
     }
 
     const result = await thankRecommendation(numericId);
     if (!result.success) {
-      toast.error('Failed to send thanks');
+      toast.error(translateUi("failed_to_send_thanks_31ded61"));
       return;
     }
 
-    toast.success('Thanks sent');
+    toast.success(translateUi("thanks_sent_0649c70"));
     refreshNotificationBadge();
     setItems((prev) =>
       prev.map((x) =>
@@ -135,8 +138,8 @@ export default function RecommendedPage() {
   if (!user) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-8">
-        <h1 className="text-2xl font-bold">Recommendations</h1>
-        <p className="mt-4 text-sm text-gray-400">Sign in to see your recommendations.</p>
+        <h1 className="text-2xl font-bold">{translateUi("recommendations_4faa65b")}</h1>
+        <p className="mt-4 text-sm text-gray-400">{translateUi("sign_in_to_see_your_recommendations_e45e40c")}</p>
       </div>
     );
   }
@@ -145,15 +148,15 @@ export default function RecommendedPage() {
     <div className="mx-auto max-w-4xl px-4 py-8">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">Recommendations</h1>
-          <p className="text-sm text-gray-400 italic">Recommendations shared within your network</p>
+          <h1 className="text-2xl font-bold text-white mb-1">{translateUi("recommendations_4faa65b")}</h1>
+          <p className="text-sm text-gray-400 italic">{translateUi("recommendations_shared_within_your_network_b6392ec")}</p>
         </div>
         <button
           onClick={load}
           disabled={loading}
           className="rounded-lg bg-gray-800/50 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-700 hover:text-white disabled:opacity-40 border border-gray-700/50"
         >
-          {loading ? 'Refreshing...' : 'Refresh'}
+          {loading ? translateUi("refreshing_5b7bdb6") : translateUi("refresh_56e3bad")}
         </button>
       </div>
 
@@ -163,7 +166,7 @@ export default function RecommendedPage() {
           onClick={() => setActiveTab('received')}
           className={`relative px-6 py-3 text-sm font-medium transition-colors ${activeTab === 'received' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
         >
-          Received
+          {translateUi("received_27548c4")}
           {activeTab === 'received' && (
             <div className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
           )}
@@ -172,7 +175,7 @@ export default function RecommendedPage() {
           onClick={() => setActiveTab('sent')}
           className={`relative px-6 py-3 text-sm font-medium transition-colors ${activeTab === 'sent' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
         >
-          Sent
+          {translateUi("sent_35f49dc")}
           {activeTab === 'sent' && (
             <div className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
           )}
@@ -183,13 +186,13 @@ export default function RecommendedPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 space-y-4">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
-            <p className="text-xs text-gray-500 font-medium">Loading recommendations...</p>
+            <p className="text-xs text-gray-500 font-medium">{translateUi("loading_recommendations_92f625a")}</p>
           </div>
         ) : activeTab === 'received' ? (
           items.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-800 bg-gray-900/20 p-12 text-center">
               <p className="text-sm text-gray-500">
-                No recommendations received yet. Follow more people to see what they suggest!
+                {translateUi("no_recommendations_received_yet_follow_more_d90a129")}
               </p>
             </div>
           ) : (
@@ -265,7 +268,7 @@ export default function RecommendedPage() {
                                   : 'bg-gray-700/50 text-gray-300 border border-gray-600/30 hover:bg-gray-600/50 hover:text-white active:scale-95'
                               }`}
                             >
-                              {watchlistMap[r.contentId] ? '✓ WATCHLIST' : '+ WATCHLIST'}
+                              {watchlistMap[r.contentId] ? translateUi("watchlist_3580e39") : translateUi("watchlist_6352e62")}
                             </button>
                             <button
                               onClick={() => handleThank(r.id)}
@@ -276,7 +279,7 @@ export default function RecommendedPage() {
                                   : 'bg-blue-600 text-white hover:bg-blue-500 hover:shadow-[0_0_15px_rgba(59,130,246,0.4)] active:scale-95'
                               }`}
                             >
-                              {isThanked ? '✓ THANKED' : 'SAY THANKS'}
+                              {isThanked ? translateUi("thanked_1246915") : 'SAY THANKS'}
                             </button>
                           </div>
                         </div>
@@ -290,8 +293,7 @@ export default function RecommendedPage() {
         ) : sentItems.length === 0 ? (
           <div className="rounded-xl border border-dashed border-gray-800 bg-gray-900/20 p-12 text-center">
             <p className="text-sm text-gray-500">
-              You haven&apos;t sent any recommendations yet. Go to a content page to recommend
-              something to your friends!
+              {translateUi("you_haven_apos_t_sent_any_8f416c3")}
             </p>
           </div>
         ) : (
@@ -360,7 +362,7 @@ export default function RecommendedPage() {
                         </span>
                         {isThanked && (
                           <div className="flex items-center gap-1.5 text-green-500/90 text-[10px] font-bold uppercase bg-green-500/10 px-2 py-1 rounded border border-green-500/20">
-                            <span>✓ THANKED</span>
+                            <span>{translateUi("thanked_1246915")}</span>
                           </div>
                         )}
                       </div>

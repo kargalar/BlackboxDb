@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Route } from 'next';
@@ -6,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { getPosterUrl } from '@/lib/image-utils';
 import { Activity, MessageSquare, ThumbsUp } from 'lucide-react';
 import { getCommentCountClass, getCommentCountWeight } from '@/lib/comment-count-utils';
-import { formatRelativeTime } from '@/lib/date-utils';
+import { useRelativeTime } from '@/i18n/use-relative-time';
 
 interface RecentReviewsSectionProps {
   username: string;
@@ -19,6 +20,7 @@ export default function RecentReviewsSection({
   reviews,
   showPrivate = false,
 }: RecentReviewsSectionProps) {
+  const translateUi = useUiTranslations('Ui');
   if (!reviews || reviews.length === 0) {
     return null;
   }
@@ -43,7 +45,7 @@ export default function RecentReviewsSection({
             <div className="flex flex-wrap items-center gap-3">
               <h3 className="flex items-center gap-2 text-2xl font-black tracking-tight text-white">
                 <Activity className="h-5 w-5 text-white/75" />
-                Son İncelemeler
+                {translateUi("son_incelemeler_6be3df5")}
               </h3>
               <Link
                 href={{
@@ -55,7 +57,7 @@ export default function RecentReviewsSection({
                 }}
                 className="inline-flex items-center rounded-full border border-white/15 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white"
               >
-                Tümünü Gör
+                {translateUi("tumunu_gor_56eb0fa")}
               </Link>
             </div>
           </div>
@@ -72,6 +74,8 @@ export default function RecentReviewsSection({
 }
 
 const ReviewItem = ({ activity }: { activity: any }) => {
+  const formatRelativeTime = useRelativeTime();
+  const translateUi = useUiTranslations('Ui');
   const [imageError, setImageError] = useState(false);
   const router = useRouter();
 
@@ -170,7 +174,7 @@ const ReviewItem = ({ activity }: { activity: any }) => {
               activity.reviewDiscussion?.authorIsFavorite) && (
               <div className="flex items-center gap-1 text-gray-500">
                 {activity.rating && (
-                  <span className="flex items-center text-xs font-medium" title="Puan">
+                  <span className="flex items-center text-xs font-medium" title={translateUi("puan_cb061dd")}>
                     <svg className="w-3 h-3 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
@@ -178,7 +182,7 @@ const ReviewItem = ({ activity }: { activity: any }) => {
                   </span>
                 )}
                 {(activity.isFavorite || activity.reviewDiscussion?.authorIsFavorite) && (
-                  <span className="flex items-center" title="Favori">
+                  <span className="flex items-center" title={translateUi("favori_5321195")}>
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
@@ -202,7 +206,7 @@ const ReviewItem = ({ activity }: { activity: any }) => {
         <div className="mt-2 pl-3 relative pr-6">
           <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-white/25 rounded-full" />
           <p className="text-xs md:text-sm text-gray-300 italic line-clamp-4 leading-relaxed group-hover:text-gray-200 transition-colors">
-            &quot;{activity.review}&quot;
+            {translateUi("quot_e2bbf20")}{activity.review}{translateUi("quot_e2bbf20")}
           </p>
         </div>
 
@@ -211,13 +215,13 @@ const ReviewItem = ({ activity }: { activity: any }) => {
           <div className="flex items-center gap-4 mt-3 pl-3 text-xs font-medium text-gray-500 group-hover:text-gray-400 transition-colors">
             <div className="flex items-center gap-1.5">
               <ThumbsUp className="w-3.5 h-3.5" />
-              <span>{reviewDiscussion.upvoteCount - reviewDiscussion.downvoteCount} Oy</span>
+              <span>{reviewDiscussion.upvoteCount - reviewDiscussion.downvoteCount} {" " + translateUi("oy_9363653")}</span>
             </div>
             <div
               className={`flex items-center gap-1.5 ${getCommentCountClass(reviewDiscussion.commentCount)} ${getCommentCountWeight(reviewDiscussion.commentCount)}`}
             >
               <MessageSquare className="w-3.5 h-3.5" />
-              <span>{reviewDiscussion.commentCount} Yorum</span>
+              <span>{reviewDiscussion.commentCount} {" " + translateUi("yorum_a3b70bd")}</span>
             </div>
           </div>
         )}

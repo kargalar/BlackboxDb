@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect, useCallback } from 'react';
 
 interface CountdownProps {
@@ -7,6 +9,7 @@ interface CountdownProps {
 }
 
 const Countdown: React.FC<CountdownProps> = ({ date }) => {
+  const translateUi = useUiTranslations('Ui');
   const calculateTimeLeft = useCallback(() => {
     const difference = +new Date(date) - +new Date();
     if (difference <= 0) return null;
@@ -94,14 +97,14 @@ const Countdown: React.FC<CountdownProps> = ({ date }) => {
   };
 
   if (!timeLeft) {
-    return <span>Time&apos;s up!</span>;
+    return <span>{translateUi("time_apos_s_up_87b22a0")}</span>;
   }
 
   return (
     <div className="flex items-end gap-3 select-none">
-      <FlipUnit value={timeLeft.days} label="Gün" pad={Math.max(2, String(timeLeft.days).length)} />
-      <FlipUnit value={timeLeft.hours} label="Saat" pad={2} />
-      <FlipUnit value={timeLeft.minutes} label="Dakika" pad={2} />
+      <FlipUnit value={timeLeft.days} label={translateUi("gun_8db756b")} pad={Math.max(2, String(timeLeft.days).length)} />
+      <FlipUnit value={timeLeft.hours} label={translateUi("saat_76e47a6")} pad={2} />
+      <FlipUnit value={timeLeft.minutes} label={translateUi("dakika_976482e")} pad={2} />
 
       <style jsx>{`
         .flip-perspective {

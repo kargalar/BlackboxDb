@@ -10,7 +10,7 @@ import { MoreVertical, Edit2, Trash2, Flag } from 'lucide-react';
 import { getCommentCountClass, getCommentCountWeight } from '@/lib/comment-count-utils';
 import type { Route } from 'next';
 import MentionText from '@/components/atoms/MentionText';
-import { formatRelativeTime } from '@/lib/date-utils';
+import { useRelativeTime } from '@/i18n/use-relative-time';
 import ReportModal from '../ReportModal';
 import { useTranslations } from 'next-intl';
 
@@ -99,6 +99,7 @@ interface DiscussionsTabProps {
 }
 
 export default function DiscussionsTab({ userId, username }: DiscussionsTabProps) {
+  const formatRelativeTime = useRelativeTime();
   const { user } = useAuth();
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
   const [loading, setLoading] = useState(true);

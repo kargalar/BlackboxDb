@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import MovieCard from '@/components/organisms/MovieCard';
@@ -34,7 +36,7 @@ function resolveContentTypeId(item: UnifiedContent, fallbackType: string): numbe
   if (item.contentTypeId) return item.contentTypeId;
   if (item.contentType?.id) return item.contentType.id;
 
-  const contentTypeName = item?.contentType?.name?.toLowerCase();
+  const contentTypeName = item.contentType?.slug;
   if (contentTypeName === 'movie') return 1;
   if (contentTypeName === 'tv show' || contentTypeName === 'tv') return 2;
   if (contentTypeName === 'game') return 3;
@@ -63,6 +65,7 @@ export default function ContentSimilar({
   loading = false,
   error = null,
 }: ContentSimilarProps) {
+  const translateUi = useUiTranslations('Ui');
   const [localSimilar, setLocalSimilar] = useState<UnifiedContent[]>([]);
   const [localLoading, setLocalLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -78,7 +81,7 @@ export default function ContentSimilar({
 
   const getResolvedType = (item: UnifiedContent) => {
     if (item.contentType?.slug === 'board-game') return 'board-game';
-    const contentTypeName = item?.contentType?.name?.toLowerCase();
+    const contentTypeName = item.contentType?.slug;
     if (contentTypeName === 'movie') return 'movie';
     if (contentTypeName === 'tv show' || contentTypeName === 'tv') return 'tv';
     if (contentTypeName === 'game') return 'game';
@@ -92,11 +95,12 @@ export default function ContentSimilar({
     return type;
   };
 
-  const buildCardItem = (item: UnifiedContent): UnifiedContent & { name?: string } => ({
-    ...item,
-    title: item.similarDisplayTitle || item.title,
-    name: item.similarDisplayTitle || item.title,
-  });
+  const buildCardItem = (item: UnifiedContent): UnifiedContent & { name?: string } => {
+    const name = item.similarIsFranchise && item.franchiseName
+      ? t('franchiseTitle', { name: item.franchiseName })
+      : item.title;
+    return { ...item, title: name, name };
+  };
 
   const fetchSimilarContent = useCallback(async () => {
     if (!id) return;
@@ -225,7 +229,9 @@ export default function ContentSimilar({
   const renderCard = (item: UnifiedContent, index: number) => {
     const resolvedType = getResolvedType(item);
     const cardItem = buildCardItem(item);
-    const subtitleOverride = item.similarDisplaySubtitle || null;
+    const subtitleOverride = item.similarIsFranchise && item.similarGroupCount
+      ? t('franchiseCount', { count: item.similarGroupCount })
+      : null;
 
     switch (resolvedType) {
       case 'movie':
@@ -401,7 +407,7 @@ export default function ContentSimilar({
               <div key={item.id || index} className="space-y-2">
                 {item.similarIsFranchise && (
                   <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
-                    Seri Benzerliği
+                    {translateUi("seri_benzerligi_16675c1")}
                   </div>
                 )}
                 {renderCard(item, index)}
@@ -423,6 +429,7 @@ function SingleHorizontalScroll({
   items: UnifiedContent[];
   renderCard: (item: UnifiedContent, index: number) => React.ReactNode;
 }) {
+  const translateUi = useUiTranslations('Ui');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scrollBy = (amount: number) => {
@@ -449,7 +456,7 @@ function SingleHorizontalScroll({
           <div key={item.id || index} className="snap-start space-y-2">
             {item.similarIsFranchise && (
               <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">
-                Seri Benzerliği
+                {translateUi("seri_benzerligi_16675c1")}
               </div>
             )}
             {renderCard(item, index)}

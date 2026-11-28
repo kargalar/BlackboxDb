@@ -16,6 +16,7 @@ export interface TmdbRawSearchResult {
 }
 
 export interface TmdbRawMovieDetail {
+  original_language?: string;
   id: number;
   title: string;
   original_title?: string;
@@ -304,6 +305,7 @@ export interface TmdbPersonDetail {
 }
 
 export interface TmdbDetailData {
+  translations?: import("../contentTranslations").LocalizedContentText[];
   releases?: import("../../types/ContentRelease").ContentRelease[];
   tmdbId: number;
   title: string;

@@ -1,3 +1,4 @@
+import { ContentTranslationText } from "../ContentTranslation";
 import { ContentRelease } from "../ContentRelease";
 import { InputType, Field, Int } from "type-graphql";
 import { GraphQLJSONObject } from "graphql-scalars";
@@ -301,6 +302,12 @@ export class ContentLanguageInput {
 
 @InputType()
 export class UpdateContentInput {
+  @Field(() => [ContentTranslationText], { nullable: true })
+  translations?: ContentTranslationText[];
+
+  @Field(() => Boolean, { nullable: true })
+  importTranslations?: boolean;
+
   @Field(() => [String], { nullable: true })
   additionalRatingCategories?: string[];
 

@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import type { SnakeCasedContentItem } from '../StatsTabTypes';
 import { buildHeatmapGrid, heatmapColor, getContentTypeName } from '../statsTabUtils';
 import { useTranslations, useLocale } from 'next-intl';
+import { formattingLocale } from '@/i18n/locales';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   HeatmapFilterBar,
@@ -33,7 +34,7 @@ export function StatsHeatmapSection({
   variant = 'detailed',
 }: StatsHeatmapSectionProps) {
   const t = useTranslations('ProfileStatsHeatmap');
-  const locale = useLocale();
+  const locale = formattingLocale(useLocale());
   const isCompact = variant === 'compact';
 
   const MONTH_LABELS = t.raw('months') as string[];
@@ -250,7 +251,7 @@ export function StatsHeatmapSection({
     try {
       const [y, m, d] = selectedDay.split('-').map(Number);
       const date = new Date(y, m - 1, d);
-      return date.toLocaleDateString(locale === 'tr' ? 'tr-TR' : 'en-US', {
+      return date.toLocaleDateString(locale, {
         day: 'numeric',
         month: 'long',
         year: 'numeric',

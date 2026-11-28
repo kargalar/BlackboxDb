@@ -1,10 +1,13 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import * as React from 'react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/atoms/button';
 
 export function ThemeToggle() {
+  const translateUi = useUiTranslations('Ui');
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
@@ -61,7 +64,7 @@ export function ThemeToggle() {
       >
         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
       </svg>
-      <span className="sr-only">Temayı değiştir</span>
+      <span className="sr-only">{translateUi("temayi_degistir_a70e147")}</span>
     </Button>
   );
 }

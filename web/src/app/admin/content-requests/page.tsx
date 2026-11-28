@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -34,6 +36,7 @@ type ContentReportItem = {
 };
 
 export default function AdminContentRequestsPage() {
+  const translateUi = useUiTranslations('Ui');
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('new_content');
   const [items, setItems] = useState<ContentRequest[]>([]);
@@ -192,10 +195,10 @@ export default function AdminContentRequestsPage() {
       });
       setContributions((prev) => prev.filter((c) => c.id !== id));
       refreshPendingContentRequestsBadge();
-      alert(t('approveSuccess') || 'Talep başarıyla onaylandı ve değişiklikler uygulandı.');
+      alert(t('approveSuccess') || translateUi("talep_basariyla_onaylandi_ve_degisiklikler_uygulandi_017b6a5"));
     } catch (e) {
       console.error(e);
-      alert(t('operationFailed') || 'İşlem başarısız oldu.');
+      alert(t('operationFailed') || translateUi("islem_basarisiz_oldu_ca86ee8"));
     }
     setBusyId(null);
   };
@@ -498,7 +501,7 @@ export default function AdminContentRequestsPage() {
                         disabled={busyId === `contrib-${c.id}`}
                         className="px-4 py-2 rounded-lg bg-green-500/20 text-green-300 hover:bg-green-500/30 transition-colors text-sm font-medium border border-green-500/20"
                       >
-                        Hızlı Onayla
+                        {translateUi("hizli_onayla_7994842")}
                       </button>
                       <button
                         onClick={() =>

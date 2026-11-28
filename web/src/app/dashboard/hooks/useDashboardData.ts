@@ -1,5 +1,7 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { formattingLocale } from '@/i18n/locales';
 import { useEffect, useRef, useState } from 'react';
 import { getUserContentLogs } from '@/services/database/contentService';
 import { getUserStats } from '@/services/userContentService';
@@ -28,6 +30,7 @@ const DASHBOARD_TIME_RANGE_STORAGE_KEY = 'bb_dashboard_time_ranges';
 
 /** Central hook for all dashboard data fetching and user interactions */
 export function useDashboardData() {
+  const locale = formattingLocale(useLocale());
   const { user } = useAuth();
   const userId = user?.id || null;
 
@@ -537,7 +540,7 @@ export function useDashboardData() {
 
   const getUpcomingSubtitle = (releaseDate?: string) => {
     if (!releaseDate) return null;
-    return formatDaysUntil(releaseDate);
+    return formatDaysUntil(releaseDate, locale);
   };
 
   // ── Return ─────────────────────────────────────────────────

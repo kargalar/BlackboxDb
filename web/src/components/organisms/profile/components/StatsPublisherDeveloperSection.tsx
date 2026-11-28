@@ -4,6 +4,8 @@
 
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { useState } from 'react';
 import {
   BarChart,
@@ -61,6 +63,7 @@ const PIE_COLORS = [
 type CompanyView = 'publishers' | 'developers';
 
 function CompanyRow({ stat, rank }: { stat: CompanyStat; rank: number }) {
+  const translateUi = useUiTranslations('Ui');
   return (
     <Link
       href={`/company/${stat.companyId}`}
@@ -85,7 +88,7 @@ function CompanyRow({ stat, rank }: { stat: CompanyStat; rank: number }) {
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium text-white truncate">{stat.companyName}</div>
         <div className="text-xs text-white/40">
-          {stat.count} oyun
+          {stat.count} {" " + translateUi("oyun_246ef60")}
           {stat.totalPlaytimeMinutes > 0 && ` · ${formatMinutes(stat.totalPlaytimeMinutes)}`}
         </div>
       </div>
@@ -103,6 +106,7 @@ export function StatsPublisherDeveloperSection({
   topPlatforms,
   topPerspectives,
 }: Props) {
+  const translateUi = useUiTranslations('Ui');
   const [companyView, setCompanyView] = useState<CompanyView>('publishers');
 
   const hasGameData =
@@ -114,8 +118,8 @@ export function StatsPublisherDeveloperSection({
   if (!hasGameData) {
     return (
       <div className="glass-card p-5 space-y-2">
-        <h3 className="text-lg font-semibold text-white">🎮 Oyun İstatistikleri</h3>
-        <p className="text-sm text-white/40">Veri yok — henüz oyun eklenmemiş.</p>
+        <h3 className="text-lg font-semibold text-white">{translateUi("oyun_istatistikleri_35a642d")}</h3>
+        <p className="text-sm text-white/40">{translateUi("veri_yok_henuz_oyun_eklenmemis_a25bfbb")}</p>
       </div>
     );
   }
@@ -143,8 +147,8 @@ export function StatsPublisherDeveloperSection({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-white">🎮 Oyun İstatistikleri</h3>
-        <p className="text-sm text-white/50">Yayıncı, geliştirici, platform ve oyun modu analizi</p>
+        <h3 className="text-lg font-semibold text-white">{translateUi("oyun_istatistikleri_35a642d")}</h3>
+        <p className="text-sm text-white/50">{translateUi("yayinci_gelistirici_platform_ve_oyun_modu_f0347f2")}</p>
       </div>
 
       {/* Company section */}
@@ -163,7 +167,7 @@ export function StatsPublisherDeveloperSection({
                         : 'bg-white/5 text-white/60 hover:bg-white/10'
                     }`}
                   >
-                    {k === 'publishers' ? '🏢 Yayıncılar' : '🔧 Geliştiriciler'}
+                    {k === 'publishers' ? translateUi("yayincilar_1d6867a") : translateUi("gelistiriciler_4e61998")}
                   </button>
                 ))}
               </div>
@@ -173,14 +177,14 @@ export function StatsPublisherDeveloperSection({
                 .slice(0, 8)
                 .map((s, i) => <CompanyRow key={s.companyId} stat={s} rank={i + 1} />)
             ) : (
-              <div className="text-xs text-white/40 py-4 text-center">Veri yok</div>
+              <div className="text-xs text-white/40 py-4 text-center">{translateUi("veri_yok_84eb31e")}</div>
             )}
           </div>
 
           {/* Platform Pie */}
           {platformPieData.length > 0 && (
             <div className="glass-card p-5 space-y-3">
-              <div className="text-sm font-semibold text-white/80">🕹️ Platform Dağılımı</div>
+              <div className="text-sm font-semibold text-white/80">{translateUi("platform_dagilimi_033894d")}</div>
               <div className="h-56">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -211,7 +215,7 @@ export function StatsPublisherDeveloperSection({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {radarData.length > 0 && (
             <div className="glass-card p-5 space-y-3">
-              <div className="text-sm font-semibold text-white/80">🎯 Oyun Modu Dağılımı</div>
+              <div className="text-sm font-semibold text-white/80">{translateUi("oyun_modu_dagilimi_4812d14")}</div>
               <div className="h-56">
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart data={radarData}>
@@ -230,7 +234,7 @@ export function StatsPublisherDeveloperSection({
 
           {perspData.length > 0 && (
             <div className="glass-card p-5 space-y-3">
-              <div className="text-sm font-semibold text-white/80">👁️ Kamera Perspektifi</div>
+              <div className="text-sm font-semibold text-white/80">{translateUi("kamera_perspektifi_4e4274a")}</div>
               <div className="h-56">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart

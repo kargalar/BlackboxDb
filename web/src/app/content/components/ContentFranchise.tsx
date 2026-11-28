@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -68,6 +70,7 @@ export default function ContentFranchise({
   currentContentId,
   contentType,
 }: ContentFranchiseProps) {
+  const translateUi = useUiTranslations('Ui');
   const { user } = useAuth();
   const t = useTranslations('ContentFranchise');
   const tSidebar = useTranslations('Sidebar');
@@ -137,7 +140,7 @@ export default function ContentFranchise({
       }
     } catch (err) {
       setItemStates((prev) => ({ ...prev, [item.id]: currentState }));
-      toast.error('Bir hata oluştu');
+      toast.error(translateUi("bir_hata_olustu_7dd690a"));
     }
   };
 
@@ -156,10 +159,10 @@ export default function ContentFranchise({
 
     try {
       await toggleContentFavorite(item.id);
-      toast.success(newState ? 'Favorilere eklendi' : 'Favorilerden çıkarıldı');
+      toast.success(newState ? translateUi("favorilere_eklendi_9a82cef") : translateUi("favorilerden_cikarildi_448b1ce"));
     } catch (err) {
       setItemStates((prev) => ({ ...prev, [item.id]: currentState }));
-      toast.error('Bir hata oluştu');
+      toast.error(translateUi("bir_hata_olustu_7dd690a"));
     }
   };
 
@@ -181,10 +184,10 @@ export default function ContentFranchise({
 
     try {
       await toggleContentWatchlist(item.id);
-      toast.success(newState ? 'İzleme listesine eklendi' : 'İzleme listesinden çıkarıldı');
+      toast.success(newState ? translateUi("izleme_listesine_eklendi_a66477e") : translateUi("izleme_listesinden_cikarildi_bd81eae"));
     } catch (err) {
       setItemStates((prev) => ({ ...prev, [item.id]: currentState }));
-      toast.error('Bir hata oluştu');
+      toast.error(translateUi("bir_hata_olustu_7dd690a"));
     }
   };
 
@@ -204,11 +207,11 @@ export default function ContentFranchise({
     try {
       await toggleContinuing(item.id);
       toast.success(
-        newState ? 'Devam ediyor olarak işaretlendi' : 'Devam ediyor işareti kaldırıldı'
+        newState ? translateUi("devam_ediyor_olarak_isaretlendi_36bc81f") : translateUi("devam_ediyor_isareti_kaldirildi_2732bc3")
       );
     } catch (err) {
       setItemStates((prev) => ({ ...prev, [item.id]: currentState }));
-      toast.error('Bir hata oluştu');
+      toast.error(translateUi("bir_hata_olustu_7dd690a"));
     }
   };
 
@@ -279,7 +282,7 @@ export default function ContentFranchise({
         }
       } catch (err) {
         console.error('❌ [ContentFranchise] Error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load franchise content');
+        setError(err instanceof Error ? err.message : translateUi("failed_to_load_franchise_content_4b6e995"));
       } finally {
         setLoading(false);
       }
@@ -379,7 +382,7 @@ export default function ContentFranchise({
       )}
 
       {franchiseContent.length >= 20 && (
-        <p className="text-sm text-white/60 text-center mt-4">İlk 20 içerik gösteriliyor</p>
+        <p className="text-sm text-white/60 text-center mt-4">{translateUi("ilk_20_icerik_gosteriliyor_a336045")}</p>
       )}
 
       {/* Add to List Modal */}

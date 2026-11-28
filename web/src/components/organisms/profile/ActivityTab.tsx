@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useRef, useEffect } from 'react';
@@ -7,7 +8,7 @@ import { MoreVertical, Edit2, Trash2, Check, X } from 'lucide-react';
 import { deleteContentWatch, updateUserContentLog } from '@/services/userContentService';
 import Stars from '@/app/content/components/Stars';
 import LogHistoryModal from '@/app/content/components/LogHistoryModal';
-import { formatRelativeTime } from '@/lib/date-utils';
+import { useRelativeTime } from '@/i18n/use-relative-time';
 import { useTranslations } from 'next-intl';
 
 interface ActivityTabProps {
@@ -89,6 +90,8 @@ const ActivityItem = ({
   onDelete: () => void;
   onEdit: (contentId: string, contentType: string) => void;
 }) => {
+  const formatRelativeTime = useRelativeTime();
+  const translateUi = useUiTranslations('Ui');
   const { user } = useAuth();
   const [imageError, setImageError] = useState(false);
   const t = useTranslations('ProfileActivity');
@@ -130,7 +133,7 @@ const ActivityItem = ({
             <button
               onClick={() => {
                 if (activity.content)
-                  onEdit(activity.content.id, activity.content.contentType.name);
+                  onEdit(activity.content.id, activity.content.contentType.slug);
                 setActiveDropdown(false);
               }}
               className="w-full text-left px-4 py-2 text-sm text-white/80 hover:bg-white/5 flex items-center gap-2"
@@ -193,7 +196,7 @@ const ActivityItem = ({
             >
               @{targetUser.username}
             </Link>
-            <span className="font-semibold text-white"> started following you</span>
+            <span className="font-semibold text-white"> {" " + translateUi("started_following_you_fe780be")}</span>
           </p>
         </div>
       </div>
@@ -235,7 +238,7 @@ const ActivityItem = ({
             >
               @{targetUser.username}
             </Link>{' '}
-            commented on your discussion
+            {translateUi("commented_on_your_discussion_b54d222")}
           </p>
           <div className="bg-black/20 rounded-lg p-3 border border-white/5">
             <Link href={`/discussion/${disc.id}`} className="block">
@@ -243,7 +246,7 @@ const ActivityItem = ({
                 {disc.title || disc.description}
               </h4>
               <p className="text-sm text-gray-300 line-clamp-2 italic">
-                &quot;{comment.text}&quot;
+                {translateUi("quot_e2bbf20")}{comment.text}{translateUi("quot_e2bbf20")}
               </p>
             </Link>
           </div>
@@ -279,7 +282,7 @@ const ActivityItem = ({
         </Link>
         <div className="flex flex-col justify-center flex-grow min-w-0 pr-10">
           <p className="text-sm md:text-base text-gray-300">
-            <span className="font-semibold text-white">Started following </span>
+            <span className="font-semibold text-white">{translateUi("started_following_48b70e4") + " "} </span>
             <Link
               href={`/profile/${targetUser.username}`}
               className="font-bold text-white hover:text-blue-400 transition-colors"
@@ -360,7 +363,7 @@ const ActivityItem = ({
           </svg>
         </div>
         <div className="flex flex-col justify-center flex-grow min-w-0 pr-10">
-          <p className="text-xs md:text-sm text-gray-400 font-medium mb-0.5">Created a list</p>
+          <p className="text-xs md:text-sm text-gray-400 font-medium mb-0.5">{translateUi("created_a_list_f5412a4")}</p>
           <Link href={`/lists/${list.id}`} className="block w-fit">
             <h3 className="text-sm md:text-base font-bold text-gray-100 truncate hover:text-blue-400 transition-colors">
               {list.name}
@@ -383,7 +386,7 @@ const ActivityItem = ({
         {renderDateBadge()}
         {content ? (
           <Link
-            href={`/content/${content.contentType.name.toLowerCase()}/${content.id}`}
+            href={`/content/${content.contentType.slug}/${content.id}`}
             className="flex-shrink-0 relative overflow-hidden rounded-lg shadow-md w-12 md:w-16 aspect-[2/3] bg-zinc-800/80 ring-1 ring-white/5 z-10"
           >
             {getPosterUrl.original(content.posterUrl || content.posterPath) ? (
@@ -422,7 +425,7 @@ const ActivityItem = ({
         )}
         <div className="flex flex-col justify-center flex-grow min-w-0 pr-10">
           <p className="text-xs md:text-sm text-gray-400 font-medium mb-0.5">
-            Started a discussion{content ? ` about ${content.title}` : ''}
+            {translateUi("started_a_discussion_a340d48")}{content ? translateUi("about_value1_15988b9", { value1: String(content.title) }) : ''}
           </p>
           <Link href={`/discussion/${disc.id}`} className="block w-fit">
             <h3 className="text-sm md:text-base font-bold text-gray-100 line-clamp-2 hover:text-purple-400 transition-colors">
@@ -625,7 +628,7 @@ const ActivityItem = ({
           <div className="mt-2.5 pl-3 relative pr-6">
             <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-white/10 rounded-full" />
             <p className="text-xs md:text-sm text-gray-300 italic line-clamp-3 leading-relaxed">
-              &quot;{activity.review}&quot;
+              {translateUi("quot_e2bbf20")}{activity.review}{translateUi("quot_e2bbf20")}
             </p>
           </div>
         )}

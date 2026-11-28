@@ -5,6 +5,8 @@
 
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React from 'react';
 import Link from 'next/link';
 import {
@@ -52,6 +54,7 @@ function RatingDelta({ delta }: { delta: number }) {
 }
 
 function ContentCompRow({ item, rank }: { item: ContentRatingComp; rank: number }) {
+  const translateUi = useUiTranslations('Ui');
   const href = `/content/${item.contentTypeSlug ?? 'movie'}/${item.contentId}`;
   return (
     <Link
@@ -62,11 +65,11 @@ function ContentCompRow({ item, rank }: { item: ContentRatingComp; rank: number 
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium text-white truncate">{item.title}</div>
         <div className="text-xs text-white/40">
-          Senin: <span className="text-yellow-400">⭐ {item.userRating.toFixed(1)}</span>
+          {translateUi("senin_859936d") + " "} <span className="text-yellow-400">⭐ {item.userRating.toFixed(1)}</span>
           {' · '}
-          Platform: ⭐ {item.globalAvgRating.toFixed(1)}
+          {translateUi("platform_52a0f4f") + " "} {item.globalAvgRating.toFixed(1)}
           {' · '}
-          {item.globalRatingCount} oy
+          {item.globalRatingCount} {" " + translateUi("oy_4b3032e")}
         </div>
       </div>
       <RatingDelta delta={item.delta} />
@@ -97,6 +100,7 @@ export function StatsRatingComparisonSection({
   avgRatingAll,
   ratedCount,
 }: Props) {
+  const translateUi = useUiTranslations('Ui');
   console.log('🎨 [StatsRatingComparisonSection] Render, rated:', ratedCount);
 
   const persona = getRaterPersona(ratingHistogram, avgRatingAll);
@@ -111,9 +115,9 @@ export function StatsRatingComparisonSection({
   if (ratedCount === 0) {
     return (
       <div className="glass-card p-5">
-        <h3 className="text-lg font-semibold text-white">⭐ Puan Karşılaştırması</h3>
+        <h3 className="text-lg font-semibold text-white">{translateUi("puan_karsilastirmasi_9bcf546")}</h3>
         <p className="text-sm text-white/40 mt-2">
-          Puan verdikten sonra karşılaştırma burada görünecek.
+          {translateUi("puan_verdikten_sonra_karsilastirma_burada_gorunecek_0684492")}
         </p>
       </div>
     );
@@ -122,9 +126,9 @@ export function StatsRatingComparisonSection({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-white">⭐ Puan Analizi</h3>
+        <h3 className="text-lg font-semibold text-white">{translateUi("puan_analizi_0da60dc")}</h3>
         <p className="text-sm text-white/50">
-          Puan dağılımın, platforma göre farkın ve puanlama tarzın
+          {translateUi("puan_dagilimin_platforma_gore_farkin_ve_c9d8220")}
         </p>
       </div>
 
@@ -133,17 +137,17 @@ export function StatsRatingComparisonSection({
         <div className="text-sm text-white/80">{persona}</div>
         {avgRatingAll !== null && (
           <div className="text-xs text-white/40 mt-1">
-            Ortalama puanın:{' '}
+            {translateUi("ortalama_puanin_aff41ba")}{' '}
             <span className="text-yellow-400 font-semibold">⭐ {avgRatingAll.toFixed(1)}</span>
             {' · '}
-            Toplam puanlanan: {ratedCount} içerik
+            {translateUi("toplam_puanlanan_e84d72e") + " "} {ratedCount} {" " + translateUi("icerik_cc7ccd1")}
           </div>
         )}
       </div>
 
       {/* Histogram */}
       <div className="glass-card p-5 space-y-3">
-        <div className="text-sm font-semibold text-white/80">Puan Dağılımın (0.5–5)</div>
+        <div className="text-sm font-semibold text-white/80">{translateUi("puan_dagilimin_0_5_5_9a90191")}</div>
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={histChartData} margin={{ top: 5, right: 10, left: -15, bottom: 0 }}>
@@ -169,9 +173,9 @@ export function StatsRatingComparisonSection({
           {mostUnderrated.length > 0 && (
             <div className="glass-card p-5 space-y-2">
               <div className="text-sm font-semibold text-white/80">
-                💚 Platformdan Fazla Sevdiklerin
+                {translateUi("platformdan_fazla_sevdiklerin_8e76119")}
               </div>
-              <div className="text-xs text-white/40 mb-1">Senin puanın platform ort. üstünde</div>
+              <div className="text-xs text-white/40 mb-1">{translateUi("senin_puanin_platform_ort_ustunde_ea994f1")}</div>
               {mostUnderrated.slice(0, 6).map((item, i) => (
                 <ContentCompRow key={item.contentId} item={item} rank={i + 1} />
               ))}
@@ -181,9 +185,9 @@ export function StatsRatingComparisonSection({
           {mostOverrated.length > 0 && (
             <div className="glass-card p-5 space-y-2">
               <div className="text-sm font-semibold text-white/80">
-                ❤️‍🔥 Platformdan Az Sevdiklerin
+                {translateUi("platformdan_az_sevdiklerin_0e0ad76")}
               </div>
-              <div className="text-xs text-white/40 mb-1">Senin puanın platform ort. altında</div>
+              <div className="text-xs text-white/40 mb-1">{translateUi("senin_puanin_platform_ort_altinda_cf23c9e")}</div>
               {mostOverrated.slice(0, 6).map((item, i) => (
                 <ContentCompRow key={item.contentId} item={item} rank={i + 1} />
               ))}

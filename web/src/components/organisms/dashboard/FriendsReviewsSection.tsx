@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -15,7 +17,7 @@ import {
   CircleCheck,
 } from 'lucide-react';
 import { getPosterUrl } from '@/lib/image-utils';
-import { formatRelativeTime } from '@/lib/date-utils';
+import { useRelativeTime } from '@/i18n/use-relative-time';
 import { formatRating } from '@/lib/formatRating';
 import { useHorizontalDragScroll } from '@/hooks/useHorizontalDragScroll';
 
@@ -119,6 +121,8 @@ function ReviewMeta({ act }: { act: any }) {
 }
 
 function ReviewCard({ act }: { act: any }) {
+  const formatRelativeTime = useRelativeTime();
+  const translateUi = useUiTranslations('Ui');
   const [imgError, setImgError] = useState(false);
   const posterUrl = act.content?.posterUrl ? getPosterUrl.card(act.content.posterUrl) : null;
   const contentLink = act.contentId
@@ -159,7 +163,7 @@ function ReviewCard({ act }: { act: any }) {
               {user?.picturePath ? (
                 <Image
                   src={user.picturePath}
-                  alt={user.username || 'User'}
+                  alt={user.username || translateUi("user_9f8a238")}
                   width={24}
                   height={24}
                   className="object-cover w-full h-full"
@@ -171,10 +175,10 @@ function ReviewCard({ act }: { act: any }) {
               )}
             </div>
             <span className="text-sm font-medium text-white/90">
-              {user?.username || 'Unknown User'}
+              {user?.username || translateUi("unknown_user_3511814")}
             </span>
           </Link>
-          <span className="text-xs text-white/40">&bull;</span>
+          <span className="text-xs text-white/40">{translateUi("bull_3bd1c9c")}</span>
           <span className="text-xs text-white/40">
             {formatRelativeTime(act.date || act.createdAt)}
           </span>
@@ -184,14 +188,14 @@ function ReviewCard({ act }: { act: any }) {
           href={contentLink as any}
           className="text-base font-bold text-white hover:text-violet-400 transition-colors line-clamp-1"
         >
-          {act.content?.title || 'Unknown Content'}
+          {act.content?.title || translateUi("unknown_content_a304252")}
         </Link>
 
         <ReviewMeta act={act} />
 
         <div className="flex gap-2 mt-auto">
           <MessageSquare size={14} className="text-white/40 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-white/60 line-clamp-2 italic">&quot;{reviewText}&quot;</p>
+          <p className="text-sm text-white/60 line-clamp-2 italic">{translateUi("quot_e2bbf20")}{reviewText}{translateUi("quot_e2bbf20")}</p>
         </div>
       </div>
     </div>
@@ -199,6 +203,7 @@ function ReviewCard({ act }: { act: any }) {
 }
 
 function ReviewViewAllCard() {
+  const translateUi = useUiTranslations('Ui');
   return (
     <Link
       href={'/dashboard/friends-reviews' as any}
@@ -209,7 +214,7 @@ function ReviewViewAllCard() {
         <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-white/[0.05] text-lg font-black">
           +
         </span>
-        <span className="text-sm font-semibold leading-6">See All</span>
+        <span className="text-sm font-semibold leading-6">{translateUi("see_all_8196e42")}</span>
       </div>
     </Link>
   );
@@ -225,6 +230,7 @@ export default function FriendsReviewsSection({
   layout = 'carousel',
   showViewAll = true,
 }: FriendsReviewsSectionProps) {
+  const translateUi = useUiTranslations('Ui');
   const [selectedFilterId, setSelectedFilterId] = useState(0);
   const { dragScrollProps } = useHorizontalDragScroll();
   const availableFilters = CONTENT_TYPE_FILTERS.filter(
@@ -256,8 +262,8 @@ export default function FriendsReviewsSection({
     <section className="space-y-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 className="text-xl font-bold">Friends&apos; Reviews</h2>
-          <p className="text-sm text-white/50">Recent reviews and ratings of people you follow</p>
+          <h2 className="text-xl font-bold">{translateUi("friends_apos_reviews_d35fea1")}</h2>
+          <p className="text-sm text-white/50">{translateUi("recent_reviews_and_ratings_of_people_a04ffa4")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {!splitByContentType &&
@@ -285,7 +291,7 @@ export default function FriendsReviewsSection({
               href={'/dashboard/friends-reviews' as any}
               className="btn-secondary px-4 py-2 text-sm"
             >
-              See All
+              {translateUi("see_all_8196e42")}
             </Link>
           )}
         </div>
@@ -294,11 +300,11 @@ export default function FriendsReviewsSection({
       {loading ? (
         <div className="glass-card p-6 flex items-center gap-3">
           <div className="w-5 h-5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-white/60">Loading reviews...</p>
+          <p className="text-white/60">{translateUi("loading_reviews_5da4417")}</p>
         </div>
       ) : error ? (
         <div className="glass-card p-6">
-          <p className="text-red-300 font-medium">Failed to load reviews</p>
+          <p className="text-red-300 font-medium">{translateUi("failed_to_load_reviews_eb30449")}</p>
           <p className="text-white/60 text-sm mt-1">{error}</p>
         </div>
       ) : splitByContentType ? (
@@ -333,8 +339,8 @@ export default function FriendsReviewsSection({
       ) : filteredReviews.length === 0 ? (
         <div className="glass-card p-6 text-center text-white/50">
           {selectedFilter.id !== 0
-            ? 'No friend reviews in this content type.'
-            : 'No friend reviews yet.'}
+            ? translateUi("no_friend_reviews_in_this_content_c407168")
+            : translateUi("no_friend_reviews_yet_5482a12")}
         </div>
       ) : layout === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

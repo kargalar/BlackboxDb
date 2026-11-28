@@ -1,3 +1,4 @@
+import { ContentTranslationText } from "../ContentTranslation";
 import { ContentRelease } from "../ContentRelease";
 import { InputType, Field, Int } from "type-graphql";
 import {
@@ -19,6 +20,9 @@ import {
 
 @InputType()
 export class CreateContentInput {
+  @Field(() => [ContentTranslationText], { nullable: true })
+  translations?: ContentTranslationText[];
+
   @Field(() => String)
   title: string;
 

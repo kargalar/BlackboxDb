@@ -1,4 +1,6 @@
 'use client';
+import { useLocale } from 'next-intl';
+import { formattingLocale } from '@/i18n/locales';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
@@ -162,10 +164,12 @@ const LogHistoryModal: React.FC<LogHistoryModalProps> = ({
     }
   };
 
+  const locale = formattingLocale(useLocale());
+
   const formatDate = (date: string | Date | null | undefined) => {
     if (!date) return '';
     const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('tr-TR', {
+    return dateObj.toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',

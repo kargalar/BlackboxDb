@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import { Eye, Loader2 } from 'lucide-react';
 import { FilterSection } from './FilterSection';
 import { useScrollableFilter } from './useScrollableFilter';
@@ -30,6 +31,7 @@ export function PerspectiveFilter({
   filterCounts,
   otherFilterId,
 }: PerspectiveFilterProps) {
+  const translateUi = useUiTranslations('Ui');
   const {
     displayItems: perspectives,
     searchTerm,
@@ -48,7 +50,7 @@ export function PerspectiveFilter({
 
   return (
     <FilterSection
-      title="Bakış Açısı"
+      title={translateUi("bakis_acisi_f3cb8f4")}
       icon={<Eye className="w-4 h-4 text-amber-400" />}
       isExpanded={isExpanded}
       onToggle={onToggleSection}
@@ -61,7 +63,7 @@ export function PerspectiveFilter({
         type="text"
         value={searchTerm}
         onChange={(e) => handleSearchChange(e.target.value)}
-        placeholder="Bakış açısı ara..."
+        placeholder={translateUi("bakis_acisi_ara_38fd398")}
         className="w-full px-2 py-1.5 text-xs bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-white/20"
       />
       <div
@@ -72,7 +74,7 @@ export function PerspectiveFilter({
         {isSearching && perspectives.length === 0 ? (
           <div className="flex items-center justify-center py-3">
             <Loader2 className="w-4 h-4 animate-spin text-white/40" />
-            <span className="ml-2 text-xs text-white/40">Aranıyor...</span>
+            <span className="ml-2 text-xs text-white/40">{translateUi("araniyor_1f83d73")}</span>
           </div>
         ) : perspectives.length > 0 ? (
           <>
@@ -105,7 +107,7 @@ export function PerspectiveFilter({
             {isLoadingMore && (
               <div className="flex items-center justify-center py-2">
                 <Loader2 className="w-3 h-3 animate-spin text-white/30" />
-                <span className="ml-1 text-xs text-white/30">Yükleniyor...</span>
+                <span className="ml-1 text-xs text-white/30">{translateUi("yukleniyor_317109f")}</span>
               </div>
             )}
             {hasMore && !isLoadingMore && (
@@ -113,12 +115,12 @@ export function PerspectiveFilter({
                 onClick={loadMore}
                 className="w-full text-center text-xs text-amber-400 hover:text-amber-300 py-1.5 hover:bg-amber-500/10 rounded transition-colors"
               >
-                Daha fazla yükle...
+                {translateUi("daha_fazla_yukle_d36c840")}
               </button>
             )}
           </>
         ) : (
-          <p className="text-sm text-white/30 py-2">Bakış açısı bulunamadı</p>
+          <p className="text-sm text-white/30 py-2">{translateUi("bakis_acisi_bulunamadi_8e75c15")}</p>
         )}
       </div>
       <label className="flex items-center cursor-pointer group p-1.5 rounded-lg hover:bg-white/5 transition-colors border-t border-white/5 mt-2 pt-2">
@@ -129,7 +131,7 @@ export function PerspectiveFilter({
           className="w-4 h-4 rounded border-amber-500/50 bg-white/5 text-amber-500 focus:ring-amber-500/30 focus:ring-offset-0"
         />
         <span className="ml-2 text-sm text-white/50 group-hover:text-white transition-colors flex-1 italic">
-          Diğer (Bakış Açısı Yok)
+          {translateUi("diger_bakis_acisi_yok_ea50326")}
         </span>
         {(filterCounts?.[otherFilterId] || 0) > 0 && (
           <span className="text-xs text-white/30 bg-white/5 px-1.5 py-0.5 rounded-full">

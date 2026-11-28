@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { Suspense, useState } from 'react';
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
@@ -56,14 +58,16 @@ const GET_MY_RANK = gql`
 `;
 
 export default function ContributorsLeaderboardPage() {
+  const translateUi = useUiTranslations('Ui');
   return (
-    <Suspense fallback={<div className="p-6 text-white">Yükleniyor...</div>}>
+    <Suspense fallback={<div className="p-6 text-white">{translateUi("yukleniyor_317109f")}</div>}>
       <ContributorsLeaderboardInner />
     </Suspense>
   );
 }
 
 function ContributorsLeaderboardInner() {
+  const translateUi = useUiTranslations('Ui');
   const { user } = useAuth();
   // We don't have translations yet, but standard text is fine for now
   // const t = useTranslations('Leaderboard');
@@ -117,10 +121,10 @@ function ContributorsLeaderboardInner() {
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
               <Trophy className="w-8 h-8 text-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]" />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-400">
-                Topluluk Liderlik Tablosu
+                {translateUi("topluluk_liderlik_tablosu_af924e6")}
               </span>
             </h1>
-            <p className="text-white/60 mt-1">En çok katkıda bulunan üyeler</p>
+            <p className="text-white/60 mt-1">{translateUi("en_cok_katkida_bulunan_uyeler_43b01f9")}</p>
           </div>
         </div>
 
@@ -130,7 +134,7 @@ function ContributorsLeaderboardInner() {
             <div className="absolute inset-0 bg-gradient-to-r from-violet-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2 relative z-10">
               <User className="w-5 h-5 text-violet-400" />
-              Sıralamanız
+              {translateUi("siralamaniz_5563e74")}
             </h3>
 
             <div className="flex items-center gap-6 relative z-10">
@@ -170,7 +174,7 @@ function ContributorsLeaderboardInner() {
                 <div className="flex gap-4 mt-2 text-sm text-white/50">
                   <span className="flex items-center gap-1">
                     <Star className="w-4 h-4 text-yellow-500/70" />
-                    Katkı Puanı
+                    {translateUi("katki_puani_9eee672")}
                   </span>
                 </div>
               </div>
@@ -180,7 +184,7 @@ function ContributorsLeaderboardInner() {
                 <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70">
                   {myEntry.contributionScore.toLocaleString()}
                 </div>
-                <div className="text-sm text-white/40 font-medium">Toplam Puan</div>
+                <div className="text-sm text-white/40 font-medium">{translateUi("toplam_puan_b862af8")}</div>
               </div>
             </div>
           </div>
@@ -190,9 +194,9 @@ function ContributorsLeaderboardInner() {
         <div className="glass-card border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
           {/* Table Header */}
           <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-white/5 text-sm font-bold text-white/50 border-b border-white/5 uppercase tracking-wider">
-            <div className="col-span-2 sm:col-span-1 text-center">Sıra</div>
-            <div className="col-span-7 sm:col-span-8">Kullanıcı</div>
-            <div className="col-span-3 text-right">Puan</div>
+            <div className="col-span-2 sm:col-span-1 text-center">{translateUi("sira_c6d0790")}</div>
+            <div className="col-span-7 sm:col-span-8">{translateUi("kullanici_07075ba")}</div>
+            <div className="col-span-3 text-right">{translateUi("puan_cb061dd")}</div>
           </div>
 
           {/* Loading */}
@@ -208,7 +212,7 @@ function ContributorsLeaderboardInner() {
               <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Star className="w-10 h-10 text-white/20" />
               </div>
-              <p className="text-white/60 text-lg font-medium">Henüz katkıda bulunan kimse yok</p>
+              <p className="text-white/60 text-lg font-medium">{translateUi("henuz_katkida_bulunan_kimse_yok_0a02314")}</p>
             </div>
           )}
 
@@ -258,7 +262,7 @@ function ContributorsLeaderboardInner() {
                         {entry.user.username}
                         {isCurrentUser && (
                           <span className="text-[10px] bg-violet-600 text-white px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">
-                            Sen
+                            {translateUi("sen_f422ba8")}
                           </span>
                         )}
                       </div>

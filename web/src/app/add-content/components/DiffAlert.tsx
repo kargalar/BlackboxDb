@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { DiffResult, getDiffDetailLines } from '@/utils/diffUtils';
@@ -9,6 +10,7 @@ interface DiffAlertProps {
 }
 
 export function DiffAlert({ diffs, onRevert, title }: DiffAlertProps) {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('AddContent.diffAlert');
 
   if (!diffs || diffs.length === 0) return null;
@@ -53,7 +55,7 @@ export function DiffAlert({ diffs, onRevert, title }: DiffAlertProps) {
                   height={800}
                   unoptimized
                   className="max-h-32 max-w-full rounded object-contain bg-black/40 ring-1 ring-white/10"
-                  alt="Image"
+                  alt={translateUi("image_50e19fd")}
                 />
               );
             }
@@ -121,7 +123,7 @@ export function DiffAlert({ diffs, onRevert, title }: DiffAlertProps) {
                               unoptimized
                               className="max-h-24 rounded object-cover ring-1 ring-white/10 bg-black/40"
                               style={{ width: 'auto' }}
-                              alt="Screenshot"
+                              alt={translateUi("screenshot_60c152d")}
                             />
                           );
                         }

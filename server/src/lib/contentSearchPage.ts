@@ -73,7 +73,8 @@ export async function getContentSearchPage(
 ): Promise<ContentSearchPage> {
   const limit = normalizePageSize(options.limit);
   const offset = normalizePageOffset(options.offset);
-  const query = options.searchQuery?.trim();
+  const query = options.searchQuery?.trim().normalize("NFC");
+  const pattern = query ? `%${query.replace(/[\\%_]/g, "\\$&")}%` : "";
   const hasRatingFilter =
     options.ratingMin !== undefined || options.ratingMax !== undefined;
   const needsUserDate = options.sortBy === "userDate" && !!options.userId;
@@ -137,13 +138,13 @@ export async function getContentSearchPage(
   if (options.ratingMax !== undefined)
     conditions.push(Prisma.sql`${averageRating} <= ${options.ratingMax}`);
   if (query) {
-    const pattern = `%${query}%`;
     conditions.push(Prisma.sql`(
       SIMILARITY(c.title, ${query}) > ${SEARCH_RELEVANCE.titleThreshold}
       OR SIMILARITY(c.description, ${query}) > ${SEARCH_RELEVANCE.descriptionThreshold}
       OR c.title ILIKE ${pattern} OR c.original_title ILIKE ${pattern} OR c.isbn ILIKE ${pattern}
       OR EXISTS (SELECT 1 FROM unnest(c.alternative_titles) AS alt(title) WHERE alt.title ILIKE ${pattern})
-      OR EXISTS (SELECT 1 FROM book_publication bp WHERE bp.content_id = c.id AND bp.isbn ILIKE ${pattern})
+      OR c.id IN (SELECT ct.content_id FROM content_translation ct WHERE ct.title ILIKE ${pattern})
+      OR EXISTS (SELECT 1 FROM book_publication bp WHERE bp.content_id = c.id AND (bp.isbn ILIKE ${pattern} OR bp.title ILIKE ${pattern}))
       OR ${packageMatch}
     )`);
   }
@@ -163,6 +164,8 @@ export async function getContentSearchPage(
         SIMILARITY(c.title, ${query}),
         SIMILARITY(c.original_title, ${query}) * ${SEARCH_RELEVANCE.originalTitleWeight},
         (SELECT MAX(SIMILARITY(alt.title, ${query})) FROM unnest(c.alternative_titles) AS alt(title)) * ${SEARCH_RELEVANCE.alternativeTitleWeight},
+        (SELECT MAX(SIMILARITY(ct.title, ${query})) FROM content_translation ct WHERE ct.content_id = c.id),
+        (SELECT MAX(SIMILARITY(bp.title, ${query})) FROM book_publication bp WHERE bp.content_id = c.id),
         SIMILARITY(c.description, ${query}) * ${SEARCH_RELEVANCE.descriptionWeight},
         CASE WHEN ${packageMatch} THEN ${SEARCH_RELEVANCE.alternativeTitleWeight} ELSE 0 END
       )`,
@@ -221,11 +224,15 @@ export async function getContentSearchPage(
         FROM expansion e
         JOIN content detail ON detail.id = e.detail_content_id
         WHERE NOT detail.is_deleted AND (
-          e.name ILIKE ${`%${query}%`}
-          OR detail.title ILIKE ${`%${query}%`}
+          e.name ILIKE ${pattern}
+          OR detail.title ILIKE ${pattern}
+          OR EXISTS (
+            SELECT 1 FROM content_translation ct
+            WHERE ct.content_id = detail.id AND ct.title ILIKE ${pattern}
+          )
           OR EXISTS (
             SELECT 1 FROM unnest(detail.alternative_titles) AS alt(title)
-            WHERE alt.title ILIKE ${`%${query}%`}
+            WHERE alt.title ILIKE ${pattern}
           )
         )
         UNION

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
@@ -34,6 +36,7 @@ function RecommendDialogContent({
   contentTitle,
   currentUsername,
 }: Omit<RecommendDialogProps, 'isOpen'>) {
+  const translateUi = useUiTranslations('Ui');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [following, setFollowing] = useState<FollowingUser[]>([]);
@@ -154,7 +157,7 @@ function RecommendDialogContent({
               {t('desc', { title: contentTitle || '...' })}
             </p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white" aria-label="Close">
+          <button onClick={onClose} className="text-gray-400 hover:text-white" aria-label={translateUi("close_bbfa773")}>
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"

@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import InteractivePoster from '@/components/organisms/InteractivePoster';
 import { useHorizontalDragScroll } from '@/hooks/useHorizontalDragScroll';
@@ -82,6 +83,7 @@ export default function ContinuingContentSection({
   handlers,
   onShowAll,
 }: ContinuingContentSectionProps) {
+  const translateUi = useUiTranslations('Ui');
   const [selectedFilter, setSelectedFilter] = useState<ContinuingFilter>('all');
   const counts = useMemo(
     () =>
@@ -148,7 +150,7 @@ export default function ContinuingContentSection({
               <div className="flex flex-wrap items-center gap-3">
                 <h3 className="flex items-center gap-2 text-2xl font-black tracking-tight text-white">
                   <Activity className="h-5 w-5 text-white/75" />
-                  Devam Edenler
+                  {translateUi("devam_edenler_c0a8531")}
                 </h3>
                 {showAllTabName && onShowAll && (
                   <button
@@ -161,13 +163,13 @@ export default function ContinuingContentSection({
                     }}
                     className="inline-flex items-center rounded-full border border-white/15 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:border-white/25 hover:bg-white/[0.08] hover:text-white"
                   >
-                    Tümünü Gör
+                    {translateUi("tumunu_gor_56eb0fa")}
                   </button>
                 )}
               </div>
               {!isOwnProfile && (
                 <p className="mt-2 max-w-xl text-sm leading-6 text-white/60 md:text-[15px]">
-                  Bu kullanıcının şu anda devam ettiği içerikler burada öne çıkıyor.
+                  {translateUi("bu_kullanicinin_su_anda_devam_ettigi_0bd5f8c")}
                 </p>
               )}
             </div>
@@ -266,7 +268,7 @@ export default function ContinuingContentSection({
                 <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-white/[0.05] text-lg font-black">
                   +
                 </span>
-                <span className="text-sm font-semibold leading-6">Tümünü Göster</span>
+                <span className="text-sm font-semibold leading-6">{translateUi("tumunu_goster_b8328f2")}</span>
               </button>
             </div>
           )}

@@ -1,3 +1,4 @@
+import { fillContentTranslations } from "./contentTranslations";
 import { normalizeContentReleases } from "./contentReleases";
 import { generateContentSlug } from "./slugUtils";
 import { logger } from "./logger";
@@ -158,6 +159,8 @@ export async function ensureTvContentFromTmdb(
     update: buildTvUpdateData(details),
     create: buildTvCreateData(contentId, details),
   });
+
+  await fillContentTranslations(prisma, contentId, details.translations);
 
   if (details.genres?.length) {
     await linkGenres(

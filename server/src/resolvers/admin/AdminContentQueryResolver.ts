@@ -3,6 +3,7 @@ import { Resolver, Query, Arg, Ctx, Authorized, Int, FieldResolver, Root } from 
 import { GraphQLContext } from "../../context";
 import { requireAdminOrModerator } from "../../lib/authGuard";
 import { AdminContent, ContentEditHistory, AdminContentEditHistoryResponse } from "../../types/admin";
+import { ContentTranslationText } from "../../types/ContentTranslation";
 import { Content } from "../../types/Content";
 import { ContentCitation } from "../../types/ContentCitation";
 import { logger } from "../../lib/logger";
@@ -13,6 +14,11 @@ import { convertBookPublicationForGraphQL } from "../content/ContentUtils";
 @Resolver(() => AdminContent)
 export class AdminContentQueryResolver {
 
+
+  @FieldResolver(() => [ContentTranslationText])
+  translations(@Root() content: AdminContent, @Ctx() { prisma }: GraphQLContext) {
+    return prisma.contentTranslation.findMany({ where: { contentId: content.id }, orderBy: { language: "asc" } });
+  }
 
   @Authorized()
   @Query(() => [AdminContent])
@@ -29,6 +35,7 @@ export class AdminContentQueryResolver {
       ? {
         OR: [
           { title: { contains: search, mode: "insensitive" as const } },
+          { translations: { some: { title: { contains: search, mode: "insensitive" as const } } } },
           { isbn: { contains: search, mode: "insensitive" as const } },
           {
             bookPublications: {

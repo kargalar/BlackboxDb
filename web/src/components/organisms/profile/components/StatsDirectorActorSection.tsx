@@ -5,6 +5,8 @@
 
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -46,6 +48,7 @@ function PersonAvatar({ profileUrl, name }: { profileUrl?: string | null; name: 
 }
 
 function PersonStatRow({ stat, rank }: { stat: PersonStat; rank: number }) {
+  const translateUi = useUiTranslations('Ui');
   return (
     <Link
       href={`/person/${stat.personId}`}
@@ -56,7 +59,7 @@ function PersonStatRow({ stat, rank }: { stat: PersonStat; rank: number }) {
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium text-white truncate">{stat.personName}</div>
         <div className="text-xs text-white/40">
-          {stat.count} içerik{stat.favoriteCount > 0 && ` · ${stat.favoriteCount} favori`}
+          {stat.count} {" " + translateUi("icerik_cc7ccd1")}{stat.favoriteCount > 0 && ` · ${stat.favoriteCount} favori`}
         </div>
       </div>
       {stat.avgRating != null && (
@@ -133,6 +136,7 @@ export function StatsDirectorActorSection({
   topCrew,
   contentTypeFilter,
 }: Props) {
+  const translateUi = useUiTranslations('Ui');
   const [view, setView] = useState<PersonView>('directors');
 
   console.log('🎨 [StatsDirectorActorSection] Render, view:', view);
@@ -202,9 +206,9 @@ export function StatsDirectorActorSection({
   if (allEmpty) {
     return (
       <div className="glass-card p-5 space-y-2">
-        <h3 className="text-lg font-semibold text-white">🎬 Kişi İstatistikleri</h3>
+        <h3 className="text-lg font-semibold text-white">{translateUi("kisi_istatistikleri_7423bd5")}</h3>
         <p className="text-sm text-white/40">
-          Veri yok — henüz yönetmen/oyuncu bilgisi bulunamadı.
+          {translateUi("veri_yok_henuz_yonetmen_oyuncu_bilgisi_710bbc8")}
         </p>
       </div>
     );
@@ -214,8 +218,8 @@ export function StatsDirectorActorSection({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2 justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-white">🎬 Kişi İstatistikleri</h3>
-          <p className="text-sm text-white/50">Yönetmen, oyuncu ve yazar bazlı analizler</p>
+          <h3 className="text-lg font-semibold text-white">{translateUi("kisi_istatistikleri_7423bd5")}</h3>
+          <p className="text-sm text-white/50">{translateUi("yonetmen_oyuncu_ve_yazar_bazli_analizler_9ddf03d")}</p>
         </div>
         <div className="flex gap-2">
           {tabs.map((tab) => (
@@ -235,16 +239,16 @@ export function StatsDirectorActorSection({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <PersonListCard title="En Çok Görülenler" data={currentList} emptyText="Veri yok" />
+        <PersonListCard title={translateUi("en_cok_gorulenler_d460a08")} data={currentList} emptyText={translateUi("veri_yok_84eb31e")} />
         <PersonListCard
-          title="⭐ En Beğenilenler"
+          title={translateUi("en_begenilenler_ee552c4")}
           data={bestRatedList}
-          emptyText="Min. 2 içerik gerekiyor"
+          emptyText={translateUi("min_2_icerik_gerekiyor_abf171f")}
         />
         <PersonListCard
-          title="👎 En Az Beğenilenler"
+          title={translateUi("en_az_begenilenler_90032b5")}
           data={worstRatedList}
-          emptyText="Min. 2 içerik gerekiyor"
+          emptyText={translateUi("min_2_icerik_gerekiyor_abf171f")}
         />
       </div>
     </div>

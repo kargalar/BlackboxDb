@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import { Eye, Clock, Play, Heart, Ban } from 'lucide-react';
 import { FilterSection } from './FilterSection';
 
@@ -25,9 +26,10 @@ export function HideOptionsFilter({
   onToggleSection,
   onChange,
 }: HideOptionsFilterProps) {
+  const translateUi = useUiTranslations('Ui');
   return (
     <FilterSection
-      title="Gizle"
+      title={translateUi("gizle_3c92047")}
       icon={<Eye className="w-4 h-4 text-violet-400" />}
       isExpanded={isExpanded}
       onToggle={onToggleSection}
@@ -38,7 +40,7 @@ export function HideOptionsFilter({
           <div className="flex items-center gap-2">
             <Eye className="w-4 h-4 text-green-400" />
             <span className="text-sm text-white/70 group-hover:text-white transition-colors">
-              İzlenenleri Gizle
+              {translateUi("izlenenleri_gizle_c03e015")}
             </span>
           </div>
           <div className="relative">
@@ -56,7 +58,7 @@ export function HideOptionsFilter({
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-yellow-400" />
             <span className="text-sm text-white/70 group-hover:text-white transition-colors">
-              Sonra İzle&apos;yi Gizle
+              {translateUi("sonra_izle_apos_yi_gizle_804e76a")}
             </span>
           </div>
           <div className="relative">
@@ -74,7 +76,7 @@ export function HideOptionsFilter({
           <div className="flex items-center gap-2">
             <Play className="w-4 h-4 text-blue-400" />
             <span className="text-sm text-white/70 group-hover:text-white transition-colors">
-              Devam Edenleri Gizle
+              {translateUi("devam_edenleri_gizle_8a54a96")}
             </span>
           </div>
           <div className="relative">
@@ -92,7 +94,7 @@ export function HideOptionsFilter({
           <div className="flex items-center gap-2">
             <Heart className="w-4 h-4 text-pink-400" />
             <span className="text-sm text-white/70 group-hover:text-white transition-colors">
-              Favorileri Gizle
+              {translateUi("favorileri_gizle_32ad87d")}
             </span>
           </div>
           <div className="relative">
@@ -110,7 +112,7 @@ export function HideOptionsFilter({
           <div className="flex items-center gap-2">
             <Ban className="w-4 h-4 text-orange-400" />
             <span className="text-sm text-white/70 group-hover:text-white transition-colors">
-              Yarıda Bırakılanları Gizle
+              {translateUi("yarida_birakilanlari_gizle_dcd52f6")}
             </span>
           </div>
           <div className="relative">

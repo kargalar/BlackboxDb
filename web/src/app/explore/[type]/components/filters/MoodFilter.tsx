@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import { Smile, Loader2 } from 'lucide-react';
 import { FilterSection } from './FilterSection';
 import { useScrollableFilter } from './useScrollableFilter';
@@ -32,6 +33,7 @@ export function MoodFilter({
   otherFilterId,
   contentTypeId,
 }: MoodFilterProps) {
+  const translateUi = useUiTranslations('Ui');
   const {
     displayItems: moods,
     searchTerm,
@@ -51,7 +53,7 @@ export function MoodFilter({
 
   return (
     <FilterSection
-      title="Ruh Hali"
+      title={translateUi("ruh_hali_81c1885")}
       icon={<Smile className="w-4 h-4 text-pink-400" />}
       isExpanded={isExpanded}
       onToggle={onToggleSection}
@@ -64,7 +66,7 @@ export function MoodFilter({
         type="text"
         value={searchTerm}
         onChange={(e) => handleSearchChange(e.target.value)}
-        placeholder="Ruh hali ara..."
+        placeholder={translateUi("ruh_hali_ara_f566791")}
         className="w-full px-2 py-1.5 text-xs bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-white/20"
       />
       <div
@@ -75,7 +77,7 @@ export function MoodFilter({
         {isSearching && moods.length === 0 ? (
           <div className="flex items-center justify-center py-3">
             <Loader2 className="w-4 h-4 animate-spin text-white/40" />
-            <span className="ml-2 text-xs text-white/40">Aranıyor...</span>
+            <span className="ml-2 text-xs text-white/40">{translateUi("araniyor_1f83d73")}</span>
           </div>
         ) : moods.length > 0 ? (
           <>
@@ -108,7 +110,7 @@ export function MoodFilter({
             {isLoadingMore && (
               <div className="flex items-center justify-center py-2">
                 <Loader2 className="w-3 h-3 animate-spin text-white/30" />
-                <span className="ml-1 text-xs text-white/30">Yükleniyor...</span>
+                <span className="ml-1 text-xs text-white/30">{translateUi("yukleniyor_317109f")}</span>
               </div>
             )}
             {hasMore && !isLoadingMore && (
@@ -116,12 +118,12 @@ export function MoodFilter({
                 onClick={loadMore}
                 className="w-full text-center text-xs text-pink-400 hover:text-pink-300 py-1.5 hover:bg-pink-500/10 rounded transition-colors"
               >
-                Daha fazla yükle...
+                {translateUi("daha_fazla_yukle_d36c840")}
               </button>
             )}
           </>
         ) : (
-          <p className="text-sm text-white/30 py-2">Ruh hali bulunamadı</p>
+          <p className="text-sm text-white/30 py-2">{translateUi("ruh_hali_bulunamadi_239d5d0")}</p>
         )}
       </div>
       <label className="flex items-center cursor-pointer group p-1.5 rounded-lg hover:bg-white/5 transition-colors border-t border-white/5 mt-2 pt-2">
@@ -132,7 +134,7 @@ export function MoodFilter({
           className="w-4 h-4 rounded border-pink-500/50 bg-white/5 text-pink-500 focus:ring-pink-500/30 focus:ring-offset-0"
         />
         <span className="ml-2 text-sm text-white/50 group-hover:text-white transition-colors flex-1 italic">
-          Diğer (Ruh Hali Yok)
+          {translateUi("diger_ruh_hali_yok_d014d9f")}
         </span>
         {(filterCounts?.[otherFilterId] || 0) > 0 && (
           <span className="text-xs text-white/30 bg-white/5 px-1.5 py-0.5 rounded-full">

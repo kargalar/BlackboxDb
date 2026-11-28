@@ -1,4 +1,6 @@
 'use client';
+
+import { useTranslations as useUiTranslations } from 'next-intl';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getMyLists, addToList, createList, UserList } from '@/services/graphql/list';
 import { gql } from '@apollo/client';
@@ -33,6 +35,7 @@ function AddToListModalContent({
   contentType,
   contentTitle,
 }: Omit<AddToListModalProps, 'isOpen'>) {
+  const translateUi = useUiTranslations('Ui');
   const [userLists, setUserLists] = useState<UserList[]>([]);
   const [listsLoading, setListsLoading] = useState(true);
   const [addingToList, setAddingToList] = useState<number | null>(null);
@@ -66,7 +69,7 @@ function AddToListModalContent({
       setContentTypeId(resolvedTypeId ?? null);
       if (listResult.error) {
         console.error('[AddToListModal] Failed to load lists:', listResult.error);
-        toast.error('Listeler yüklenemedi. Lütfen tekrar deneyin.');
+        toast.error(translateUi("listeler_yuklenemedi_lutfen_tekrar_deneyin_313a030"));
         setUserLists([]);
         return;
       }
@@ -78,7 +81,7 @@ function AddToListModalContent({
     } catch (error) {
       if (!isMountedRef.current || requestId !== loadRequestIdRef.current) return;
       console.error('[AddToListModal] Failed to load lists:', error);
-      toast.error('Listeler yüklenemedi. Lütfen tekrar deneyin.');
+      toast.error(translateUi("listeler_yuklenemedi_lutfen_tekrar_deneyin_313a030"));
       setContentTypeId(null);
       setUserLists([]);
     } finally {
@@ -109,16 +112,16 @@ function AddToListModalContent({
       if (!isMountedRef.current) return;
 
       if (error) {
-        toast.error('İşlem başarısız.');
+        toast.error(translateUi("islem_basarisiz_ada0de8"));
         return;
       }
 
-      toast.success(data == null ? 'İçerik listeden çıkarıldı.' : 'İçerik listeye eklendi.');
+      toast.success(data == null ? translateUi("icerik_listeden_cikarildi_96454de") : translateUi("icerik_listeye_eklendi_2369ffd"));
       await loadLists();
     } catch (error) {
       if (!isMountedRef.current) return;
       console.error('[AddToListModal] Failed to update list:', error);
-      toast.error('İşlem başarısız.');
+      toast.error(translateUi("islem_basarisiz_ada0de8"));
     } finally {
       if (isMountedRef.current) setAddingToList(null);
     }
@@ -127,7 +130,7 @@ function AddToListModalContent({
   // Create new list and add content immediately
   const handleCreateListAndAdd = async () => {
     if (!newListName.trim()) {
-      toast.error('Liste adı gerekli.');
+      toast.error(translateUi("liste_adi_gerekli_c045e3e"));
       return;
     }
 
@@ -136,7 +139,7 @@ function AddToListModalContent({
     setCreatingList(true);
     try {
       if (!contentTypeId) {
-        toast.error('İçerik türü çözümlenemedi.');
+        toast.error(translateUi("icerik_turu_cozumlenemedi_533b7aa"));
         return;
       }
 
@@ -148,7 +151,7 @@ function AddToListModalContent({
       );
       if (!isMountedRef.current) return;
       if (createError || !newList) {
-        toast.error('Liste oluşturulamadı.');
+        toast.error(translateUi("liste_olusturulamadi_ecd26c6"));
         return;
       }
 
@@ -156,17 +159,17 @@ function AddToListModalContent({
       if (!isMountedRef.current) return;
 
       if (addError || !addResult) {
-        toast.error('Liste oluşturuldu fakat içerik eklenemedi.');
+        toast.error(translateUi("liste_olusturuldu_fakat_icerik_eklenemedi_2c9c955"));
         await loadLists();
         return;
       }
 
-      toast.success(`"${newListName.trim()}" listesi oluşturuldu ve içerik eklendi.`);
+      toast.success(translateUi("value1_listesi_olusturuldu_ve_icerik_eklendi_97e1bb1", { value1: String(newListName.trim()) }));
       onClose();
     } catch (error) {
       if (!isMountedRef.current) return;
       console.error('[AddToListModal] Failed to create list:', error);
-      toast.error('Liste oluşturulamadı.');
+      toast.error(translateUi("liste_olusturulamadi_ecd26c6"));
     } finally {
       if (isMountedRef.current) {
         setCreatingList(false);
@@ -180,7 +183,7 @@ function AddToListModalContent({
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
       <div className="bg-gray-800 rounded-xl max-w-md w-full p-6 max-h-[80vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-white">Listeye Ekle</h2>
+          <h2 className="text-xl font-bold text-white">{translateUi("listeye_ekle_64facf2")}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -200,8 +203,7 @@ function AddToListModalContent({
 
         {contentTitle && (
           <p className="text-gray-400 text-sm mb-4">
-            <span className="text-white font-medium">{contentTitle}</span> içeriğini hangi listeye
-            eklemek istiyorsunuz?
+            <span className="text-white font-medium">{contentTitle}</span> {" " + translateUi("icerigini_hangi_listeye_eklemek_istiyorsunuz_600f4fb")}
           </p>
         )}
 
@@ -219,7 +221,7 @@ function AddToListModalContent({
                   value={newListName}
                   onChange={(e) => setNewListName(e.target.value)}
                   disabled={creatingList}
-                  placeholder="Liste adı..."
+                  placeholder={translateUi("liste_adi_c6fe0d1")}
                   className="w-full bg-gray-600 border border-gray-500 rounded-lg px-3 py-2 text-white text-sm mb-2 focus:outline-none focus:border-purple-500"
                   autoFocus
                   onKeyDown={(e) => {
@@ -233,14 +235,14 @@ function AddToListModalContent({
                     disabled={creatingList || addingToList !== null}
                     className="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-sm py-1.5 rounded transition-colors disabled:opacity-50"
                   >
-                    {creatingList ? 'Oluşturuluyor...' : 'Oluştur ve Ekle'}
+                    {creatingList ? translateUi("olusturuluyor_1d2cbb5") : translateUi("olustur_ve_ekle_c2aceab")}
                   </button>
                   <button
                     onClick={() => setShowCreateListForm(false)}
                     disabled={creatingList}
                     className="px-3 text-gray-400 hover:text-white text-sm"
                   >
-                    İptal
+                    {translateUi("iptal_85e2d08")}
                   </button>
                 </div>
               </div>
@@ -257,7 +259,7 @@ function AddToListModalContent({
                     d="M12 4v16m8-8H4"
                   />
                 </svg>
-                Yeni Liste Oluştur
+                {translateUi("yeni_liste_olustur_ca77ece")}
               </button>
             )}
 
@@ -265,7 +267,7 @@ function AddToListModalContent({
             {userLists.length > 0 ? (
               <div className="space-y-2">
                 <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">
-                  Mevcut Listeler
+                  {translateUi("mevcut_listeler_a25ea85")}
                 </p>
                 {userLists.map((list) => {
                   const isInList = list.items?.some((item) => item.contentId === contentId);
@@ -283,9 +285,9 @@ function AddToListModalContent({
                       <div>
                         <p className="font-medium text-white flex items-center gap-2">
                           {list.name}
-                          {isInList && <span className="text-xs text-purple-400">(Listede)</span>}
+                          {isInList && <span className="text-xs text-purple-400">{translateUi("listede_7ceb03a")}</span>}
                         </p>
-                        <p className="text-xs text-gray-400">{list.itemCount} içerik</p>
+                        <p className="text-xs text-gray-400">{list.itemCount} {" " + translateUi("icerik_cc7ccd1")}</p>
                       </div>
                       {addingToList === Number(list.id) ? (
                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -319,8 +321,7 @@ function AddToListModalContent({
             ) : (
               !showCreateListForm && (
                 <p className="text-center text-gray-400 py-4">
-                  Bu içerik türü için henüz listeniz yok. Yukarıdan yeni bir liste
-                  oluşturabilirsiniz.
+                  {translateUi("bu_icerik_turu_icin_henuz_listeniz_6157a9e")}
                 </p>
               )
             )}

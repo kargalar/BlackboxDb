@@ -111,6 +111,7 @@ class TokenManager {
                   email
                   isAdmin
                   isModerator
+                  showOriginalTitles
                   bio
                   picturePath
                   createdAt
@@ -191,6 +192,7 @@ const authLink = setContext(async (_, { headers }) => {
   return {
     headers: {
       ...headers,
+      'accept-language': typeof document === 'undefined' ? 'en' : document.documentElement.lang,
       ...(token ? { authorization: `Bearer ${token}` } : {}),
     },
   };

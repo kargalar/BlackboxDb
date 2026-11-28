@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useQuery } from '@apollo/client/react';
 import Link from 'next/link';
@@ -174,6 +176,7 @@ function renderCitationNote(
 }
 
 export default function CitationNetworkPage() {
+  const translateUi = useUiTranslations('Ui');
   const [viewMode, setViewMode] = useState<'network' | 'list'>('network');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedContentType, setSelectedContentType] = useState<string>('all');
@@ -476,10 +479,10 @@ export default function CitationNetworkPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-100 to-gray-400">
-                Film Citation Network
+                {translateUi("film_citation_network_ea00cb0")}
               </h1>
               <p className="text-[11px] text-gray-500 font-medium">
-                Explore hidden links and references between productions
+                {translateUi("explore_hidden_links_and_references_between_2ebbbe0")}
               </p>
             </div>
           </div>
@@ -495,7 +498,7 @@ export default function CitationNetworkPage() {
               }`}
             >
               <Network className="w-3.5 h-3.5" />
-              Network View
+              {translateUi("network_view_db52e82")}
             </button>
             <button
               onClick={() => setViewMode('list')}
@@ -506,7 +509,7 @@ export default function CitationNetworkPage() {
               }`}
             >
               <List className="w-3.5 h-3.5" />
-              List View
+              {translateUi("list_view_fb1bde1")}
             </button>
           </div>
         </div>
@@ -520,7 +523,7 @@ export default function CitationNetworkPage() {
           <div className="bg-gray-900/30 backdrop-blur-md border border-gray-800/80 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
               <SlidersHorizontal className="w-3.5 h-3.5 text-violet-500" />
-              Filters & Search
+              {translateUi("filters_search_9053fcc")}
             </h3>
 
             {/* Search */}
@@ -528,7 +531,7 @@ export default function CitationNetworkPage() {
               <Search className="absolute left-3.5 top-3 w-4 h-4 text-gray-500" />
               <input
                 type="text"
-                placeholder="Search content or notes..."
+                placeholder={translateUi("search_content_or_notes_2c2d27e")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full bg-black/40 border border-gray-800 rounded-xl pl-10 pr-3.5 py-2.5 text-xs focus:outline-none focus:border-violet-500 transition-colors placeholder-gray-500 text-gray-200"
@@ -537,7 +540,7 @@ export default function CitationNetworkPage() {
 
             {/* Content Type Selector */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-semibold text-gray-500">Content Type</label>
+              <label className="text-[11px] font-semibold text-gray-500">{translateUi("content_type_863ed7d")}</label>
               <div className="grid grid-cols-4 gap-1 bg-black/35 p-1 rounded-xl border border-gray-800/80">
                 {['all', 'movie', 'tv', 'game'].map((type) => (
                   <button
@@ -550,12 +553,12 @@ export default function CitationNetworkPage() {
                     }`}
                   >
                     {type === 'all'
-                      ? 'All'
+                      ? translateUi("all_6a72085")
                       : type === 'movie'
-                        ? 'Film'
+                        ? translateUi("film_b9aec11")
                         : type === 'tv'
                           ? 'TV'
-                          : 'Game'}
+                          : translateUi("game_e3e8284")}
                   </button>
                 ))}
               </div>
@@ -565,12 +568,12 @@ export default function CitationNetworkPage() {
             <button
               onClick={() => {
                 refetch();
-                toast.success('Veriler yenilendi.');
+                toast.success(translateUi("veriler_yenilendi_bb07847"));
               }}
               className="w-full flex items-center justify-center gap-2 py-2 border border-gray-800 rounded-xl text-xs font-semibold hover:bg-gray-800/40 text-gray-400 hover:text-gray-200 transition-all cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              Refresh Data
+              {translateUi("refresh_data_aed243c")}
             </button>
           </div>
 
@@ -578,16 +581,16 @@ export default function CitationNetworkPage() {
           <div className="bg-gray-900/30 backdrop-blur-md border border-gray-800/80 rounded-2xl p-5 shadow-lg flex flex-col gap-4">
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
               <Info className="w-3.5 h-3.5 text-violet-500" />
-              Statistics
+              {translateUi("statistics_2086b21")}
             </h3>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-black/30 border border-gray-850 p-3 rounded-xl flex flex-col">
-                <span className="text-[10px] text-gray-500 font-semibold">Total Citations</span>
+                <span className="text-[10px] text-gray-500 font-semibold">{translateUi("total_citations_7116a47")}</span>
                 <span className="text-2xl font-black text-white mt-1">{citationData.length}</span>
               </div>
               <div className="bg-black/30 border border-gray-850 p-3 rounded-xl flex flex-col">
-                <span className="text-[10px] text-gray-500 font-semibold">Matching</span>
+                <span className="text-[10px] text-gray-500 font-semibold">{translateUi("matching_5150558")}</span>
                 <span className="text-2xl font-black text-violet-400 mt-1">
                   {filteredCitations.length}
                 </span>
@@ -598,17 +601,16 @@ export default function CitationNetworkPage() {
               <div className="text-[11px] text-gray-500 border-t border-gray-800/60 pt-3 flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   <HelpCircle className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                  <span>Drag nodes with the mouse to position them.</span>
+                  <span>{translateUi("drag_nodes_with_the_mouse_to_a1d93d1")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <SlidersHorizontal className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                  <span>Use the mouse wheel to zoom the map.</span>
+                  <span>{translateUi("use_the_mouse_wheel_to_zoom_a533c7c")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Network className="w-4 h-4 text-gray-600 flex-shrink-0" />
                   <span>
-                    Click a node to show only its direct connections; click again to restore the
-                    full network.
+                    {translateUi("click_a_node_to_show_only_231e16d")}
                   </span>
                 </div>
               </div>
@@ -621,28 +623,28 @@ export default function CitationNetworkPage() {
           {loading ? (
             <div className="w-full h-full min-h-[500px] flex flex-col items-center justify-center gap-3">
               <Loader2 className="w-8 h-8 text-violet-500 animate-spin" />
-              <span className="text-sm text-gray-500">Loading citation network...</span>
+              <span className="text-sm text-gray-500">{translateUi("loading_citation_network_e7eaf7f")}</span>
             </div>
           ) : error ? (
             <div className="w-full h-full min-h-[500px] flex flex-col items-center justify-center text-center p-6 bg-red-950/20 border border-red-900/50 rounded-2xl">
               <span className="text-sm text-red-400 font-medium mb-2">
-                An error occurred while loading the data.
+                {translateUi("an_error_occurred_while_loading_the_9a7dfeb")}
               </span>
               <button
                 onClick={() => refetch()}
                 className="px-4 py-2 bg-red-650 hover:bg-red-750 rounded-xl text-xs font-semibold text-white transition-colors"
               >
-                Try Again
+                {translateUi("try_again_cef2fe0")}
               </button>
             </div>
           ) : citationData.length === 0 ? (
             <div className="w-full h-full min-h-[500px] flex flex-col items-center justify-center text-center p-6 bg-gray-900/10 border border-gray-850 rounded-2xl">
               <Info className="w-8 h-8 text-gray-600 mb-2" />
               <span className="text-sm text-gray-400 font-semibold mb-1">
-                No citation records yet.
+                {translateUi("no_citation_records_yet_731095c")}
               </span>
               <span className="text-xs text-gray-500 max-w-sm">
-                You can create citation relationships between productions from the content editor.
+                {translateUi("you_can_create_citation_relationships_between_7aad410")}
               </span>
             </div>
           ) : viewMode === 'network' ? (
@@ -826,7 +828,7 @@ export default function CitationNetworkPage() {
                   onClick={resetView}
                   className="absolute bottom-4 right-4 bg-gray-900/80 border border-gray-800 text-gray-400 hover:text-gray-200 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all shadow-md active:scale-95"
                 >
-                  Reset View
+                  {translateUi("reset_view_50e2ecf")}
                 </button>
               </div>
 
@@ -846,17 +848,17 @@ export default function CitationNetworkPage() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">
-                            No Poster
+                            {translateUi("no_poster_066d25a")}
                           </div>
                         )}
                       </div>
                       <div className="flex-grow">
                         <span className="inline-block px-2 py-0.5 rounded-md text-[9px] font-bold uppercase bg-violet-900/40 text-violet-300 border border-violet-800/50 mb-1">
                           {selectedNodeDetails.node.contentTypeId === 1
-                            ? 'Film'
+                            ? translateUi("film_b9aec11")
                             : selectedNodeDetails.node.contentTypeId === 2
                               ? 'TV'
-                              : 'Game'}
+                              : translateUi("game_e3e8284")}
                         </span>
                         <h2 className="text-base font-black text-white leading-tight">
                           <CitationContentLink
@@ -872,7 +874,7 @@ export default function CitationNetworkPage() {
                       <div className="flex flex-col gap-3">
                         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                           <ChevronRight className="w-3.5 h-3.5 text-rose-500" />
-                          Referencing This Title ({selectedNodeDetails.referencesReceived.length})
+                          {translateUi("referencing_this_title_018e862")}{selectedNodeDetails.referencesReceived.length})
                         </h4>
                         <div className="flex flex-col gap-3">
                           {selectedNodeDetails.referencesReceived.map((ref: any) => (
@@ -898,12 +900,12 @@ export default function CitationNetworkPage() {
                               </div>
                               {ref.note && (
                                 <p className="text-xs text-gray-400 leading-relaxed italic bg-white/5 p-2 rounded-lg border border-white/5">
-                                  &quot;
+                                  {translateUi("quot_e2bbf20")}
                                   {renderCitationNote(ref.note, [
                                     ref.citingContent,
                                     ref.citedContent,
                                   ])}
-                                  &quot;
+                                  {translateUi("quot_e2bbf20")}
                                 </p>
                               )}
                               {ref.imageUrl && (
@@ -911,7 +913,7 @@ export default function CitationNetworkPage() {
                                   {/* eslint-disable-next-line @next/next/no-img-element */}
                                   <img
                                     src={ref.imageUrl}
-                                    alt="Citation image"
+                                    alt={translateUi("citation_image_8f064c2")}
                                     className="w-full h-full object-cover"
                                   />
                                 </div>
@@ -927,7 +929,7 @@ export default function CitationNetworkPage() {
                       <div className="flex flex-col gap-3">
                         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
                           <ChevronRight className="w-3.5 h-3.5 text-violet-500" />
-                          Titles Referenced By This Work (
+                          {translateUi("titles_referenced_by_this_work_403bffc")}
                           {selectedNodeDetails.referencesMade.length})
                         </h4>
                         <div className="flex flex-col gap-3">
@@ -954,12 +956,12 @@ export default function CitationNetworkPage() {
                               </div>
                               {ref.note && (
                                 <p className="text-xs text-gray-400 leading-relaxed italic bg-white/5 p-2 rounded-lg border border-white/5">
-                                  &quot;
+                                  {translateUi("quot_e2bbf20")}
                                   {renderCitationNote(ref.note, [
                                     ref.citingContent,
                                     ref.citedContent,
                                   ])}
-                                  &quot;
+                                  {translateUi("quot_e2bbf20")}
                                 </p>
                               )}
                               {ref.imageUrl && (
@@ -967,7 +969,7 @@ export default function CitationNetworkPage() {
                                   {/* eslint-disable-next-line @next/next/no-img-element */}
                                   <img
                                     src={ref.imageUrl}
-                                    alt="Citation image"
+                                    alt={translateUi("citation_image_8f064c2")}
                                     className="w-full h-full object-cover"
                                   />
                                 </div>
@@ -982,7 +984,7 @@ export default function CitationNetworkPage() {
                   <div className="h-full flex flex-col items-center justify-center text-center text-gray-500">
                     <Network className="w-10 h-10 stroke-1 mb-2 text-gray-600 animate-pulse" />
                     <span className="text-xs font-semibold">
-                      Select a production node on the network to view its details.
+                      {translateUi("select_a_production_node_on_the_0f872a3")}
                     </span>
                   </div>
                 )}
@@ -1011,7 +1013,7 @@ export default function CitationNetworkPage() {
                       </div>
                       <div>
                         <span className="inline-block px-1.5 py-0.5 rounded text-[8px] font-bold bg-violet-950 text-violet-300 border border-violet-800/50 mb-0.5 uppercase">
-                          Referencing Work
+                          {translateUi("referencing_work_03bc300")}
                         </span>
                         <h4 className="text-sm font-bold text-white line-clamp-1">
                           <CitationContentLink content={cit.citingContent} className="text-white" />
@@ -1027,7 +1029,7 @@ export default function CitationNetworkPage() {
                     {/* Arrow / Connection */}
                     <div className="flex flex-col items-center justify-center text-gray-600">
                       <span className="text-[10px] font-bold uppercase tracking-wider opacity-60 text-violet-400">
-                        References
+                        {translateUi("references_5d20d0f")}
                       </span>
                       <ChevronRight className="w-5 h-5 hidden sm:block text-violet-500" />
                     </div>
@@ -1036,7 +1038,7 @@ export default function CitationNetworkPage() {
                     <div className="flex items-center gap-3 w-full sm:w-[45%] justify-start sm:justify-end sm:text-right">
                       <div className="order-2 sm:order-1">
                         <span className="inline-block px-1.5 py-0.5 rounded text-[8px] font-bold bg-rose-950 text-rose-300 border border-rose-800/50 mb-0.5 uppercase">
-                          Referenced Work
+                          {translateUi("referenced_work_923b707")}
                         </span>
                         <h4 className="text-sm font-bold text-white line-clamp-1">
                           <CitationContentLink content={cit.citedContent} className="text-white" />
@@ -1071,23 +1073,23 @@ export default function CitationNetworkPage() {
                     >
                       <h5 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
                         <Film className="w-3.5 h-3.5 text-violet-400" />
-                        Citation Details / Note
+                        {translateUi("citation_details_note_2646b55")}
                       </h5>
                       <p className="text-sm text-gray-300 leading-relaxed italic bg-black/35 p-3.5 rounded-xl border border-gray-850">
-                        &quot;{renderCitationNote(cit.note, [cit.citingContent, cit.citedContent])}
-                        &quot;
+                        {translateUi("quot_e2bbf20")}{renderCitationNote(cit.note, [cit.citingContent, cit.citedContent])}
+                        {translateUi("quot_e2bbf20")}
                       </p>
                     </div>
                     {cit.imageUrl && (
                       <div className="md:col-span-4 flex flex-col gap-2">
                         <h5 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                          Scene Image
+                          {translateUi("scene_image_0e7fc0e")}
                         </h5>
                         <div className="relative w-full h-32 rounded-xl overflow-hidden border border-gray-850 bg-black/40 group cursor-zoom-in">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={cit.imageUrl}
-                            alt="Citation scene"
+                            alt={translateUi("citation_scene_90c1b7c")}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                         </div>

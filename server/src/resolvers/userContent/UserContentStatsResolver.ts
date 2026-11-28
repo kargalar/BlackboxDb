@@ -7,6 +7,8 @@ import {
   Float,
   ObjectType,
   Field,
+  FieldResolver,
+  Root,
 } from "type-graphql";
 import { GraphQLContext } from "../../context";
 import { buildUserCommentsWhere } from "../../lib/discussionVisibility";
@@ -17,6 +19,7 @@ import {
 } from "../../services/UserContentService";
 import { convertContentForGraphQL } from "../content/ContentUtils";
 import { logger } from "../../lib/logger";
+import { getRequestLoaders } from "../../lib/requestLoaders";
 
 // ==========================================
 // Deep Stats ObjectTypes
@@ -66,6 +69,9 @@ export class CompanyStat {
 
 @ObjectType()
 export class TagStat {
+  catalog?: string;
+  entryId?: number;
+
   @Field(() => String)
   name: string;
 
@@ -74,6 +80,17 @@ export class TagStat {
 
   @Field(() => Float, { nullable: true })
   avgRating?: number;
+}
+
+@Resolver(() => TagStat)
+export class TagStatNameResolver {
+  @FieldResolver(() => String)
+  async name(@Root() item: TagStat, @Ctx() ctx: GraphQLContext) {
+    if (!item.catalog || item.entryId === undefined) return item.name;
+    return await getRequestLoaders(ctx).catalogTranslations.load(
+      JSON.stringify([item.catalog, item.entryId]),
+    ) ?? item.name;
+  }
 }
 
 @ObjectType()
@@ -296,10 +313,13 @@ function buildCompanyStats(
 }
 
 function buildTagStats(
-  map: Map<string, { count: number; ratings: number[] }>,
+  map: Map<string, { count: number; ratings: number[]; entryId?: number }>,
+  catalog?: string,
 ): TagStat[] {
   return Array.from(map.entries()).map(([name, v]) => ({
     name,
+    catalog,
+    entryId: v.entryId,
     count: v.count,
     avgRating:
       v.ratings.length > 0
@@ -520,11 +540,11 @@ export class UserContentStatsResolver {
         }
       >();
 
-      const themeMap = new Map<string, { count: number; ratings: number[] }>();
-      const moodMap = new Map<string, { count: number; ratings: number[] }>();
+      const themeMap = new Map<string, { count: number; ratings: number[]; entryId: number }>();
+      const moodMap = new Map<string, { count: number; ratings: number[]; entryId: number }>();
       const gameModeMap = new Map<
         string,
-        { count: number; ratings: number[] }
+        { count: number; ratings: number[]; entryId: number }
       >();
       const platformMap = new Map<
         string,
@@ -532,7 +552,7 @@ export class UserContentStatsResolver {
       >();
       const perspectiveMap = new Map<
         string,
-        { count: number; ratings: number[] }
+        { count: number; ratings: number[]; entryId: number }
       >();
       const ageRatingMap = new Map<
         string,
@@ -634,7 +654,7 @@ export class UserContentStatsResolver {
         for (const ct of c.contentThemes ?? []) {
           const name = ct.theme?.name;
           if (!name) continue;
-          const e = themeMap.get(name) ?? { count: 0, ratings: [] };
+          const e = themeMap.get(name) ?? { count: 0, ratings: [], entryId: ct.theme.id };
           e.count += 1;
           if (userRating !== null) e.ratings.push(userRating);
           themeMap.set(name, e);
@@ -643,7 +663,7 @@ export class UserContentStatsResolver {
         for (const cm of c.contentMoods ?? []) {
           const name = cm.mood?.name;
           if (!name) continue;
-          const e = moodMap.get(name) ?? { count: 0, ratings: [] };
+          const e = moodMap.get(name) ?? { count: 0, ratings: [], entryId: cm.mood.id };
           e.count += 1;
           if (userRating !== null) e.ratings.push(userRating);
           moodMap.set(name, e);
@@ -652,7 +672,7 @@ export class UserContentStatsResolver {
         for (const cgm of c.contentGameModes ?? []) {
           const name = cgm.gameMode?.name;
           if (!name) continue;
-          const e = gameModeMap.get(name) ?? { count: 0, ratings: [] };
+          const e = gameModeMap.get(name) ?? { count: 0, ratings: [], entryId: cgm.gameMode.id };
           e.count += 1;
           if (userRating !== null) e.ratings.push(userRating);
           gameModeMap.set(name, e);
@@ -670,7 +690,7 @@ export class UserContentStatsResolver {
         for (const cp of c.contentPerspectives ?? []) {
           const name = cp.perspective?.name;
           if (!name) continue;
-          const e = perspectiveMap.get(name) ?? { count: 0, ratings: [] };
+          const e = perspectiveMap.get(name) ?? { count: 0, ratings: [], entryId: cp.perspective.id };
           e.count += 1;
           if (userRating !== null) e.ratings.push(userRating);
           perspectiveMap.set(name, e);
@@ -900,11 +920,11 @@ export class UserContentStatsResolver {
         topCrew: sortByCount(allCrew),
         topPublishers: sortCompByCount(allPublishers),
         topDevelopers: sortCompByCount(allDevelopers),
-        topThemes: sortTagByCount(buildTagStats(themeMap)),
-        topMoods: sortTagByCount(buildTagStats(moodMap)),
-        topGameModes: sortTagByCount(buildTagStats(gameModeMap)),
+        topThemes: sortTagByCount(buildTagStats(themeMap, "theme")),
+        topMoods: sortTagByCount(buildTagStats(moodMap, "mood")),
+        topGameModes: sortTagByCount(buildTagStats(gameModeMap, "game_mode")),
         topPlatforms: sortTagByCount(buildTagStats(platformMap)),
-        topPerspectives: sortTagByCount(buildTagStats(perspectiveMap)),
+        topPerspectives: sortTagByCount(buildTagStats(perspectiveMap, "perspective")),
         topFranchises: Array.from(franchiseMap.entries())
           .map(([franchiseName, v]) => ({
             franchiseName,

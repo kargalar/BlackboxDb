@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useMemo } from 'react';
 import { AddContentFormData } from '@/app/add-content/types';
 
@@ -35,6 +37,7 @@ function parseSpotifyUrl(url: string): { type: string; id: string } | null {
  * SoundtrackFields - Spotify playlist URL input with live embed preview.
  */
 export function SoundtrackFields({ formData, setFormData, errors }: SoundtrackFieldsProps) {
+  const translateUi = useUiTranslations('Ui');
   const [isFocused, setIsFocused] = useState(false);
   const spotifyInput = formData.spotifyPlaylistUrl || '';
 
@@ -69,7 +72,7 @@ export function SoundtrackFields({ formData, setFormData, errors }: SoundtrackFi
           htmlFor="spotifyPlaylistUrl"
           className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
         >
-          🎵 Spotify Playlist / Album / Track URL
+          {translateUi("spotify_playlist_album_track_url_975625b")}
         </label>
         <div className="relative">
           <input
@@ -107,16 +110,16 @@ export function SoundtrackFields({ formData, setFormData, errors }: SoundtrackFi
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  Geçerli
+                  {translateUi("gecerli_ece8dd7")}
                 </span>
               ) : (
-                <span className="text-red-400 text-sm font-medium">Geçersiz URL</span>
+                <span className="text-red-400 text-sm font-medium">{translateUi("gecersiz_url_07dec45")}</span>
               )}
               <button
                 type="button"
                 onClick={handleClear}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1"
-                title="Temizle"
+                title={translateUi("temizle_021e622")}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -131,7 +134,7 @@ export function SoundtrackFields({ formData, setFormData, errors }: SoundtrackFi
           )}
         </div>
         <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
-          Spotify&apos;dan playlist, albüm veya şarkı linkini yapıştırın
+          {translateUi("spotify_apos_dan_playlist_album_veya_47023d9")}
         </p>
         {errors['spotifyPlaylistUrl'] && (
           <p className="mt-1 text-sm text-red-500">
@@ -146,7 +149,7 @@ export function SoundtrackFields({ formData, setFormData, errors }: SoundtrackFi
           <div className="flex items-center gap-2">
             <div className="h-px flex-1 bg-emerald-500/30" />
             <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-              Önizleme
+              {translateUi("onizleme_2063725")}
             </span>
             <div className="h-px flex-1 bg-emerald-500/30" />
           </div>
@@ -159,7 +162,7 @@ export function SoundtrackFields({ formData, setFormData, errors }: SoundtrackFi
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
               loading="lazy"
               className="block"
-              title="Spotify Embed Preview"
+              title={translateUi("spotify_embed_preview_a30851a")}
             />
           </div>
         </div>

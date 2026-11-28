@@ -13,6 +13,7 @@ export const LOGIN_WITH_GOOGLE = gql`
         email
         isAdmin
         isModerator
+        showOriginalTitles
         bio
         picturePath
         createdAt
@@ -30,6 +31,7 @@ export const REGISTER = gql`
         email
         isAdmin
         isModerator
+        showOriginalTitles
         bio
         picturePath
         createdAt
@@ -47,6 +49,7 @@ export const LOGIN = gql`
         email
         isAdmin
         isModerator
+        showOriginalTitles
         bio
         picturePath
         createdAt
@@ -70,6 +73,7 @@ export const REFRESH_TOKEN = gql`
         email
         isAdmin
         isModerator
+        showOriginalTitles
         bio
         picturePath
         createdAt
@@ -104,6 +108,7 @@ export const GET_ME = gql`
       posterIconsPosition
       posterRatingEnabled
       showSensitiveContent
+      showOriginalTitles
       preferredGamePlatformId
       preferredGamePlatformIds
       splitHomePopularSections
@@ -252,6 +257,7 @@ export const UPDATE_PREFERENCES = gql`
     $posterIconsPosition: String
     $posterRatingEnabled: Boolean
     $showSensitiveContent: Boolean
+    $showOriginalTitles: Boolean
     $preferredGamePlatformId: Int
     $preferredGamePlatformIds: [Int!]
     $splitHomePopularSections: Boolean
@@ -274,6 +280,7 @@ export const UPDATE_PREFERENCES = gql`
       posterIconsPosition: $posterIconsPosition
       posterRatingEnabled: $posterRatingEnabled
       showSensitiveContent: $showSensitiveContent
+      showOriginalTitles: $showOriginalTitles
       preferredGamePlatformId: $preferredGamePlatformId
       preferredGamePlatformIds: $preferredGamePlatformIds
       splitHomePopularSections: $splitHomePopularSections
@@ -296,6 +303,7 @@ export const UPDATE_PREFERENCES = gql`
       posterIconsPosition
       posterRatingEnabled
       showSensitiveContent
+      showOriginalTitles
       preferredGamePlatformId
       preferredGamePlatformIds
       splitHomePopularSections

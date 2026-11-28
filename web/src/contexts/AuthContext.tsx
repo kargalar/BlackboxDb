@@ -29,6 +29,7 @@ interface User {
   posterIconsPosition?: 'above' | 'below' | 'off';
   posterRatingEnabled?: boolean;
   showSensitiveContent?: boolean;
+  showOriginalTitles?: boolean;
   preferredGamePlatformId?: number | null;
   preferredGamePlatformIds?: number[];
   splitHomePopularSections?: boolean;
@@ -234,6 +235,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Send to our backend
       const result = await apolloClient.mutate<any>({
         mutation: LOGIN_WITH_GOOGLE,
+        errorPolicy: 'none',
         variables: { idToken },
       });
 
@@ -256,6 +258,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const result = await apolloClient.mutate<any>({
         mutation: REGISTER,
+        errorPolicy: 'none',
         variables: {
           email,
           password,
@@ -291,6 +294,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const result = await apolloClient.mutate<any>({
         mutation: LOGIN,
+        errorPolicy: 'none',
         variables: { email, password },
       });
 

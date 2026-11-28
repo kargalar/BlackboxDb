@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import { useState } from 'react';
 import Image from 'next/image';
 import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
@@ -16,6 +17,7 @@ interface ContributionDiffViewerProps {
 }
 
 export function ContributionDiffViewer({ contentId, payload }: ContributionDiffViewerProps) {
+  const translateUi = useUiTranslations('Ui');
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [diffs, setDiffs] = useState<DiffResult[]>([]);
@@ -36,7 +38,7 @@ export function ContributionDiffViewer({ contentId, payload }: ContributionDiffV
       const { data, error: fetchError } = await getContentById(contentId);
 
       if (fetchError || !data) {
-        setError('Orijinal içerik yüklenemedi.');
+        setError(translateUi("orijinal_icerik_yuklenemedi_52a53ef"));
         return;
       }
 
@@ -106,7 +108,7 @@ export function ContributionDiffViewer({ contentId, payload }: ContributionDiffV
                       <div className="mt-1 mb-1">
                         <Image
                           src={val}
-                          alt="Image"
+                          alt={translateUi("image_50e19fd")}
                           width={200}
                           height={128}
                           unoptimized
@@ -131,7 +133,7 @@ export function ContributionDiffViewer({ contentId, payload }: ContributionDiffV
                               <Image
                                 key={i}
                                 src={src}
-                                alt="Screenshot"
+                                alt={translateUi("screenshot_60c152d")}
                                 width={160}
                                 height={96}
                                 unoptimized

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React from 'react';
 import Link from 'next/link';
 import type { UserList } from '@/services/graphql/listTypes';
@@ -8,6 +10,7 @@ import { getContentImageUrl } from '@/lib/image-utils';
 import { FolderOpen } from 'lucide-react';
 
 export function CompactListCard({ list }: { list: UserList }) {
+  const translateUi = useUiTranslations('Ui');
   const previewItems = [...(list.items ?? [])]
     .sort(
       (a, b) =>
@@ -51,7 +54,7 @@ export function CompactListCard({ list }: { list: UserList }) {
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center text-gray-500 pb-4">
             <FolderOpen size={24} className="mb-2 opacity-30" />
-            <span className="text-xs opacity-50">İçerik yok</span>
+            <span className="text-xs opacity-50">{translateUi("icerik_yok_15f3dda")}</span>
           </div>
         )}
       </div>

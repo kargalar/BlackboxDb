@@ -116,6 +116,7 @@ export interface CompanyRoleInput {
 export const LIST_COMPANY_ROLES = gql`
   query ListCompanyRoles(
     $contentTypeId: Int
+    $localized: Boolean
     $limit: Int
     $offset: Int
     $search: String
@@ -131,7 +132,7 @@ export const LIST_COMPANY_ROLES = gql`
       sortOrder: $sortOrder
     ) {
       id
-      name
+      name(localized: $localized)
       contentTypeId
       contentCount
     }

@@ -1,3 +1,4 @@
+import type { LocalizedContentText } from "./contentTranslations";
 import { normalizeContentReleases } from "./contentReleases";
 import type { ContentRelease } from "../types/ContentRelease";
 import { logger } from "./logger";
@@ -217,6 +218,7 @@ export interface IgdbSearchItem {
 }
 
 export interface IgdbGameDetailData {
+  translations?: LocalizedContentText[];
   releases?: ContentRelease[];
   sourceId: number;
   title: string;
@@ -464,6 +466,29 @@ export async function fetchIgdbReleaseDates(gameId: number) {
   }));
 }
 
+export async function fetchIgdbGameTranslations(gameIds: readonly number[]) {
+  if (!gameIds.length || gameIds.length > 100 || gameIds.some((id) => !Number.isSafeInteger(id) || id <= 0))
+    throw new Error("Invalid IGDB game IDs");
+  const rows = await igdbRequest<Array<{ game: number; name?: string; region?: { identifier?: string } }>>(
+    "game_localizations",
+    `fields game,name,region.identifier; where game = (${gameIds.join(",")}); sort id asc; limit 500;`,
+    AbortSignal.timeout(10_000),
+  );
+  const byGame = new Map<number, LocalizedContentText[]>();
+  for (const row of rows) {
+    const locale = row.region?.identifier?.toLowerCase();
+    const language = locale && /^([a-z]{2,3})-[a-z]{2}$/.exec(locale)?.[1];
+    const title = row.name?.trim();
+    if (!language || !title || [...title].length > 500) continue;
+    const translations = byGame.get(row.game) ?? [];
+    if (!translations.some((translation) => translation.language === language)) {
+      translations.push({ language, title });
+      byGame.set(row.game, translations);
+    }
+  }
+  return byGame;
+}
+
 export async function fetchIgdbGameDetails(
   gameId: number,
 ): Promise<IgdbGameDetailData> {
@@ -649,6 +674,12 @@ export async function fetchIgdbGameDetails(
         : undefined,
       backdropPath,
       releaseDate: unixToDate(game.first_release_date),
+      translations: await fetchIgdbGameTranslations([game.id])
+        .then((translations) => translations.get(game.id))
+        .catch((error): undefined => {
+          logger.warn(`[IgdbFetcher] Could not fetch translated titles for game ${game.id}`, error);
+          return undefined;
+        }),
       releases: await fetchIgdbReleaseDates(game.id).catch((error): undefined => {
         logger.warn(`[IgdbFetcher] Could not fetch release dates for game ${game.id}`, error);
         return undefined;

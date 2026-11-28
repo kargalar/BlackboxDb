@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 /**
  * Component: ImageUploadField
  *
@@ -65,6 +66,7 @@ export default function ImageUploadField({
   error,
   required = false,
 }: ImageUploadFieldProps) {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('ImageCropModal');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadError, setUploadError] = useState<string>('');
@@ -201,7 +203,7 @@ export default function ImageUploadField({
     e.stopPropagation();
     if (!cleanUrl) return;
 
-    const toastId = toast.loading('Görsel hazırlanıyor...');
+    const toastId = toast.loading(translateUi("gorsel_hazirlaniyor_d3e0cd9"));
     try {
       const source = cleanUrl.startsWith('data:')
         ? cleanUrl
@@ -215,7 +217,7 @@ export default function ImageUploadField({
     } catch (error) {
       console.error('Failed to fetch image for alignment:', error);
       toast.dismiss(toastId);
-      toast.error('Görsel hizalama için yüklenemedi. (CORS veya ağ hatası)');
+      toast.error(translateUi("gorsel_hizalama_icin_yuklenemedi_cors_veya_9887a08"));
     }
   };
 
@@ -265,7 +267,7 @@ export default function ImageUploadField({
             <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700">
               <Image
                 src={displayUrl}
-                alt="Preview"
+                alt={translateUi("preview_f1fbb2b")}
                 fill
                 className="object-cover"
                 style={{ objectPosition }}
@@ -285,7 +287,7 @@ export default function ImageUploadField({
                 className="px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors flex items-center gap-2"
               >
                 <Upload className="w-4 h-4" />
-                Değiştir
+                {translateUi("degistir_ddc61e1")}
               </button>
               <button
                 type="button"
@@ -293,7 +295,7 @@ export default function ImageUploadField({
                 className="px-3 py-2 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700 transition-colors flex items-center gap-2"
               >
                 <Crop className="w-4 h-4" />
-                {imageType === 'backdrop' ? t('updateAlignment') : 'Hizala'}
+                {imageType === 'backdrop' ? t('updateAlignment') : translateUi("hizala_28e63ee")}
               </button>
               <button
                 type="button"
@@ -301,7 +303,7 @@ export default function ImageUploadField({
                 className="px-3 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition-colors flex items-center gap-2"
               >
                 <X className="w-4 h-4" />
-                Kaldır
+                {translateUi("kaldir_d38bc7b")}
               </button>
             </div>
           </div>
@@ -333,10 +335,10 @@ export default function ImageUploadField({
             <div className="text-center">
               <Upload className="w-10 h-10 mx-auto mb-3 text-gray-400" />
               <p className="text-gray-600 dark:text-gray-400 text-sm">
-                Sürükleyip bırakın veya tıklayarak seçin
+                {translateUi("surukleyip_birakin_veya_tiklayarak_secin_02541a2")}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                JPG, PNG, WebP • Max 10MB
+                {translateUi("jpg_png_webp_max_10mb_6dc15a7")}
               </p>
             </div>
           </div>
@@ -349,7 +351,7 @@ export default function ImageUploadField({
 
         {/* Existing image info */}
         {value && !isNewImage && !isBase64 && (
-          <p className="text-sm text-green-600 dark:text-green-400">✅ Mevcut görsel</p>
+          <p className="text-sm text-green-600 dark:text-green-400">{translateUi("mevcut_gorsel_a9ee28a")}</p>
         )}
       </div>
 

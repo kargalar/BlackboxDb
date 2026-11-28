@@ -1,3 +1,4 @@
+import { getTranslations as getUiTranslations } from 'next-intl/server';
 import React from 'react';
 import { getContentById, fetchContentEditHistory } from '@/services/graphql/content';
 import { EditHistoryDiff } from '@/components/organisms/EditHistoryDiff';
@@ -14,6 +15,7 @@ interface ContentHistoryPageProps {
 }
 
 export default async function ContentHistoryPage({ params }: ContentHistoryPageProps) {
+  const translateUi = await getUiTranslations('Ui');
   const { type, id } = await params;
 
   const [{ data: content, error: contentError }, { data: history, error: historyError }] =
@@ -33,7 +35,7 @@ export default async function ContentHistoryPage({ params }: ContentHistoryPageP
           className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Content
+          {translateUi("back_to_content_f55a367")}
         </Link>
 
         <div className="flex items-center gap-4">
@@ -45,7 +47,7 @@ export default async function ContentHistoryPage({ params }: ContentHistoryPageP
             <div className="w-16 h-24 rounded-lg bg-slate-800 shrink-0" />
           )}
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Edit History</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">{translateUi("edit_history_a2964cc")}</h1>
             <p className="text-xl text-slate-300">
               {content.title}{' '}
               {content.releaseDate && `(${new Date(content.releaseDate).getFullYear()})`}
@@ -58,8 +60,8 @@ export default async function ContentHistoryPage({ params }: ContentHistoryPageP
         {edits.length === 0 ? (
           <div className="text-center py-12 bg-slate-800/30 rounded-xl border border-slate-700/50">
             <Clock className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-slate-300 mb-1">No edit history found</h3>
-            <p className="text-slate-500">There are no recorded edits for this content yet.</p>
+            <h3 className="text-lg font-medium text-slate-300 mb-1">{translateUi("no_edit_history_found_791d80a")}</h3>
+            <p className="text-slate-500">{translateUi("there_are_no_recorded_edits_for_e083825")}</p>
           </div>
         ) : (
           <div className="relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-700 before:to-transparent">
@@ -88,7 +90,7 @@ export default async function ContentHistoryPage({ params }: ContentHistoryPageP
                 <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-xl border border-slate-700/50 bg-slate-800/50 shadow-xl backdrop-blur-sm">
                   <div className="flex items-center justify-between mb-3">
                     <div className="font-medium text-slate-200">
-                      {edit.actor?.username || 'System'}
+                      {edit.actor?.username || translateUi("system_bc0792d")}
                     </div>
                     <time className="text-xs text-slate-500 font-mono">
                       {new Date(edit.createdAt).toLocaleString(undefined, {

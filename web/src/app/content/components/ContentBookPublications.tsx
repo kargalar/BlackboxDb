@@ -1,5 +1,10 @@
 'use client';
 
+import { formatLanguageName } from '@/i18n/language-names';
+import { useLocale } from 'next-intl';
+import { formattingLocale } from '@/i18n/locales';
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import type { BookPublication } from '@/types/unified-content';
@@ -14,11 +19,11 @@ interface ContentBookPublicationsProps {
   onSelectPublication: (publicationId: number) => Promise<void>;
 }
 
-function formatPublishedDate(value?: string | null) {
+function formatPublishedDate(value: string | null | undefined, locale: string) {
   if (!value) return null;
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
-  return parsed.toLocaleDateString('tr-TR', { year: 'numeric', month: 'short' });
+  return parsed.toLocaleDateString(locale, { year: 'numeric', month: 'short' });
 }
 
 function getFormatBadge(format?: string | null) {
@@ -66,6 +71,8 @@ export default function ContentBookPublications({
   canSelect,
   onSelectPublication,
 }: ContentBookPublicationsProps) {
+  const locale = formattingLocale(useLocale());
+  const translateUi = useUiTranslations('Ui');
   const [pendingPublicationId, setPendingPublicationId] = useState<number | null>(null);
   const [localUserPublicationId, setLocalUserPublicationId] = useState<number | null>(
     userPublicationId ?? null
@@ -101,10 +108,10 @@ export default function ContentBookPublications({
 
     try {
       await onSelectPublication(publicationId);
-      toast.success('Okuduğunuz baskı güncellendi');
+      toast.success(translateUi("okudugunuz_baski_guncellendi_3ee287c"));
     } catch (error) {
       setLocalUserPublicationId(previousPublicationId);
-      toast.error('Baskı seçimi kaydedilemedi');
+      toast.error(translateUi("baski_secimi_kaydedilemedi_c17ff8a"));
       throw error;
     } finally {
       setPendingPublicationId(null);
@@ -120,13 +127,13 @@ export default function ContentBookPublications({
       <div className="flex items-center justify-between gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-            <span>Baskılar ve Edisyonlar</span>
+            <span>{translateUi("baskilar_ve_edisyonlar_9a1a28c")}</span>
             <span className="text-xs px-2.5 py-1 rounded-full bg-violet-500/20 border border-violet-500/30 text-violet-300 font-medium">
-              {sortedPublications.length} Farklı Basım
+              {sortedPublications.length} {" " + translateUi("farkli_basim_897fba3")}
             </span>
           </h2>
           <p className="text-sm text-white/50 mt-1">
-            Kitabın farklı yayınevleri, çevirmenler ve formatlardaki edisyonları.
+            {translateUi("kitabin_farkli_yayinevleri_cevirmenler_ve_formatlardaki_5089712")}
           </p>
         </div>
       </div>
@@ -136,7 +143,7 @@ export default function ContentBookPublications({
           const isPrimary = publication.id === primaryPublicationId;
           const isUserPublication = publication.id === localUserPublicationId;
           const formatBadge = getFormatBadge(publication.format);
-          const publishedDateFormatted = formatPublishedDate(publication.publishedDate);
+          const publishedDateFormatted = formatPublishedDate(publication.publishedDate, locale);
 
           return (
             <article
@@ -153,7 +160,7 @@ export default function ContentBookPublications({
                   {publication.coverUrl ? (
                     <Image
                       src={publication.coverUrl}
-                      alt={publication.title || 'Kitap kapağı'}
+                      alt={publication.title || translateUi("kitap_kapagi_4128e39")}
                       fill
                       sizes="96px"
                       unoptimized
@@ -162,7 +169,7 @@ export default function ContentBookPublications({
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-xs text-white/30 p-2 text-center">
                       <BookOpen className="w-6 h-6 mb-1 opacity-40" />
-                      <span>Kapak Yok</span>
+                      <span>{translateUi("kapak_yok_1e7d66e")}</span>
                     </div>
                   )}
                 </div>
@@ -174,17 +181,17 @@ export default function ContentBookPublications({
                     <div className="flex flex-wrap gap-1.5 mb-2">
                       {isUserPublication && (
                         <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider rounded-md bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 px-2 py-0.5">
-                          <Check className="w-3 h-3" /> Okuduğun Baskı
+                          <Check className="w-3 h-3" /> {" " + translateUi("okudugun_baski_2bddaf6")}
                         </span>
                       )}
                       {isPrimary && !isUserPublication && (
                         <span className="text-[10px] font-bold uppercase tracking-wider rounded-md bg-violet-500/20 border border-violet-400/30 text-violet-300 px-2 py-0.5">
-                          Popüler
+                          {translateUi("populer_8cae837")}
                         </span>
                       )}
                       {publication.isOriginal && (
                         <span className="text-[10px] font-bold uppercase tracking-wider rounded-md bg-blue-500/20 border border-blue-400/30 text-blue-300 px-2 py-0.5">
-                          Orijinal
+                          {translateUi("orijinal_fc22f03")}
                         </span>
                       )}
                       {formatBadge && (
@@ -197,7 +204,7 @@ export default function ContentBookPublications({
                       )}
                       {publication.isAbridged && (
                         <span className="text-[10px] font-bold uppercase tracking-wider rounded-md bg-amber-500/20 border border-amber-400/30 text-amber-300 px-2 py-0.5">
-                          Kısaltılmış
+                          {translateUi("kisaltilmis_d65150e")}
                         </span>
                       )}
                       {publication.editionType && (
@@ -215,7 +222,7 @@ export default function ContentBookPublications({
                       </p>
                     ) : (
                       <p className="text-sm font-semibold text-white/90 truncate">
-                        {publication.title || 'Baskı'}
+                        {publication.title || translateUi("baski_0c312fc")}
                       </p>
                     )}
 
@@ -224,7 +231,7 @@ export default function ContentBookPublications({
                       <p className="mt-1 text-xs text-white/60 flex items-start gap-1">
                         <User className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0 mt-0.5" />
                         <span className="line-clamp-1">
-                          <span className="text-white/40">Çeviri: </span>
+                          <span className="text-white/40">{translateUi("ceviri_ccc85ad") + " "} </span>
                           {(publication.translators || []).join(', ')}
                         </span>
                       </p>
@@ -233,11 +240,11 @@ export default function ContentBookPublications({
 
                   {/* Alt Meta (Sayfa, Yıl, ISBN) */}
                   <div className="mt-2.5 pt-2 border-t border-white/5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-white/50">
-                    {publication.pageCount && <span>{publication.pageCount} sayfa</span>}
+                    {publication.pageCount && <span>{publication.pageCount} {" " + translateUi("sayfa_9b51435")}</span>}
                     {publishedDateFormatted && <span>{publishedDateFormatted}</span>}
                     {publication.language && (
                       <span className="uppercase font-medium text-white/60">
-                        {publication.language}
+                        {formatLanguageName(publication.language, locale)}
                       </span>
                     )}
                     {publication.isbn && (
@@ -260,7 +267,7 @@ export default function ContentBookPublications({
                       <span className="text-white/30">({publication.ratingCount || 0})</span>
                     </>
                   ) : (
-                    <span className="text-white/30">Puanlanmamış</span>
+                    <span className="text-white/30">{translateUi("puanlanmamis_1ff2e58")}</span>
                   )}
                 </div>
 
@@ -278,14 +285,14 @@ export default function ContentBookPublications({
                     {isUserPublication ? (
                       <>
                         <Check className="w-3.5 h-3.5" />
-                        <span>Seçili Baskı</span>
+                        <span>{translateUi("secili_baski_58f1408")}</span>
                       </>
                     ) : (
-                      <span>Bu Baskıyı Okudum</span>
+                      <span>{translateUi("bu_baskiyi_okudum_4db231c")}</span>
                     )}
                   </button>
                 ) : (
-                  <span className="text-[11px] text-white/40">Giriş yapın</span>
+                  <span className="text-[11px] text-white/40">{translateUi("giris_yapin_19ecb91")}</span>
                 )}
               </div>
             </article>

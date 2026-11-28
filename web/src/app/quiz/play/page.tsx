@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
@@ -42,6 +44,7 @@ function QuizPlayPageInner() {
 }
 
 function QuizGame({ contentTypeId, dailyMode }: { contentTypeId: QuizContentType; dailyMode: boolean }) {
+  const translateUi = useUiTranslations('Ui');
   const router = useRouter();
   const t = useTranslations('QuizPlay');
   const quizT = useTranslations('Quiz');
@@ -176,7 +179,7 @@ function QuizGame({ contentTypeId, dailyMode }: { contentTypeId: QuizContentType
         <div className="text-center max-w-md p-8 bg-gray-800 rounded-2xl">
           <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-white mb-2">{t('errorTitle')}</h2>
-          <p className="text-gray-400 mb-6">{error.message}</p>
+          <p className="text-gray-400 mb-6">{t('quizNotLoaded')}</p>
           <div className="flex justify-center gap-3">
             <button
               onClick={() => void refetch().catch(() => {})}
@@ -437,7 +440,7 @@ function QuizGame({ contentTypeId, dailyMode }: { contentTypeId: QuizContentType
             {currentScreenshot && (
               <Image
                 src={currentScreenshot.imageUrl}
-                alt="Screenshot"
+                alt={translateUi("screenshot_60c152d")}
                 fill
                 className="object-contain"
                 priority
@@ -623,7 +626,7 @@ function QuizGame({ contentTypeId, dailyMode }: { contentTypeId: QuizContentType
                     </p>
                   )}
                   {currentContent?.runtime && (
-                    <p className="text-gray-400 text-sm mb-1">⏱️ {currentContent.runtime} dk</p>
+                    <p className="text-gray-400 text-sm mb-1">⏱️ {currentContent.runtime} {" " + translateUi("dk_d5658db")}</p>
                   )}
                   {currentContent?.authors && currentContent.authors.length > 0 && (
                     <p className="text-gray-400 text-sm mb-1">
@@ -651,7 +654,7 @@ function QuizGame({ contentTypeId, dailyMode }: { contentTypeId: QuizContentType
 
               {revealDetails.actors.length > 0 && (
                 <div className="mb-3">
-                  <p className="text-gray-500 text-xs uppercase tracking-wide mb-2">Oyuncular</p>
+                  <p className="text-gray-500 text-xs uppercase tracking-wide mb-2">{translateUi("oyuncular_8dc757f")}</p>
                   <div className="flex flex-wrap gap-2">
                     {revealDetails.actors.map((a, idx) => (
                       <a
@@ -692,7 +695,7 @@ function QuizGame({ contentTypeId, dailyMode }: { contentTypeId: QuizContentType
                     >
                       <Image
                         src={ss.imageUrl}
-                        alt={`Screenshot ${idx + 1}`}
+                        alt={translateUi("screenshot_value1_520ca5e", { value1: String(idx + 1) })}
                         fill
                         className="object-cover"
                       />

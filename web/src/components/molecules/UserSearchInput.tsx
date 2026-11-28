@@ -1,4 +1,6 @@
 'use client';
+
+import { useTranslations as useUiTranslations } from 'next-intl';
 import React, { useState, useRef, useEffect, useId, useMemo } from 'react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
@@ -50,6 +52,7 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
   previousTaggedUsers = [],
   onGlobalDelete,
 }) => {
+  const translateUi = useUiTranslations('Ui');
   const [inputValue, setInputValue] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [hiddenUsers, setHiddenUsers] = useState<string[]>(getHiddenCustomUsers);
@@ -150,7 +153,7 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
 
     if (
       !window.confirm(
-        `"${user.username}" etiketini tüm geçmiş loglarınızdan tamamen silmek istediğinize emin misiniz?`
+        translateUi("value1_etiketini_tum_gecmis_loglarinizdan_tamamen_3c33401", { value1: String(user.username) })
       )
     ) {
       return;
@@ -162,7 +165,7 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
       const result = await removeTagFromAllLogs({ tag: `with:${user.username}` });
       if (!result.success) {
         console.error('Etiket tüm geçmiş loglardan silinemedi:', result.error);
-        toast.error('Etiket geçmiş loglardan silinemedi. Lütfen tekrar deneyin.');
+        toast.error(translateUi("etiket_gecmis_loglardan_silinemedi_lutfen_tekrar_f405d97"));
         return;
       }
 
@@ -177,7 +180,7 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
       onGlobalDelete?.();
     } catch (err) {
       console.error('Etiket silinirken hata:', err);
-      toast.error('Etiket silinemedi. Lütfen tekrar deneyin.');
+      toast.error(translateUi("etiket_silinemedi_lutfen_tekrar_deneyin_6cfc7d8"));
     } finally {
       setDeletingUsername(null);
     }
@@ -220,7 +223,7 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
               <button
                 type="button"
                 onClick={() => onUserRemove(user.id)}
-                aria-label={`Etiketi kaldır: ${user.username}`}
+                aria-label={translateUi("etiketi_kaldir_value1_95c8531", { value1: String(user.username) })}
                 className="text-neutral-500 hover:text-red-400 ml-1"
               >
                 ×
@@ -276,18 +279,18 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
         <div
           id={resultsId}
           role="region"
-          aria-label="Kullanıcı arama sonuçları"
+          aria-label={translateUi("kullanici_arama_sonuclari_90ff1ad")}
           className="absolute z-50 w-full mt-1 bg-surface-raised border border-[#2d323b] rounded-lg shadow-xl overflow-hidden shadow-black/50"
         >
           {/* Header */}
           {inputValue.trim().length === 0 && previousTaggedUsers.length > 0 && (
             <div className="px-4 py-2 text-xs font-semibold text-neutral-500 bg-neutral-900/50 border-b border-[#2d323b]">
-              Daha Önce Birlikte Olanlar
+              {translateUi("daha_once_birlikte_olanlar_1eee133")}
             </div>
           )}
 
           {loading && inputValue.trim().length > 1 && combinedSuggestions.length === 0 ? (
-            <div className="px-4 py-3 text-sm text-neutral-400">Aranıyor...</div>
+            <div className="px-4 py-3 text-sm text-neutral-400">{translateUi("araniyor_1f83d73")}</div>
           ) : combinedSuggestions.length > 0 || showCustomOption ? (
             <ul className="max-h-48 overflow-y-auto">
               {combinedSuggestions.map((user: UserSearchResult) => (
@@ -331,8 +334,8 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
                       type="button"
                       onClick={(e) => handleHideUser(e, user)}
                       disabled={deletingUsername !== null}
-                      title="Etiketi kalıcı olarak sil"
-                      aria-label={`Etiketi kalıcı olarak sil: ${user.username}`}
+                      title={translateUi("etiketi_kalici_olarak_sil_328df85")}
+                      aria-label={translateUi("etiketi_kalici_olarak_sil_value1_253561b", { value1: String(user.username) })}
                       className="mr-2 rounded p-1.5 text-[#ef4444] opacity-0 transition-all hover:bg-[#ef4444]/10 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 group-hover:opacity-100 disabled:cursor-wait disabled:opacity-50"
                     >
                       <svg
@@ -370,14 +373,14 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
                       #
                     </span>
                     <span className="text-sm font-medium">
-                      &quot;{trimmedInput}&quot; olarak ekle
+                      {translateUi("quot_e2bbf20")}{trimmedInput}{translateUi("quot_olarak_ekle_9d242a3")}
                     </span>
                   </button>
                 </li>
               )}
             </ul>
           ) : (
-            <div className="px-4 py-3 text-sm text-neutral-400">Sonuç bulunamadı</div>
+            <div className="px-4 py-3 text-sm text-neutral-400">{translateUi("sonuc_bulunamadi_cdf964e")}</div>
           )}
         </div>
       )}
@@ -386,7 +389,7 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
       {suggestedUserChips.length > 0 && (
         <div className="mt-2.5">
           <span className="block text-xs text-neutral-400 font-medium mb-1.5">
-            Önerilen Kişiler:
+            {translateUi("onerilen_kisiler_e4bcf10")}
           </span>
           <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
             {suggestedUserChips.map((user: UserSearchResult) => (
@@ -395,7 +398,7 @@ export const UserSearchInput: React.FC<UserSearchInputProps> = ({
                 type="button"
                 onClick={() => onUserAdd(user)}
                 className="group inline-flex items-center gap-1.5 bg-surface-raised hover:bg-violet-950/40 border border-[#2d323b] hover:border-violet-500/40 rounded-full px-2.5 py-1 text-xs text-neutral-300 hover:text-violet-200 transition-all cursor-pointer"
-                title={`"${user.username}" kişisini ekle`}
+                title={translateUi("value1_kisisini_ekle_bd10a91", { value1: String(user.username) })}
               >
                 {user.picturePath ? (
                   <span className="relative block w-3.5 h-3.5 shrink-0 overflow-hidden rounded-full bg-neutral-700">

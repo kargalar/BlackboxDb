@@ -26,12 +26,10 @@ export function getDaysUntil(dateInput: string, now: Date = new Date()): number 
   return Math.ceil(diffMs / MS_PER_DAY);
 }
 
-export function formatDaysUntil(dateInput: string, now: Date = new Date()): string | null {
+export function formatDaysUntil(dateInput: string, locale = 'en', now = new Date()): string | null {
   const days = getDaysUntil(dateInput, now);
-  if (days === null) return null;
-  if (days < 0) return null;
-  if (days === 0) return 'Bugün';
-  return `${days} gün kaldı`;
+  if (days === null || days < 0) return null;
+  return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(days, 'day');
 }
 
 export function getPreciseTimeUntil(
@@ -55,34 +53,22 @@ export function getPreciseTimeUntil(
   return { days, hours, minutes: Math.ceil(diffMs / (1000 * 60)), isReleased: false };
 }
 
-export function formatCountdownUntil(dateInput: string, now: Date = new Date()): string | null {
-  const timeUntil = getPreciseTimeUntil(dateInput, now);
-  if (!timeUntil) return null;
-
-  if (timeUntil.days === 0 && timeUntil.hours === 0) return 'Bugün';
-  if (timeUntil.days === 0) return `${timeUntil.hours} saat kaldı`;
-  if (timeUntil.hours === 0) return `${timeUntil.days} gün kaldı`;
-  return `${timeUntil.days} gün ${timeUntil.hours} saat kaldı`;
-}
-
-export function formatRelativeTime(dateString: string | Date | number): string {
+export function formatRelativeTime(dateString: string | Date | number, locale = 'en', now = new Date()): string {
   if (!dateString) return '';
   const date = new Date(dateString);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const minutes = Math.floor(diff / (1000 * 60));
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  if (Number.isNaN(date.getTime())) return '';
 
-  if (minutes < 1) return 'şimdi';
-  if (minutes < 60) return `${minutes} dk önce`;
-  if (hours < 24) return `${hours} sa önce`;
-  if (days <= 5) return `${days} gün önce`;
+  const elapsedMinutes = Math.max(0, Math.floor((now.getTime() - date.getTime()) / 60_000));
+  const relativeTime = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'short' });
+  if (elapsedMinutes < 60) return relativeTime.format(-elapsedMinutes, 'minute');
+  const hours = Math.floor(elapsedMinutes / 60);
+  if (hours < 24) return relativeTime.format(-hours, 'hour');
+  const days = Math.floor(hours / 24);
+  if (days <= 5) return relativeTime.format(-days, 'day');
 
-  const isCurrentYear = date.getFullYear() === now.getFullYear();
-  const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' };
-  if (!isCurrentYear) {
-    options.year = 'numeric';
-  }
-  return date.toLocaleDateString('tr-TR', options);
+  return date.toLocaleDateString(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric',
+  });
 }

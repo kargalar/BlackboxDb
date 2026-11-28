@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useEffect, useRef, useState } from 'react';
 import { FormInput } from '@/components/atoms/FormInput';
 import ImageUploadField, { PendingImageUpload } from '@/components/molecules/ImageUploadField';
@@ -67,6 +69,7 @@ function TranslatorSelector({
   value: PersonItem[];
   onChange: (items: PersonItem[]) => void;
 }) {
+  const translateUi = useUiTranslations('Ui');
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState<PersonItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -150,7 +153,7 @@ function TranslatorSelector({
   return (
     <div ref={containerRef} className="space-y-2">
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        Cevirmenler
+        {translateUi("cevirmenler_5d62add")}
       </label>
 
       {value.length > 0 && (
@@ -161,7 +164,7 @@ function TranslatorSelector({
               type="button"
               onClick={() => removeTranslator(index)}
               className="inline-flex items-center gap-2 rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-1.5 text-sm font-medium text-cyan-900 hover:bg-cyan-100 dark:border-cyan-800 dark:bg-cyan-950/30 dark:text-cyan-100"
-              title="Cevirmeni kaldir"
+              title={translateUi("cevirmeni_kaldir_856f9ce")}
             >
               {translator.profileUrl && (
                 <Image
@@ -201,7 +204,7 @@ function TranslatorSelector({
               }
             }
           }}
-          placeholder="Cevirmen ara veya yeni cevirmen yaz..."
+          placeholder={translateUi("cevirmen_ara_veya_yeni_cevirmen_yaz_f24937f")}
           className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 dark:border-gray-700 dark:bg-surface-panel dark:text-white"
         />
 
@@ -209,10 +212,10 @@ function TranslatorSelector({
           <div className="absolute z-50 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-surface-raised">
             {searchTerm.trim().length < 2 ? (
               <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                Aramak icin en az 2 karakter yazin
+                {translateUi("aramak_icin_en_az_2_karakter_36a1b4e")}
               </div>
             ) : isSearching ? (
-              <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">Araniyor...</div>
+              <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">{translateUi("araniyor_0503060")}</div>
             ) : suggestions.length > 0 ? (
               suggestions.map((person) => (
                 <button
@@ -244,7 +247,7 @@ function TranslatorSelector({
                 onClick={() => addTranslator({ name: searchTerm.trim(), role: 'translator' })}
                 className="w-full px-3 py-2 text-left text-sm text-cyan-700 hover:bg-cyan-50 dark:text-cyan-300 dark:hover:bg-cyan-950/30"
               >
-                Yeni kisi olarak ekle: {searchTerm.trim()}
+                {translateUi("yeni_kisi_olarak_ekle_a3885a2") + " "} {searchTerm.trim()}
               </button>
             )}
           </div>
@@ -259,6 +262,7 @@ export function BookPublicationsFields({
   setFormData,
   errors,
 }: BookPublicationsFieldsProps) {
+  const translateUi = useUiTranslations('Ui');
   const publications = ensureBookPublications(formData);
 
   const updatePublication = (index: number, patch: Partial<BookPublicationItem>) => {
@@ -307,10 +311,10 @@ export function BookPublicationsFields({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h4 className="text-base font-semibold text-gray-900 dark:text-white">
-            Baskılar ve Edisyonlar
+            {translateUi("baskilar_ve_edisyonlar_9a1a28c")}
           </h4>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Farklı yayınevleri, çevirmenler, kapaklar veya formatlar (Ciltli, E-Kitap, Sesli Kitap).
+            {translateUi("farkli_yayinevleri_cevirmenler_kapaklar_veya_formatlar_f4e442e")}
           </p>
         </div>
         <button
@@ -319,7 +323,7 @@ export function BookPublicationsFields({
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-violet-600 px-3 py-2 text-sm font-semibold text-white hover:bg-violet-700 transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4" aria-hidden="true" />
-          Yeni Baskı / Edisyon Ekle
+          {translateUi("yeni_baski_edisyon_ekle_835b4d9")}
         </button>
       </div>
 
@@ -337,7 +341,7 @@ export function BookPublicationsFields({
                   {index + 1}
                 </span>
                 <h5 className="font-semibold text-gray-900 dark:text-white">
-                  {publication.title ? `${publication.title}` : `Baskı #${index + 1}`}
+                  {publication.title ? `${publication.title}` : translateUi("baski_value1_566dc95", { value1: String(index + 1) })}
                   {publication.publisher?.name && (
                     <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
                       ({publication.publisher.name})
@@ -346,7 +350,7 @@ export function BookPublicationsFields({
                 </h5>
                 {publication.isOriginal && (
                   <span className="ml-2 inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                    Orijinal Baskı
+                    {translateUi("orijinal_baski_bdcbc01")}
                   </span>
                 )}
               </div>
@@ -355,7 +359,7 @@ export function BookPublicationsFields({
                   type="button"
                   onClick={() => removePublication(index)}
                   className="inline-flex items-center justify-center rounded-lg border border-red-200 dark:border-red-900/60 p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                  title="Baskıyı kaldır"
+                  title={translateUi("baskiyi_kaldir_5b40d76")}
                 >
                   <Trash2 className="w-4 h-4" aria-hidden="true" />
                 </button>
@@ -364,7 +368,7 @@ export function BookPublicationsFields({
 
             <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-5">
               <ImageUploadField
-                label="Baskı Kapak Görseli"
+                label={translateUi("baski_kapak_gorseli_27aaec7")}
                 name={`bookPublicationCover-${index}`}
                 value={publication.coverUrl || ''}
                 onChange={(coverUrl) => updatePublication(index, { coverUrl })}
@@ -376,14 +380,14 @@ export function BookPublicationsFields({
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormInput
-                    label="Baskı / Edisyon Başlığı"
+                    label={translateUi("baski_edisyon_basligi_fc4ec3f")}
                     name={`bookPublicationTitle-${index}`}
                     value={publication.title || ''}
                     onChange={(title) => updatePublication(index, { title })}
-                    placeholder="Boş kalırsa kitap adı kullanılır"
+                    placeholder={translateUi("bos_kalirsa_kitap_adi_kullanilir_07f679e")}
                   />
                   <FormInput
-                    label="ISBN / Barkod"
+                    label={translateUi("isbn_barkod_faedfd2")}
                     name={`bookPublicationIsbn-${index}`}
                     value={publication.isbn || ''}
                     onChange={(isbn) => updatePublication(index, { isbn })}
@@ -391,15 +395,15 @@ export function BookPublicationsFields({
                     error={errors[`bookPublications.${index}.isbn`]}
                   />
                   <FormInput
-                    label="Sayfa Sayısı"
+                    label={translateUi("sayfa_sayisi_92c8679")}
                     name={`bookPublicationPageCount-${index}`}
                     type="number"
                     value={publication.pageCount || ''}
                     onChange={(pageCount) => updatePublication(index, { pageCount })}
-                    placeholder="Örn: 420"
+                    placeholder={translateUi("orn_420_0627b82")}
                   />
                   <FormInput
-                    label="Basım / Yayın Tarihi"
+                    label={translateUi("basim_yayin_tarihi_a7f19ab")}
                     name={`bookPublicationPublishedDate-${index}`}
                     type="date"
                     value={publication.publishedDate || ''}
@@ -410,14 +414,14 @@ export function BookPublicationsFields({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                      Baskı Formatı
+                      {translateUi("baski_formati_991a36d")}
                     </label>
                     <select
                       value={publication.format || ''}
                       onChange={(e) => updatePublication(index, { format: e.target.value })}
                       className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 dark:border-gray-700 dark:bg-surface-panel dark:text-white"
                     >
-                      <option value="">Format Seçin (Varsayılan)</option>
+                      <option value="">{translateUi("format_secin_varsayilan_17cc1f7")}</option>
                       {formatOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>
                           {opt.label}
@@ -427,11 +431,11 @@ export function BookPublicationsFields({
                   </div>
 
                   <FormInput
-                    label="Edisyon / Baskı Türü"
+                    label={translateUi("edisyon_baski_turu_8bf444e")}
                     name={`bookPublicationEditionType-${index}`}
                     value={publication.editionType || ''}
                     onChange={(editionType) => updatePublication(index, { editionType })}
-                    placeholder="Örn: Sansürsüz Tam Metin, Notlu Baskı"
+                    placeholder={translateUi("orn_sansursuz_tam_metin_notlu_baski_bbda4c1")}
                   />
                 </div>
 
@@ -446,7 +450,7 @@ export function BookPublicationsFields({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <CompactTagSelector
-                    label="Yayın / Çeviri Dili"
+                    label={translateUi("yayin_ceviri_dili_1418248")}
                     icon="Languages"
                     value={publication.language ? [{ name: publication.language }] : []}
                     onChange={(items) =>
@@ -454,8 +458,8 @@ export function BookPublicationsFields({
                         language: items[0]?.name || '',
                       })
                     }
-                    placeholder="Dil ara veya yeni dil ekle..."
-                    emptyMessage="Dil seçilmedi"
+                    placeholder={translateUi("dil_ara_veya_yeni_dil_ekle_7ad757c")}
+                    emptyMessage={translateUi("dil_secilmedi_6d23ede")}
                     listQuery={LIST_LANGUAGES}
                     queryKey="listLanguages"
                     createMutation={CREATE_LANGUAGE}
@@ -466,7 +470,7 @@ export function BookPublicationsFields({
                   />
 
                   <CompactTagSelector
-                    label="Yayınevi"
+                    label={translateUi("yayinevi_442e7f5")}
                     icon="Building"
                     value={publication.publisher ? [publication.publisher] : []}
                     onChange={(items) =>
@@ -479,7 +483,7 @@ export function BookPublicationsFields({
                           : null,
                       })
                     }
-                    placeholder="Yayınevi ara veya ekle..."
+                    placeholder={translateUi("yayinevi_ara_veya_ekle_c209dc7")}
                     listQuery={LIST_COMPANIES}
                     queryKey="listCompanies"
                     queryVariables={{ roleIds: [3] }}
@@ -502,7 +506,7 @@ export function BookPublicationsFields({
                       }
                       className="h-4 w-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
                     />
-                    Orijinal / Ana Baskı
+                    {translateUi("orijinal_ana_baski_3c226de")}
                   </label>
 
                   <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
@@ -514,7 +518,7 @@ export function BookPublicationsFields({
                       }
                       className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
                     />
-                    Kısaltılmış / Özet Yayın
+                    {translateUi("kisaltilmis_ozet_yayin_2cef3d8")}
                   </label>
                 </div>
               </div>

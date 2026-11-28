@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -51,6 +52,7 @@ export default function TrackerSeriesCard({
   onRefresh: () => Promise<void>;
   pendingKey: string | null;
 }) {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('TvTracker');
   const locale = useLocale();
   const [expanded, setExpanded] = useState(false);
@@ -208,13 +210,13 @@ export default function TrackerSeriesCard({
                 </Link>
                 {hasBacklog && (
                   <span className="inline-flex items-center rounded-full border border-rose-400/20 bg-rose-400/10 px-2.5 py-0.5 text-[10px] font-bold text-rose-200">
-                    {item.backlogCount} Unwatched
+                    {item.backlogCount} {" " + translateUi("unwatched_dc70d6d")}
                   </span>
                 )}
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
                 <span className="text-sky-300/80">
-                  Next: {formatEpisodeCode(item.seasonNumber, item.episodeNumber)}
+                  {translateUi("next_69a52c6") + " "} {formatEpisodeCode(item.seasonNumber, item.episodeNumber)}
                 </span>
                 <span className="h-1 w-1 rounded-full bg-white/25" />
                 <span>{formatAirDate(item.episodeAirDate, locale)}</span>
@@ -275,7 +277,7 @@ export default function TrackerSeriesCard({
                   onClick={handleExpand}
                   className="inline-flex items-center justify-center gap-1 rounded-xl px-4 py-2 text-sm font-bold text-white/60 hover:text-white hover:bg-white/5 transition"
                 >
-                  {expanded ? 'Hide Backlog' : 'Show All'}
+                  {expanded ? translateUi("hide_backlog_c7c986e") : translateUi("show_all_b3f8542")}
                   <ChevronDown
                     className={`h-4 w-4 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
                   />
@@ -291,7 +293,7 @@ export default function TrackerSeriesCard({
         <div className="relative mt-4 border-t border-white/10 pt-4 animate-in slide-in-from-top-4 fade-in duration-300">
           <h4 className="mb-3 text-sm font-bold text-white/80 flex items-center gap-2">
             <Clock className="h-4 w-4 text-sky-400" />
-            Unwatched Backlog
+            {translateUi("unwatched_backlog_542bfd6")}
           </h4>
 
           {loading && (
@@ -302,7 +304,7 @@ export default function TrackerSeriesCard({
 
           {!loading && backlogEpisodes.length === 0 && (
             <p className="text-sm text-white/50 text-center py-2">
-              No past unwatched episodes found.
+              {translateUi("no_past_unwatched_episodes_found_ecae303")}
             </p>
           )}
 
@@ -338,7 +340,7 @@ export default function TrackerSeriesCard({
                           </span>
                         </div>
                         <div className="text-[10px] text-white/40 mt-0.5">
-                          {ep.airDate ? formatAirDate(ep.airDate, locale) : 'Unknown Date'}
+                          {ep.airDate ? formatAirDate(ep.airDate, locale) : translateUi("unknown_date_3697b1a")}
                         </div>
                       </div>
                     </div>
@@ -358,7 +360,7 @@ export default function TrackerSeriesCard({
                         onClick={() => handleMarkEpisodeWatched(ep.seasonNumber, ep.episodeNumber)}
                         disabled={isEpPending}
                         className="shrink-0 rounded-lg p-2 text-white/40 hover:bg-emerald-500/10 hover:text-emerald-400 transition disabled:opacity-50"
-                        title="Mark Watched"
+                        title={translateUi("mark_watched_a8e9dfb")}
                       >
                         <CheckCircle className="h-5 w-5" />
                       </button>

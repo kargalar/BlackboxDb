@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getCurrentUserProfile } from '@/services/database/userService';
@@ -31,6 +33,7 @@ const CONTENT_TYPES_QUERY = gql`
 `;
 
 export default function AdminContentPage() {
+  const translateUi = useUiTranslations('Ui');
   const [allowed, setAllowed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<AdminContent[]>([]);
@@ -273,7 +276,7 @@ export default function AdminContentPage() {
                       <div className="flex items-start justify-between gap-4 mb-3">
                         <div>
                           <div className="text-sm font-semibold text-white">
-                            {item.action} by {item.actor?.username || item.actorUserId || 'unknown'}
+                            {item.action} {" " + translateUi("by_4081586") + " "} {item.actor?.username || item.actorUserId || translateUi("unknown_50d8b4a")}
                           </div>
                           <div className="text-xs text-white/40">
                             {new Intl.DateTimeFormat(locale, {

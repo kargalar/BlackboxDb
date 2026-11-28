@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { searchPersons } from '@/services/adminService';
 import { apolloClient } from '@/lib/apollo-client';
@@ -31,6 +33,7 @@ export function PersonListInput({
   contentTypeId,
   showCharacterField = false,
 }: PersonListInputProps) {
+  const translateUi = useUiTranslations('Ui');
   const [tempName, setTempName] = useState('');
   const [tempRole, setTempRole] = useState<PersonRole | null>(null);
   const [tempCharacter, setTempCharacter] = useState('');
@@ -306,7 +309,7 @@ export function PersonListInput({
             type="text"
             value={chipFilter}
             onChange={(e) => setChipFilter(e.target.value)}
-            placeholder={`${value.length} kişi arasında ara...`}
+            placeholder={translateUi("value1_kisi_arasinda_ara_64fffcb", { value1: String(value.length) })}
             className="w-full px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
           {chipFilter && (
@@ -356,7 +359,7 @@ export function PersonListInput({
         {/* Empty state */}
         {value.length === 0 && (
           <span className="text-sm text-gray-400 dark:text-gray-500 italic">
-            Henüz kimse eklenmedi
+            {translateUi("henuz_kimse_eklenmedi_55aa1a9")}
           </span>
         )}
 

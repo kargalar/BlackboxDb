@@ -1,3 +1,4 @@
+import type { ContentTranslation } from '@/types/content-translation';
 import type { ContentRelease } from '@/lib/contentReleases';
 import { Screenshot } from '@/components/molecules/ScreenshotUpload';
 
@@ -98,6 +99,7 @@ export interface AddContentFormData {
   // Common fields
   title: string;
   originalTitle: string;
+  translations?: ContentTranslation[];
   alternativeTitles: string[];
   contentTypeId: string;
   contentTypeSlug: string;

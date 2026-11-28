@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import React, { useState, useRef, useEffect } from 'react';
 import { MoreHorizontal, Edit, Flag, Image as ImageIcon, History } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -17,6 +18,7 @@ export default function ContentActionsMenu({
   contentTitle,
   contentType,
 }: ContentActionsMenuProps) {
+  const translateUi = useUiTranslations('Ui');
   const [isOpen, setIsOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -44,7 +46,7 @@ export default function ContentActionsMenu({
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-colors border border-white/10"
-        aria-label="İçerik Seçenekleri"
+        aria-label={translateUi("icerik_secenekleri_eca43ea")}
       >
         <MoreHorizontal className="w-5 h-5" />
       </button>
@@ -59,7 +61,7 @@ export default function ContentActionsMenu({
             className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors text-left"
           >
             <Edit className="w-4 h-4" />
-            İçeriği Düzenle
+            {translateUi("icerigi_duzenle_4aeca88")}
           </button>
 
           <button
@@ -70,7 +72,7 @@ export default function ContentActionsMenu({
             className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors text-left border-t border-gray-800"
           >
             <History className="w-4 h-4" />
-            Düzenleme Geçmişi
+            {translateUi("duzenleme_gecmisi_d391bf4")}
           </button>
 
           <button
@@ -81,7 +83,7 @@ export default function ContentActionsMenu({
             className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors text-left border-t border-gray-800"
           >
             <ImageIcon className="w-4 h-4" />
-            Resimleri Yönet
+            {translateUi("resimleri_yonet_e4840c2")}
           </button>
 
           <button
@@ -92,7 +94,7 @@ export default function ContentActionsMenu({
             className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-500 transition-colors text-left border-t border-gray-800"
           >
             <Flag className="w-4 h-4" />
-            Raporla
+            {translateUi("raporla_36d9ae7")}
           </button>
         </div>
       )}

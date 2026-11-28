@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React from 'react';
 import Link from 'next/link';
 import type { Route } from 'next';
@@ -51,6 +53,7 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
   formatCurrency,
   getLanguageName,
 }) => {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('ContentDetailTab');
   const tBoardGames = useTranslations('BoardGames');
   const boardGame = content?.contentType?.slug === 'board-game' ? content : null;
@@ -221,7 +224,7 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
             {content?.language && (
               <div className="flex items-center gap-2">
                 <span className="text-gray-400">{t('language')}</span>
-                <span className="text-white">{content.language}</span>
+                <span className="text-white">{getLanguageName(content.language)}</span>
               </div>
             )}
 
@@ -333,7 +336,7 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
 
       {content?.alternativeTitles && content.alternativeTitles.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-lg font-medium text-gray-200">Alternative Titles</h3>
+          <h3 className="text-lg font-medium text-gray-200">{translateUi("alternative_titles_f441448")}</h3>
           <div className="flex flex-wrap gap-2">
             {content.alternativeTitles.map((title, index) => (
               <span
@@ -349,7 +352,7 @@ export const ContentDetailTab: React.FC<ContentDetailTabProps> = ({
 
       {content?.awards && content.awards.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-lg font-medium text-gray-200">Awards</h3>
+          <h3 className="text-lg font-medium text-gray-200">{translateUi("awards_75226d7")}</h3>
           <div className="flex flex-wrap gap-2">
             {content.awards.map((award, index) => (
               <Link

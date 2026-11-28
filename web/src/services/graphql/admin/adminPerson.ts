@@ -94,6 +94,7 @@ export const DELETE_PERSON = gql`
 export const LIST_PERSON_ROLES = gql`
   query ListPersonRoles(
     $contentTypeId: Int
+    $localized: Boolean
     $limit: Int
     $offset: Int
     $search: String
@@ -109,7 +110,7 @@ export const LIST_PERSON_ROLES = gql`
       sortOrder: $sortOrder
     ) {
       id
-      label
+      label(localized: $localized)
       contentTypeId
       contentCount
     }

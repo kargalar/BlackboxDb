@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 /**
  * Inline CompanyRole management section shown inside the Companies tab.
  * Allows creating, editing, and deleting company roles without switching tabs.
@@ -26,6 +28,7 @@ const CONTENT_TYPE_LABELS: Record<number, string> = {
 };
 
 export default function CompanyRolesSection() {
+  const translateUi = useUiTranslations('Ui');
   const [roles, setRoles] = useState<CompanyRole[]>([]);
   const [loading, setLoading] = useState(false);
   const [editingRoleId, setEditingRoleId] = useState<number | null>(null);
@@ -113,7 +116,7 @@ export default function CompanyRolesSection() {
   const handleDeleteRole = async (id: number) => {
     if (
       !window.confirm(
-        'Bu rolü silmek istediğinize emin misiniz? İlişkili içerik-şirket bağlantıları da silinecek.'
+        translateUi("bu_rolu_silmek_istediginize_emin_misiniz_e75febd")
       )
     )
       return;
@@ -147,7 +150,7 @@ export default function CompanyRolesSection() {
   return (
     <div className="glass-card p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">🏷️ Şirket Rolleri</h2>
+        <h2 className="text-lg font-semibold">{translateUi("sirket_rolleri_ffcf3fa")}</h2>
         {message && (
           <span
             className={`text-sm px-3 py-1 rounded ${
@@ -168,40 +171,40 @@ export default function CompanyRolesSection() {
           value={roleName}
           onChange={(e) => setRoleName(e.target.value)}
           className="flex-1 min-w-[150px] px-3 py-2 border border-gray-600 rounded-lg bg-gray-800 text-white text-sm"
-          placeholder="Rol adı (ör: Yayıncı, Geliştirici...)"
+          placeholder={translateUi("rol_adi_or_yayinci_gelistirici_c2dacee")}
         />
         <select
           value={roleContentTypeId ?? ''}
           onChange={(e) => setRoleContentTypeId(e.target.value ? parseInt(e.target.value) : null)}
           className="px-3 py-2 border border-gray-600 rounded-lg bg-gray-800 text-white text-sm"
         >
-          <option value="">Tüm Türler</option>
-          <option value="1">Film/Dizi</option>
-          <option value="3">Oyun</option>
-          <option value="4">Kitap</option>
+          <option value="">{translateUi("tum_turler_f2839d7")}</option>
+          <option value="1">{translateUi("film_dizi_b7974d7")}</option>
+          <option value="3">{translateUi("oyun_246ef60")}</option>
+          <option value="4">{translateUi("kitap_8f04008")}</option>
         </select>
         <button
           onClick={handleSaveRole}
           disabled={loading}
           className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? '⏳' : editingRoleId ? '✅ Güncelle' : '➕ Ekle'}
+          {loading ? '⏳' : editingRoleId ? translateUi("guncelle_9183b3e") : translateUi("ekle_c619b87")}
         </button>
         {editingRoleId && (
           <button
             onClick={handleCancelEdit}
             className="px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-500"
           >
-            İptal
+            {translateUi("iptal_85e2d08")}
           </button>
         )}
       </div>
 
       {/* Role list */}
       {loading && roles.length === 0 ? (
-        <div className="text-center text-gray-400 py-4 text-sm">⏳ Yükleniyor...</div>
+        <div className="text-center text-gray-400 py-4 text-sm">{translateUi("yukleniyor_302c432")}</div>
       ) : roles.length === 0 ? (
-        <div className="text-center text-gray-400 py-4 text-sm">Henüz rol eklenmedi</div>
+        <div className="text-center text-gray-400 py-4 text-sm">{translateUi("henuz_rol_eklenmedi_4ebf971")}</div>
       ) : (
         <div className="space-y-1.5">
           {roles.map((role) => (
@@ -217,11 +220,11 @@ export default function CompanyRolesSection() {
                 <span className="font-medium text-sm">{role.name}</span>
                 {role.contentTypeId && (
                   <span className="ml-2 text-xs text-gray-400 bg-gray-700/50 px-2 py-0.5 rounded">
-                    {CONTENT_TYPE_LABELS[role.contentTypeId] || `Tür ID: ${role.contentTypeId}`}
+                    {CONTENT_TYPE_LABELS[role.contentTypeId] || translateUi("tur_id_value1_1237161", { value1: String(role.contentTypeId) })}
                   </span>
                 )}
                 {!role.contentTypeId && (
-                  <span className="ml-2 text-xs text-gray-500">Tüm türler</span>
+                  <span className="ml-2 text-xs text-gray-500">{translateUi("tum_turler_0113a3b")}</span>
                 )}
               </div>
               <div className="flex gap-1.5">
@@ -229,13 +232,13 @@ export default function CompanyRolesSection() {
                   onClick={() => handleEditRole(role)}
                   className="px-2.5 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
                 >
-                  Düzenle
+                  {translateUi("duzenle_525fd6f")}
                 </button>
                 <button
                   onClick={() => handleDeleteRole(role.id)}
                   className="px-2.5 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
                 >
-                  Sil
+                  {translateUi("sil_353ad5e")}
                 </button>
               </div>
             </div>

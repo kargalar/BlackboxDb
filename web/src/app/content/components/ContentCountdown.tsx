@@ -1,5 +1,9 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { formattingLocale } from '@/i18n/locales';
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { useState, useEffect } from 'react';
 import { getPreciseTimeUntil } from '@/lib/date-utils';
 
@@ -8,6 +12,8 @@ interface ContentCountdownProps {
 }
 
 export default function ContentCountdown({ releaseDate }: ContentCountdownProps) {
+  const locale = formattingLocale(useLocale());
+  const translateUi = useUiTranslations('Ui');
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -31,7 +37,7 @@ export default function ContentCountdown({ releaseDate }: ContentCountdownProps)
     if (date.getFullYear() !== new Date().getFullYear()) {
       options.year = 'numeric';
     }
-    return date.toLocaleDateString('tr-TR', options);
+    return date.toLocaleDateString(locale, options);
   })();
 
   if (!timeUntil) return null;
@@ -43,7 +49,7 @@ export default function ContentCountdown({ releaseDate }: ContentCountdownProps)
     <div className="glass-card p-4 mt-4 max-w-[300px] flex flex-col items-center justify-center gap-3">
       <div className="flex flex-col items-center gap-1">
         <span className="text-[10px] text-white/40 uppercase tracking-widest font-semibold">
-          Geri Sayım
+          {translateUi("geri_sayim_bbe5098")}
         </span>
         {formattedDate && (
           <span className="text-xs text-white/60 font-medium">{formattedDate}</span>
@@ -67,7 +73,7 @@ export default function ContentCountdown({ releaseDate }: ContentCountdownProps)
                 </span>
               </div>
               <span className="text-[9px] text-white/40 uppercase tracking-widest font-medium">
-                Gün
+                {translateUi("gun_8db756b")}
               </span>
             </div>
 
@@ -82,7 +88,7 @@ export default function ContentCountdown({ releaseDate }: ContentCountdownProps)
                 </span>
               </div>
               <span className="text-[9px] text-white/40 uppercase tracking-widest font-medium">
-                {showMinutes ? 'Dakika' : 'Saat'}
+                {showMinutes ? translateUi("dakika_976482e") : translateUi("saat_76e47a6")}
               </span>
             </div>
           </>

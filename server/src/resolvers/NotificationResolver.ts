@@ -3,6 +3,7 @@ import { Notification } from "../types/Notification";
 import { GraphQLContext } from "../context";
 import { ensureReleasedContentNotificationsForUser } from "../lib/releaseNotificationHelper";
 import { normalizePageSize } from "../lib/pagination";
+import { resolveContentTitle } from "./content/ContentFieldResolver";
 
 @Resolver(Notification)
 export class NotificationResolver {
@@ -46,6 +47,7 @@ export class NotificationResolver {
           select: {
             id: true,
             title: true,
+            originalTitle: true,
             contentTypeId: true,
             posterImageId: true,
             images: {
@@ -78,7 +80,7 @@ export class NotificationResolver {
     }
 
     // Map to GraphQL type
-    return notifications.map((n) => ({
+    return Promise.all(notifications.map(async (n) => ({
       id: n.id.toString(),
       recipientUserId: n.recipientUserId,
       actorUserId: n.actorUserId ?? null,
@@ -99,7 +101,7 @@ export class NotificationResolver {
           }
         : undefined,
       content: n.content
-        ? (() => {
+        ? await (async () => {
             const c = n.content as any;
             let posterUrl: string | null = null;
             if (c.images && Array.isArray(c.images)) {
@@ -113,13 +115,13 @@ export class NotificationResolver {
             }
             return {
               id: c.id,
-              title: c.title,
+              title: await resolveContentTitle(c, ctx),
               contentTypeId: c.contentTypeId,
               posterUrl,
             };
           })()
         : undefined,
-    }));
+    })));
   }
 
   /**

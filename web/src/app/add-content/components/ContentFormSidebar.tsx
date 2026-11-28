@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { TabDefinition } from '../config/tabConfig';
 import {
   BookOpen,
@@ -20,7 +22,7 @@ import {
 } from 'lucide-react';
 
 interface ContentFormSidebarProps {
-  tabs: TabDefinition[];
+  tabs: Array<TabDefinition & { label: string }>;
   activeTab: string;
   onTabChange: (tabId: string) => void;
   /** Map of tabId → whether the tab has data filled in */
@@ -55,10 +57,11 @@ export function ContentFormSidebar({
   onTabChange,
   tabFillMap = {},
 }: ContentFormSidebarProps) {
+  const translateUi = useUiTranslations('Ui');
   if (tabs.length === 0) return null;
 
   return (
-    <nav className="w-full" aria-label="Form sections">
+    <nav className="w-full" aria-label={translateUi("form_sections_b73647a")}>
       {/* Mobile: horizontal scrollable tabs */}
       <ul className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0">
         {tabs.map((tab) => {

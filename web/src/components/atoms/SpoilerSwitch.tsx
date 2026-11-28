@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { Check, Eye, EyeOff } from 'lucide-react';
 
 interface SpoilerSwitchProps {
@@ -23,6 +25,7 @@ export default function SpoilerSwitch({
   iconOnly = false,
   variant = 'switch',
 }: SpoilerSwitchProps) {
+  const translateUi = useUiTranslations('Ui');
   const currentLabel = isSpoiler ? enabledLabel : disabledLabel;
 
   if (iconOnly || variant === 'checkbox') {
@@ -31,7 +34,7 @@ export default function SpoilerSwitch({
         type="button"
         role="checkbox"
         aria-checked={isSpoiler}
-        aria-label={`Yorum spoiler durumu: ${currentLabel}`}
+        aria-label={translateUi("yorum_spoiler_durumu_value1_d5650b9", { value1: String(currentLabel) })}
         title={currentLabel}
         onClick={() => onChange(!isSpoiler)}
         disabled={disabled}
@@ -67,7 +70,7 @@ export default function SpoilerSwitch({
         type="button"
         role="switch"
         aria-checked={isSpoiler}
-        aria-label={`Yorum spoiler durumu: ${currentLabel}`}
+        aria-label={translateUi("yorum_spoiler_durumu_value1_d5650b9", { value1: String(currentLabel) })}
         onClick={() => onChange(!isSpoiler)}
         disabled={disabled}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:cursor-not-allowed disabled:opacity-60 ${

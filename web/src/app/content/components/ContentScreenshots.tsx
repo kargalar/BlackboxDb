@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
@@ -49,6 +51,7 @@ export default function ContentScreenshots({
   imageType = 'screenshot',
   seasons = [],
 }: ContentScreenshotsProps) {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('ContentScreenshots');
   const { showSensitiveContent } = useUserPreferences();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -358,13 +361,13 @@ export default function ContentScreenshots({
             {screenshot.isSpoiler && (
               <div className="absolute top-2 right-2 bg-orange-500/90 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
                 <AlertTriangle className="w-3 h-3" />
-                Spoiler
+                {translateUi("spoiler_875786e")}
               </div>
             )}
             {screenshot.isSensitive && (
               <div className="absolute top-2 left-2 bg-red-600/90 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
                 <EyeOff className="w-3 h-3" />
-                Hassas
+                {translateUi("hassas_f97f12b")}
               </div>
             )}
           </>
@@ -389,13 +392,13 @@ export default function ContentScreenshots({
           {/* Spoiler Toggle Switch */}
           {spoilerCount > 0 && (
             <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full">
-              <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Spoiler</span>
+              <span className="text-xs font-medium text-gray-600 dark:text-gray-300">{translateUi("spoiler_875786e")}</span>
               <button
                 onClick={() => setShowSpoilers(!showSpoilers)}
                 className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
                   showSpoilers ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600'
                 }`}
-                title="Kısayol: S"
+                title={translateUi("kisayol_s_d82a3f2")}
               >
                 <span
                   className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-md transition-transform ${
@@ -418,7 +421,7 @@ export default function ContentScreenshots({
                 className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
                   showSensitive ? 'bg-red-600' : 'bg-gray-300 dark:bg-gray-600'
                 }`}
-                title="Kısayol: E"
+                title={translateUi("kisayol_e_8c4e5f3")}
               >
                 <span
                   className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-md transition-transform ${

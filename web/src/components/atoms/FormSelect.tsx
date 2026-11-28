@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 interface FormSelectProps {
   label: string;
   name: string;
@@ -17,6 +18,7 @@ export function FormSelect({
   required,
   error,
 }: FormSelectProps) {
+  const translateUi = useUiTranslations('Ui');
   return (
     <div className="space-y-2">
       <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -35,7 +37,7 @@ export function FormSelect({
           error ? 'border-red-500' : 'border-gray-300'
         }`}
       >
-        <option value="">-- Seçin --</option>
+        <option value="">{translateUi("secin_82b0b6f")}</option>
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
             {opt.label}

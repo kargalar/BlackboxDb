@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { useAddLogForm } from '../hooks/useAddLogForm';
 import { createPortal } from 'react-dom';

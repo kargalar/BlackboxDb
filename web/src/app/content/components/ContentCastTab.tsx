@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -15,6 +17,7 @@ interface ContentCastTabProps {
 }
 
 export const ContentCastTab: React.FC<ContentCastTabProps> = ({ cast, hasRole }) => {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('ContentCastTab');
   const [showAll, setShowAll] = useState(false);
   const hasMore = cast.length > INITIAL_SHOW_COUNT;
@@ -54,7 +57,7 @@ export const ContentCastTab: React.FC<ContentCastTabProps> = ({ cast, hasRole })
                 {member.person.name}
               </p>
               {member.character && (
-                <p className="text-xs text-gray-400 truncate">&quot;{member.character}&quot;</p>
+                <p className="text-xs text-gray-400 truncate">{translateUi("quot_e2bbf20")}{member.character}{translateUi("quot_e2bbf20")}</p>
               )}
               {(hasRole(member, 'voice_actor') ||
                 hasRole(member, 'Voice_actor') ||

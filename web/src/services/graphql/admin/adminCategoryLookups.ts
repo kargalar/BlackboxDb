@@ -7,6 +7,7 @@ import { gql } from '@apollo/client';
 export const LIST_GENRES = gql`
   query ListGenres(
     $contentTypeId: Int
+    $localized: Boolean
     $limit: Int
     $offset: Int
     $search: String
@@ -22,7 +23,7 @@ export const LIST_GENRES = gql`
       sortOrder: $sortOrder
     ) {
       id
-      name
+      name(localized: $localized)
       contentTypeId
       createdAt
       contentCount
@@ -128,6 +129,7 @@ export interface ThemeInput {
 export const LIST_THEMES = gql`
   query ListThemes(
     $contentTypeId: Int
+    $localized: Boolean
     $limit: Int
     $offset: Int
     $search: String
@@ -143,7 +145,7 @@ export const LIST_THEMES = gql`
       sortOrder: $sortOrder
     ) {
       id
-      name
+      name(localized: $localized)
       createdAt
       contentCount
     }
@@ -194,6 +196,7 @@ export interface MoodInput {
 export const LIST_MOODS = gql`
   query ListMoods(
     $contentTypeId: Int
+    $localized: Boolean
     $limit: Int
     $offset: Int
     $search: String
@@ -209,7 +212,7 @@ export const LIST_MOODS = gql`
       sortOrder: $sortOrder
     ) {
       id
-      name
+      name(localized: $localized)
       createdAt
       contentCount
     }

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect, type Dispatch, type SetStateAction } from 'react';
 import ImageUploadField, { PendingImageUpload } from '@/components/molecules/ImageUploadField';
 import ApiImageSelectDialog from '@/components/molecules/ApiImageSelectDialog';
@@ -69,6 +71,7 @@ export function MediaFields({
   onPendingPosterChange,
   onPendingBackdropChange,
 }: MediaFieldsProps) {
+  const translateUi = useUiTranslations('Ui');
   // ─── API Image Select Dialog state ───
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const [imageDialogCategory, setImageDialogCategory] = useState<'posters' | 'backdrops'>(
@@ -349,7 +352,7 @@ export function MediaFields({
       // Fallback: directly use URL as backdrop
       setFormData((prev: any) => ({ ...prev, backdropUrl: imageUrl }));
       onPendingBackdropChange?.(null);
-      toast.success('Ekran görüntüsü arkaplan olarak ayarlandı');
+      toast.success(translateUi("ekran_goruntusu_arkaplan_olarak_ayarlandi_1eab5c0"));
     }
   };
 
@@ -357,11 +360,11 @@ export function MediaFields({
     <div className="space-y-6 max-w-3xl">
       <div className="bg-gray-50 dark:bg-surface-panel border border-gray-200 dark:border-gray-800 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="text-base font-semibold text-gray-900 dark:text-white">🖼️ Görseller</h4>
+          <h4 className="text-base font-semibold text-gray-900 dark:text-white">{translateUi("gorseller_064685e")}</h4>
 
           <label className="flex items-center gap-2 cursor-pointer bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors">
             <span className="text-xs text-white/70 font-medium">
-              En Yüksek Oylu Görseli Otomatik Seç
+              {translateUi("en_yuksek_oylu_gorseli_otomatik_sec_ae43ece")}
             </span>
             <div className="relative inline-block w-8 h-4">
               <input
@@ -385,7 +388,7 @@ export function MediaFields({
           {/* Poster */}
           <div className="space-y-2">
             <ImageUploadField
-              label="📌 Poster Resmi (2:3)"
+              label={translateUi("poster_resmi_2_3_8faa1fe")}
               name="posterUrl"
               value={formData.posterUrl}
               onChange={(url) =>
@@ -408,8 +411,8 @@ export function MediaFields({
                 <span>🔍</span>
                 <span>
                   {isResolvingImageSource && imageDialogCategory === 'posters'
-                    ? `${isIgdbContentType ? 'IGDB' : 'TMDB'} aranıyor...`
-                    : `${apiSourceLabel || (isIgdbContentType ? 'IGDB' : 'TMDB')} Poster Seç`}
+                    ? translateUi("value1_araniyor_59c4954", { value1: String(isIgdbContentType ? 'IGDB' : 'TMDB') })
+                    : translateUi("value1_poster_sec_1b191fb", { value1: String(apiSourceLabel || (isIgdbContentType ? 'IGDB' : 'TMDB')) })}
                 </span>
               </button>
             )}
@@ -418,7 +421,7 @@ export function MediaFields({
           {/* Backdrop */}
           <div className="space-y-2">
             <ImageUploadField
-              label="🖼️ Arka Plan Resmi"
+              label={translateUi("arka_plan_resmi_cc72aaf")}
               name="backdropUrl"
               value={formData.backdropUrl}
               onChange={(url) =>
@@ -450,8 +453,8 @@ export function MediaFields({
                   <span>🔍</span>
                   <span>
                     {isResolvingImageSource && imageDialogCategory === 'backdrops'
-                      ? `${isIgdbContentType ? 'IGDB' : 'TMDB'} aranıyor...`
-                      : `${apiSourceLabel || (isIgdbContentType ? 'IGDB' : 'TMDB')} Backdrop Seç`}
+                      ? translateUi("value1_araniyor_59c4954", { value1: String(isIgdbContentType ? 'IGDB' : 'TMDB') })
+                      : translateUi("value1_backdrop_sec_075090a", { value1: String(apiSourceLabel || (isIgdbContentType ? 'IGDB' : 'TMDB')) })}
                   </span>
                 </button>
               )}
@@ -462,7 +465,7 @@ export function MediaFields({
                 className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg border border-dashed border-emerald-400/50 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors"
               >
                 <span>📸</span>
-                <span>Ekran Görüntülerinden Seç ({screenshotOptions.length})</span>
+                <span>{translateUi("ekran_goruntulerinden_sec_bc5c968")}{screenshotOptions.length})</span>
               </button>
             )}
           </div>
@@ -471,10 +474,10 @@ export function MediaFields({
         {/* Görseller Listesi (Aktif ve Pasifler) */}
         <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="text-sm font-medium text-gray-900 dark:text-white">Tüm Görseller</h4>
+            <h4 className="text-sm font-medium text-gray-900 dark:text-white">{translateUi("tum_gorseller_5625e78")}</h4>
             <div className="flex gap-2">
               <label className="cursor-pointer flex items-center justify-center px-3 py-1.5 text-xs font-medium rounded border border-emerald-500/50 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors">
-                <span>+ Poster Ekle</span>
+                <span>{translateUi("poster_ekle_b1e4aec")}</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -492,7 +495,7 @@ export function MediaFields({
                 />
               </label>
               <label className="cursor-pointer flex items-center justify-center px-3 py-1.5 text-xs font-medium rounded border border-purple-500/50 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-colors">
-                <span>+ Backdrop Ekle</span>
+                <span>{translateUi("backdrop_ekle_d425bef")}</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -517,7 +520,7 @@ export function MediaFields({
             formData.images.filter((img: any) => img.type === 'poster').length > 0 && (
               <div className="mb-6">
                 <h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
-                  Posterler
+                  {translateUi("posterler_9811496")}
                 </h5>
                 <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
                   {formData.images
@@ -543,14 +546,14 @@ export function MediaFields({
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={img.filePath}
-                              alt="Poster"
+                              alt={translateUi("poster_a33539c")}
                               className="w-full h-full object-cover"
                             />
                           </div>
                           <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-black/60 rounded text-[10px] text-white flex items-center gap-1">
-                            {isSelected ? 'Aktif' : 'Pasif'} {img.isNew && '(Yeni)'}
+                            {isSelected ? translateUi("aktif_89f29d4") : translateUi("pasif_3de4834")} {img.isNew && '(Yeni)'}
                             {isHighestVoted && (
-                              <span title="En Yüksek Oy" className="text-yellow-400 text-xs">
+                              <span title={translateUi("en_yuksek_oy_97fb1d4")} className="text-yellow-400 text-xs">
                                 ⭐
                               </span>
                             )}
@@ -581,16 +584,16 @@ export function MediaFields({
                               }
                             }}
                             className="absolute top-1 right-1 w-6 h-6 bg-red-500/80 hover:bg-red-500 text-white rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Sil"
+                            title={translateUi("sil_353ad5e")}
                           >
                             ✕
                           </button>
 
                           <div className="absolute bottom-1 right-1 px-1.5 py-0.5 bg-black/60 rounded text-[10px] flex gap-2 font-medium">
-                            <span className="text-emerald-400" title="Beğeni">
+                            <span className="text-emerald-400" title={translateUi("begeni_58522a1")}>
                               👍 {img.upvoteCount}
                             </span>
-                            <span className="text-red-400" title="Beğenmeme">
+                            <span className="text-red-400" title={translateUi("begenmeme_03e4659")}>
                               👎 {img.downvoteCount}
                             </span>
                           </div>
@@ -606,7 +609,7 @@ export function MediaFields({
             formData.images.filter((img: any) => img.type === 'backdrop').length > 0 && (
               <div>
                 <h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">
-                  Arka Planlar (Backdrops)
+                  {translateUi("arka_planlar_backdrops_b962fab")}
                 </h5>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {formData.images
@@ -633,15 +636,15 @@ export function MediaFields({
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={getImageSource(img.filePath)}
-                              alt="Backdrop"
+                              alt={translateUi("backdrop_d4f5e93")}
                               className="w-full h-full object-cover"
                               style={{ objectPosition: getImageObjectPosition(img.filePath) }}
                             />
                           </div>
                           <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-black/60 rounded text-[10px] text-white flex items-center gap-1">
-                            {isSelected ? 'Aktif' : 'Pasif'} {img.isNew && '(Yeni)'}
+                            {isSelected ? translateUi("aktif_89f29d4") : translateUi("pasif_3de4834")} {img.isNew && '(Yeni)'}
                             {isHighestVoted && (
-                              <span title="En Yüksek Oy" className="text-yellow-400 text-xs">
+                              <span title={translateUi("en_yuksek_oy_97fb1d4")} className="text-yellow-400 text-xs">
                                 ⭐
                               </span>
                             )}
@@ -666,16 +669,16 @@ export function MediaFields({
                               });
                             }}
                             className="absolute top-1 right-1 w-6 h-6 bg-red-500/80 hover:bg-red-500 text-white rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Sil"
+                            title={translateUi("sil_353ad5e")}
                           >
                             ✕
                           </button>
 
                           <div className="absolute bottom-1 right-1 px-1.5 py-0.5 bg-black/60 rounded text-[10px] flex gap-2 font-medium">
-                            <span className="text-emerald-400" title="Beğeni">
+                            <span className="text-emerald-400" title={translateUi("begeni_58522a1")}>
                               👍 {img.upvoteCount}
                             </span>
-                            <span className="text-red-400" title="Beğenmeme">
+                            <span className="text-red-400" title={translateUi("begenmeme_03e4659")}>
                               👎 {img.downvoteCount}
                             </span>
                           </div>
@@ -688,7 +691,7 @@ export function MediaFields({
 
           {(!formData.images || formData.images.length === 0) && (
             <div className="text-center py-6 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-lg">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Henüz görsel yok.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{translateUi("henuz_gorsel_yok_8c2d492")}</p>
             </div>
           )}
         </div>

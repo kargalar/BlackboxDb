@@ -41,6 +41,7 @@ model AppUser {
   posterIconsBelow              Boolean                    @default(true) @map("poster_icons_below")
   posterIconsPosition           String                     @default("below") @map("poster_icons_position") @db.VarChar(16)
   showSensitiveContent          Boolean                    @default(false) @map("show_sensitive_content")
+  showOriginalTitles            Boolean                    @default(false) @map("show_original_titles")
   isDeleted                     Boolean                    @default(false) @map("is_deleted")
   deletedAt                     DateTime?                  @map("deleted_at")
   createdAt                     DateTime                   @default(now()) @map("created_at")
@@ -1306,7 +1307,18 @@ model ContentTranslation {
   content       Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
 
   @@unique([contentId, language])
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "content_translation_title_trgm_idx")
   @@map("content_translation")
+}
+
+model CatalogTranslation {
+  catalog  String @db.VarChar(30)
+  entryId  Int    @map("entry_id")
+  language String @db.VarChar(5)
+  name     String @db.VarChar(255)
+
+  @@id([catalog, entryId, language])
+  @@map("catalog_translation")
 }
 
 model PersonTranslation {

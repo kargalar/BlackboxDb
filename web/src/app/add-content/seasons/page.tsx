@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
@@ -53,6 +55,7 @@ export default function SeasonsBuilderPage() {
 }
 
 function SeasonsBuilderContent() {
+  const translateUi = useUiTranslations('Ui');
   const router = useRouter();
   const searchParams = useSearchParams();
   const { formData, setFormData, contentId, setContentId } = useAddContentStore();
@@ -99,7 +102,7 @@ function SeasonsBuilderContent() {
         if (active) {
           lastRequestedContentIdRef.current = null;
           console.error('[Seasons] Content load failed:', error);
-          toast.error('İçerik sezonları yüklenemedi');
+          toast.error(translateUi("icerik_sezonlari_yuklenemedi_424704c"));
         }
       } finally {
         if (active) setIsLoading(false);
@@ -138,7 +141,7 @@ function SeasonsBuilderContent() {
   const removeSeason = (index: number) => {
     console.log(`🗑️ [Seasons] Removing season at index ${index}, total seasons: ${seasons.length}`);
     const confirmed = confirm(
-      'Bu sezonu ve içindeki tüm bölümleri silmek istediğinize emin misiniz?'
+      translateUi("bu_sezonu_ve_icindeki_tum_bolumleri_5f26fb1")
     );
     if (!confirmed) {
       console.log('⚠️ [Seasons] Season removal cancelled by user');
@@ -171,7 +174,7 @@ function SeasonsBuilderContent() {
 
   const removeEpisode = (seasonIndex: number, episodeIndex: number) => {
     console.log(`🗑️ [Seasons] Removing episode ${episodeIndex} from season ${seasonIndex}`);
-    if (confirm('Bu bölümü silmek istediğinize emin misiniz?')) {
+    if (confirm(translateUi("bu_bolumu_silmek_istediginize_emin_misiniz_a686937"))) {
       const newSeasons = [...seasons];
       newSeasons[seasonIndex].episodes.splice(episodeIndex, 1);
       setFormData((prev) => ({ ...prev, seasons: newSeasons as any }));
@@ -215,11 +218,11 @@ function SeasonsBuilderContent() {
           </button>
           <div>
             <h1 className="text-xl font-bold text-violet-600 dark:bg-violet-400 dark:">
-              Sezon ve Bölüm Yöneticisi
+              {translateUi("sezon_ve_bolum_yoneticisi_59fe88e")}
             </h1>
             {formData.title && (
               <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                {formData.title} dizisi için düzenleniyor
+                {formData.title} {" " + translateUi("dizisi_icin_duzenleniyor_047de1f")}
               </p>
             )}
           </div>
@@ -231,8 +234,7 @@ function SeasonsBuilderContent() {
         <div className="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-900/50 px-6 py-3 flex items-center gap-3 text-yellow-800 dark:text-yellow-500 text-sm">
           <AlertCircle size={18} className="flex-shrink-0" />
           <p>
-            Şu anda form dışında çalışıyorsunuz. Değişiklikleriniz tarayıcı hafızasında saklanacak
-            ancak içerik kaydetmek için <strong>İçerik Ekle</strong> formuna geri dönmelisiniz.
+            {translateUi("su_anda_form_disinda_calisiyorsunuz_degisiklikleriniz_3a20413") + " "} <strong>{translateUi("icerik_ekle_9897ebb")}</strong> {" " + translateUi("formuna_geri_donmelisiniz_c27c7b7")}
           </p>
         </div>
       )}
@@ -242,7 +244,7 @@ function SeasonsBuilderContent() {
         <div className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-4 text-gray-500 dark:text-gray-400">
             <Loader2 size={36} className="animate-spin text-violet-500" />
-            <p className="font-medium">Sezon verileri yükleniyor...</p>
+            <p className="font-medium">{translateUi("sezon_verileri_yukleniyor_c4ea618")}</p>
           </div>
         </div>
       )}
@@ -253,11 +255,11 @@ function SeasonsBuilderContent() {
           {/* Left Sidebar - Seasons Navigator */}
           <aside className="w-full md:w-80 border-r border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-surface-panel/50 backdrop-blur-sm flex flex-col flex-shrink-0 md:h-full overflow-y-auto">
             <div className="p-5 border-b border-gray-100 dark:border-gray-800/50 flex items-center justify-between sticky top-0 bg-white/95 dark:bg-surface-panel/95 z-10 backdrop-blur">
-              <h2 className="font-semibold text-gray-800 dark:text-gray-200">Kayıtlı Sezonlar</h2>
+              <h2 className="font-semibold text-gray-800 dark:text-gray-200">{translateUi("kayitli_sezonlar_4ef9d81")}</h2>
               <button
                 onClick={addSeason}
                 className="p-2 bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 rounded-xl hover:bg-violet-200 dark:hover:bg-violet-800/60 transition-colors focus:ring-2 focus:ring-violet-500/50"
-                title="Yeni sezon ekle"
+                title={translateUi("yeni_sezon_ekle_c33202d")}
               >
                 <Plus size={20} />
               </button>
@@ -281,13 +283,13 @@ function SeasonsBuilderContent() {
                     <div
                       className={`font-semibold text-sm ${isActive ? 'text-violet-700 dark:text-violet-300' : 'text-gray-800 dark:text-gray-200'}`}
                     >
-                      {season.name || `Sezon ${season.seasonNumber}`}
+                      {season.name || translateUi("sezon_value1_eb6e0b8", { value1: String(season.seasonNumber) })}
                     </div>
                     <div
                       className={`text-xs mt-1.5 flex items-center gap-1.5 ${isActive ? 'text-violet-600/70 dark:text-violet-400/70' : 'text-gray-500'}`}
                     >
                       <Film size={12} />
-                      <span>{season.episodes?.length || 0} Bölüm</span>
+                      <span>{season.episodes?.length || 0} {" " + translateUi("bolum_015dec5")}</span>
                     </div>
                   </div>
                 );
@@ -299,10 +301,10 @@ function SeasonsBuilderContent() {
                     <Film size={24} />
                   </div>
                   <h3 className="text-gray-800 dark:text-gray-200 font-medium mb-1">
-                    Sezon Bulunamadı
+                    {translateUi("sezon_bulunamadi_ee9c7f3")}
                   </h3>
                   <p className="text-sm text-gray-500">
-                    Henüz bir sezon eklemediniz. Sağ üstteki artı butonundan başlayın.
+                    {translateUi("henuz_bir_sezon_eklemediniz_sag_ustteki_675f941")}
                   </p>
                 </div>
               )}
@@ -321,14 +323,14 @@ function SeasonsBuilderContent() {
                       <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 font-bold text-sm">
                         {selectedSeason.seasonNumber}
                       </span>
-                      <h2 className="text-2xl font-bold tracking-tight">Sezon Ayarları</h2>
+                      <h2 className="text-2xl font-bold tracking-tight">{translateUi("sezon_ayarlari_102040e")}</h2>
                     </div>
                     <button
                       onClick={() => removeSeason(selectedSeasonIndex)}
                       className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors font-medium"
                     >
                       <Trash2 size={16} />
-                      Sezonu Sil
+                      {translateUi("sezonu_sil_0cc670b")}
                     </button>
                   </div>
 
@@ -339,7 +341,7 @@ function SeasonsBuilderContent() {
                       <div className="flex-1 space-y-5">
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ml-1">
-                            Sezon Adı
+                            {translateUi("sezon_adi_79391a6")}
                           </label>
                           <input
                             type="text"
@@ -348,14 +350,14 @@ function SeasonsBuilderContent() {
                               updateSeason(selectedSeasonIndex, 'name', e.target.value)
                             }
                             className="w-full px-4 py-3 bg-gray-50 dark:bg-surface-panel border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-900 dark:text-white font-medium text-base transition-all"
-                            placeholder="Örn: 1. Sezon"
+                            placeholder={translateUi("orn_1_sezon_c9b8f3a")}
                           />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                           <div>
                             <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ml-1">
-                              Yayın Tarihi
+                              {translateUi("yayin_tarihi_600b05a")}
                             </label>
                             <div className="relative">
                               <input
@@ -376,7 +378,7 @@ function SeasonsBuilderContent() {
 
                         <div>
                           <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ml-1">
-                            Açıklama (Özet)
+                            {translateUi("aciklama_ozet_2170f00")}
                           </label>
                           <textarea
                             rows={5}
@@ -385,7 +387,7 @@ function SeasonsBuilderContent() {
                               updateSeason(selectedSeasonIndex, 'overview', e.target.value)
                             }
                             className="w-full px-4 py-3 bg-gray-50 dark:bg-surface-panel border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-2 focus:ring-violet-500 text-sm text-gray-900 dark:text-white transition-all resize-y"
-                            placeholder="Bu sezon ne hakkında?..."
+                            placeholder={translateUi("bu_sezon_ne_hakkinda_f5a79e7")}
                           />
                         </div>
                       </div>
@@ -393,13 +395,13 @@ function SeasonsBuilderContent() {
                       {/* Right: Poster Selection */}
                       <div className="w-full md:w-56 shrink-0">
                         <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 ml-1 text-center md:text-left">
-                          Kapak Görseli
+                          {translateUi("kapak_gorseli_032958c")}
                         </label>
                         <ImageUploadField
                           name={`season-poster-${selectedSeasonIndex}`}
                           value={selectedSeason.posterUrl || ''}
                           onChange={(url) => updateSeason(selectedSeasonIndex, 'posterUrl', url)}
-                          label={selectedSeason.posterUrl ? 'Görseli Değiştir' : 'Görsel Yükle'}
+                          label={selectedSeason.posterUrl ? translateUi("gorseli_degistir_2d3ec19") : translateUi("gorsel_yukle_da34d9b")}
                           imageType="poster"
                         />
                       </div>
@@ -411,7 +413,7 @@ function SeasonsBuilderContent() {
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3 className="text-xl font-bold tracking-tight flex items-center gap-2">
-                          Bölümler
+                          {translateUi("bolumler_8a55c43")}
                           <span className="text-base font-medium text-gray-500 dark:text-gray-400">
                             ({selectedSeason.episodes.length})
                           </span>
@@ -422,7 +424,7 @@ function SeasonsBuilderContent() {
                         className="px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-xl shadow-lg shadow-violet-600/20 transition-all flex items-center gap-2"
                       >
                         <Plus size={18} />
-                        Yenİ Bölüm
+                        {translateUi("yeni_bolum_08161d8")}
                       </button>
                     </div>
 
@@ -431,15 +433,15 @@ function SeasonsBuilderContent() {
                         <div className="w-16 h-16 mx-auto mb-4 bg-violet-100 dark:bg-violet-900/30 rounded-full flex items-center justify-center text-violet-500">
                           <Plus size={24} />
                         </div>
-                        <h4 className="text-lg font-bold mb-2">Henüz Bölüm Eklenmedi</h4>
+                        <h4 className="text-lg font-bold mb-2">{translateUi("henuz_bolum_eklenmedi_7750c0d")}</h4>
                         <p className="text-gray-500 max-w-sm mx-auto mb-6">
-                          Bu sezona ait bölümleri detaylarıyla eklemeye hemen başlayın.
+                          {translateUi("bu_sezona_ait_bolumleri_detaylariyla_eklemeye_4f2c8ce")}
                         </p>
                         <button
                           onClick={() => addEpisodeToSeason(selectedSeasonIndex)}
                           className="px-6 py-2 bg-white dark:bg-surface-hover border border-gray-200 dark:border-gray-700 hover:border-violet-500 text-gray-800 dark:text-gray-200 font-medium rounded-lg transition-all"
                         >
-                          İlk Bölümü Ekle
+                          {translateUi("ilk_bolumu_ekle_3bd8f7f")}
                         </button>
                       </div>
                     ) : (
@@ -463,7 +465,7 @@ function SeasonsBuilderContent() {
                                       url
                                     )
                                   }
-                                  label={episode.stillUrl ? 'Görseli Değiştir' : 'Bölüm Görseli'}
+                                  label={episode.stillUrl ? translateUi("gorseli_degistir_2d3ec19") : translateUi("bolum_gorseli_14200b2")}
                                   imageType="backdrop"
                                 />
                               </div>
@@ -474,7 +476,7 @@ function SeasonsBuilderContent() {
                                   <div className="flex-1 grid grid-cols-12 gap-3 items-start">
                                     <div className="col-span-12 md:col-span-2">
                                       <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 ml-1">
-                                        No
+                                        {translateUi("no_816c52f")}
                                       </label>
                                       <input
                                         type="number"
@@ -492,7 +494,7 @@ function SeasonsBuilderContent() {
                                     </div>
                                     <div className="col-span-12 md:col-span-10">
                                       <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 ml-1">
-                                        Bölüm Adı
+                                        {translateUi("bolum_adi_9bfbaa3")}
                                       </label>
                                       <input
                                         type="text"
@@ -506,14 +508,14 @@ function SeasonsBuilderContent() {
                                           )
                                         }
                                         className="w-full px-4 py-2 bg-gray-50 dark:bg-surface-panel border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-violet-500 font-medium"
-                                        placeholder="Örn: Pilot"
+                                        placeholder={translateUi("orn_pilot_5085734")}
                                       />
                                     </div>
                                   </div>
                                   <button
                                     onClick={() => removeEpisode(selectedSeasonIndex, episodeIndex)}
                                     className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors mt-5 md:mt-0"
-                                    title="Bölümü Sil"
+                                    title={translateUi("bolumu_sil_5f14c7c")}
                                   >
                                     <Trash2 size={18} />
                                   </button>
@@ -522,7 +524,7 @@ function SeasonsBuilderContent() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <div className="relative">
                                     <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 ml-1">
-                                      Tarih
+                                      {translateUi("tarih_6ddab1b")}
                                     </label>
                                     <input
                                       type="date"
@@ -544,7 +546,7 @@ function SeasonsBuilderContent() {
                                   </div>
                                   <div className="relative">
                                     <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 ml-1">
-                                      Süre (Dk)
+                                      {translateUi("sure_dk_3d04d2c")}
                                     </label>
                                     <input
                                       type="number"
@@ -569,7 +571,7 @@ function SeasonsBuilderContent() {
 
                                 <div>
                                   <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 ml-1">
-                                    Özet / Açıklama
+                                    {translateUi("ozet_aciklama_cc91de4")}
                                   </label>
                                   <textarea
                                     rows={4}
@@ -583,7 +585,7 @@ function SeasonsBuilderContent() {
                                       )
                                     }
                                     className="w-full px-3 py-2 bg-gray-50 dark:bg-surface-panel border border-gray-200 dark:border-gray-800 rounded-lg text-sm resize-y focus:ring-2 focus:ring-violet-500 leading-relaxed text-gray-700 dark:text-gray-300"
-                                    placeholder="Bu bölümde ne oldu?..."
+                                    placeholder={translateUi("bu_bolumde_ne_oldu_4904517")}
                                   />
                                 </div>
                               </div>
@@ -600,7 +602,7 @@ function SeasonsBuilderContent() {
                           className="px-5 py-2.5 bg-white dark:bg-surface-raised border border-gray-200 dark:border-gray-700 hover:border-violet-500 text-gray-800 dark:text-gray-200 font-medium rounded-xl transition-all shadow-sm flex items-center gap-2"
                         >
                           <Plus size={18} />
-                          Bölüm Ekle
+                          {translateUi("bolum_ekle_3e0745a")}
                         </button>
                       </div>
                     )}
@@ -613,10 +615,10 @@ function SeasonsBuilderContent() {
                   <Film size={36} className="opacity-50" />
                 </div>
                 <p className="text-xl font-medium text-gray-800 dark:text-gray-200 mb-2">
-                  Seçili Sezon Yok
+                  {translateUi("secili_sezon_yok_f5a3762")}
                 </p>
                 <p className="max-w-md">
-                  Lütfen sol menüden bir sezon seçin veya yeni bir tane oluşturun.
+                  {translateUi("lutfen_sol_menuden_bir_sezon_secin_f961996")}
                 </p>
               </div>
             )}
@@ -630,7 +632,7 @@ function SeasonsBuilderContent() {
         className="fixed bottom-6 right-6 z-50 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-full shadow-lg flex items-center gap-2 transition-all"
       >
         <CheckCircle2 size={18} />
-        <span>Kaydet ve Kapat</span>
+        <span>{translateUi("kaydet_ve_kapat_c86b7ef")}</span>
       </button>
     </div>
   );

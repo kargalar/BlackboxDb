@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import Image from 'next/image';
 import { searchPersons } from '@/services/adminService';
 import type { Person, PersonChipProps } from './personListTypes';
@@ -20,6 +22,7 @@ export function PersonChip({
   onRemove,
   onMove,
 }: PersonChipProps) {
+  const translateUi = useUiTranslations('Ui');
   const handleClick = async () => {
     // Prevent click when dragging
     if (draggedIndex !== null) return;
@@ -77,7 +80,7 @@ export function PersonChip({
       <button
         type="button"
         onClick={handleClick}
-        aria-label={`${person.name} kişisini düzenle`}
+        aria-label={translateUi("value1_kisisini_duzenle_3f1e1ce", { value1: String(person.name) })}
         className="inline-flex items-center gap-2 rounded-md text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
       >
         {person.profileUrl ? (
@@ -105,7 +108,7 @@ export function PersonChip({
           <span className="font-medium text-gray-900 dark:text-white">{person.name}</span>
           {person.role && <span className="text-gray-500 dark:text-gray-400">({person.role})</span>}
           {person.character && (
-            <span className="text-violet-500">&quot;{person.character}&quot;</span>
+            <span className="text-violet-500">{translateUi("quot_e2bbf20")}{person.character}{translateUi("quot_e2bbf20")}</span>
           )}
         </span>
       </button>
@@ -113,8 +116,8 @@ export function PersonChip({
         <>
           <button
             type="button"
-            aria-label={`${person.name} kişisini listede yukarı taşı`}
-            title="Yukarı taşı"
+            aria-label={translateUi("value1_kisisini_listede_yukari_tasi_fe623b4", { value1: String(person.name) })}
+            title={translateUi("yukari_tasi_59e4751")}
             disabled={index === 0}
             onClick={() => onMove(index, index - 1)}
             className="rounded px-1 text-gray-500 hover:text-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 disabled:opacity-30 group-hover:opacity-100 group-focus-within:opacity-100"
@@ -123,8 +126,8 @@ export function PersonChip({
           </button>
           <button
             type="button"
-            aria-label={`${person.name} kişisini listede aşağı taşı`}
-            title="Aşağı taşı"
+            aria-label={translateUi("value1_kisisini_listede_asagi_tasi_68315c2", { value1: String(person.name) })}
+            title={translateUi("asagi_tasi_93776f6")}
             disabled={index === totalCount - 1}
             onClick={() => onMove(index, index + 1)}
             className="rounded px-1 text-gray-500 hover:text-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 disabled:opacity-30 group-hover:opacity-100 group-focus-within:opacity-100"
@@ -138,7 +141,7 @@ export function PersonChip({
         <span
           aria-hidden="true"
           className="text-gray-400 dark:text-gray-500 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity select-none ml-1"
-          title="Sürükleyerek sıralayın"
+          title={translateUi("surukleyerek_siralayin_b3e8caa")}
         >
           ⋮⋮
         </span>
@@ -147,8 +150,8 @@ export function PersonChip({
       <button
         type="button"
         onClick={() => onRemove(index)}
-        aria-label={`${person.name} kişisini kaldır`}
-        title="Kaldır"
+        aria-label={translateUi("value1_kisisini_kaldir_2f72fe6", { value1: String(person.name) })}
+        title={translateUi("kaldir_d38bc7b")}
         className="text-gray-400 hover:text-red-500 font-bold leading-none ml-1 opacity-60 group-hover:opacity-100 transition-opacity"
       >
         ✕

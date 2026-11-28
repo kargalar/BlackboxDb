@@ -80,7 +80,7 @@ export class AdminTmdbResolver {
     type: string,
     @Arg("page", () => Int, { nullable: true, defaultValue: 1 })
     page: number,
-    @Ctx() { user }: GraphQLContext,
+    @Ctx() { user, language }: GraphQLContext,
   ): Promise<TmdbSearchResult[]> {
     requireAdminOrModerator(user);
 
@@ -99,7 +99,8 @@ export class AdminTmdbResolver {
     );
 
     try {
-      const results = await searchTmdb(query.trim(), type, undefined, page);
+      const providerLanguage = { en: "en-US", zh: "zh-CN", pt: "pt-BR", arz: "ar-EG", pcm: "en-US" } as Record<string, string>;
+      const results = await searchTmdb(query.trim(), type, undefined, page, providerLanguage[language] ?? language);
 
       // Map fetcher results → GraphQL TmdbSearchResult objects
       return results.map((r) => {
@@ -153,6 +154,7 @@ export class AdminTmdbResolver {
       detail.tmdbId = data.tmdbId;
       detail.title = data.title;
       detail.originalTitle = data.originalTitle;
+      detail.translations = data.translations;
       detail.overview = data.overview;
       detail.releaseDate = data.releaseDate;
       detail.releases = data.releases;

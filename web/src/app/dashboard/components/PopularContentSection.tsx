@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { BookOpen, Film, Gamepad2, Globe, Tv } from 'lucide-react';
@@ -123,10 +125,11 @@ function ContentRail({
   onAddToList: (item: UnifiedContent, contentType: ContentType) => void;
   useNextImageForGames?: boolean;
 }) {
+  const translateUi = useUiTranslations('Ui');
   const { dragScrollProps } = useHorizontalDragScroll();
 
   if (isLoading) return <SkeletonGrid />;
-  if (items.length === 0) return <EmptyState message="No popular content found in this filter." />;
+  if (items.length === 0) return <EmptyState message={translateUi("no_popular_content_found_in_this_665e974")} />;
 
   return (
     <div
@@ -172,7 +175,7 @@ function ContentRail({
           <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-white/[0.05] text-lg font-black">
             +
           </span>
-          <span className="text-sm font-semibold leading-6">Show All</span>
+          <span className="text-sm font-semibold leading-6">{translateUi("show_all_b3f8542")}</span>
         </div>
       </Link>
     </div>
@@ -218,6 +221,7 @@ export default function PopularContentSection({
   onWatchlistToggle: (item: UnifiedContent, contentType: string) => void;
   onAddToList: (item: UnifiedContent, contentType: ContentType) => void;
 }) {
+  const translateUi = useUiTranslations('Ui');
   const [selectedFilterId, setSelectedFilterId] = useState(0);
 
   const availableTypes = CONTENT_TYPE_OPTIONS.filter(
@@ -323,7 +327,7 @@ export default function PopularContentSection({
             <span className="text-2xl">{selectedFilter.emoji}</span>
             <span className="gradient-text">{selectedFilter.title}</span>
           </h2>
-          <p className="text-sm text-white/50">Popular content from all content types</p>
+          <p className="text-sm text-white/50">{translateUi("popular_content_from_all_content_types_c916c31")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {availableTypes.map((option: ContentTypeOption) => {

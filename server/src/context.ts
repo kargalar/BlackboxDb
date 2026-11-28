@@ -25,6 +25,7 @@ export interface GraphQLContext {
   req: Request;
   res: Response;
   language: string;
+  showOriginalTitles?: boolean;
   loaders?: RequestLoaders;
 }
 
@@ -40,6 +41,7 @@ export async function createContext({
   const authHeader = req.headers.authorization;
   const cookieToken = getCookie(req, ACCESS_TOKEN_COOKIE);
   let user = null;
+  let showOriginalTitles = false;
 
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.substring(7)
@@ -67,10 +69,12 @@ export async function createContext({
           isAdmin: true,
           isModerator: true,
           isDeleted: true,
+          showOriginalTitles: true,
         },
       });
 
       if (currentUser && !currentUser.isDeleted) {
+        showOriginalTitles = currentUser.showOriginalTitles;
         user = {
           id: currentUser.id,
           email: currentUser.email,
@@ -92,5 +96,6 @@ export async function createContext({
     req,
     res,
     language,
+    showOriginalTitles,
   };
 }

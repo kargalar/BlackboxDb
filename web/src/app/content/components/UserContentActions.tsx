@@ -1,4 +1,6 @@
 'use client';
+
+import { useTranslations as useUiTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { History, ListPlus, Send } from 'lucide-react';
@@ -112,6 +114,7 @@ const UserContentActions: React.FC<UserContentActionsProps> = ({
   toggleAbandoned,
   supportedPlatforms = [],
 }) => {
+  const translateUi = useUiTranslations('Ui');
   const { isPrivileged, user } = useAuth();
   const { showLoginDialog } = useLoginRequired();
   const t = useTranslations('UserContentActions');
@@ -266,7 +269,7 @@ const UserContentActions: React.FC<UserContentActionsProps> = ({
             >
               <span className="text-sm leading-none opacity-80">🎮</span>
               {Math.floor(playtimeMinutes / 60) > 0 ? `${Math.floor(playtimeMinutes / 60)}s ` : ''}
-              {playtimeMinutes % 60}dk
+              {playtimeMinutes % 60}{translateUi("dk_d5658db")}
             </div>
           </div>
         )}

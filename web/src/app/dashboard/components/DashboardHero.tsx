@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -55,6 +57,7 @@ export default function DashboardHero({
   fallbackContents,
   preferredContentTypes,
 }: DashboardHeroProps) {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('Dashboard');
   const { isPrivileged } = useAuth();
 
@@ -288,10 +291,10 @@ export default function DashboardHero({
             href={'/admin/showcase' as Route}
             onClick={(e) => e.stopPropagation()}
             className="px-3 py-1.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 hover:border-purple-500/50 text-xs font-medium text-white/70 hover:text-white transition-all flex items-center gap-1.5 shadow-lg group/admin relative z-20 pointer-events-auto"
-            title="Vitrin Yönetimi"
+            title={translateUi("vitrin_yonetimi_0b18b00")}
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-400 group-hover/admin:rotate-12 transition-transform" />
-            <span className="hidden sm:inline">Vitrin Yönetimi</span>
+            <span className="hidden sm:inline">{translateUi("vitrin_yonetimi_0b18b00")}</span>
           </Link>
         )}
       </div>
@@ -344,7 +347,7 @@ export default function DashboardHero({
                     ? 'w-6 bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.8)]'
                     : 'w-2 bg-white/30 hover:bg-white/60'
                 }`}
-                aria-label={`Slide ${idx + 1}`}
+                aria-label={translateUi("slide_value1_1190a24", { value1: String(idx + 1) })}
               />
             ))}
           </div>

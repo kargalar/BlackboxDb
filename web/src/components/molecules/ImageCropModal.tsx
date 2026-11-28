@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useRef, useEffect, useId } from 'react';
 import { createPortal } from 'react-dom';
 import Cropper, { ReactCropperElement } from 'react-cropper';
@@ -72,6 +74,7 @@ export function ImageCropModal({
   onAutoAddAll,
   initialFocus = DEFAULT_IMAGE_FOCUS,
 }: ImageCropModalProps) {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('ImageCropModal');
   const isBackdrop = imageType === 'backdrop';
   const titleId = useId();
@@ -103,7 +106,7 @@ export function ImageCropModal({
   const handleCropConfirm = async () => {
     const cropper = cropperRef.current?.cropper;
     if (!cropper) {
-      setError('Kırpma aracı yüklenemedi');
+      setError(translateUi("kirpma_araci_yuklenemedi_ce0d9d3"));
       return;
     }
 
@@ -146,7 +149,7 @@ export function ImageCropModal({
       onClose();
     } catch (err) {
       console.error('Crop error:', err);
-      setError(err instanceof Error ? err.message : 'Kırpma işlemi başarısız oldu');
+      setError(err instanceof Error ? err.message : translateUi("kirpma_islemi_basarisiz_oldu_4729ef8"));
     } finally {
       setIsProcessing(false);
     }
@@ -292,16 +295,16 @@ export function ImageCropModal({
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div>
             <h2 id={titleId} className="text-lg font-semibold text-gray-900 dark:text-white">
-              {isBackdrop ? t('backdropTitle') : 'Görseli Kırp'}
+              {isBackdrop ? t('backdropTitle') : translateUi("gorseli_kirp_5cf3ac9")}
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              En-boy oranı: {getAspectRatioLabel()}
-              {isNaN(aspectRatio) ? '' : ' (kilitli)'}
+              {translateUi("en_boy_orani_321b25d") + " "} {getAspectRatioLabel()}
+              {isNaN(aspectRatio) ? '' : translateUi("kilitli_3ca31ac")}
             </p>
             {isBackdrop && <p className="mt-1 text-sm text-neutral-400">{t('backdropHint')}</p>}
             {pendingCount && pendingCount > 1 && (
               <p className="text-xs text-blue-500 dark:text-blue-400">
-                Görsel {(currentFileIndex || 0) + 1} / {pendingCount}
+                {translateUi("gorsel_a15b021") + " "} {(currentFileIndex || 0) + 1} / {pendingCount}
               </p>
             )}
           </div>
@@ -309,8 +312,8 @@ export function ImageCropModal({
             onClick={onCancelAll ?? onClose}
             disabled={isProcessing}
             className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors disabled:opacity-50"
-            aria-label="Tüm yüklemeleri iptal et"
-            title="Tüm yüklemeleri iptal et"
+            aria-label={translateUi("tum_yuklemeleri_iptal_et_165b68a")}
+            title={translateUi("tum_yuklemeleri_iptal_et_165b68a")}
           >
             <X className="w-6 h-6" />
           </button>
@@ -346,7 +349,7 @@ export function ImageCropModal({
                 ready={handleCropperReady}
               />
             ) : (
-              <div className="text-gray-500 dark:text-gray-400">Görsel yükleniyor...</div>
+              <div className="text-gray-500 dark:text-gray-400">{translateUi("gorsel_yukleniyor_3d98135")}</div>
             )}
           </div>
         </div>
@@ -366,10 +369,10 @@ export function ImageCropModal({
               onClick={handleReset}
               disabled={isProcessing}
               className="flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
-              title="Sıfırla"
+              title={translateUi("sifirla_8fb7f0b")}
             >
               <RotateCcw className="w-4 h-4" />
-              <span className="hidden sm:inline">Sıfırla</span>
+              <span className="hidden sm:inline">{translateUi("sifirla_8fb7f0b")}</span>
             </button>
 
             <div className="h-6 w-px bg-gray-300 dark:bg-gray-600 mx-1" />
@@ -379,10 +382,10 @@ export function ImageCropModal({
               onClick={handleAlignHorizontal}
               disabled={isProcessing}
               className="flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
-              title="Yatay Ortala"
+              title={translateUi("yatay_ortala_b4e9e77")}
             >
               <AlignHorizontalJustifyCenter className="w-4 h-4" />
-              <span className="hidden sm:inline">Yatay</span>
+              <span className="hidden sm:inline">{translateUi("yatay_db39d69")}</span>
             </button>
 
             <button
@@ -390,10 +393,10 @@ export function ImageCropModal({
               onClick={handleAlignVertical}
               disabled={isProcessing}
               className="flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
-              title="Dikey Ortala"
+              title={translateUi("dikey_ortala_73c7f96")}
             >
               <AlignVerticalJustifyCenter className="w-4 h-4" />
-              <span className="hidden sm:inline">Dikey</span>
+              <span className="hidden sm:inline">{translateUi("dikey_2754e6c")}</span>
             </button>
 
             <button
@@ -401,10 +404,10 @@ export function ImageCropModal({
               onClick={handleMaximize}
               disabled={isProcessing}
               className="flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
-              title="En Geniş Alan"
+              title={translateUi("en_genis_alan_078385e")}
             >
               <Maximize2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Max</span>
+              <span className="hidden sm:inline">{translateUi("max_a95e85a")}</span>
             </button>
           </div>
 
@@ -417,7 +420,7 @@ export function ImageCropModal({
                 disabled={isProcessing}
                 className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
               >
-                Hepsini Otomatik Ekle ({pendingCount - (currentFileIndex || 0)} kalan)
+                {translateUi("hepsini_otomatik_ekle_64c1731")}{pendingCount - (currentFileIndex || 0)} {" " + translateUi("kalan_c1e4d65")}
               </button>
             )}
             <button
@@ -426,7 +429,7 @@ export function ImageCropModal({
               disabled={isProcessing}
               className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
             >
-              İptal
+              {translateUi("iptal_85e2d08")}
             </button>
             <button
               type="button"
@@ -437,12 +440,12 @@ export function ImageCropModal({
               {isProcessing ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                  İşleniyor...
+                  {translateUi("isleniyor_037a044")}
                 </>
               ) : (
                 <>
                   <Check className="w-4 h-4" />
-                  {isBackdrop ? t('saveAlignment') : 'Onayla'}
+                  {isBackdrop ? t('saveAlignment') : translateUi("onayla_d13ec38")}
                 </>
               )}
             </button>

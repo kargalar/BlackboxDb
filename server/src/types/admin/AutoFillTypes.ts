@@ -1,3 +1,4 @@
+import { ContentTranslationText } from "../ContentTranslation";
 import { ContentRelease } from "../ContentRelease";
 import { ObjectType, Field, Int, Float } from "type-graphql";
 
@@ -108,6 +109,9 @@ export class AutoFillBookEdition {
  */
 @ObjectType()
 export class AutoFillBookDetail {
+  @Field(() => [ContentTranslationText], { nullable: true })
+  translations?: ContentTranslationText[];
+
   @Field(() => String)
   sourceId!: string;
 
@@ -168,6 +172,9 @@ export class AutoFillBookDetail {
  */
 @ObjectType()
 export class AutoFillGameDetail {
+  @Field(() => [ContentTranslationText], { nullable: true })
+  translations?: ContentTranslationText[];
+
   @Field(() => Int)
   sourceId!: number;
 

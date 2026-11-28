@@ -187,6 +187,7 @@ export const GET_ACTIVITY_FEED = gql`
         contentType {
           id
           name
+          slug
         }
         consumeCount
         favoriteCount
@@ -212,6 +213,7 @@ export const GET_INCOMING_ACTIVITY_FEED = gql`
         contentType {
           id
           name
+          slug
         }
         consumeCount
         favoriteCount
@@ -238,6 +240,7 @@ export const GET_FRIENDS_ACTIVITY_FEED = gql`
         contentType {
           id
           name
+          slug
         }
       }
     }
@@ -310,6 +313,7 @@ export const GET_USER_WATCHED_CONTENT = gql`
       contentType {
         id
         name
+        slug
       }
       genres {
         id
@@ -342,6 +346,7 @@ export const GET_USER_FAVORITE_CONTENT = gql`
       contentType {
         id
         name
+        slug
       }
       genres {
         id
@@ -382,6 +387,7 @@ export const GET_USER_FEATURED_CONTENT = gql`
       contentType {
         id
         name
+        slug
       }
     }
   }

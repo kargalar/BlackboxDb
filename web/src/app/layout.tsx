@@ -15,38 +15,42 @@ import { LoginRequiredProvider } from '@/components/atoms/LoginRequiredDialog';
 import { GlobalSettingsProvider } from '@/contexts/GlobalSettingsContext';
 import PageTitleSync from '@/components/atoms/PageTitleSync';
 import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getMessages } from 'next-intl/server';
+import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import { SITE_URL } from '@/lib/site-url';
+import { isRightToLeft } from '@/i18n/locales';
 
 const inter = Inter({ subsets: ['latin'] });
 const enableVercelTelemetry = process.env.NEXT_PUBLIC_ENABLE_VERCEL_TELEMETRY === 'true';
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: 'Blackbox',
-    template: '%s | Blackbox',
-  },
-  description: 'Discover, track, and discuss movies, shows, games, and books.',
-  openGraph: {
-    type: 'website',
-    siteName: 'Blackbox',
-    title: 'Blackbox',
-    description: 'Discover, track, and discuss movies, shows, games, and books.',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Blackbox',
-    description: 'Discover, track, and discuss movies, shows, games, and books.',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('Site');
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: 'Blackbox',
+      template: '%s | Blackbox',
+    },
+    description: t('description'),
+    openGraph: {
+      type: 'website',
+      siteName: 'Blackbox',
+      title: 'Blackbox',
+      description: t('description'),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Blackbox',
+      description: t('description'),
+    },
+  };
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const messages = await getMessages();
   const locale = await getLocale();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} dir={isRightToLeft(locale) ? 'rtl' : 'ltr'} suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen antialiased bg-black text-white`}>
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>

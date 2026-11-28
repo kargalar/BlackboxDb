@@ -197,6 +197,7 @@ export const TAB_GROUPS: Record<string, string[]> = {
     'title',
     'originalTitle',
     'alternativeTitles',
+    'translations',
     'description',
     'howToPlay',
     'minPlayers',

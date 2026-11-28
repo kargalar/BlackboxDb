@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useRef, useState } from 'react';
 import { useCsvImport } from './useCsvImport';
 import { CsvImportStatCard } from './CsvImportStatCard';
@@ -9,6 +11,7 @@ import { CsvImportStatCard } from './CsvImportStatCard';
  * Ayarlar sayfasındaki Games/Series CSV import UI bileşeni
  */
 export function CsvImportSection() {
+  const translateUi = useUiTranslations('Ui');
   const { state, importCsv, reset } = useCsvImport();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [contentType, setContentType] = useState<'game' | 'series'>('game');
@@ -21,7 +24,7 @@ export function CsvImportSection() {
     if (!file) return;
 
     if (!file.name.endsWith('.csv')) {
-      alert('Lütfen bir CSV dosyası seçin.');
+      alert(translateUi("lutfen_bir_csv_dosyasi_secin_7aeeb0b"));
       return;
     }
 
@@ -56,9 +59,9 @@ export function CsvImportSection() {
           </svg>
         </div>
         <div>
-          <h3 className="text-lg font-semibold">CSV Import</h3>
+          <h3 className="text-lg font-semibold">{translateUi("csv_import_a4b54e7")}</h3>
           <p className="text-white/40 text-sm">
-            Notion&apos;dan dışa aktardığın oyun veya dizi CSV dosyasını yükle
+            {translateUi("notion_apos_dan_disa_aktardigin_oyun_175cc32")}
           </p>
         </div>
       </div>
@@ -79,7 +82,7 @@ export function CsvImportSection() {
                   : 'bg-white/5 text-white/40 border border-white/10 hover:border-white/20'
               }`}
             >
-              🎮 Oyunlar
+              {translateUi("oyunlar_6ee34d6")}
             </button>
             <button
               type="button"
@@ -90,7 +93,7 @@ export function CsvImportSection() {
                   : 'bg-white/5 text-white/40 border border-white/10 hover:border-white/20'
               }`}
             >
-              📺 Diziler
+              {translateUi("diziler_1ca8da4")}
             </button>
           </div>
         )}
@@ -105,9 +108,9 @@ export function CsvImportSection() {
             />
           </svg>
           <p>
-            Notion&apos;dan CSV formatında dışa aktarın. {typeEmoji} {typeLabel} CSV dosyanız{' '}
-            {contentType === 'game' ? 'IGDB ile eşleştirilerek' : 'TMDB ile eşleştirilerek'}{' '}
-            içerikler otomatik oluşturulacak.
+            {translateUi("notion_apos_dan_csv_formatinda_disa_3c702bb") + " "} {typeEmoji} {typeLabel} {" " + translateUi("csv_dosyaniz_bc22be3")}{' '}
+            {contentType === 'game' ? translateUi("igdb_ile_eslestirilerek_5d0f1ff") : translateUi("tmdb_ile_eslestirilerek_3e13f33")}{' '}
+            {translateUi("icerikler_otomatik_olusturulacak_afc6a57")}
           </p>
         </div>
 
@@ -130,7 +133,7 @@ export function CsvImportSection() {
               />
             </svg>
             <span className="font-medium">
-              {typeEmoji} {typeLabel} CSV Yükle
+              {typeEmoji} {typeLabel} {" " + translateUi("csv_yukle_bac3424")}
             </span>
             <input
               ref={fileInputRef}
@@ -155,8 +158,7 @@ export function CsvImportSection() {
               className="mt-0.5 accent-purple-500"
             />
             <span>
-              Import oncesi veritabani yedegini aldim ve once test mode ile kontrol edebilecegimi
-              biliyorum.
+              {translateUi("import_oncesi_veritabani_yedegini_aldim_ve_ca02922")}
             </span>
           </label>
         )}
@@ -187,7 +189,7 @@ export function CsvImportSection() {
               />
             </button>
             <span className={`text-sm ${testMode ? 'text-yellow-400' : 'text-white/40'}`}>
-              Test Mode
+              {translateUi("test_mode_e9ef2fa")}
             </span>
             {testMode && (
               <div className="flex items-center gap-2">
@@ -243,19 +245,18 @@ export function CsvImportSection() {
                   d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z"
                 />
               </svg>
-              <span className="font-semibold">Import sıraya alındı</span>
+              <span className="font-semibold">{translateUi("import_siraya_alindi_0fb55f3")}</span>
             </div>
 
             <p className="text-white/60 text-sm">
-              İşleminiz kısa süre içerisinde tamamlanacak. İçerikler arka planda sırayla içe
-              aktarılıyor.
+              {translateUi("isleminiz_kisa_sure_icerisinde_tamamlanacak_icerikler_b90b2d1")}
             </p>
 
             <button
               onClick={reset}
               className="text-sm text-white/40 hover:text-white/60 transition-colors underline"
             >
-              Yeni import yap
+              {translateUi("yeni_import_yap_1534228")}
             </button>
           </div>
         )}
@@ -277,7 +278,7 @@ export function CsvImportSection() {
                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span className="font-semibold">Import Tamamlandı!</span>
+              <span className="font-semibold">{translateUi("import_tamamlandi_4cbfee1")}</span>
             </div>
 
             {state.result.message && (
@@ -287,19 +288,19 @@ export function CsvImportSection() {
             {/* Stats grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <CsvImportStatCard
-                label={`Eşleşen ${typeLabel}`}
+                label={translateUi("eslesen_value1_0f881f3", { value1: String(typeLabel) })}
                 value={state.result.matchedItems}
                 total={state.result.totalItems}
               />
-              <CsvImportStatCard label="Log" value={state.result.logsCreated} color="blue" />
-              <CsvImportStatCard label="Puan" value={state.result.ratingsImported} color="yellow" />
+              <CsvImportStatCard label={translateUi("log_8bf95ea")} value={state.result.logsCreated} color="blue" />
+              <CsvImportStatCard label={translateUi("puan_cb061dd")} value={state.result.ratingsImported} color="yellow" />
             </div>
 
             {/* Unmatched items */}
             {state.result.unmatchedItems.length > 0 && (
               <details className="group">
                 <summary className="cursor-pointer text-white/40 text-sm hover:text-white/60 transition-colors">
-                  ⚠️ {state.result.unmatchedItems.length} {typeLabel.toLowerCase()} eşleştirilemedi
+                  ⚠️ {state.result.unmatchedItems.length} {typeLabel.toLowerCase()} {" " + translateUi("eslestirilemedi_881cf48")}
                 </summary>
                 <div className="mt-2 max-h-40 overflow-y-auto text-white/30 text-xs space-y-1 pl-6">
                   {state.result.unmatchedItems.map((item, i) => (
@@ -313,7 +314,7 @@ export function CsvImportSection() {
             {state.result.errors.length > 0 && (
               <details className="group">
                 <summary className="cursor-pointer text-red-400/60 text-sm hover:text-red-400/80 transition-colors">
-                  ❌ {state.result.errors.length} hata oluştu
+                  ❌ {state.result.errors.length} {" " + translateUi("hata_olustu_e98fb10")}
                 </summary>
                 <div className="mt-2 max-h-40 overflow-y-auto text-red-400/40 text-xs space-y-1 pl-6">
                   {state.result.errors.map((err, i) => (
@@ -327,7 +328,7 @@ export function CsvImportSection() {
               onClick={reset}
               className="text-sm text-white/40 hover:text-white/60 transition-colors underline"
             >
-              Yeni import yap
+              {translateUi("yeni_import_yap_1534228")}
             </button>
           </div>
         )}
@@ -349,14 +350,14 @@ export function CsvImportSection() {
                   d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span className="font-semibold">Import Başarısız</span>
+              <span className="font-semibold">{translateUi("import_basarisiz_610bd6f")}</span>
             </div>
             <p className="text-red-400/60 text-sm">{state.error}</p>
             <button
               onClick={reset}
               className="text-sm text-white/40 hover:text-white/60 transition-colors underline"
             >
-              Tekrar dene
+              {translateUi("tekrar_dene_555367e")}
             </button>
           </div>
         )}

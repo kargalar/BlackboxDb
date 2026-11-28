@@ -105,6 +105,7 @@ const genreOps = createCrudOperations<any, { name: string; contentTypeId?: numbe
     update: 'updateGenre',
     delete: 'deleteGenre',
   },
+  listVarsFn: (limit) => ({ limit: limit || 100, localized: false }),
 });
 export const listGenres = genreOps.list;
 export const createGenre = genreOps.create;
@@ -150,6 +151,7 @@ const gameModeOps = createCrudOperations<GameModeType, GameModeInput>({
     update: 'updateGameMode',
     delete: 'deleteGameMode',
   },
+  listVarsFn: (limit) => ({ limit: limit || 100, localized: false }),
 });
 export const listGameModes = gameModeOps.list;
 export const createGameMode = gameModeOps.create;
@@ -194,6 +196,7 @@ const perspectiveOps = createCrudOperations<PerspectiveType, PerspectiveInput>({
     update: 'updatePerspective',
     delete: 'deletePerspective',
   },
+  listVarsFn: (limit) => ({ limit: limit || 100, localized: false }),
 });
 export const listPerspectives = perspectiveOps.list;
 export const createPerspective = perspectiveOps.create;
@@ -233,6 +236,7 @@ const themeOps = createCrudOperations<ThemeType, ThemeInput>({
     update: 'updateTheme',
     delete: 'deleteTheme',
   },
+  listVarsFn: (limit) => ({ limit: limit || 100, localized: false }),
 });
 export const listThemes = themeOps.list;
 export const createTheme = themeOps.create;
@@ -245,6 +249,7 @@ const moodOps = createCrudOperations<MoodType, MoodInput>({
   emoji: '😊',
   queries: { list: LIST_MOODS, create: CREATE_MOOD, update: UPDATE_MOOD, delete: DELETE_MOOD },
   dataKeys: { list: 'listMoods', create: 'createMood', update: 'updateMood', delete: 'deleteMood' },
+  listVarsFn: (limit) => ({ limit: limit || 100, localized: false }),
 });
 export const listMoods = moodOps.list;
 export const createMood = moodOps.create;
@@ -290,6 +295,7 @@ const personRoleOps = createCrudOperations<PersonRole, PersonRoleInput>({
     delete: 'deletePersonRole',
   },
   nameKey: 'label',
+  listVarsFn: (limit) => ({ limit: limit || 100, localized: false }),
 });
 export const listPersonRoles = personRoleOps.list;
 export const createPersonRole = personRoleOps.create;
@@ -334,6 +340,7 @@ const companyRoleOps = createCrudOperations<CompanyRoleType, CompanyRoleInput>({
     update: 'updateCompanyRole',
     delete: 'deleteCompanyRole',
   },
+  listVarsFn: (limit) => ({ limit: limit || 100, localized: false }),
 });
 export const listCompanyRoles = companyRoleOps.list;
 export const createCompanyRole = companyRoleOps.create;

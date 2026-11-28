@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 /**
  * SeasonsBuilder - Inline season & episode builder for the TV content form.
  * Extracted from the standalone /add-content/seasons page to be used as a tab.
@@ -33,6 +35,7 @@ interface SeasonsBuilderProps {
 }
 
 export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
+  const translateUi = useUiTranslations('Ui');
   const [requestedSeasonIndex, setSelectedSeasonIndex] = useState<number>(0);
   const seasons = (formData.seasons || []) as TvSeason[];
   const activeSeasonIndex = Math.min(requestedSeasonIndex, Math.max(0, seasons.length - 1));
@@ -51,7 +54,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
 
   const removeSeason = (index: number) => {
     const confirmed = confirm(
-      'Bu sezonu ve içindeki tüm bölümleri silmek istediğinize emin misiniz?'
+      translateUi("bu_sezonu_ve_icindeki_tum_bolumleri_5f26fb1")
     );
     if (!confirmed) return;
 
@@ -79,7 +82,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
   };
 
   const removeEpisode = (seasonIndex: number, episodeIndex: number) => {
-    if (!confirm('Bu bölümü silmek istediğinize emin misiniz?')) return;
+    if (!confirm(translateUi("bu_bolumu_silmek_istediginize_emin_misiniz_a686937"))) return;
 
     const newSeasons = [...seasons];
     newSeasons[seasonIndex].episodes = newSeasons[seasonIndex].episodes.filter(
@@ -110,12 +113,12 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
       {/* Left: Season Navigator */}
       <aside className="w-full md:w-64 border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-surface-panel/50 rounded-2xl flex flex-col flex-shrink-0 overflow-hidden">
         <div className="p-4 border-b border-gray-100 dark:border-gray-800/50 flex items-center justify-between">
-          <h3 className="font-semibold text-sm text-gray-800 dark:text-gray-200">Sezonlar</h3>
+          <h3 className="font-semibold text-sm text-gray-800 dark:text-gray-200">{translateUi("sezonlar_5f8f662")}</h3>
           <button
             type="button"
             onClick={addSeason}
             className="p-1.5 bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 rounded-lg hover:bg-violet-200 dark:hover:bg-violet-800/60 transition-colors"
-            title="Yeni sezon ekle"
+            title={translateUi("yeni_sezon_ekle_c33202d")}
           >
             <Plus size={16} />
           </button>
@@ -138,13 +141,13 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
                 <div
                   className={`font-semibold ${isActive ? 'text-violet-700 dark:text-violet-300' : 'text-gray-800 dark:text-gray-200'}`}
                 >
-                  {season.name || `Sezon ${season.seasonNumber}`}
+                  {season.name || translateUi("sezon_value1_eb6e0b8", { value1: String(season.seasonNumber) })}
                 </div>
                 <div
                   className={`text-xs mt-1 flex items-center gap-1.5 ${isActive ? 'text-violet-600/70 dark:text-violet-400/70' : 'text-gray-500'}`}
                 >
                   <Film size={11} />
-                  <span>{season.episodes?.length || 0} Bölüm</span>
+                  <span>{season.episodes?.length || 0} {" " + translateUi("bolum_015dec5")}</span>
                 </div>
               </button>
             );
@@ -155,7 +158,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
               <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-gray-400">
                 <Film size={20} />
               </div>
-              <p className="text-xs text-gray-500">Henüz sezon eklenmedi</p>
+              <p className="text-xs text-gray-500">{translateUi("henuz_sezon_eklenmedi_cb0947c")}</p>
             </div>
           )}
         </div>
@@ -172,7 +175,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
                   {selectedSeason.seasonNumber}
                 </span>
                 <h3 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
-                  Sezon Ayarları
+                  {translateUi("sezon_ayarlari_102040e")}
                 </h3>
               </div>
               <button
@@ -181,7 +184,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors font-medium"
               >
                 <Trash2 size={14} />
-                Sezonu Sil
+                {translateUi("sezonu_sil_0cc670b")}
               </button>
             </div>
 
@@ -192,21 +195,21 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
                 <div className="flex-1 space-y-4">
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">
-                      Sezon Adı
+                      {translateUi("sezon_adi_79391a6")}
                     </label>
                     <input
                       type="text"
                       value={selectedSeason.name}
                       onChange={(e) => updateSeason(activeSeasonIndex, 'name', e.target.value)}
                       className="w-full px-4 py-2.5 bg-gray-50 dark:bg-surface-panel border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-gray-900 dark:text-white font-medium text-sm transition-all"
-                      placeholder="Örn: 1. Sezon"
+                      placeholder={translateUi("orn_1_sezon_c9b8f3a")}
                     />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">
-                        Yayın Tarihi
+                        {translateUi("yayin_tarihi_600b05a")}
                       </label>
                       <div className="relative">
                         <input
@@ -224,14 +227,14 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
 
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">
-                      Açıklama (Özet)
+                      {translateUi("aciklama_ozet_2170f00")}
                     </label>
                     <textarea
                       rows={4}
                       value={selectedSeason.overview || ''}
                       onChange={(e) => updateSeason(activeSeasonIndex, 'overview', e.target.value)}
                       className="w-full px-4 py-2.5 bg-gray-50 dark:bg-surface-panel border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-2 focus:ring-violet-500 text-sm text-gray-900 dark:text-white transition-all resize-y"
-                      placeholder="Bu sezon ne hakkında?..."
+                      placeholder={translateUi("bu_sezon_ne_hakkinda_f5a79e7")}
                     />
                   </div>
                 </div>
@@ -239,13 +242,13 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
                 {/* Right: Poster */}
                 <div className="w-full md:w-48 shrink-0">
                   <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1 text-center md:text-left">
-                    Kapak Görseli
+                    {translateUi("kapak_gorseli_032958c")}
                   </label>
                   <ImageUploadField
                     name={`season-poster-${activeSeasonIndex}`}
                     value={selectedSeason.posterUrl || ''}
                     onChange={(url) => updateSeason(activeSeasonIndex, 'posterUrl', url)}
-                    label={selectedSeason.posterUrl ? 'Görseli Değiştir' : 'Görsel Yükle'}
+                    label={selectedSeason.posterUrl ? translateUi("gorseli_degistir_2d3ec19") : translateUi("gorsel_yukle_da34d9b")}
                     imageType="poster"
                   />
                 </div>
@@ -256,7 +259,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
             <div className="pt-4">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-base font-bold tracking-tight flex items-center gap-2 text-gray-900 dark:text-white">
-                  Bölümler
+                  {translateUi("bolumler_8a55c43")}
                   <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
                     ({selectedSeason.episodes.length})
                   </span>
@@ -267,7 +270,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
                   className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-xl shadow-lg shadow-violet-600/20 transition-all flex items-center gap-2 text-sm"
                 >
                   <Plus size={16} />
-                  Yeni Bölüm
+                  {translateUi("yeni_bolum_daafd4f")}
                 </button>
               </div>
 
@@ -277,17 +280,17 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
                     <Plus size={20} />
                   </div>
                   <h4 className="text-sm font-bold mb-1 text-gray-900 dark:text-white">
-                    Henüz Bölüm Eklenmedi
+                    {translateUi("henuz_bolum_eklenmedi_7750c0d")}
                   </h4>
                   <p className="text-xs text-gray-500 max-w-sm mx-auto mb-4">
-                    Bu sezona ait bölümleri detaylarıyla eklemeye hemen başlayın.
+                    {translateUi("bu_sezona_ait_bolumleri_detaylariyla_eklemeye_4f2c8ce")}
                   </p>
                   <button
                     type="button"
                     onClick={() => addEpisodeToSeason(activeSeasonIndex)}
                     className="px-5 py-2 bg-white dark:bg-surface-hover border border-gray-200 dark:border-gray-700 hover:border-violet-500 text-gray-800 dark:text-gray-200 font-medium rounded-lg transition-all text-sm"
                   >
-                    İlk Bölümü Ekle
+                    {translateUi("ilk_bolumu_ekle_3bd8f7f")}
                   </button>
                 </div>
               ) : (
@@ -306,7 +309,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
                             onChange={(url) =>
                               updateEpisode(activeSeasonIndex, episodeIndex, 'stillUrl', url)
                             }
-                            label={episode.stillUrl ? 'Görseli Değiştir' : 'Bölüm Görseli'}
+                            label={episode.stillUrl ? translateUi("gorseli_degistir_2d3ec19") : translateUi("bolum_gorseli_14200b2")}
                             imageType="backdrop"
                           />
                         </div>
@@ -317,7 +320,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
                             <div className="flex-1 grid grid-cols-12 gap-2 items-start">
                               <div className="col-span-12 md:col-span-2">
                                 <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 ml-1">
-                                  No
+                                  {translateUi("no_816c52f")}
                                 </label>
                                 <input
                                   type="number"
@@ -335,7 +338,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
                               </div>
                               <div className="col-span-12 md:col-span-10">
                                 <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 ml-1">
-                                  Bölüm Adı
+                                  {translateUi("bolum_adi_9bfbaa3")}
                                 </label>
                                 <input
                                   type="text"
@@ -349,7 +352,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
                                     )
                                   }
                                   className="w-full px-3 py-1.5 bg-gray-50 dark:bg-surface-panel border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-violet-500 font-medium text-sm"
-                                  placeholder="Örn: Pilot"
+                                  placeholder={translateUi("orn_pilot_5085734")}
                                 />
                               </div>
                             </div>
@@ -357,7 +360,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
                               type="button"
                               onClick={() => removeEpisode(activeSeasonIndex, episodeIndex)}
                               className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors mt-4 md:mt-0"
-                              title="Bölümü Sil"
+                              title={translateUi("bolumu_sil_5f14c7c")}
                             >
                               <Trash2 size={15} />
                             </button>
@@ -366,7 +369,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div className="relative">
                               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 ml-1">
-                                Tarih
+                                {translateUi("tarih_6ddab1b")}
                               </label>
                               <input
                                 type="date"
@@ -388,7 +391,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
                             </div>
                             <div className="relative">
                               <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 ml-1">
-                                Süre (Dk)
+                                {translateUi("sure_dk_3d04d2c")}
                               </label>
                               <input
                                 type="number"
@@ -413,7 +416,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
 
                           <div>
                             <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1 ml-1">
-                              Özet / Açıklama
+                              {translateUi("ozet_aciklama_cc91de4")}
                             </label>
                             <textarea
                               rows={3}
@@ -427,7 +430,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
                                 )
                               }
                               className="w-full px-3 py-1.5 bg-gray-50 dark:bg-surface-panel border border-gray-200 dark:border-gray-800 rounded-lg text-xs resize-y focus:ring-2 focus:ring-violet-500 leading-relaxed text-gray-700 dark:text-gray-300"
-                              placeholder="Bu bölümde ne oldu?..."
+                              placeholder={translateUi("bu_bolumde_ne_oldu_4904517")}
                             />
                           </div>
                         </div>
@@ -445,7 +448,7 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
                     className="px-4 py-2 bg-white dark:bg-surface-raised border border-gray-200 dark:border-gray-700 hover:border-violet-500 text-gray-800 dark:text-gray-200 font-medium rounded-xl transition-all shadow-sm flex items-center gap-2 text-sm"
                   >
                     <Plus size={16} />
-                    Bölüm Ekle
+                    {translateUi("bolum_ekle_3e0745a")}
                   </button>
                 </div>
               )}
@@ -457,10 +460,10 @@ export function SeasonsBuilder({ formData, setFormData }: SeasonsBuilderProps) {
               <Film size={28} className="opacity-50" />
             </div>
             <p className="text-base font-medium text-gray-800 dark:text-gray-200 mb-1">
-              Seçili Sezon Yok
+              {translateUi("secili_sezon_yok_f5a3762")}
             </p>
             <p className="text-sm max-w-md">
-              Sol menüden bir sezon seçin veya yeni bir tane oluşturun.
+              {translateUi("sol_menuden_bir_sezon_secin_veya_33ef14a")}
             </p>
           </div>
         )}

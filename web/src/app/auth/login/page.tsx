@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -7,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from 'next-intl';
 import AuthShell from '../components/AuthShell';
 import GoogleIcon from '../components/GoogleIcon';
+import { authErrorMessage } from '../auth-errors';
 
 function LoginContent() {
   const t = useTranslations('Auth');
@@ -34,7 +37,7 @@ function LoginContent() {
   };
 
   const getErrorMessage = (error: unknown) =>
-    error instanceof Error ? error.message : t('login.errorDefault');
+    t(authErrorMessage(error, 'login.errorDefault'));
 
   const handleEmailSignIn = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -151,9 +154,10 @@ function LoginContent() {
 }
 
 export default function LoginPage() {
+  const translateUi = useUiTranslations('Ui');
   return (
     <Suspense
-      fallback={<div className="page-loading min-h-screen" role="status" aria-label="Loading" />}
+      fallback={<div className="page-loading min-h-screen" role="status" aria-label={translateUi("loading_8f26c65")} />}
     >
       <LoginContent />
     </Suspense>

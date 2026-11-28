@@ -1,5 +1,9 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
+import { ContentTranslationFields } from './ContentTranslationFields';
+
 import {
   useState,
   useRef,
@@ -88,6 +92,8 @@ export function CommonFields({
   onPendingPosterChange,
   onPendingBackdropChange,
 }: CommonFieldsProps) {
+  const translateUi = useUiTranslations('Ui');
+  const t = useUiTranslations('AddContent.translations');
   const isAutoFillEnabled =
     contentTypeId === 1 || contentTypeId === 2 || contentTypeId === 3 || contentTypeId === 4;
 
@@ -187,14 +193,14 @@ export function CommonFields({
           <div className="flex items-end gap-2">
             <div className="flex-1">
               <FormInput
-                label={contentTypeId === 4 ? 'Orijinal Başlık' : 'Başlık'}
+                label={t('defaultTitle')}
                 name="title"
                 value={formData.title}
                 onChange={(value) => {
                   isUserTypingRef.current = true;
                   setFormData({ ...formData, title: value });
                 }}
-                placeholder={contentTypeId === 4 ? 'Kitabin orijinal adi' : 'Film/Dizi/Oyun adı'}
+                placeholder={t('defaultTitleHint')}
                 required
                 error={errors.title}
               />
@@ -236,45 +242,48 @@ export function CommonFields({
           )}
         </div>
 
-        {contentTypeId !== 4 && (
-          <FormInput
-            label="Orijinal Başlık"
-            name="originalTitle"
-            value={formData.originalTitle || ''}
-            onChange={(value) => setFormData({ ...formData, originalTitle: value })}
-            placeholder="Orijinal dildeki başlık (ör: 君の名は。)"
-          />
-        )}
+        <FormInput
+          label={t('originalTitle')}
+          name="originalTitle"
+          value={formData.originalTitle || ''}
+          onChange={(value) => setFormData({ ...formData, originalTitle: value })}
+          placeholder={translateUi("orijinal_dildeki_baslik_or_83a9fb2")}
+        />
 
         <FormTextArea
-          label="Alternatif İsimler"
+          label={translateUi("alternatif_isimler_8ce55ec")}
           name="alternativeTitles"
           value={(formData.alternativeTitles || []).join('\n')}
           onChange={(value) =>
             setFormData({ ...formData, alternativeTitles: parseMultiValueText(value) })
           }
-          placeholder="Her satıra bir alternatif isim yazın"
+          placeholder={translateUi("her_satira_bir_alternatif_isim_yazin_7da2747")}
           rows={3}
         />
 
         <FormTextArea
-          label="Açıklama"
+          label={t('defaultDescription')}
           name="description"
           value={formData.description}
           onChange={(value) => setFormData({ ...formData, description: value })}
-          placeholder="İçerik hakkında detaylı açıklama..."
+          placeholder={translateUi("icerik_hakkinda_detayli_aciklama_c956d1d")}
           rows={4}
+        />
+
+        <ContentTranslationFields
+          translations={formData.translations ?? []}
+          onChange={(translations) => setFormData({ ...formData, translations })}
         />
 
         {contentTypeId !== 2 && (
           <FormInput
-            label={contentTypeId === 4 ? 'İlk / Orijinal Yayın Tarihi' : 'Yayın Tarihi'}
+            label={contentTypeId === 4 ? translateUi("ilk_orijinal_yayin_tarihi_397a001") : translateUi("yayin_tarihi_600b05a")}
             name="releaseDate"
             type="date"
             value={formData.releaseDate}
             onChange={(value) => setFormData({ ...formData, releaseDate: value })}
             placeholder={
-              contentTypeId === 4 ? 'Kitabın ilk yazıldığı / basıldığı tarih' : undefined
+              contentTypeId === 4 ? translateUi("kitabin_ilk_yazildigi_basildigi_tarih_61561e5") : undefined
             }
           />
         )}
@@ -283,14 +292,14 @@ export function CommonFields({
         {contentTypeId === 2 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormInput
-              label="İlk Yayın Tarihi"
+              label={translateUi("ilk_yayin_tarihi_b63582f")}
               name="firstAirDate"
               type="date"
               value={formData.firstAirDate}
               onChange={(value) => setFormData({ ...formData, firstAirDate: value })}
             />
             <FormInput
-              label="Son Yayın Tarihi"
+              label={translateUi("son_yayin_tarihi_59a202d")}
               name="lastAirDate"
               type="date"
               value={formData.lastAirDate}
@@ -307,11 +316,11 @@ export function CommonFields({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Yaş Sınırı */}
             <CompactDropdownSelector
-              label="Yaş Sınırı"
+              label={translateUi("yas_siniri_ca82b58")}
               icon="🔞"
               value={formData.ageRating || null}
               onChange={(item) => setFormData({ ...formData, ageRating: item })}
-              placeholder="Seç"
+              placeholder={translateUi("sec_a958cab")}
               listQuery={LIST_AGE_RATINGS}
               createMutation={CREATE_AGE_RATING}
               queryKey="listAgeRatings"
@@ -320,25 +329,25 @@ export function CommonFields({
             />
 
             <CompactTagSelector
-              label="Ödüller"
+              label={translateUi("oduller_3bff399")}
               icon="🏆"
               value={normalizeToItems(formData.awards || [])}
               onChange={(items) =>
                 setFormData({ ...formData, awards: items.map((item) => item.name) })
               }
-              placeholder="Ödül adı girin ve enter'a basın..."
-              emptyMessage="Ödül eklenmedi"
+              placeholder={translateUi("odul_adi_girin_ve_enter_a_6d6655b")}
+              emptyMessage={translateUi("odul_eklenmedi_c8d7703")}
               badgeColor="purple"
               allowCreate={true}
             />
 
             {/* Franchise */}
             <CompactDropdownSelector
-              label="Franchise"
+              label={translateUi("franchise_4784bee")}
               icon="🎬"
               value={formData.franchise || null}
               onChange={(item) => setFormData({ ...formData, franchise: item })}
-              placeholder="Seç"
+              placeholder={translateUi("sec_a958cab")}
               fetchItems={fetchFranchises}
               createMutation={CREATE_SERIES}
               mutationKey="createSeries"
@@ -377,27 +386,27 @@ export function CommonFields({
         {/* Çoklu değerli etiket alanları */}
         <div className="space-y-3">
           <CompactTagSelector
-            label="Türler"
+            label={translateUi("turler_2ac9898")}
             icon="🎭"
             value={formData.genres || []}
             onChange={(items) => setFormData({ ...formData, genres: items })}
-            placeholder="Ara veya ekle..."
-            emptyMessage="Tür eklenmedi"
+            placeholder={translateUi("ara_veya_ekle_b91f9f0")}
+            emptyMessage={translateUi("tur_eklenmedi_997835e")}
             fetchItems={fetchGenres}
             badgeColor="blue"
             allowCreate={true}
           />
 
           <CompactTagSelector
-            label="Temalar"
+            label={translateUi("temalar_93f67c2")}
             icon="🎨"
             value={normalizeToItems(formData.themes || [])}
             onChange={(items) => {
               console.log('🎨 [CommonFields] Themes onChange:', items);
               setFormData({ ...formData, themes: items });
             }}
-            placeholder="Uzay, ortaçağ, vampir..."
-            emptyMessage="Tema eklenmedi"
+            placeholder={translateUi("uzay_ortacag_vampir_f9f4204")}
+            emptyMessage={translateUi("tema_eklenmedi_7c00128")}
             listQuery={LIST_THEMES}
             createMutation={CREATE_THEME}
             queryKey="listThemes"
@@ -407,15 +416,15 @@ export function CommonFields({
           />
 
           <CompactTagSelector
-            label="Ruh Halleri"
+            label={translateUi("ruh_halleri_0b98701")}
             icon="😊"
             value={normalizeToItems(formData.moods || [])}
             onChange={(items) => {
               console.log('😊 [CommonFields] Moods onChange:', items);
               setFormData({ ...formData, moods: items });
             }}
-            placeholder="Komik, melankolik, gerilimli..."
-            emptyMessage="Ruh hali eklenmedi"
+            placeholder={translateUi("komik_melankolik_gerilimli_0b4440a")}
+            emptyMessage={translateUi("ruh_hali_eklenmedi_772b202")}
             listQuery={LIST_MOODS}
             createMutation={CREATE_MOOD}
             queryKey="listMoods"
@@ -425,12 +434,12 @@ export function CommonFields({
           />
 
           <CompactTagSelector
-            label="Diller"
+            label={translateUi("diller_3c42b0c")}
             icon="🌐"
             value={formData.languages || []}
             onChange={(items) => setFormData({ ...formData, languages: items })}
-            placeholder="İngilizce, Türkçe..."
-            emptyMessage="Dil eklenmedi"
+            placeholder={translateUi("ingilizce_turkce_826f9fc")}
+            emptyMessage={translateUi("dil_eklenmedi_92518b7")}
             fetchItems={fetchLanguages}
             createMutation={CREATE_LANGUAGE}
             mutationKey="createLanguage"
@@ -446,15 +455,15 @@ export function CommonFields({
         <div className="md:col-span-2 mt-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-surface-panel p-4">
           <div className="mb-4">
             <h4 className="text-base font-semibold text-gray-900 dark:text-white">
-              Orijinal Yayın Bilgileri
+              {translateUi("orijinal_yayin_bilgileri_78361c8")}
             </h4>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Kitabın ilk çıktığı orijinal basımına ait temel bilgiler.
+              {translateUi("kitabin_ilk_ciktigi_orijinal_basimina_ait_c9eba03")}
             </p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-5">
             <ImageUploadField
-              label="Kapak Görseli"
+              label={translateUi("kapak_gorseli_032958c")}
               name="posterUrl"
               value={formData.posterUrl || ''}
               onChange={(url) => setFormData({ ...formData, posterUrl: url })}
@@ -474,7 +483,7 @@ export function CommonFields({
                   error={errors.isbn}
                 />
                 <FormInput
-                  label="Sayfa Sayısı"
+                  label={translateUi("sayfa_sayisi_92c8679")}
                   name="pageCount"
                   type="number"
                   value={formData.pageCount || ''}
@@ -483,7 +492,7 @@ export function CommonFields({
                   error={errors.pageCount}
                 />
                 <FormInput
-                  label="İlk Yayın Tarihi"
+                  label={translateUi("ilk_yayin_tarihi_b63582f")}
                   name="releaseDate"
                   type="date"
                   value={formData.releaseDate || ''}
@@ -493,7 +502,7 @@ export function CommonFields({
               </div>
 
               <CompactTagSelector
-                label="Yayınevi"
+                label={translateUi("yayinevi_442e7f5")}
                 icon="🏢"
                 value={formData.publisher ? [formData.publisher] : []}
                 onChange={(items) =>
@@ -504,7 +513,7 @@ export function CommonFields({
                       : null,
                   })
                 }
-                placeholder="Yayınevi ara..."
+                placeholder={translateUi("yayinevi_ara_afa12b7")}
                 listQuery={LIST_COMPANIES}
                 queryKey="listCompanies"
                 queryVariables={{ roleIds: [3] }}
@@ -532,6 +541,7 @@ interface AutoFillButtonProps {
 }
 
 function AutoFillButton({ autoFill, disabled, variant = 'primary' }: AutoFillButtonProps) {
+  const translateUi = useUiTranslations('Ui');
   const isLoading = autoFill.isSearching || autoFill.isFetchingDetails;
   const label = autoFill.sourceName || 'Auto Fill';
 
@@ -548,7 +558,7 @@ function AutoFillButton({ autoFill, disabled, variant = 'primary' }: AutoFillBut
       onClick={autoFill.onSearch}
       disabled={isLoading || disabled}
       className={`${baseClasses} ${colorClasses}`}
-      title={`${label}'den otomatik doldur`}
+      title={translateUi("value1_den_otomatik_doldur_cb7778f", { value1: String(label) })}
     >
       {isLoading ? (
         <svg

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useQuery } from '@apollo/client/react';
 import {
   GET_LISTS_CONTAINING_CONTENT,
@@ -16,6 +18,7 @@ interface ContentListsProps {
 }
 
 export default function ContentLists({ contentId, type }: ContentListsProps) {
+  const translateUi = useUiTranslations('Ui');
   const { data, loading, error } = useQuery<{ listsContainingContent: UserList[] }>(
     GET_LISTS_CONTAINING_CONTENT,
     {
@@ -56,9 +59,9 @@ export default function ContentLists({ contentId, type }: ContentListsProps) {
         <div>
           <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
             <List className="w-5 h-5 md:w-6 md:h-6 text-accent" />
-            Bu İçeriği Barındıran Listeler
+            {translateUi("bu_icerigi_barindiran_listeler_657fdaa")}
           </h2>
-          <p className="text-sm text-foreground/60 mt-1">Toplam {totalCount} adet liste bulundu</p>
+          <p className="text-sm text-foreground/60 mt-1">{translateUi("toplam_ae3a712") + " "} {totalCount} {" " + translateUi("adet_liste_bulundu_6457c1c")}</p>
         </div>
 
         {totalCount > 6 && (
@@ -66,7 +69,7 @@ export default function ContentLists({ contentId, type }: ContentListsProps) {
             href={`/content/${type}/${contentId}/lists`}
             className="mt-4 md:mt-0 px-4 py-2 bg-secondary text-secondary-foreground rounded-md text-sm font-medium hover:bg-secondary/80 transition-colors"
           >
-            Tümünü Gör
+            {translateUi("tumunu_gor_56eb0fa")}
           </Link>
         )}
       </div>

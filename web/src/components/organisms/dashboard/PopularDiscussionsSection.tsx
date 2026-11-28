@@ -1,12 +1,14 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { apolloClient } from '@/lib/apollo-client';
 import { gql } from '@apollo/client';
 import { ChevronUp, MessageSquare, Film, Tv, Gamepad2, BookOpen, Globe } from 'lucide-react';
-import { formatRelativeTime } from '@/lib/date-utils';
+import { useRelativeTime } from '@/i18n/use-relative-time';
 
 const GET_POPULAR_DISCUSSIONS = gql`
   query GetPopularDiscussions(
@@ -128,6 +130,7 @@ export default function PopularDiscussionsSection({
   preferredContentTypes?: number[];
   splitByContentType?: boolean;
 }) {
+  const translateUi = useUiTranslations('Ui');
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
   const [discussionsByType, setDiscussionsByType] = useState<Record<number, Discussion[]>>({});
   const [loading, setLoading] = useState(true);
@@ -240,8 +243,8 @@ export default function PopularDiscussionsSection({
       <section className="space-y-5">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold">🗣️ Popular Discussions</h2>
-            <p className="text-sm text-white/50">Most active discussions by content types</p>
+            <h2 className="text-xl font-bold">{translateUi("popular_discussions_cb65c06")}</h2>
+            <p className="text-sm text-white/50">{translateUi("most_active_discussions_by_content_types_d82de77")}</p>
           </div>
           <button
             onClick={() => setTimeRangeIndex((prev) => (prev + 1) % TIME_RANGES.length)}
@@ -266,11 +269,11 @@ export default function PopularDiscussionsSection({
                   href={`/discussions?contentType=${type.slug}` as any}
                   className="text-xs text-white/40 hover:text-white/70"
                 >
-                  See All
+                  {translateUi("see_all_8196e42")}
                 </Link>
               </div>
               {loading ? (
-                <div className="glass-card p-4 text-sm text-white/60">Loading discussions...</div>
+                <div className="glass-card p-4 text-sm text-white/60">{translateUi("loading_discussions_8b32b1c")}</div>
               ) : (
                 <div className="space-y-3">
                   {typeDiscussions.map((discussion) => (
@@ -292,8 +295,8 @@ export default function PopularDiscussionsSection({
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold">🗣️ Popular Discussions</h2>
-          <p className="text-sm text-white/50">Most active discussions</p>
+          <h2 className="text-xl font-bold">{translateUi("popular_discussions_cb65c06")}</h2>
+          <p className="text-sm text-white/50">{translateUi("most_active_discussions_282509b")}</p>
         </div>
         <div className="flex items-center gap-2">
           {availableFilters.map((f) => {
@@ -322,7 +325,7 @@ export default function PopularDiscussionsSection({
             {TIME_RANGES[timeRangeIndex].label}
           </button>
           <Link href="/discussions" className="btn-secondary text-sm px-4 py-2">
-            See All
+            {translateUi("see_all_8196e42")}
           </Link>
         </div>
       </div>
@@ -331,14 +334,14 @@ export default function PopularDiscussionsSection({
         <div className="glass-card p-6">
           <div className="flex items-center gap-3">
             <div className="w-5 h-5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-white/60">Loading discussions...</p>
+            <p className="text-white/60">{translateUi("loading_discussions_8b32b1c")}</p>
           </div>
         </div>
       ) : discussions.length === 0 ? (
         <div className="glass-card p-6 text-center text-white/50">
           {selectedFilter.id !== 0
-            ? `No discussions found in this content type.`
-            : `No discussions found in this time period.`}
+            ? translateUi("no_discussions_found_in_this_content_23a1f45")
+            : translateUi("no_discussions_found_in_this_time_fc48591")}
         </div>
       ) : (
         <div className="space-y-3">
@@ -352,6 +355,8 @@ export default function PopularDiscussionsSection({
 }
 
 function DiscussionCard({ discussion }: { discussion: Discussion }) {
+  const formatRelativeTime = useRelativeTime();
+  const translateUi = useUiTranslations('Ui');
   return (
     <Link
       href={`/discussion/${discussion.id}` as any}
@@ -384,7 +389,7 @@ function DiscussionCard({ discussion }: { discussion: Discussion }) {
           ) : (
             <span className="inline-flex items-center gap-1 text-xs text-emerald-400 mb-1.5">
               <Globe size={11} />
-              General
+              {translateUi("general_9239ee2")}
             </span>
           )}
 

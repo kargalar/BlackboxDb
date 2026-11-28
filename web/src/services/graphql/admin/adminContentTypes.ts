@@ -1,9 +1,11 @@
+import type { ContentTranslation } from '@/types/content-translation';
 import type { ContentRelease } from '@/lib/contentReleases';
 // ==========================================
 // CONTENT TYPESCRIPT TYPES
 // ==========================================
 
 export interface AdminContent {
+  translations?: ContentTranslation[];
   releases?: ContentRelease[] | null;
   id: string;
   title: string;
@@ -256,6 +258,7 @@ export interface ImageInput {
 }
 
 export interface CreateContentInput {
+  translations?: ContentTranslation[];
   releases?: ContentRelease[] | null;
   title: string;
   tmdbId?: number;

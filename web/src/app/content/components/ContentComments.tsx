@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -30,7 +32,7 @@ import {
 import { getCommentCountClass, getCommentCountWeight } from '@/lib/comment-count-utils';
 import { useMention, collectMentionedUserIds, type MentionUser } from '@/hooks/useMention';
 import MentionDropdown from '@/components/atoms/MentionDropdown';
-import { formatRelativeTime } from '@/lib/date-utils';
+import { useRelativeTime } from '@/i18n/use-relative-time';
 import ReportModal from '@/components/organisms/ReportModal';
 import { useTranslations } from 'next-intl';
 
@@ -224,6 +226,8 @@ export default function ContentComments({
   onSwitchTab,
   discussionsCount = 0,
 }: ContentCommentsProps) {
+  const formatRelativeTime = useRelativeTime();
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('ContentComments');
   const { user } = useAuth();
   const { showLoginDialog } = useLoginRequired();
@@ -608,11 +612,11 @@ export default function ContentComments({
       <div className="content-review-header p-4 sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-white">Reviews &amp; discussions</h2>
+            <h2 className="text-xl font-semibold text-white">{translateUi("reviews_amp_discussions_abd61b9")}</h2>
           </div>
           <div className="content-review-counts">
-            <span>{comments.length} reviews</span>
-            <span>{discussionsCount} discussions</span>
+            <span>{comments.length} {" " + translateUi("reviews_7b2c6e0")}</span>
+            <span>{discussionsCount} {" " + translateUi("discussions_d2a287d")}</span>
           </div>
         </div>
 
@@ -1124,7 +1128,7 @@ export default function ContentComments({
                       onClick={(event) => event.stopPropagation()}
                       className="text-sm text-white/40 hover:text-white/80 transition-colors"
                     >
-                      Discussion
+                      {translateUi("discussion_8fb937b")}
                     </Link>
                     {comment.isSpoiler && <SpoilerBadge />}
                   </div>

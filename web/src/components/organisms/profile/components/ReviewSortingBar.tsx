@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { ArrowDown, ArrowUp, Calendar, Star } from 'lucide-react';
 
 export type ReviewSortField = 'date' | 'score';
@@ -21,6 +23,7 @@ export default function ReviewSortingBar({
   currentOrder,
   onSortChange,
 }: ReviewSortingBarProps) {
+  const translateUi = useUiTranslations('Ui');
   const handleSortClick = (sortBy: ReviewSortField) => {
     if (currentSort === sortBy) {
       let nextOrder: ReviewSortOrder;
@@ -66,7 +69,7 @@ export default function ReviewSortingBar({
                 : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white'
             }`}
             aria-pressed={isActive}
-            title={`${option.label} - Çoktan aza → Azdan çoka → Kapalı`}
+            title={translateUi("value1_coktan_aza_azdan_coka_kapali_ef67ea0", { value1: String(option.label) })}
           >
             <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-white/40'}`} />
             <span>{option.label}</span>

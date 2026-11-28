@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -10,6 +11,7 @@ interface CompanyCardProps {
 }
 
 export const CompanyCard: React.FC<CompanyCardProps> = ({ company }) => {
+  const translateUi = useUiTranslations('Ui');
   return (
     <Link href={`/company/${company.id}` as Route} className="group block">
       <div className="glass-card overflow-hidden h-full flex flex-col hover:scale-[1.02] transition-all duration-300 bg-gray-900 border border-gray-800">
@@ -39,14 +41,14 @@ export const CompanyCard: React.FC<CompanyCardProps> = ({ company }) => {
               <p className="text-xs text-gray-400 line-clamp-1">📍 {company.headquarters}</p>
             )}
             {company.foundingYear && (
-              <p className="text-xs text-gray-500">Kurluş: {company.foundingYear}</p>
+              <p className="text-xs text-gray-500">{translateUi("kurlus_c1af42a") + " "} {company.foundingYear}</p>
             )}
           </div>
         </div>
 
         <div className="bg-white/5 py-2 px-4 text-center border-t border-white/5">
           <span className="text-xs font-medium text-indigo-400">
-            {company.contentCount || 0} İçerik
+            {company.contentCount || 0} {" " + translateUi("content_4f9be05")}
           </span>
         </div>
       </div>

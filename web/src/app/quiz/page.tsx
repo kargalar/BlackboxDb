@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { gql } from '@apollo/client';
@@ -121,6 +123,7 @@ const CONTENT_TYPES = [
 ];
 
 export default function QuizPage() {
+  const translateUi = useUiTranslations('Ui');
   const router = useRouter();
   const { user } = useAuth();
   const t = useTranslations('Quiz');
@@ -375,7 +378,7 @@ export default function QuizPage() {
                     <div className="flex gap-3 text-xs text-white/40 mt-1">
                       <span className="flex items-center gap-1">
                         <Target className="w-3 h-3" />
-                        {myEntry.totalQuizzes} quiz
+                        {myEntry.totalQuizzes} {" " + translateUi("quiz_d501d3e")}
                       </span>
                       <span className="flex items-center gap-1">
                         <Percent className="w-3 h-3" />
@@ -446,7 +449,7 @@ export default function QuizPage() {
                           {entry.username}
                         </div>
                         <div className="text-sm text-white/40">
-                          {entry.totalQuizzes} quiz • %
+                          {entry.totalQuizzes} {" " + translateUi("quiz_e08e5db")}
                           {Math.round((entry.correctAnswers / entry.totalQuestions) * 100)}{' '}
                           {t('leaderboard.correct')}
                         </div>

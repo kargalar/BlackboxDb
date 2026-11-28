@@ -147,12 +147,12 @@ body {
 
 .sidebar {
   position: fixed;
-  left: 0;
+  inset-inline-start: 0;
   top: 0;
   height: 100vh;
   width: var(--sidebar-width);
   background: linear-gradient(180deg, #0a0a0a 0%, #111111 100%);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  border-inline-end: 1px solid rgba(255, 255, 255, 0.06);
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -162,14 +162,16 @@ body {
 }
 
 .sidebar.sidebar-collapsed {
-  transform: translateX(-100%);
+  transform: translateX(var(--sidebar-hidden-offset, -100%));
 }
+
+[dir='rtl'] { --sidebar-hidden-offset: 100%; }
 
 .sidebar.sidebar-collapsed::after {
   content: '';
   position: absolute;
   top: 0;
-  right: -20px;
+  inset-inline-end: -20px;
   width: 20px;
   height: 100%;
   z-index: 60;
@@ -269,23 +271,23 @@ body {
 
 /* Main content area with sidebar */
 .main-with-sidebar {
-  margin-left: var(--sidebar-width);
+  margin-inline-start: var(--sidebar-width);
   width: calc(100% - var(--sidebar-width));
   min-height: 100vh;
   transition:
-    margin-left 0.3s ease,
+    margin-inline-start 0.3s ease,
     width 0.3s ease;
 }
 
 .main-with-sidebar.sidebar-collapsed {
-  margin-left: 0;
+  margin-inline-start: 0;
   width: 100%;
 }
 
 /* Mobile: Hide sidebar, show bottom nav */
 @media (max-width: 1024px) {
   .sidebar {
-    transform: translateX(-100%);
+    transform: translateX(var(--sidebar-hidden-offset, -100%));
   }
 
   .sidebar.mobile-open {
@@ -294,7 +296,7 @@ body {
   }
 
   .main-with-sidebar {
-    margin-left: 0;
+    margin-inline-start: 0;
     width: 100%;
   }
 
@@ -1229,7 +1231,7 @@ body {
 
 .main-fullscreen {
   width: 100%;
-  margin-left: 0;
+  margin-inline-start: 0;
 }
 
 .sidebar {

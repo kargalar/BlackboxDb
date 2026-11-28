@@ -12,7 +12,7 @@ import { getCommentCountClass, getCommentCountWeight } from '@/lib/comment-count
 import { useMention, type MentionUser } from '@/hooks/useMention';
 import MentionDropdown from '@/components/atoms/MentionDropdown';
 import MentionText from '@/components/atoms/MentionText';
-import { formatRelativeTime } from '@/lib/date-utils';
+import { useRelativeTime } from '@/i18n/use-relative-time';
 import { useTranslations } from 'next-intl';
 
 // GraphQL Queries
@@ -102,6 +102,7 @@ export default function ContentDiscussions({
   onSwitchTab,
   commentsCount = 0,
 }: ContentDiscussionsProps) {
+  const formatRelativeTime = useRelativeTime();
   const t = useTranslations('ContentDiscussions');
   const { user } = useAuth();
   const { showLoginDialog } = useLoginRequired();

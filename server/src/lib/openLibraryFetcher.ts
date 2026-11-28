@@ -1,3 +1,4 @@
+import { bookTitleTranslations } from "./bookTranslations";
 import { logger } from "./logger";
 
 /**
@@ -98,6 +99,7 @@ interface OLAuthorResponse {
 interface OLEditionResponse {
   key: string;
   title: string;
+  description?: string | { type: string; value: string };
   isbn_13?: string[];
   isbn_10?: string[];
   publishers?: string[];
@@ -141,6 +143,7 @@ export interface FetcherBookEdition {
 }
 
 export interface BookDetailData {
+  translations?: ReturnType<typeof bookTitleTranslations>;
   publishedDate?: string;
   sourceId: string;
   title: string;
@@ -305,7 +308,7 @@ export async function fetchOpenLibraryDetails(
     const work = (await workResponse.json()) as OLWorkResponse;
 
     // 2. Editions'ı çek (ilk birkaç basım — ISBN, publisher, sayfa vb.)
-    const editionsUrl = `${OL_BASE}/works/${workKey}/editions.json?limit=10`;
+    const editionsUrl = `${OL_BASE}/works/${workKey}/editions.json?limit=100`;
     logger.debug(`[OpenLibraryFetcher] Fetching editions: ${editionsUrl}`);
 
     let isbn: string | undefined;
@@ -317,6 +320,7 @@ export async function fetchOpenLibraryDetails(
     let publishDate: string | undefined;
 
     const allEditions: FetcherBookEdition[] = [];
+    let translations: ReturnType<typeof bookTitleTranslations> = [];
 
     try {
       const editionsResponse = await olFetch(editionsUrl);
@@ -325,9 +329,16 @@ export async function fetchOpenLibraryDetails(
           entries: OLEditionResponse[];
         };
         const editions = editionsData.entries || [];
+        translations = bookTitleTranslations(editions.flatMap((edition) =>
+          (edition.languages ?? []).map((language) => ({
+            title: edition.title,
+            language: extractLanguageCode(language.key),
+            description: normalizeDescription(edition.description),
+          })),
+        ));
 
         // İlk edition'dan genel bilgileri çek ve edition'ları listeye ekle
-        for (const [index, ed] of editions.entries()) {
+        for (const [index, ed] of editions.slice(0, 10).entries()) {
           const edIsbn13 = ed.isbn_13?.length ? ed.isbn_13[0] : undefined;
           const edIsbn10 = ed.isbn_10?.length ? ed.isbn_10[0] : undefined;
           const edPublisher = ed.publishers?.length ? ed.publishers[0] : undefined;
@@ -423,6 +434,7 @@ export async function fetchOpenLibraryDetails(
     }
 
     const detail: BookDetailData = {
+      translations,
       publishedDate: work.first_publish_date || publishDate,
       sourceId: workKey,
       title: work.title,

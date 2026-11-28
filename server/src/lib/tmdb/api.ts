@@ -24,6 +24,7 @@ import {
 import { logger } from '../logger';
 import { normalizeContentReleases } from '../contentReleases';
 import { normalizeThemeName } from '../themeNormalizer';
+import { mapTmdbTranslations, type TmdbTranslationsResponse } from './translations';
 import {
   tmdbFetch,
   mergeCrewByPerson,
@@ -64,6 +65,7 @@ export async function searchTmdb(
   type: string,
   year?: number,
   page = 1,
+  language = "en-US",
 ): Promise<TmdbSearchItem[]> {
   logger.info(
     `[TmdbFetcher] Searching TMDB: query="${query}", type="${type}", page=${page}${year ? `, year=${year}` : ""}`,
@@ -73,7 +75,7 @@ export async function searchTmdb(
   const params = new URLSearchParams({
     query,
     include_adult: "false",
-    language: "en-US",
+    language,
     page: String(Math.max(1, page)),
   });
 
@@ -214,8 +216,8 @@ export async function fetchTmdbMovieDetails(
   logger.info(`[TmdbFetcher] Fetching movie details for tmdbId=${tmdbId}`);
 
   try {
-    const data = await tmdbFetch<TmdbRawMovieDetail>(
-      `/movie/${tmdbId}?append_to_response=credits,videos,keywords,release_dates&language=en-US`,
+    const data = await tmdbFetch<TmdbRawMovieDetail & { translations?: TmdbTranslationsResponse }>(
+      `/movie/${tmdbId}?append_to_response=credits,videos,keywords,release_dates,translations&language=en-US`,
     );
 
     const topCast = (data.credits?.cast || []);
@@ -236,6 +238,10 @@ export async function fetchTmdbMovieDetails(
       tmdbId: data.id,
       title: data.title,
       originalTitle: data.original_title,
+      translations: mapTmdbTranslations(data.translations, {
+        language: data.original_language,
+        title: data.original_title,
+      }),
       overview: data.overview,
       releaseDate: data.release_date,
       releases: mapTmdbMovieReleases(data.release_dates),
@@ -432,8 +438,8 @@ export async function fetchTmdbTvDetails(
   logger.info(`[TmdbFetcher] Fetching TV details for tmdbId=${tmdbId}`);
 
   try {
-    const data = await tmdbFetch<TmdbRawTvDetail>(
-      `/tv/${tmdbId}?append_to_response=videos,keywords,content_ratings&language=en-US`,
+    const data = await tmdbFetch<TmdbRawTvDetail & { translations?: TmdbTranslationsResponse }>(
+      `/tv/${tmdbId}?append_to_response=videos,keywords,content_ratings,translations&language=en-US`,
     );
 
     // Aggregate credits endpoint returns complete cast/crew across all episodes
@@ -535,6 +541,10 @@ export async function fetchTmdbTvDetails(
       tmdbId: data.id,
       title: data.name,
       originalTitle: data.original_name,
+      translations: mapTmdbTranslations(data.translations, {
+        language: data.original_language,
+        title: data.original_name,
+      }),
       overview: data.overview,
       releaseDate: data.first_air_date,
       releases: data.first_air_date ? normalizeContentReleases([{ date: data.first_air_date }]) : [],

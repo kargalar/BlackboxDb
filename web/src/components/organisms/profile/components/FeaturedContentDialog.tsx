@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import Image from 'next/image';
 import type { Content } from '@/types/content';
 import type { FeaturedType } from '../HomeTabTypes';
@@ -44,6 +45,7 @@ export default function FeaturedContentDialog({
   handleDragEnd,
   handleDrop,
 }: FeaturedContentDialogProps) {
+  const translateUi = useUiTranslations('Ui');
   console.log(
     `✏️ [FeaturedContentDialog] Open — type=${featuredType}, selected=${selectedContentIds.length}, filtered=${filteredContent.length}`
   );
@@ -56,7 +58,7 @@ export default function FeaturedContentDialog({
         {/* Header */}
         <div className="p-6 border-b border-gray-700">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">Öne Çıkarılan İçerikleri Düzenle</h2>
+            <h2 className="text-xl font-bold">{translateUi("one_cikarilan_icerikleri_duzenle_944eaa7")}</h2>
             <button
               onClick={onClose}
               className="p-2 text-gray-400 hover:text-white rounded-lg transition-colors"
@@ -100,7 +102,7 @@ export default function FeaturedContentDialog({
           <div className="mt-4">
             <input
               type="text"
-              placeholder="İçerik ara..."
+              placeholder={translateUi("icerik_ara_52c83be")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
@@ -108,14 +110,14 @@ export default function FeaturedContentDialog({
           </div>
 
           <p className="text-sm text-gray-400 mt-2">
-            Seçili: {selectedContentIds.length}/5 (Tükettiğiniz içeriklerden en fazla 5 tane
+            {translateUi("secili_f684e9a") + " "} {selectedContentIds.length}/5 (Tükettiğiniz içeriklerden en fazla 5 tane
             seçebilirsiniz)
           </p>
 
           {/* Selected Content Reorder Section */}
           {selectedContentIds.length > 0 && (
             <div className="mt-4">
-              <p className="text-xs text-gray-500 mb-2">Sıralamayı değiştirmek için sürükleyin:</p>
+              <p className="text-xs text-gray-500 mb-2">{translateUi("siralamayi_degistirmek_icin_surukleyin_1c1e31d")}</p>
               <div className="flex gap-2 flex-wrap">
                 {getSelectedContentItems().map((content: any, index: number) => {
                   const contentId = content.id.toString();
@@ -178,9 +180,9 @@ export default function FeaturedContentDialog({
         <div className="flex-1 overflow-y-auto p-6">
           {filteredContent.length === 0 ? (
             <div className="text-center text-gray-400 py-8">
-              <p>Tükettiğiniz içerik bulunamadı.</p>
+              <p>{translateUi("tukettiginiz_icerik_bulunamadi_c80ca66")}</p>
               <p className="text-sm mt-2">
-                Önce içerik izleyin/okuyun/oynayın, sonra öne çıkarabilirsiniz.
+                {translateUi("once_icerik_izleyin_okuyun_oynayin_sonra_e9abfb1")}
               </p>
             </div>
           ) : (
@@ -252,14 +254,14 @@ export default function FeaturedContentDialog({
             onClick={onClose}
             className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition-colors"
           >
-            İptal
+            {translateUi("iptal_85e2d08")}
           </button>
           <button
             onClick={onSave}
             disabled={isSaving}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white transition-colors disabled:opacity-50"
           >
-            {isSaving ? 'Kaydediliyor...' : 'Kaydet'}
+            {isSaving ? translateUi("kaydediliyor_5bb599b") : translateUi("kaydet_b809440")}
           </button>
         </div>
       </div>

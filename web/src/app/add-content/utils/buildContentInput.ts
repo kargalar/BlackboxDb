@@ -165,7 +165,10 @@ export function buildContentInput({
   // Temel input
   const input: any = {
     title: formData.title.trim(),
-    originalTitle: contentType === 4 ? undefined : formData.originalTitle?.trim() || undefined,
+    translations: formData.translations?.map(({ language, title, description }) => ({
+      language, title: title?.trim() || null, description: description?.trim() || null,
+    })),
+    originalTitle: formData.originalTitle?.trim() || undefined,
     alternativeTitles: formData.alternativeTitles?.map((item) => item.trim()).filter(Boolean).length
       ? Array.from(new Set(formData.alternativeTitles.map((item) => item.trim()).filter(Boolean)))
       : isEditMode
@@ -205,7 +208,7 @@ export function buildContentInput({
     genres:
       formData.genres && formData.genres.length > 0
         ? formData.genres.map((g: any) => ({
-            id: typeof g.id === 'string' ? g.id : undefined,
+            id: Number.isInteger(Number(g.id)) && Number(g.id) > 0 ? Number(g.id) : undefined,
             name: g.name,
           }))
         : undefined,

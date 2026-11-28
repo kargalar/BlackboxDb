@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -46,6 +48,7 @@ interface LocalPickItem {
 }
 
 export default function AdminShowcasePage() {
+  const translateUi = useUiTranslations('Ui');
   const { user, isPrivileged } = useAuth();
   const t = useTranslations('AdminShowcase');
 
@@ -125,8 +128,8 @@ export default function AdminShowcasePage() {
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
             <span className="text-3xl">🔒</span>
           </div>
-          <h1 className="text-xl font-bold mb-2">Erişim Reddedildi</h1>
-          <p className="text-white/50">Bu sayfaya erişmek için editör veya yönetici olmanız gerekir.</p>
+          <h1 className="text-xl font-bold mb-2">{translateUi("erisim_reddedildi_d3b426c")}</h1>
+          <p className="text-white/50">{translateUi("bu_sayfaya_erismek_icin_editor_veya_1998857")}</p>
         </div>
       </div>
     );
@@ -328,7 +331,7 @@ export default function AdminShowcasePage() {
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-white flex items-center gap-2">
               <span>{currentType?.icon}</span>
-              <span>{currentType?.name} Vitrini</span>
+              <span>{currentType?.name} {" " + translateUi("vitrini_3cdea51")}</span>
             </h2>
             <span
               className={`text-xs px-2.5 py-1 rounded-full font-medium ${
@@ -342,12 +345,12 @@ export default function AdminShowcasePage() {
           </div>
 
           {picksLoading ? (
-            <div className="p-8 text-center text-white/40">Yükleniyor...</div>
+            <div className="p-8 text-center text-white/40">{translateUi("yukleniyor_317109f")}</div>
           ) : localPicks.length === 0 ? (
             <div className="p-8 rounded-2xl border border-dashed border-white/15 text-center space-y-2">
               <p className="text-white/60 font-medium">{t('noItems')}</p>
               <p className="text-xs text-white/40">
-                Sağdaki arama alanını kullanarak {currentType?.name?.toLowerCase()} arayın ve vitrine ekleyin (en fazla 5 adet).
+                {translateUi("sagdaki_arama_alanini_kullanarak_9cc1c46") + " "} {currentType?.name?.toLowerCase()} {" " + translateUi("arayin_ve_vitrine_ekleyin_en_fazla_3754705")}
               </p>
             </div>
           ) : (
@@ -442,7 +445,7 @@ export default function AdminShowcasePage() {
                     {/* Quick Badge Chips */}
                     <div className="flex items-center gap-1.5 flex-wrap pl-8">
                       <span className="text-[10px] text-white/30 uppercase tracking-wider mr-1">
-                        Rozet:
+                        {translateUi("rozet_a1066cc")}
                       </span>
                       {QUICK_BADGES[activeTypeId]?.map((chip) => (
                         <button
@@ -489,14 +492,14 @@ export default function AdminShowcasePage() {
                           {(pick.imageUrl || pick.content.backdropUrl || pick.content.posterUrl) ? (
                             <Image
                               src={pick.imageUrl || pick.content.backdropUrl || pick.content.posterUrl!}
-                              alt="Showcase Banner"
+                              alt={translateUi("showcase_banner_777d71f")}
                               fill
                               className="object-cover"
                               sizes="96px"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-[10px] text-white/20">
-                              Yok
+                              {translateUi("yok_cbabb7d")}
                             </div>
                           )}
                         </div>
@@ -564,7 +567,7 @@ export default function AdminShowcasePage() {
               <span>{t('addContent')}</span>
             </h2>
             <p className="text-xs text-white/50 mt-1">
-              Veritabanından {currentType?.name?.toLowerCase()} arayarak vitrine ekleyin.
+              {translateUi("veritabanindan_b9e7ed9") + " "} {currentType?.name?.toLowerCase()} {" " + translateUi("arayarak_vitrine_ekleyin_c9ae86c")}
             </p>
           </div>
 
@@ -584,12 +587,12 @@ export default function AdminShowcasePage() {
           {/* Search Results */}
           {localPicks.length >= 5 ? (
             <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs text-center">
-              Maksimum 5 adet içerik sınırına ulaşıldı. Yeni içerik eklemek için mevcutlardan birini kaldırabilirsiniz.
+              {translateUi("maksimum_5_adet_icerik_sinirina_ulasildi_abd466a")}
             </div>
           ) : isSearching ? (
-            <div className="p-6 text-center text-xs text-white/40">Aranıyor...</div>
+            <div className="p-6 text-center text-xs text-white/40">{translateUi("araniyor_1f83d73")}</div>
           ) : debouncedSearch.length >= 2 && searchResults.length === 0 ? (
-            <div className="p-6 text-center text-xs text-white/40">Sonuç bulunamadı.</div>
+            <div className="p-6 text-center text-xs text-white/40">{translateUi("sonuc_bulunamadi_5d2ab77")}</div>
           ) : (
             <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
               {searchResults.map((item) => {
@@ -641,12 +644,12 @@ export default function AdminShowcasePage() {
                       {isSelected ? (
                         <>
                           <Check className="w-3.5 h-3.5" />
-                          <span>Eklendi</span>
+                          <span>{translateUi("eklendi_e52994f")}</span>
                         </>
                       ) : (
                         <>
                           <Plus className="w-3.5 h-3.5" />
-                          <span>Ekle</span>
+                          <span>{translateUi("ekle_eeeb1da")}</span>
                         </>
                       )}
                     </button>

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 /**
  * ExpansionList — displays and filters expansion items.
  * SRP: list/filter UI only, all actions delegated to parent.
@@ -44,6 +46,7 @@ export default function ExpansionList({
   onEdit,
   onDelete,
 }: Props) {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('AdminExpansionsPage');
   const locale = useLocale();
 
@@ -73,13 +76,13 @@ export default function ExpansionList({
             {t('list.allTypes')}
           </option>
           <option value="expansion" className="bg-gray-900">
-            Expansion
+            {translateUi("expansion_5210fc6")}
           </option>
           <option value="remake" className="bg-gray-900">
-            Remake
+            {translateUi("remake_2603d41")}
           </option>
           <option value="remaster" className="bg-gray-900">
-            Remaster
+            {translateUi("remaster_a5892e1")}
           </option>
         </select>
         <button

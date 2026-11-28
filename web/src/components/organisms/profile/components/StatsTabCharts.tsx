@@ -5,6 +5,8 @@
 
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React from 'react';
 import {
   Area,
@@ -73,12 +75,13 @@ const AXIS_TICK = { fill: 'rgba(255,255,255,0.6)', fontSize: 12 } as const;
 // ── Monthly Activity Chart ────────────────────────────────
 
 export function MonthlyActivityChart({ data }: { data: ComputedStats['monthSeries'] }) {
+  const translateUi = useUiTranslations('Ui');
   console.log('🎨 [StatsTab] Rendering MonthlyActivityChart, months:', data.length);
   return (
     <div className="glass-card p-5 space-y-4">
       <SectionTitle
-        title="Aktivite Serisi"
-        subtitle="Seçilen aralığa göre tüketim ve puanlanan içerikler"
+        title={translateUi("aktivite_serisi_aef2cc3")}
+        subtitle={translateUi("secilen_araliga_gore_tuketim_ve_puanlanan_56c7756")}
       />
       <div className="h-72">
         <ResponsiveContainer width="100%" height="100%">
@@ -118,10 +121,11 @@ export function MonthlyActivityChart({ data }: { data: ComputedStats['monthSerie
 // ── Rating Histogram Chart ────────────────────────────────
 
 export function RatingHistogramChart({ data }: { data: ComputedStats['ratingHistogram'] }) {
+  const translateUi = useUiTranslations('Ui');
   console.log('🎨 [StatsTab] Rendering RatingHistogramChart');
   return (
     <div className="glass-card p-5 space-y-4">
-      <SectionTitle title="Puan Dağılımı" subtitle="0.5–5 arası yarım puan dağılımı" />
+      <SectionTitle title={translateUi("puan_dagilimi_173b7b1")} subtitle={translateUi("0_5_5_arasi_yarim_puan_24b5985")} />
       <div className="h-72">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
@@ -150,10 +154,11 @@ export function TypePieChart({
   data: ComputedStats['typePie'];
   colors: string[];
 }) {
+  const translateUi = useUiTranslations('Ui');
   console.log('🎨 [StatsTab] Rendering TypePieChart, slices:', data.length);
   return (
     <div className="glass-card p-5 space-y-4">
-      <SectionTitle title="Tür Dağılımı" subtitle="Tüketilen içerik türleri" />
+      <SectionTitle title={translateUi("tur_dagilimi_16606ae")} subtitle={translateUi("tuketilen_icerik_turleri_dc038f3")} />
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -187,10 +192,11 @@ export function FavoritePieChart({
   data: ComputedStats['favoritePie'];
   colors: string[];
 }) {
+  const translateUi = useUiTranslations('Ui');
   console.log('🎨 [StatsTab] Rendering FavoritePieChart, slices:', data.length);
   return (
     <div className="glass-card p-5 space-y-4">
-      <SectionTitle title="Favori Dağılımı" subtitle="Favorilerin tür kırılımı" />
+      <SectionTitle title={translateUi("favori_dagilimi_95b2ded")} subtitle={translateUi("favorilerin_tur_kirilimi_2bec6f7")} />
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -218,10 +224,11 @@ export function FavoritePieChart({
 // ── Top Genres Bar Chart ──────────────────────────────────
 
 export function TopGenresChart({ data }: { data: ComputedStats['topGenres'] }) {
+  const translateUi = useUiTranslations('Ui');
   console.log('🎨 [StatsTab] Rendering TopGenresChart, genres:', data.length);
   return (
     <div className="glass-card p-5 space-y-4">
-      <SectionTitle title="Top Türler" subtitle="İçerik türü değil, genre kırılımı (ilk 12)" />
+      <SectionTitle title={translateUi("top_turler_61ced0e")} subtitle={translateUi("icerik_turu_degil_genre_kirilimi_ilk_c5e0cf8")} />
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
@@ -244,10 +251,11 @@ export function TopGenresChart({ data }: { data: ComputedStats['topGenres'] }) {
 // ── Years Area Chart ──────────────────────────────────────
 
 export function YearsChart({ data }: { data: ComputedStats['yearsConsumed'] }) {
+  const translateUi = useUiTranslations('Ui');
   console.log('🎨 [StatsTab] Rendering YearsChart, dataPoints:', data.length);
   return (
     <div className="glass-card p-5 space-y-4">
-      <SectionTitle title="Yıllara Göre" subtitle="Yıla göre tüketim sayısı, üstte ortalama puan" />
+      <SectionTitle title={translateUi("yillara_gore_c85e0cf")} subtitle={translateUi("yila_gore_tuketim_sayisi_ustte_ortalama_08cafd5")} />
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 20, right: 10, left: -10, bottom: 0 }}>
@@ -287,31 +295,32 @@ export function YearsChart({ data }: { data: ComputedStats['yearsConsumed'] }) {
 // ── Comparison Section ────────────────────────────────────
 
 export function ComparisonSection({ comparison }: { comparison: ComparisonStats }) {
+  const translateUi = useUiTranslations('Ui');
   console.log('🎨 [StatsTab] Rendering ComparisonSection');
   return (
     <div className="glass-card p-5 space-y-4">
       <SectionTitle
-        title="Diğer kullanıcılara göre (tahmini)"
-        subtitle="Bu bölüm yaklaşık bir kıyas sunar. Gerçek sıralama/percentile için backend global stats endpoint'i eklenebilir."
+        title={translateUi("diger_kullanicilara_gore_tahmini_5749b3c")}
+        subtitle={translateUi("bu_bolum_yaklasik_bir_kiyas_sunar_55cc08e")}
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Toplam tüketim"
+          label={translateUi("toplam_tuketim_0bdad7c")}
           value={`%${Math.round(comparison.watchedP)}`}
           hint={compareLabel(comparison.watchedP)}
         />
         <StatCard
-          label="Favori sayısı"
+          label={translateUi("favori_sayisi_dbbb4dd")}
           value={`%${Math.round(comparison.favP)}`}
           hint={compareLabel(comparison.favP)}
         />
         <StatCard
-          label="En iyi seri"
+          label={translateUi("en_iyi_seri_9284eb7")}
           value={`%${Math.round(comparison.streakP)}`}
           hint={compareLabel(comparison.streakP)}
         />
         <StatCard
-          label="Ortalama puan"
+          label={translateUi("ortalama_puan_0ee0d19")}
           value={comparison.ratingP === null ? '—' : `%${Math.round(comparison.ratingP)}`}
           hint={
             comparison.ratingP === null
@@ -321,9 +330,7 @@ export function ComparisonSection({ comparison }: { comparison: ComparisonStats 
         />
       </div>
       <div className="text-xs text-white/40">
-        Bu değerler uygulamanın genel kullanımına dair varsayımsal eşiklere dayanır (p50/p90/p99).
-        İstersen gerçek veriye göre hesaplayan bir GraphQL query ekleyip burayı birebir sıralamaya
-        çevirebilirim.
+        {translateUi("bu_degerler_uygulamanin_genel_kullanimina_dair_abe3c08")}
       </div>
     </div>
   );
@@ -332,20 +339,21 @@ export function ComparisonSection({ comparison }: { comparison: ComparisonStats 
 // ── Behavior Summary ──────────────────────────────────────
 
 export function BehaviorSummarySection({ computed }: { computed: ComputedStats }) {
+  const translateUi = useUiTranslations('Ui');
   console.log('🎨 [StatsTab] Rendering BehaviorSummarySection');
   return (
     <div className="glass-card p-5 space-y-4">
-      <SectionTitle title="Davranış Özeti" subtitle="Durumlara göre özet" />
+      <SectionTitle title={translateUi("davranis_ozeti_5014b1e")} subtitle={translateUi("durumlara_gore_ozet_0c4b0a7")} />
       <div className="grid grid-cols-2 gap-3">
-        <StatCard label="Devam ediyor" value={computed.continuingCount} />
-        <StatCard label="Planlandı" value={computed.consumeLaterCount} />
+        <StatCard label={translateUi("devam_ediyor_341dfbb")} value={computed.continuingCount} />
+        <StatCard label={translateUi("planlandi_25d3fe4")} value={computed.consumeLaterCount} />
         <StatCard
-          label="İzlenenlerde favori"
+          label={translateUi("izlenenlerde_favori_62a3840")}
           value={formatPct(computed.favoriteFromWatchedPct)}
           hint={`${computed.favoritesInWatchedCount} / ${computed.totalWatched}`}
         />
         <StatCard
-          label="Puanlama oranı"
+          label={translateUi("puanlama_orani_c071694")}
           value={formatPct(computed.completionPct)}
           hint={`${computed.ratedCount} / ${computed.totalWatched}`}
         />
@@ -366,15 +374,16 @@ interface BasicSummaryProps {
 }
 
 export function BasicSummarySection({ basicStats }: BasicSummaryProps) {
+  const translateUi = useUiTranslations('Ui');
   console.log('🎨 [StatsTab] Rendering BasicSummarySection');
   return (
     <div className="glass-card p-5 space-y-3">
-      <SectionTitle title="Temel Özet" subtitle="Home sekmesindeki temel istatistikler" />
+      <SectionTitle title={translateUi("temel_ozet_64d906f")} subtitle={translateUi("home_sekmesindeki_temel_istatistikler_240cfcd")} />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Toplam Film" value={basicStats.totalMovies} />
-        <StatCard label="Bu yıl film" value={basicStats.thisYearMovies} />
-        <StatCard label="Home ort. puan" value={basicStats.averageRating.toFixed(1)} />
-        <StatCard label="Tartışma sayısı" value={basicStats.discussionCount} />
+        <StatCard label={translateUi("toplam_film_848b88b")} value={basicStats.totalMovies} />
+        <StatCard label={translateUi("bu_yil_film_7cb799e")} value={basicStats.thisYearMovies} />
+        <StatCard label={translateUi("home_ort_puan_af300f6")} value={basicStats.averageRating.toFixed(1)} />
+        <StatCard label={translateUi("tartisma_sayisi_50fc4df")} value={basicStats.discussionCount} />
       </div>
     </div>
   );

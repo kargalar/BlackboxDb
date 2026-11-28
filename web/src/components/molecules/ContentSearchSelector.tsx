@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@apollo/client/react';
 import { SEARCH_CONTENT_MINIMAL } from '@/services/graphql/content';
@@ -20,6 +22,7 @@ export function ContentSearchSelector({
   placeholder = 'Add similar content...',
   contentTypeId,
 }: ContentSearchSelectorProps) {
+  const translateUi = useUiTranslations('Ui');
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
@@ -109,7 +112,7 @@ export function ContentSearchSelector({
                 />
               ) : (
                 <div className="w-full h-[270px] bg-violet-200 dark:bg-violet-800 rounded-xl flex items-center justify-center">
-                  <span className="text-sm opacity-70">Yok</span>
+                  <span className="text-sm opacity-70">{translateUi("yok_cbabb7d")}</span>
                 </div>
               )}
               <div className="pt-3">
@@ -150,7 +153,7 @@ export function ContentSearchSelector({
             {isSearchPending ? (
               <div className="p-3 text-sm text-gray-500 flex items-center justify-center">
                 <span className="animate-spin inline-block w-4 h-4 border-2 border-violet-500 border-t-transparent rounded-full mr-2"></span>
-                Aranıyor...
+                {translateUi("araniyor_1f83d73")}
               </div>
             ) : suggestions.length > 0 ? (
               <ul className="py-1">
@@ -175,7 +178,7 @@ export function ContentSearchSelector({
                         />
                       ) : (
                         <div className="w-8 h-12 bg-gray-200 dark:bg-gray-800 rounded flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs text-gray-500">Yok</span>
+                          <span className="text-xs text-gray-500">{translateUi("yok_cbabb7d")}</span>
                         </div>
                       )}
 
@@ -191,7 +194,7 @@ export function ContentSearchSelector({
 
                       {isSelected && (
                         <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 ml-auto">
-                          Seçili
+                          {translateUi("secili_7604e34")}
                         </span>
                       )}
                     </li>
@@ -199,7 +202,7 @@ export function ContentSearchSelector({
                 })}
               </ul>
             ) : (
-              <div className="p-3 text-sm text-gray-500 text-center">Sonuç bulunamadı</div>
+              <div className="p-3 text-sm text-gray-500 text-center">{translateUi("sonuc_bulunamadi_cdf964e")}</div>
             )}
           </div>
         )}

@@ -234,6 +234,7 @@ export const CONTENT_DETAIL_FIELDS = gql`
     }
     similarContents {
       ...ContentBasicFields
+      franchiseName
       similarDisplayTitle
       similarDisplaySubtitle
       similarIsFranchise

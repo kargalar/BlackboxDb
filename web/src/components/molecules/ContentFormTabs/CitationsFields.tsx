@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, type Dispatch, type SetStateAction } from 'react';
 import { ContentSearchSelector } from '@/components/molecules/ContentSearchSelector';
 import { uploadContentImage } from '@/services/admin/uploadService';
@@ -21,6 +23,7 @@ interface CitationsFieldsProps {
 }
 
 export function CitationsFields({ formData, setFormData }: CitationsFieldsProps) {
+  const translateUi = useUiTranslations('Ui');
   const [activeSubTab, setActiveSubTab] = useState<'received' | 'made'>('received');
   const [selectedContentTypeId, setSelectedContentTypeId] = useState<string>('1'); // Default: Film
   const [uploadingId, setUploadingId] = useState<string | null>(null);
@@ -74,12 +77,12 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Görsel boyutu 5MB'tan küçük olmalıdır.");
+      toast.error(translateUi("gorsel_boyutu_5mb_tan_kucuk_olmalidir_ae4a008"));
       return;
     }
 
     setUploadingId(id);
-    const loadingToast = toast.loading('Görsel yükleniyor...');
+    const loadingToast = toast.loading(translateUi("gorsel_yukleniyor_3d98135"));
 
     try {
       const reader = new FileReader();
@@ -109,10 +112,10 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
         );
         setFormData({ ...formData, citationsMade: updated });
       }
-      toast.success('Görsel başarıyla yüklendi.', { id: loadingToast });
+      toast.success(translateUi("gorsel_basariyla_yuklendi_108e82f"), { id: loadingToast });
     } catch (error) {
       console.error('❌ Citation image upload failed:', error);
-      toast.error('Görsel yüklenirken bir hata oluştu.', { id: loadingToast });
+      toast.error(translateUi("gorsel_yuklenirken_bir_hata_olustu_e3673c7"), { id: loadingToast });
     } finally {
       setUploadingId(null);
     }
@@ -126,7 +129,7 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
       const updated = citationsMade.map((c: any) => (c.id === id ? { ...c, imageUrl: '' } : c));
       setFormData({ ...formData, citationsMade: updated });
     }
-    toast.success('Görsel kaldırıldı.');
+    toast.success(translateUi("gorsel_kaldirildi_ce066cc"));
   };
 
   const currentCitations = activeSubTab === 'received' ? citationsReceived : citationsMade;
@@ -137,11 +140,10 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
       <div className="mb-6">
         <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
           <Quote className="w-5 h-5 text-violet-500" />
-          Atıf İlişkileri
+          {translateUi("atif_iliskileri_cb89fba")}
         </h4>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Bu içeriğin diğer yapımlarla (Film, Dizi, Oyun) olan atıf ve referans bağlarını iki yönlü
-          olarak tanımlayabilirsiniz.
+          {translateUi("bu_icerigin_diger_yapimlarla_film_dizi_eb24a1a")}
         </p>
       </div>
 
@@ -157,7 +159,7 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
           }`}
         >
           <Link2 className="w-3.5 h-3.5" />
-          Atıf Yapanlar (Received)
+          {translateUi("atif_yapanlar_received_9866d3d")}
         </button>
         <button
           type="button"
@@ -169,7 +171,7 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
           }`}
         >
           <Quote className="w-3.5 h-3.5" />
-          Atıfta Bulundukları (Made)
+          {translateUi("atifta_bulunduklari_made_61ed3c5")}
         </button>
       </div>
 
@@ -179,15 +181,13 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
         <div className="text-xs text-violet-800 dark:text-violet-300 leading-relaxed">
           {activeSubTab === 'received' ? (
             <span>
-              <b>Atıf Yapanlar:</b> Bu sayfada düzenlediğiniz içeriğe (
-              <b>{formData.title || 'Bu Yapım'}</b>) atıfta bulunan, onu referans gösteren diğer
-              yapımları ekleyin.
+              <b>{translateUi("atif_yapanlar_f7578b1")}</b> {" " + translateUi("bu_sayfada_duzenlediginiz_icerige_4201efd")}
+              <b>{formData.title || translateUi("bu_yapim_45ee43a")}</b>{translateUi("atifta_bulunan_onu_referans_gosteren_diger_4d2a8d4")}
             </span>
           ) : (
             <span>
-              <b>Atıfta Bulundukları:</b> Bu sayfada düzenlediğiniz içeriğin (
-              <b>{formData.title || 'Bu Yapım'}</b>) içerisinde atıfta bulunulan, sahne/replik
-              bazında referans verdiği diğer yapımları ekleyin.
+              <b>{translateUi("atifta_bulunduklari_121eb56")}</b> {" " + translateUi("bu_sayfada_duzenlediginiz_icerigin_6be8ed3")}
+              <b>{formData.title || translateUi("bu_yapim_45ee43a")}</b>{translateUi("icerisinde_atifta_bulunulan_sahne_replik_bazinda_4f73a83")}
             </span>
           )}
         </div>
@@ -198,16 +198,16 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
         <div className="max-w-2xl flex flex-col md:flex-row gap-4 items-end">
           <div className="w-full md:w-1/3">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              İçerik Türü
+              {translateUi("icerik_turu_a4a22c7")}
             </label>
             <select
               value={selectedContentTypeId}
               onChange={(e) => setSelectedContentTypeId(e.target.value)}
               className="w-full bg-white dark:bg-surface-raised border border-gray-300 dark:border-gray-700 px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors text-gray-900 dark:text-white font-medium"
             >
-              <option value="1">Film</option>
-              <option value="2">Dizi</option>
-              <option value="3">Oyun</option>
+              <option value="1">{translateUi("film_b9aec11")}</option>
+              <option value="2">{translateUi("dizi_24e71e6")}</option>
+              <option value="3">{translateUi("oyun_246ef60")}</option>
             </select>
           </div>
 
@@ -215,8 +215,8 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
             <ContentSearchSelector
               label={
                 activeSubTab === 'received'
-                  ? 'Atıfta Bulunan Yapımı Seç'
-                  : 'Atıf Yapılan Yapımı Seç'
+                  ? translateUi("atifta_bulunan_yapimi_sec_bd847e1")
+                  : translateUi("atif_yapilan_yapimi_sec_3d88a26")
               }
               value={currentCitations.map((c: any) => ({
                 id: c.id,
@@ -224,7 +224,7 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
                 posterUrl: c.posterUrl,
               }))}
               onChange={handleCitationsChange}
-              placeholder="Yapım arayın..."
+              placeholder={translateUi("yapim_arayin_269485a")}
               contentTypeId={selectedContentTypeId}
             />
           </div>
@@ -235,8 +235,8 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
           <div className="flex flex-col gap-4 mt-4">
             <h5 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
               {activeSubTab === 'received'
-                ? 'Atıfta Bulunanlar Detayları'
-                : 'Atıf Yapılanlar Detayları'}
+                ? translateUi("atifta_bulunanlar_detaylari_ff06c35")
+                : translateUi("atif_yapilanlar_detaylari_7b9f8d1")}
             </h5>
 
             <div className="grid grid-cols-1 gap-4">
@@ -257,7 +257,7 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
                         <ImageIcon aria-hidden="true" className="w-6 h-6 opacity-40 mb-1" />
-                        <span className="text-[10px]">Afiş Yok</span>
+                        <span className="text-[10px]">{translateUi("afis_yok_c965db9")}</span>
                       </div>
                     )}
                   </div>
@@ -266,7 +266,7 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
                   <div className="flex-grow flex flex-col gap-4">
                     <div>
                       <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-violet-100 dark:bg-violet-900/30 text-violet-800 dark:text-violet-300 mb-1 font-medium">
-                        {activeSubTab === 'received' ? 'Atıf Yapan Yapım' : 'Atıf Yapılan Yapım'}
+                        {activeSubTab === 'received' ? translateUi("atif_yapan_yapim_fd0fde0") : translateUi("atif_yapilan_yapim_89cf6a8")}
                       </span>
                       <h6 className="text-base font-bold text-gray-900 dark:text-white">
                         {citation.name}
@@ -277,12 +277,12 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
                       {/* Note */}
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                          Atıf Sahnesi Açıklaması / Not
+                          {translateUi("atif_sahnesi_aciklamasi_not_2b04204")}
                         </label>
                         <textarea
                           value={citation.note || ''}
                           onChange={(e) => handleNoteChange(citation.id, e.target.value)}
-                          placeholder="Örn: 15. dakikada bu oyunun kutusu masada duruyor..."
+                          placeholder={translateUi("orn_15_dakikada_bu_oyunun_kutusu_8e11958")}
                           rows={3}
                           className="w-full bg-gray-50 dark:bg-surface-panel border border-gray-300 dark:border-gray-700 px-3 py-2 rounded-xl text-sm focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors text-gray-900 dark:text-white resize-none"
                         />
@@ -291,7 +291,7 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
                       {/* Image Upload */}
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                          Atıf Sahnesi Görseli (Opsiyonel)
+                          {translateUi("atif_sahnesi_gorseli_opsiyonel_db72311")}
                         </label>
 
                         {citation.imageUrl ? (
@@ -299,7 +299,7 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={citation.imageUrl}
-                              alt="Atıf Görseli"
+                              alt={translateUi("atif_gorseli_751bc7d")}
                               className="w-full h-full object-cover"
                             />
                             <button
@@ -315,13 +315,13 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
                             {uploadingId === citation.id ? (
                               <div className="flex flex-col items-center justify-center text-violet-500 gap-1">
                                 <Loader2 className="w-5 h-5 animate-spin" />
-                                <span className="text-xs">Yükleniyor...</span>
+                                <span className="text-xs">{translateUi("yukleniyor_317109f")}</span>
                               </div>
                             ) : (
                               <div className="flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 gap-1">
                                 <UploadCloud className="w-5 h-5 text-gray-400" />
-                                <span className="text-xs font-medium">Görsel Seç / Sürükle</span>
-                                <span className="text-[9px] opacity-70">PNG, JPG (Maks. 5MB)</span>
+                                <span className="text-xs font-medium">{translateUi("gorsel_sec_surukle_9fceffa")}</span>
+                                <span className="text-[9px] opacity-70">{translateUi("png_jpg_maks_5mb_bff61ca")}</span>
                               </div>
                             )}
                             <input
@@ -352,7 +352,7 @@ export function CitationsFields({ formData, setFormData }: CitationsFieldsProps)
                       }
                     }}
                     className="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-surface-hover transition-colors"
-                    title="Atıfı kaldır"
+                    title={translateUi("atifi_kaldir_088a40b")}
                   >
                     <X className="w-4 h-4" />
                   </button>

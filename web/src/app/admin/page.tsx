@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { getCurrentUserProfile } from '@/services/database/userService';
@@ -83,6 +85,7 @@ interface LogEntry {
 }
 
 export default function AdminHome() {
+  const translateUi = useUiTranslations('Ui');
   const [allowed, setAllowed] = useState<boolean>(false);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [counts, setCounts] = useState({ apiRequests: 0 });
@@ -147,7 +150,7 @@ export default function AdminHome() {
     setIsUpdatingBookModule(true);
     try {
       await updateBookModuleStatus({ variables: { isEnabled: newValue } });
-      alert(newValue ? 'Kitap modülü aktifleştirildi.' : 'Kitap modülü devre dışı bırakıldı.');
+      alert(newValue ? translateUi("kitap_modulu_aktiflestirildi_e1a0078") : translateUi("kitap_modulu_devre_disi_birakildi_5d309c9"));
     } catch (err: any) {
       console.error(err);
       alert('Hata: ' + err.message);
@@ -207,13 +210,13 @@ export default function AdminHome() {
   const handleDeleteContentByType = async (typeSlug: string, typeName: string) => {
     if (
       !window.confirm(
-        `Are you sure you want to delete ALL ${typeName} content? This action cannot be undone.`
+        translateUi("are_you_sure_you_want_to_339b434", { value1: String(typeName) })
       )
     )
       return;
     if (
       !window.confirm(
-        `FINAL WARNING: This will permanently erase all ${typeName} from the database. Proceed?`
+        translateUi("final_warning_this_will_permanently_erase_d8fdf36", { value1: String(typeName) })
       )
     )
       return;
@@ -224,7 +227,7 @@ export default function AdminHome() {
       if (result.error) {
         alert('Hata: ' + (result.error.message || 'Bilinmeyen'));
       } else {
-        alert(`Tüm ${typeName} içerikleri başarıyla silindi.`);
+        alert(translateUi("tum_value1_icerikleri_basariyla_silindi_88c0617", { value1: String(typeName) }));
         window.location.reload();
       }
     } finally {
@@ -302,7 +305,7 @@ export default function AdminHome() {
         setActiveJobId(data.importWeeklyPopularMovies.jobId);
         setIsModalOpen(true);
       } else {
-        alert('İşlem başlatılamadı.');
+        alert(translateUi("islem_baslatilamadi_fd8ddc8"));
       }
     } catch (err: any) {
       console.error(err);
@@ -482,9 +485,9 @@ export default function AdminHome() {
             <span className="text-xl">🔥</span>
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-purple-400">Popüler İçerik İçe Aktarma</h2>
+            <h2 className="text-xl font-semibold text-purple-400">{translateUi("populer_icerik_ice_aktarma_0395c34")}</h2>
             <p className="text-sm text-white/40">
-              Harici kaynaklardan popüler içerikleri sisteminize aktarın.
+              {translateUi("harici_kaynaklardan_populer_icerikleri_sisteminize_aktarin_a72beb1")}
             </p>
           </div>
         </div>
@@ -501,21 +504,20 @@ export default function AdminHome() {
               ) : (
                 <span>🎬</span>
               )}
-              Haftalık Popüler Filmleri İçe Aktar
+              {translateUi("haftalik_populer_filmleri_ice_aktar_7a606dc")}
             </div>
             <p className="text-sm text-white/40 mt-1">
-              IMDb ve Letterboxd üzerinde son 1 haftadaki en popüler filmleri çeker, eksik olanları
-              TMDB ile veritabanına ekler.
+              {translateUi("imdb_ve_letterboxd_uzerinde_son_1_726e5f5")}
             </p>
           </button>
         </div>
       </div>
 
       <div className="glass-card p-6 border border-purple-500/30">
-        <h2 className="text-xl font-semibold text-purple-400">TMDB dizi kontrolü</h2>
-        <p className="text-sm text-white/40 mt-2">TMDB kimliği bulunan dizilerin sezon ve bölümlerini kontrol eder, yeni kayıtları ekler ve mevcut bilgileri günceller.</p>
+        <h2 className="text-xl font-semibold text-purple-400">{translateUi("tmdb_dizi_kontrolu_e744d7a")}</h2>
+        <p className="text-sm text-white/40 mt-2">{translateUi("tmdb_kimligi_bulunan_dizilerin_sezon_ve_a1af5c7")}</p>
         <button onClick={handleTvSync} disabled={isStartingTvSync} className="mt-4 p-4 rounded-xl bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 disabled:opacity-50 text-left text-purple-400 font-semibold">
-          {isStartingTvSync ? 'Başlatılıyor...' : 'Dizileri kontrol et'}
+          {isStartingTvSync ? translateUi("baslatiliyor_3d8519b") : translateUi("dizileri_kontrol_et_b31a32d")}
         </button>
       </div>
 
@@ -638,7 +640,7 @@ export default function AdminHome() {
         {/* Content Type Deletion */}
         <div className="mt-6">
           <h3 className="text-sm font-medium text-red-400/60 mb-3 uppercase tracking-wider">
-            İçerik Türüne Göre Silme
+            {translateUi("icerik_turune_gore_silme_edadc11")}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {[
@@ -659,7 +661,7 @@ export default function AdminHome() {
                   ) : (
                     <span className="text-2xl">{type.icon}</span>
                   )}
-                  <span className="text-sm">Tüm {type.name}i Sil</span>
+                  <span className="text-sm">{translateUi("tum_f3b1df5") + " "} {type.name}{translateUi("i_sil_3345163")}</span>
                 </div>
               </button>
             ))}
@@ -703,10 +705,10 @@ export default function AdminHome() {
             </div>
             <div>
               <h2 className="text-xl font-semibold text-white">
-                Kitap Modülü (Sadece Adminler İçin)
+                {translateUi("kitap_modulu_sadece_adminler_icin_2564df8")}
               </h2>
               <p className="text-sm text-white/40">
-                Kitap içerik türünü sistem genelinde açıp kapatın.
+                {translateUi("kitap_icerik_turunu_sistem_genelinde_acip_9194626")}
               </p>
             </div>
           </div>
@@ -839,7 +841,7 @@ export default function AdminHome() {
                 {/* Header */}
                 <div className="flex justify-between items-center border-b border-white/10 pb-3">
                   <h3 className="text-lg font-semibold text-purple-400 flex items-center gap-2">
-                    <span>🔥</span> {jobKind === 'tv' ? 'TMDB Dizi Kontrolü' : 'Popüler İçerik İçe Aktarılıyor'}
+                    <span>🔥</span> {jobKind === 'tv' ? translateUi("tmdb_dizi_kontrolu_4d07073") : translateUi("populer_icerik_ice_aktariliyor_27641ae")}
                   </h3>
                   {(jobStatus === 'COMPLETED' || jobStatus === 'FAILED') && (
                     <button
@@ -858,7 +860,7 @@ export default function AdminHome() {
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col gap-1 text-center bg-white/5 p-3 rounded-xl">
                     <span className="text-xs text-white/50 uppercase tracking-wider font-semibold">
-                      Aktif İşlem
+                      {translateUi("aktif_islem_6720841")}
                     </span>
                     <span className="font-medium text-white truncate max-w-full block">
                       {parsedProgress.title} {parsedProgress.year ? `(${parsedProgress.year})` : ''}
@@ -869,7 +871,7 @@ export default function AdminHome() {
                   <div className="flex flex-col gap-1.5">
                     <div className="flex justify-between text-xs text-white/50">
                       <span>
-                        İlerleme: {processed} / {total}
+                        {translateUi("ilerleme_1313574") + " "} {processed} / {total}
                       </span>
                       <span>{percent}%</span>
                     </div>
@@ -888,7 +890,7 @@ export default function AdminHome() {
                       <span className="text-sm font-semibold text-green-400 mt-1">
                         {parsedProgress.imported}
                       </span>
-                      <span className="text-xs text-white/40">{jobKind === 'tv' ? 'Yeni sezon/bölüm olan dizi' : 'Aktarılan'}</span>
+                      <span className="text-xs text-white/40">{jobKind === 'tv' ? translateUi("yeni_sezon_bolum_olan_dizi_34f02c8") : translateUi("aktarilan_16ebb16")}</span>
                     </div>
 
                     <div className="flex flex-col items-center p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
@@ -896,7 +898,7 @@ export default function AdminHome() {
                       <span className="text-sm font-semibold text-blue-400 mt-1">
                         {parsedProgress.skipped}
                       </span>
-                      <span className="text-xs text-white/40">{jobKind === 'tv' ? 'Yeni kayıt yok' : 'Zaten Var'}</span>
+                      <span className="text-xs text-white/40">{jobKind === 'tv' ? translateUi("yeni_kayit_yok_ad2e76c") : translateUi("zaten_var_0436213")}</span>
                     </div>
 
                     <div className="flex flex-col items-center p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
@@ -904,7 +906,7 @@ export default function AdminHome() {
                       <span className="text-sm font-semibold text-red-400 mt-1">
                         {parsedProgress.failed}
                       </span>
-                      <span className="text-xs text-white/40">Hata</span>
+                      <span className="text-xs text-white/40">{translateUi("hata_82e75e5")}</span>
                     </div>
                   </div>
 
@@ -912,7 +914,7 @@ export default function AdminHome() {
                   {errors.length > 0 && (
                     <div className="flex flex-col gap-1.5">
                       <span className="text-xs text-red-400 font-semibold">
-                        Oluşan Hatalar ({errors.length})
+                        {translateUi("olusan_hatalar_0cbcb8b")}{errors.length})
                       </span>
                       <div className="max-h-24 overflow-y-auto bg-red-950/20 border border-red-500/10 rounded-lg p-2 text-xs text-red-400 flex flex-col gap-1">
                         {errors.slice(-5).map((err, idx) => (
@@ -935,12 +937,12 @@ export default function AdminHome() {
                       }}
                       className="px-4 py-2 bg-purple-600 hover:bg-purple-700 transition-colors text-white rounded-xl text-sm font-medium"
                     >
-                      Kapat
+                      {translateUi("kapat_9e6ecd5")}
                     </button>
                   ) : (
                     <div className="flex items-center gap-2 text-xs text-white/40">
                       <div className="w-3.5 h-3.5 border border-purple-400 border-t-transparent rounded-full animate-spin" />
-                      {jobKind === 'tv' ? 'Kontrol devam ediyor...' : 'İçe aktarım devam ediyor...'}
+                      {jobKind === 'tv' ? translateUi("kontrol_devam_ediyor_896b21d") : translateUi("ice_aktarim_devam_ediyor_45a819e")}
                     </div>
                   )}
                 </div>

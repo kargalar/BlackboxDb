@@ -18,6 +18,7 @@ import { mapContentToFormData } from '@/utils/mapContentToFormData';
  * Hook that manages the add-content form state, content loading, and validation.
  */
 export function useAddContentForm() {
+  const t = useTranslations('AddContent.feedback');
   const tBoardGames = useTranslations('BoardGames');
   const searchParams = useSearchParams();
   const { user, isPrivileged } = useAuth();
@@ -74,7 +75,7 @@ export function useAddContentForm() {
             message: 'Content request yüklenemedi',
             data: { id, error },
           });
-          toast.error('İçerik talebi yüklenemedi');
+          toast.error(t('requestLoadFailed'));
           return;
         }
 
@@ -117,12 +118,12 @@ export function useAddContentForm() {
           message: 'Content request yüklerken exception',
           data: { id, error: e },
         });
-        toast.error('İçerik talebi yüklenirken hata oluştu');
+        toast.error(t('requestLoadFailed'));
       } finally {
         setLoading(false);
       }
     },
-    [setFormData]
+    [setFormData, t]
   );
 
   // --- Load content data (edit mode) ---
@@ -136,7 +137,7 @@ export function useAddContentForm() {
 
         if (error || !data) {
           console.error('❌ [Content] Failed to load content:', error);
-          toast.error('İçerik yüklenemedi');
+          toast.error(t('contentLoadFailed'));
           setIsEditMode(false);
           return;
         }
@@ -189,18 +190,18 @@ export function useAddContentForm() {
               }
               return next;
             });
-            toast.success('Düzenleme talebi verileri forma yüklendi', { id: 'contrib-loaded' });
+            toast.success(t('editRequestLoaded'), { id: 'contrib-loaded' });
           }
         }
       } catch (error) {
         console.error('❌ [Content] Exception while loading:', error);
-        toast.error('İçerik yüklenirken hata oluştu', { id: 'content-load-error' });
+        toast.error(t('contentLoadFailed'), { id: 'content-load-error' });
         setIsEditMode(false);
       } finally {
         setLoading(false);
       }
     },
-    [setFormData]
+    [setFormData, t]
   );
 
   useEffect(() => {
@@ -258,11 +259,11 @@ export function useAddContentForm() {
 
     // Ortak validation
     if (!formData.title.trim()) {
-      newErrors.title = 'Başlık zorunludur';
+      newErrors.title = t('titleRequired');
     }
 
     if (!formData.contentTypeId) {
-      newErrors.contentTypeId = 'İçelik türü seçiniz';
+      newErrors.contentTypeId = t('typeRequired');
     }
 
     // İçerik türüne göre validation
@@ -289,7 +290,7 @@ export function useAddContentForm() {
       (formData.bookPublications || []).forEach((publication, index) => {
         if (publication.isbn && !/^\d{10}(\d{3})?$/.test(publication.isbn.replace(/-/g, ''))) {
           newErrors[`bookPublications.${index}.isbn`] =
-            'Geçerli ISBN formatı giriniz (10 veya 13 haneli)';
+            t('invalidIsbn');
         }
       });
     }

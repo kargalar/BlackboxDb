@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import Link from 'next/link';
 import FriendsActivitySection from '@/components/organisms/dashboard/FriendsActivitySection';
 import AddToListModal from '@/components/organisms/AddToListModal';
@@ -8,6 +10,7 @@ import { useUserPreferences } from '@/hooks/useUserPreferences';
 import { useDashboardData } from '../hooks/useDashboardData';
 
 export default function FriendsActivityPage() {
+  const translateUi = useUiTranslations('Ui');
   const { preferredContentTypes } = useUserPreferences();
   const {
     handleWatchToggle,
@@ -34,11 +37,11 @@ export default function FriendsActivityPage() {
             href="/dashboard"
             className="text-sm text-white/50 hover:text-white/80 transition-colors"
           >
-            Dashboard&apos;a dön
+            {translateUi("dashboard_apos_a_don_f0706e5")}
           </Link>
-          <h1 className="mt-2 text-3xl font-bold">Arkadaş Aktiviteleri</h1>
+          <h1 className="mt-2 text-3xl font-bold">{translateUi("arkadas_aktiviteleri_7f45243")}</h1>
           <p className="text-white/50">
-            Takip ettiğin kişilerin tüm son aktiviteleri ve yorumları tek sayfada.
+            {translateUi("takip_ettigin_kisilerin_tum_son_aktiviteleri_761c3c5")}
           </p>
         </div>
       </div>

@@ -141,5 +141,6 @@ export function contentSelection(info?: GraphQLResolveInfo): {
     select.images = relationOptions.images;
     select.franchise = relationOptions.franchise;
   }
+  if (fields.has("title")) select.originalTitle = true;
   return { select };
 }

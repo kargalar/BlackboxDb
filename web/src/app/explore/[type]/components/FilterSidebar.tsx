@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import type { CatalogContentType } from '@/types/unified-content';
@@ -127,6 +129,7 @@ export function FilterSidebar({
   onFilterChange,
   filterCounts,
 }: FilterSidebarProps) {
+  const translateUi = useUiTranslations('Ui');
   const [isPinned, setIsPinned] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [hasInitializedPinnedState, setHasInitializedPinnedState] = useState(false);
@@ -1044,7 +1047,7 @@ export function FilterSidebar({
                     <div className="flex items-center gap-3">
                       <span className="text-xl">🏆</span>
                       <span className="text-sm font-medium text-white/90 group-hover:text-white transition-colors">
-                        Sadece Ödüllüler
+                        {translateUi("sadece_odulluler_0678c71")}
                       </span>
                     </div>
                     <div className="relative">

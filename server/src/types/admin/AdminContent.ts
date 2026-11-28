@@ -1,3 +1,4 @@
+import { ContentTranslationText } from "../ContentTranslation";
 import { ContentRelease } from "../ContentRelease";
 import { ObjectType, Field, Int } from "type-graphql";
 import { BookPublication, Content } from "../Content";
@@ -19,6 +20,9 @@ import { Expansion } from "../Expansion";
 
 @ObjectType()
 export class AdminContent {
+  @Field(() => [ContentTranslationText], { nullable: true })
+  translations?: ContentTranslationText[];
+
   @Field(() => String)
   id: string;
 

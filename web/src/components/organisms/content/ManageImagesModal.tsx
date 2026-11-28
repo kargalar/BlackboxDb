@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useQuery, useMutation } from '@apollo/client/react';
@@ -79,6 +80,7 @@ export default function ManageImagesModal({
   contentType,
   contentTitle,
 }: ManageImagesModalProps) {
+  const translateUi = useUiTranslations('Ui');
   const [activeTab, setActiveTab] = useState<'poster' | 'backdrop'>('poster');
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingFromScreenshot, setIsUploadingFromScreenshot] = useState(false);
@@ -127,10 +129,10 @@ export default function ManageImagesModal({
           type: activeTab,
         },
       });
-      toast.success('Resim başarıyla yüklendi.');
+      toast.success(translateUi("resim_basariyla_yuklendi_9789ac4"));
     } catch (error) {
       console.error(error);
-      toast.error('Resim yüklenirken bir hata oluştu.');
+      toast.error(translateUi("resim_yuklenirken_bir_hata_olustu_8363728"));
     } finally {
       setIsUploading(false);
       e.target.value = '';
@@ -140,10 +142,10 @@ export default function ManageImagesModal({
   const handleSetDefault = async (imageId: number) => {
     try {
       await setContentDefaultImage({ variables: { contentId, imageId, type: activeTab } });
-      toast.success('Varsayılan resim güncellendi.');
+      toast.success(translateUi("varsayilan_resim_guncellendi_0f3de76"));
     } catch (error) {
       console.error(error);
-      toast.error('Varsayılan resim güncellenemedi.');
+      toast.error(translateUi("varsayilan_resim_guncellenemedi_e6041a7"));
     }
   };
 
@@ -164,26 +166,26 @@ export default function ManageImagesModal({
         },
       });
       toast.success(
-        isRemoving ? 'Profil seçimi kaldırıldı.' : 'Profiliniz için bhu resim ayarlandı.'
+        isRemoving ? translateUi("profil_secimi_kaldirildi_2cca937") : translateUi("profiliniz_icin_bhu_resim_ayarlandi_0cb552b")
       );
     } catch (error) {
       console.error(error);
-      toast.error('Profil tercihi güncellenemedi.');
+      toast.error(translateUi("profil_tercihi_guncellenemedi_45d0736"));
     }
   };
 
   const handleDelete = async (imageId: number) => {
-    if (!window.confirm('Bu resmi silmek istediğinize emin misiniz?')) return;
+    if (!window.confirm(translateUi("bu_resmi_silmek_istediginize_emin_misiniz_8194a69"))) return;
     try {
       if (imageId === defaultImageId) {
-        toast.error('Önce başka bir resmi varsayılan yapmalısınız.');
+        toast.error(translateUi("once_baska_bir_resmi_varsayilan_yapmalisiniz_f781d9b"));
         return;
       }
       await deleteImage({ variables: { imageId } });
-      toast.success('Resim silindi.');
+      toast.success(translateUi("resim_silindi_5e6083f"));
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || 'Resim silinemedi.');
+      toast.error(error.message || translateUi("resim_silinemedi_4a6b485"));
     }
   };
 
@@ -210,10 +212,10 @@ export default function ManageImagesModal({
           type: 'backdrop',
         },
       });
-      toast.success('Ekran görüntüsü arkaplan olarak eklendi.');
+      toast.success(translateUi("ekran_goruntusu_arkaplan_olarak_eklendi_c6413cb"));
     } catch (error) {
       console.error(error);
-      toast.error('Ekran görüntüsü arkaplan olarak eklenemedi.');
+      toast.error(translateUi("ekran_goruntusu_arkaplan_olarak_eklenemedi_c784d0a"));
     } finally {
       setIsUploadingFromScreenshot(false);
     }
@@ -224,9 +226,9 @@ export default function ManageImagesModal({
       <div className="w-full max-w-4xl bg-gray-900 border border-white/10 rounded-2xl shadow-xl flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0">
           <div>
-            <h2 className="text-xl font-bold text-white">Resimleri Yönet: {contentTitle}</h2>
+            <h2 className="text-xl font-bold text-white">{translateUi("resimleri_yonet_904b4aa") + " "} {contentTitle}</h2>
             <p className="text-sm text-gray-400 mt-1">
-              Alternatif kapak ve arkaplan resimleri ekleyin veya kendi profiliniz için özel seçin.
+              {translateUi("alternatif_kapak_ve_arkaplan_resimleri_ekleyin_1bec9c6")}
             </p>
           </div>
           <button
@@ -242,13 +244,13 @@ export default function ManageImagesModal({
             onClick={() => setActiveTab('poster')}
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'poster' ? 'border-primary-500 text-white' : 'border-transparent text-gray-400 hover:text-white'}`}
           >
-            Kapaklar (Poster)
+            {translateUi("kapaklar_poster_80dc9f6")}
           </button>
           <button
             onClick={() => setActiveTab('backdrop')}
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'backdrop' ? 'border-primary-500 text-white' : 'border-transparent text-gray-400 hover:text-white'}`}
           >
-            Arkaplanlar (Backdrop)
+            {translateUi("arkaplanlar_backdrop_40b7fb0")}
           </button>
         </div>
 
@@ -261,13 +263,13 @@ export default function ManageImagesModal({
             <div>
               <div className="mb-6 flex justify-between items-center">
                 <h3 className="text-lg font-medium text-white">
-                  Ekli {activeTab === 'poster' ? 'Kapak' : 'Arkaplan'} Resimleri
+                  {translateUi("ekli_2a2df47") + " "} {activeTab === 'poster' ? translateUi("kapak_5a09c04") : translateUi("arkaplan_bf00a80")} {" " + translateUi("resimleri_e7f6249")}
                 </h3>
                 {isAdminOrMod && (
                   <div>
                     <label className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg cursor-pointer transition-colors disabled:opacity-50">
                       <Upload className="w-4 h-4" />
-                      {isUploading ? 'Yükleniyor...' : 'Yeni Yükle'}
+                      {isUploading ? translateUi("yukleniyor_317109f") : translateUi("yeni_yukle_a86e14f")}
                       <input
                         type="file"
                         className="hidden"
@@ -283,7 +285,7 @@ export default function ManageImagesModal({
               {images.length === 0 ? (
                 <div className="text-center py-12 bg-white/5 rounded-xl border border-white/5 border-dashed">
                   <ImageIcon className="w-12 h-12 text-gray-500 mx-auto mb-3" />
-                  <p className="text-gray-400">Henüz hiç resim eklenmemiş.</p>
+                  <p className="text-gray-400">{translateUi("henuz_hic_resim_eklenmemis_5fff220")}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -294,7 +296,7 @@ export default function ManageImagesModal({
                     >
                       <Image
                         src={img.filePath}
-                        alt="Content"
+                        alt={translateUi("content_4f9be05")}
                         width={activeTab === 'poster' ? 640 : 1280}
                         height={activeTab === 'poster' ? 960 : 720}
                         unoptimized
@@ -303,14 +305,14 @@ export default function ManageImagesModal({
 
                       {img.id === defaultImageId && (
                         <div className="absolute top-2 left-2 bg-primary-500 text-white text-xs px-2 py-1 rounded-md font-medium shadow-md">
-                          Herkese Açık Varsayılan
+                          {translateUi("herkese_acik_varsayilan_b04e4f5")}
                         </div>
                       )}
 
                       {img.id === myPrefImageId && (
                         <div
                           className="absolute top-2 right-2 bg-purple-500 text-white p-1 rounded-full shadow-md"
-                          title="Benim Profilim"
+                          title={translateUi("benim_profilim_8bc29a4")}
                         >
                           <CheckCircle className="w-4 h-4" />
                         </div>
@@ -322,7 +324,7 @@ export default function ManageImagesModal({
                             onClick={() => handleSetDefault(img.id)}
                             className="w-full text-xs bg-white/10 hover:bg-primary-500 text-white py-1.5 rounded transition-colors"
                           >
-                            Varsayılan Yap
+                            {translateUi("varsayilan_yap_59f76d5")}
                           </button>
                         )}
                         <button
@@ -330,15 +332,15 @@ export default function ManageImagesModal({
                           className={`w-full text-xs py-1.5 rounded transition-colors ${img.id === myPrefImageId ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-white/10 hover:bg-purple-500 text-white'}`}
                         >
                           {img.id === myPrefImageId
-                            ? 'Benim Profilim (Kaldır)'
-                            : 'Sadece Benim Profilimde'}
+                            ? translateUi("benim_profilim_kaldir_0b17f9c")
+                            : translateUi("sadece_benim_profilimde_6ec76dc")}
                         </button>
                         {img.id !== defaultImageId && isAdminOrMod && (
                           <button
                             onClick={() => handleDelete(img.id)}
                             className="w-full text-xs bg-red-500/80 hover:bg-red-600 text-white py-1.5 rounded transition-colors"
                           >
-                            Sil
+                            {translateUi("sil_353ad5e")}
                           </button>
                         )}
                       </div>
@@ -352,11 +354,11 @@ export default function ManageImagesModal({
                 <div className="mt-8">
                   <div className="mb-4 flex items-center gap-2">
                     <Monitor className="w-5 h-5 text-emerald-400" />
-                    <h3 className="text-lg font-medium text-white">Ekran Görüntülerinden Seç</h3>
+                    <h3 className="text-lg font-medium text-white">{translateUi("ekran_goruntulerinden_sec_7bc0395")}</h3>
                     <span className="text-sm text-gray-400">({screenshotImages.length})</span>
                   </div>
                   <p className="text-sm text-gray-400 mb-4">
-                    Mevcut ekran görüntülerinden birini arkaplan olarak kullanabilirsiniz.
+                    {translateUi("mevcut_ekran_goruntulerinden_birini_arkaplan_olarak_7b975d9")}
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {screenshotImages.map((img: any) => (
@@ -369,7 +371,7 @@ export default function ManageImagesModal({
                       >
                         <Image
                           src={img.filePath}
-                          alt="Screenshot"
+                          alt={translateUi("screenshot_60c152d")}
                           width={1280}
                           height={720}
                           unoptimized
@@ -377,7 +379,7 @@ export default function ManageImagesModal({
                         />
                         <div className="absolute inset-0 bg-emerald-600/0 group-hover:bg-emerald-600/30 transition-colors duration-200 flex items-center justify-center">
                           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/90 dark:bg-gray-900/90 rounded-full px-3 py-1.5 shadow-lg text-xs font-medium text-emerald-700 dark:text-emerald-400">
-                            Arkaplan Olarak Kullan
+                            {translateUi("arkaplan_olarak_kullan_2f91d3a")}
                           </div>
                         </div>
                       </button>
@@ -386,7 +388,7 @@ export default function ManageImagesModal({
                   {isUploadingFromScreenshot && (
                     <div className="mt-3 flex items-center gap-2 text-sm text-emerald-400">
                       <div className="w-4 h-4 border-2 border-emerald-400 rounded-full animate-spin border-t-transparent"></div>
-                      Ekran görüntüsü arkaplan olarak yükleniyor...
+                      {translateUi("ekran_goruntusu_arkaplan_olarak_yukleniyor_c0279db")}
                     </div>
                   )}
                 </div>

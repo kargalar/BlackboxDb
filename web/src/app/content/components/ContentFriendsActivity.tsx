@@ -5,7 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Check, ChevronDown, ChevronUp, CircleSlash, Heart, Play, Star, Users } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useFormatter, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
+import { useRelativeTime } from '@/i18n/use-relative-time';
 import { apolloClient } from '@/lib/apollo-client';
 import { formatRating } from '@/lib/formatRating';
 import {
@@ -29,7 +30,7 @@ const STATUS_OPTIONS = [
 
 function FriendsPanel({ friends }: { friends: FriendActivity[] }) {
   const t = useTranslations('ContentFriendsActivity');
-  const format = useFormatter();
+  const formatRelativeTime = useRelativeTime();
   const headingId = useId();
   const listId = useId();
   const [expanded, setExpanded] = useState(false);
@@ -38,7 +39,7 @@ function FriendsPanel({ friends }: { friends: FriendActivity[] }) {
 
   const formatActivityDate = (value: string) => {
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? t('recently') : format.relativeTime(date, now);
+    return Number.isNaN(date.getTime()) ? t('recently') : formatRelativeTime(date, now);
   };
 
   return (

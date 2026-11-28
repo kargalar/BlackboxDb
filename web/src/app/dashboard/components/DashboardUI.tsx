@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import Link from 'next/link';
 import type { Route } from 'next';
 
@@ -25,6 +26,7 @@ export function SectionHeader({
   timeRange?: string;
   onTimeRangeChange?: (newRange: string) => void;
 }) {
+  const translateUi = useUiTranslations('Ui');
   const cycleTimeRange = () => {
     if (!timeRange || !onTimeRangeChange) return;
     const idx = TIME_RANGE_ORDER.indexOf(timeRange);
@@ -48,7 +50,7 @@ export function SectionHeader({
           </button>
         )}
         <Link href={href as Route}>
-          <button className="btn-secondary text-sm px-4 py-2">See All</button>
+          <button className="btn-secondary text-sm px-4 py-2">{translateUi("see_all_8196e42")}</button>
         </Link>
       </div>
     </div>

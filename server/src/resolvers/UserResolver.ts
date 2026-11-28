@@ -284,6 +284,8 @@ export class UserResolver {
     posterRatingEnabled?: boolean,
     @Arg("showSensitiveContent", () => Boolean, { nullable: true })
     showSensitiveContent?: boolean,
+    @Arg("showOriginalTitles", () => Boolean, { nullable: true })
+    showOriginalTitles?: boolean,
     @Arg("preferredGamePlatformId", () => Int, { nullable: true })
     preferredGamePlatformId?: number | null,
     @Arg("preferredGamePlatformIds", () => [Int], { nullable: true })
@@ -343,6 +345,8 @@ export class UserResolver {
       data.posterRatingEnabled = posterRatingEnabled;
     if (showSensitiveContent !== undefined)
       data.showSensitiveContent = showSensitiveContent;
+    if (typeof showOriginalTitles === "boolean")
+      data.showOriginalTitles = showOriginalTitles;
     if (preferredGamePlatformId !== undefined)
       data.preferredGamePlatformId = preferredGamePlatformId;
     if (preferredGamePlatformIds !== undefined)

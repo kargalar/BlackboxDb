@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import { X, Upload, Eye, EyeOff, AlertTriangle, Trash2 } from 'lucide-react';
@@ -59,6 +61,7 @@ export default function ScreenshotUpload({
   groupKey = 'default',
   onMoveScreenshotHere,
 }: ScreenshotUploadProps) {
+  const translateUi = useUiTranslations('Ui');
   const [isDragging, setIsDragging] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -214,7 +217,7 @@ export default function ScreenshotUpload({
 
       if (removedScreenshot) revokeObjectUrl(removedScreenshot.imageUrl);
       onScreenshotsChange(newScreenshots);
-      toast.success('Ekran görüntüsü kaldırıldı');
+      toast.success(translateUi("ekran_goruntusu_kaldirildi_1ce7346"));
       // Lightbox açıksa: sonraki/önceki görsele geç, yoksa kapat
       if (lightboxIndex !== null) {
         if (newScreenshots.length === 0) {
@@ -236,7 +239,7 @@ export default function ScreenshotUpload({
     screenshots.forEach((screenshot) => revokeObjectUrl(screenshot.imageUrl));
     onScreenshotsChange([]);
     setLightboxIndex(null);
-    toast.success(`${screenshots.length} ekran görüntüsü silindi`);
+    toast.success(translateUi("value1_ekran_goruntusu_silindi_08d2c2b", { value1: String(screenshots.length) }));
   }, [screenshots, onScreenshotsChange]);
 
   // Sadece yeni yüklenenleri sil
@@ -252,7 +255,7 @@ export default function ScreenshotUpload({
       .map((screenshot, index) => ({ ...screenshot, order: index + 1 }));
     onScreenshotsChange(kept);
     setLightboxIndex(null);
-    toast.success(`${newCount} yeni ekran görüntüsü silindi`);
+    toast.success(translateUi("value1_yeni_ekran_goruntusu_silindi_5343799", { value1: String(newCount) }));
   }, [screenshots, onScreenshotsChange]);
 
   // Dosyayı base64'e çevir (otomatik ekleme için)
@@ -296,13 +299,13 @@ export default function ScreenshotUpload({
         });
       } catch (err) {
         console.error(`[ScreenshotUpload] Failed to process ${file.name}:`, err);
-        toast.error(`${file.name} işlenemedi`);
+        toast.error(translateUi("value1_islenemedi_a936d9b", { value1: String(file.name) }));
       }
     }
 
     if (newScreenshots.length > 0) {
       onScreenshotsChange([...screenshots, ...newScreenshots]);
-      toast.success(`${newScreenshots.length} görsel otomatik eklendi`);
+      toast.success(translateUi("value1_gorsel_otomatik_eklendi_f4a0cec", { value1: String(newScreenshots.length) }));
     }
 
     setShowCropModal(false);
@@ -487,8 +490,8 @@ export default function ScreenshotUpload({
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            {screenshots.length} görsel | {screenshots.filter((s) => s.isEnabledForQuiz).length}{' '}
-            test için aktif
+            {screenshots.length} {" " + translateUi("gorsel_372bc93") + " "} {screenshots.filter((s) => s.isEnabledForQuiz).length}{' '}
+            {translateUi("test_icin_aktif_474a41b")}
           </span>
           {hasNewScreenshots && (
             <button
@@ -496,10 +499,10 @@ export default function ScreenshotUpload({
               onClick={handleDeleteNewOnly}
               disabled={disabled}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg transition-colors disabled:opacity-50"
-              title="Yeni Yüklenenleri Sil"
+              title={translateUi("yeni_yuklenenleri_sil_bcc2884")}
             >
               <Trash2 className="w-4 h-4" />
-              Yenileri Sil
+              {translateUi("yenileri_sil_dbb033a")}
             </button>
           )}
           {hasScreenshots && (
@@ -508,10 +511,10 @@ export default function ScreenshotUpload({
               onClick={handleDeleteAll}
               disabled={disabled}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-colors disabled:opacity-50"
-              title="Tümünü Sil"
+              title={translateUi("tumunu_sil_e2d8f6b")}
             >
               <Trash2 className="w-4 h-4" />
-              Tümünü Sil
+              {translateUi("tumunu_sil_e2d8f6b")}
             </button>
           )}
         </div>
@@ -528,7 +531,7 @@ export default function ScreenshotUpload({
           return (
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="text-gray-500 dark:text-gray-400 font-medium">
-                Test zorluklukları:
+                {translateUi("test_zorlukluklari_77a1a0e")}
               </span>
               {diffCounts.map(({ level, count }) => (
                 <span
@@ -543,7 +546,7 @@ export default function ScreenshotUpload({
               {missingLevels.length > 0 && (
                 <span className="text-amber-500 flex items-center gap-1">
                   <AlertTriangle className="w-3.5 h-3.5" />
-                  Eksik seviye:{' '}
+                  {translateUi("eksik_seviye_a83e6ba")}{' '}
                   {missingLevels.map((d) => SHORT_DIFFICULTY_LABELS[d.level - 1]).join(', ')}
                 </span>
               )}
@@ -580,10 +583,10 @@ export default function ScreenshotUpload({
 
           <Upload className="w-10 h-10 mx-auto mb-3 text-gray-400" />
           <p className="text-gray-600 dark:text-gray-400">
-            Ekran görüntülerini sürükleyip bırakın veya tıklayarak seçin
+            {translateUi("ekran_goruntulerini_surukleyip_birakin_veya_tiklayarak_73fc902")}
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-            PNG, JPG, WebP • Max 10MB • Birden fazla dosya seçebilirsiniz
+            {translateUi("png_jpg_webp_max_10mb_birden_f34ed4b")}
           </p>
         </div>
       )}
@@ -615,7 +618,7 @@ export default function ScreenshotUpload({
               >
                 <Image
                   src={screenshot.imageUrl}
-                  alt={`Screenshot ${index + 1}`}
+                  alt={translateUi("screenshot_value1_520ca5e", { value1: String(index + 1) })}
                   fill
                   className="object-cover pointer-events-none"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -667,7 +670,7 @@ export default function ScreenshotUpload({
                 {/* Spoiler badge - sağ altta */}
                 {screenshot.isSpoiler && (
                   <div className="absolute bottom-2 right-2 bg-orange-500 text-white text-xs px-2 py-0.5 rounded z-10 pointer-events-none transition-opacity group-hover:opacity-0">
-                    Spoiler
+                    {translateUi("spoiler_875786e")}
                   </div>
                 )}
 
@@ -675,7 +678,7 @@ export default function ScreenshotUpload({
                 {screenshot.isSensitive && (
                   <div className="absolute bottom-2 left-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded z-10 flex items-center gap-1 pointer-events-none transition-opacity group-hover:opacity-0">
                     <EyeOff className="w-3 h-3" />
-                    Hassas
+                    {translateUi("hassas_f97f12b")}
                   </div>
                 )}
 
@@ -709,10 +712,10 @@ export default function ScreenshotUpload({
                             ? 'bg-orange-500 text-white'
                             : 'bg-white/20 text-white hover:bg-white/30'
                         }`}
-                        title={screenshot.isSpoiler ? 'Spoiler kaldır' : 'Spoiler olarak işaretle'}
+                        title={screenshot.isSpoiler ? translateUi("spoiler_kaldir_ca14842") : translateUi("spoiler_olarak_isaretle_3ef4895")}
                       >
                         <AlertTriangle className="w-3.5 h-3.5" />
-                        Spoiler
+                        {translateUi("spoiler_875786e")}
                       </button>
 
                       {/* Hassas toggle */}
@@ -730,12 +733,12 @@ export default function ScreenshotUpload({
                         }`}
                         title={
                           screenshot.isSensitive
-                            ? 'Hassaslık kaldır'
-                            : 'Hassas İçerik olarak işaretle'
+                            ? translateUi("hassaslik_kaldir_f86db21")
+                            : translateUi("hassas_icerik_olarak_isaretle_1551b21")
                         }
                       >
                         <EyeOff className="w-3.5 h-3.5" />
-                        Hassas
+                        {translateUi("hassas_f97f12b")}
                       </button>
                     </div>
 
@@ -748,7 +751,7 @@ export default function ScreenshotUpload({
                       }}
                       onMouseDown={(e) => e.stopPropagation()}
                       className="p-1.5 rounded-full bg-red-500/80 text-white hover:bg-red-500 transition-colors"
-                      title="Sil"
+                      title={translateUi("sil_353ad5e")}
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -785,7 +788,7 @@ export default function ScreenshotUpload({
             />
 
             <Upload className="w-8 h-8 mb-2 text-gray-400" />
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center px-2">Ekle</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center px-2">{translateUi("ekle_eeeb1da")}</p>
           </div>
         </div>
       )}

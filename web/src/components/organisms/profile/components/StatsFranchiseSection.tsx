@@ -4,6 +4,8 @@
 
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React from 'react';
 import type { FranchiseStat } from '../StatsTabTypes';
 import { formatMinutes } from '../statsTabUtils';
@@ -13,6 +15,7 @@ interface Props {
 }
 
 function FranchiseRow({ stat, rank }: { stat: FranchiseStat; rank: number }) {
+  const translateUi = useUiTranslations('Ui');
   const barWidth = Math.min(100, (stat.count / 30) * 100);
 
   return (
@@ -23,7 +26,7 @@ function FranchiseRow({ stat, rank }: { stat: FranchiseStat; rank: number }) {
           <span className="text-sm font-medium text-white truncate">🎬 {stat.franchiseName}</span>
         </div>
         <div className="flex items-center gap-3 flex-shrink-0 text-xs">
-          <span className="text-white/50">{stat.count} içerik</span>
+          <span className="text-white/50">{stat.count} {" " + translateUi("icerik_cc7ccd1")}</span>
           {stat.avgRating != null && (
             <span className="text-yellow-400 font-semibold">⭐ {stat.avgRating.toFixed(1)}</span>
           )}
@@ -43,11 +46,12 @@ function FranchiseRow({ stat, rank }: { stat: FranchiseStat; rank: number }) {
 }
 
 export function StatsFranchiseSection({ topFranchises }: Props) {
+  const translateUi = useUiTranslations('Ui');
   if (!topFranchises || topFranchises.length === 0) {
     return (
       <div className="glass-card p-5 space-y-2">
-        <h3 className="text-lg font-semibold text-white">🎬 Franchise&apos;lar</h3>
-        <p className="text-sm text-white/40">Veri yok — franchise bilgisi bulunamadı.</p>
+        <h3 className="text-lg font-semibold text-white">{translateUi("franchise_apos_lar_161260b")}</h3>
+        <p className="text-sm text-white/40">{translateUi("veri_yok_franchise_bilgisi_bulunamadi_e7ffae5")}</p>
       </div>
     );
   }
@@ -59,8 +63,8 @@ export function StatsFranchiseSection({ topFranchises }: Props) {
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-white">🎬 Franchise&apos;lar</h3>
-        <p className="text-sm text-white/50">En çok içerik tükettiğin evrenler ve seriler</p>
+        <h3 className="text-lg font-semibold text-white">{translateUi("franchise_apos_lar_161260b")}</h3>
+        <p className="text-sm text-white/50">{translateUi("en_cok_icerik_tukettigin_evrenler_ve_2fdbae4")}</p>
       </div>
 
       <div className="glass-card p-5">

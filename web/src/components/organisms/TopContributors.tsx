@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import React from 'react';
 import Image from 'next/image';
 import { useQuery } from '@apollo/client/react';
@@ -5,6 +6,7 @@ import { GET_TOP_CONTRIBUTORS } from '@/services/graphql/contribution';
 import Link from 'next/link';
 
 export default function TopContributors() {
+  const translateUi = useUiTranslations('Ui');
   const { data, loading, error } = useQuery<any>(GET_TOP_CONTRIBUTORS, {
     variables: { limit: 10 },
     fetchPolicy: 'cache-and-network',
@@ -20,7 +22,7 @@ export default function TopContributors() {
   return (
     <div className="bg-black/40 rounded-xl p-6 border border-white/5 backdrop-blur-sm">
       <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-        <span className="text-yellow-500">🏆</span> En Çok Katkı Sağlayanlar
+        <span className="text-yellow-500">🏆</span> {" " + translateUi("en_cok_katki_saglayanlar_ca5cd0c")}
       </h3>
       <div className="space-y-4">
         {contributors.map((entry: any, index: number) => (
@@ -57,7 +59,7 @@ export default function TopContributors() {
                 <div className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors">
                   {entry.user.username}
                 </div>
-                <div className="text-xs text-white/50">{entry.contributionScore} Puan</div>
+                <div className="text-xs text-white/50">{entry.contributionScore} {" " + translateUi("puan_cb061dd")}</div>
               </div>
             </div>
           </Link>

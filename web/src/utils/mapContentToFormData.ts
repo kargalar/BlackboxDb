@@ -1,3 +1,4 @@
+import type { ContentTranslation } from '@/types/content-translation';
 import { AddContentFormData, INITIAL_FORM_DATA } from '@/app/add-content/types';
 import { sortByCreditOrder } from '@/lib/array-utils';
 
@@ -101,6 +102,8 @@ export function mapContentToFormData(data: any): AddContentFormData {
     // Ortak alanlar
     title: data.title || '',
     originalTitle: data.originalTitle || '',
+    translations: (data.translations as ContentTranslation[] | undefined)
+      ?.map(({ language, title, description }) => ({ language, title, description })) ?? [],
     alternativeTitles: Array.isArray(data.alternativeTitles) ? data.alternativeTitles : [],
     contentTypeId: String(data.contentTypeId) || '',
     contentTypeSlug: data.contentTypeSlug || data.contentType?.slug || '',

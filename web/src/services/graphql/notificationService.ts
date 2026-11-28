@@ -59,10 +59,16 @@ export type NotificationMessageKey =
   | 'messages.discussionCommentReply'
   | 'messages.newSeasonAdded'
   | 'messages.newSeasonAddedWithMessage'
+  | 'messages.seasonAdded'
+  | 'messages.episodeAdded'
+  | 'messages.episodesAdded'
   | 'messages.commentMention'
   | 'messages.contentReleased'
   | 'messages.roleGranted'
   | 'messages.roleGrantedWithMessage'
+  | 'messages.adminGranted'
+  | 'messages.moderatorGranted'
+  | 'messages.adminAndModeratorGranted'
   | 'messages.contributionApproved'
   | 'messages.contributionRejected'
   | 'messages.reportApproved'
@@ -73,6 +79,9 @@ export type NotificationMessageValues = {
   actorName?: string;
   contentTitle?: string;
   message?: string;
+  season?: string;
+  episode?: string;
+  count?: number;
 };
 
 export type NotificationTranslator = (
@@ -320,18 +329,31 @@ export function renderNotificationText(
       return n.commentText
         ? `"${n.commentText.slice(0, 80)}${n.commentText.length > 80 ? '...' : ''}"`
         : t('messages.discussionCommentReply', values);
-    case 'NEW_SEASON_ADDED':
+    case 'NEW_SEASON_ADDED': {
+      const message = n.message?.trim();
+      const season = message?.match(/^(\d+)\. sezon eklendi$/i);
+      if (season) return t('messages.seasonAdded', { ...values, season: season[1] });
+      const episode = message?.match(/^(\d+)\. sezona (\d+)\. b[oö]l[uü]m eklendi$/i);
+      if (episode) return t('messages.episodeAdded', { ...values, season: episode[1], episode: episode[2] });
+      const episodes = message?.match(/^(\d+)\. sezona (\d+) yeni b[oö]l[uü]m eklendi$/i);
+      if (episodes) return t('messages.episodesAdded', { ...values, season: episodes[1], count: Number(episodes[2]) });
       return n.message?.trim()
         ? t('messages.newSeasonAddedWithMessage', { ...values, message: n.message.trim() })
         : t('messages.newSeasonAdded', values);
+    }
     case 'COMMENT_MENTION':
       return t('messages.commentMention', values);
     case 'CONTENT_RELEASED':
       return t('messages.contentReleased', values);
-    case 'ROLE_GRANTED':
+    case 'ROLE_GRANTED': {
+      const message = n.message?.trim().toLowerCase();
+      if (message === 'admin yetkisi verildi.') return t('messages.adminGranted');
+      if (message === 'mod yetkisi verildi.') return t('messages.moderatorGranted');
+      if (message === 'admin ve mod yetkisi verildi.') return t('messages.adminAndModeratorGranted');
       return n.message?.trim()
         ? t('messages.roleGrantedWithMessage', { message: n.message.trim() })
         : t('messages.roleGranted', values);
+    }
     case 'CONTRIBUTION_APPROVED':
       return t('messages.contributionApproved');
     case 'CONTRIBUTION_REJECTED':

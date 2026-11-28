@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
@@ -23,6 +25,7 @@ interface CompanyEditDialogProps {
 }
 
 export function CompanyEditDialog({ company, onClose, onSave }: CompanyEditDialogProps) {
+  const translateUi = useUiTranslations('Ui');
   const [formData, setFormData] = useState({
     name: company.name || '',
     description: company.description || '',
@@ -72,18 +75,18 @@ export function CompanyEditDialog({ company, onClose, onSave }: CompanyEditDialo
 
       const result = await updateCompany(String(company.id), payload);
       if (result.error) {
-        toast.error('Şirket kaydedilemedi');
+        toast.error(translateUi("sirket_kaydedilemedi_5b6292e"));
         return;
       }
 
-      toast.success('Şirket bilgileri güncellendi');
+      toast.success(translateUi("sirket_bilgileri_guncellendi_773409c"));
       onSave({
         ...company,
         ...payload,
       });
     } catch (error: any) {
       console.error('❌ [CompanyEditDialog] Save error:', error);
-      toast.error(error?.message || 'Şirket kaydedilemedi');
+      toast.error(error?.message || translateUi("sirket_kaydedilemedi_5b6292e"));
     } finally {
       setSaving(false);
     }
@@ -98,7 +101,7 @@ export function CompanyEditDialog({ company, onClose, onSave }: CompanyEditDialo
     >
       <div className="bg-surface-panel border border-gray-800 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto mb-4">
         <div className="sticky top-0 bg-surface-panel border-b border-gray-800 px-6 py-5 flex justify-between items-center z-10">
-          <h2 className="text-xl font-bold text-white">Şirket Bilgilerini Düzenle</h2>
+          <h2 className="text-xl font-bold text-white">{translateUi("sirket_bilgilerini_duzenle_95e7eda")}</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-300 transition-colors p-1"
@@ -116,12 +119,12 @@ export function CompanyEditDialog({ company, onClose, onSave }: CompanyEditDialo
 
         <div className="px-6 py-5 space-y-5">
           <div>
-            <label className={labelCls}>Şirket Adı *</label>
+            <label className={labelCls}>{translateUi("sirket_adi_56ee467")}</label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-              placeholder="Örn: CD Projekt Red"
+              placeholder={translateUi("orn_cd_projekt_red_c0f3857")}
               className={inputCls}
               autoFocus
             />
@@ -129,51 +132,51 @@ export function CompanyEditDialog({ company, onClose, onSave }: CompanyEditDialo
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>Merkez</label>
+              <label className={labelCls}>{translateUi("merkez_08f3ec9")}</label>
               <input
                 type="text"
                 value={formData.headquarters}
                 onChange={(e) => setFormData((prev) => ({ ...prev, headquarters: e.target.value }))}
-                placeholder="Örn: Warsaw, Poland"
+                placeholder={translateUi("orn_warsaw_poland_d677e51")}
                 className={inputCls}
               />
             </div>
             <div>
-              <label className={labelCls}>Kuruluş Yılı</label>
+              <label className={labelCls}>{translateUi("kurulus_yili_27d0e35")}</label>
               <input
                 type="number"
                 value={formData.foundingYear}
                 onChange={(e) => setFormData((prev) => ({ ...prev, foundingYear: e.target.value }))}
-                placeholder="Örn: 1994"
+                placeholder={translateUi("orn_1994_e079e6b")}
                 className={inputCls}
               />
             </div>
           </div>
 
           <div>
-            <label className={labelCls}>Web Sitesi</label>
+            <label className={labelCls}>{translateUi("web_sitesi_9e502f3")}</label>
             <input
               type="text"
               value={formData.website}
               onChange={(e) => setFormData((prev) => ({ ...prev, website: e.target.value }))}
-              placeholder="Örn: https://www.cdprojektred.com"
+              placeholder={translateUi("orn_https_www_cdprojektred_com_a6db198")}
               className={inputCls}
             />
           </div>
 
           <div>
-            <label className={labelCls}>Açıklama</label>
+            <label className={labelCls}>{translateUi("aciklama_6f80065")}</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-              placeholder="Şirket hakkında kısa bilgi..."
+              placeholder={translateUi("sirket_hakkinda_kisa_bilgi_cc34bb3")}
               rows={4}
               className={`${inputCls} resize-none`}
             />
           </div>
 
           <ImageUploadField
-            label="Şirket Logosu"
+            label={translateUi("sirket_logosu_a2d5529")}
             name="logoUrl"
             value={formData.logoUrl}
             onChange={(url) => setFormData((prev) => ({ ...prev, logoUrl: url }))}
@@ -188,7 +191,7 @@ export function CompanyEditDialog({ company, onClose, onSave }: CompanyEditDialo
             onClick={onClose}
             className="px-5 py-2.5 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors font-medium"
           >
-            İptal
+            {translateUi("iptal_85e2d08")}
           </button>
           <button
             type="button"
@@ -199,7 +202,7 @@ export function CompanyEditDialog({ company, onClose, onSave }: CompanyEditDialo
             {saving ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Kaydediliyor...
+                {translateUi("kaydediliyor_5bb599b")}
               </>
             ) : (
               <>
@@ -211,7 +214,7 @@ export function CompanyEditDialog({ company, onClose, onSave }: CompanyEditDialo
                     d="M5 13l4 4L19 7"
                   />
                 </svg>
-                Kaydet
+                {translateUi("kaydet_b809440")}
               </>
             )}
           </button>

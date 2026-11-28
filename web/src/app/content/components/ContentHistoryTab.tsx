@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import Image from 'next/image';
@@ -9,6 +10,7 @@ interface ContentHistoryTabProps {
 }
 
 export default function ContentHistoryTab({ contentId }: ContentHistoryTabProps) {
+  const translateUi = useUiTranslations('Ui');
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +29,7 @@ export default function ContentHistoryTab({ contentId }: ContentHistoryTabProps)
         setHistory(data || []);
       } catch (err: any) {
         console.error('Failed to load history:', err);
-        if (isMounted) setError(err.message || 'Failed to load history');
+        if (isMounted) setError(err.message || translateUi("failed_to_load_history_47b4132"));
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -50,7 +52,7 @@ export default function ContentHistoryTab({ contentId }: ContentHistoryTabProps)
     return (
       <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6 flex flex-col items-center justify-center text-center gap-3">
         <AlertCircle className="w-8 h-8 text-red-400" />
-        <p className="text-red-400 font-medium">History could not be loaded</p>
+        <p className="text-red-400 font-medium">{translateUi("history_could_not_be_loaded_b846b63")}</p>
       </div>
     );
   }
@@ -58,7 +60,7 @@ export default function ContentHistoryTab({ contentId }: ContentHistoryTabProps)
   if (history.length === 0) {
     return (
       <div className="text-center py-12 bg-white/5 rounded-xl border border-white/10">
-        <p className="text-white/60">No edit history available for this content.</p>
+        <p className="text-white/60">{translateUi("no_edit_history_available_for_this_6873da5")}</p>
       </div>
     );
   }
@@ -120,7 +122,7 @@ export default function ContentHistoryTab({ contentId }: ContentHistoryTabProps)
             <div className="flex items-center justify-between gap-4 mb-2">
               <div className="flex items-center gap-2">
                 <span className="font-medium text-white/90">
-                  {item.actor ? item.actor.username : 'System'}
+                  {item.actor ? item.actor.username : translateUi("system_bc0792d")}
                 </span>
                 <span
                   className={`px-2 py-0.5 text-[10px] rounded border uppercase flex items-center gap-1 font-medium ${getActionColor(item.action)}`}

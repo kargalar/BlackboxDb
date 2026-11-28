@@ -5,6 +5,8 @@
 
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React from 'react';
 import type { RuntimeSummary } from '../StatsTabTypes';
 import { formatMinutes, formatAsDays } from '../statsTabUtils';
@@ -50,6 +52,7 @@ export function StatsTimeSummarySection({
   totalGames,
   totalBooks,
 }: Props) {
+  const translateUi = useUiTranslations('Ui');
   console.log('🎨 [StatsTimeSummarySection] Render', runtimeSummary);
 
   const totalAllMinutes = runtimeSummary.totalRuntimeMinutes + runtimeSummary.totalPlaytimeMinutes;
@@ -59,8 +62,8 @@ export function StatsTimeSummarySection({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-white">⏱ Toplam Süre</h3>
-        <p className="text-sm text-white/50">Tüm içerik türleri toplam tüketim süresi</p>
+        <h3 className="text-lg font-semibold text-white">{translateUi("toplam_sure_1fbf694")}</h3>
+        <p className="text-sm text-white/50">{translateUi("tum_icerik_turleri_toplam_tuketim_suresi_b2e14b8")}</p>
       </div>
 
       {/* Main summary banner */}
@@ -69,7 +72,7 @@ export function StatsTimeSummarySection({
           <div className="text-4xl font-bold text-white">
             {formatAsDays(Math.round(totalDaysEquivalent))}
           </div>
-          <div className="text-sm text-white/60 mt-1">hayatından içeriğe ayırdın</div>
+          <div className="text-sm text-white/60 mt-1">{translateUi("hayatindan_icerige_ayirdin_581944e")}</div>
         </div>
       </div>
 
@@ -77,28 +80,28 @@ export function StatsTimeSummarySection({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <BigStatCard
           icon="🎬"
-          label="Film & Dizi"
+          label={translateUi("film_dizi_c6bcb0a")}
           main={formatMinutes(runtimeSummary.totalRuntimeMinutes)}
           sub={`${totalMovies + 0} içerik`}
           color="bg-violet-500"
         />
         <BigStatCard
           icon="🎮"
-          label="Oyun Süresi"
+          label={translateUi("oyun_suresi_a4d412f")}
           main={formatMinutes(runtimeSummary.totalPlaytimeMinutes)}
           sub={`${totalGames} oyun`}
           color="bg-blue-500"
         />
         <BigStatCard
           icon="📚"
-          label="Kitap"
+          label={translateUi("kitap_8f04008")}
           main={`${runtimeSummary.totalPagesRead.toLocaleString()} sayfa`}
           sub={`≈ ${runtimeSummary.estimatedReadHours.toFixed(0)} saat okuma`}
           color="bg-amber-500"
         />
         <BigStatCard
           icon="🔢"
-          label="Toplam İçerik"
+          label={translateUi("toplam_icerik_3dd08af")}
           main={`${totalWatched}`}
           sub="tüm türler"
           color="bg-green-500"

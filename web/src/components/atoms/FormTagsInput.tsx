@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { removeTagFromAllLogs, renameTagInAllLogs } from '@/services/userContentService';
 import { rememberTags } from '@/lib/log-suggestions';
@@ -23,6 +24,7 @@ export function FormTagsInput({
   suggestedTags = [],
   onGlobalDelete,
 }: FormTagsInputProps) {
+  const translateUi = useUiTranslations('Ui');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [currentInput, setCurrentInput] = useState('');
   const [hiddenTags, setHiddenTags] = useState<string[]>(() => {
@@ -123,7 +125,7 @@ export function FormTagsInput({
     e.stopPropagation(); // addTag çalışmasın
     if (
       !window.confirm(
-        `"${tag}" etiketini tüm geçmiş loglarınızdan tamamen silmek istediğinize emin misiniz?`
+        translateUi("value1_etiketini_tum_gecmis_loglarinizdan_tamamen_3c33401", { value1: String(tag) })
       )
     ) {
       return;
@@ -186,7 +188,7 @@ export function FormTagsInput({
                   type="button"
                   onClick={() => removeTag(index)}
                   className="text-neutral-500 hover:text-red-400 ml-1"
-                  title="Etiketleri sil"
+                  title={translateUi("etiketleri_sil_31e31e7")}
                 >
                   ×
                 </button>
@@ -214,7 +216,7 @@ export function FormTagsInput({
         {showSuggestions && currentInput.trim().length > 0 && filteredSuggestions.length > 0 && (
           <div className="absolute z-50 w-full mt-1 bg-surface-raised border border-[#2d323b] rounded-lg shadow-xl overflow-hidden shadow-black/50">
             <div className="px-4 py-2 text-xs font-semibold text-neutral-500 bg-neutral-900/50 border-b border-[#2d323b]">
-              Eşleşen Etiketler
+              {translateUi("eslesen_etiketler_219d0f1")}
             </div>
             <ul className="max-h-48 overflow-y-auto">
               {filteredSuggestions.map((tag, index) => (
@@ -232,7 +234,7 @@ export function FormTagsInput({
                   <button
                     type="button"
                     onClick={(e) => handleHideTag(e, tag)}
-                    title="Etiketi tamamen sil"
+                    title={translateUi("etiketi_tamamen_sil_8d907ec")}
                     className="opacity-0 group-hover:opacity-100 p-1.5 text-[#ef4444] hover:bg-[#ef4444]/10 rounded transition-all"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -254,7 +256,7 @@ export function FormTagsInput({
         {suggestedChips.length > 0 && (
           <div className="mt-2.5">
             <span className="block text-xs text-neutral-400 font-medium mb-1.5">
-              Önerilen Etiketler:
+              {translateUi("onerilen_etiketler_3d06aa3")}
             </span>
             <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
               {suggestedChips.map((tag) => (
@@ -266,7 +268,7 @@ export function FormTagsInput({
                     type="button"
                     onClick={() => addTag(tag)}
                     className="inline-flex items-center gap-1.5 cursor-pointer"
-                    title={`"${tag}" etiketini ekle`}
+                    title={translateUi("value1_etiketini_ekle_380d3ef", { value1: String(tag) })}
                   >
                     <span className="w-3.5 h-3.5 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center text-[9px] font-bold">
                       #
@@ -279,7 +281,7 @@ export function FormTagsInput({
                   <button
                     type="button"
                     onClick={(e) => handleRenameTag(e, tag)}
-                    title="Etiketi yeniden adlandır"
+                    title={translateUi("etiketi_yeniden_adlandir_ac48f71")}
                     className="text-[11px] text-neutral-500 hover:text-violet-300"
                   >
                     ✎
@@ -287,7 +289,7 @@ export function FormTagsInput({
                   <button
                     type="button"
                     onClick={(e) => handleHideTag(e, tag)}
-                    title="Etiketi tamamen sil"
+                    title={translateUi("etiketi_tamamen_sil_8d907ec")}
                     className="text-neutral-500 hover:text-red-400"
                   >
                     ×

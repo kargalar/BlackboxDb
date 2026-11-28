@@ -1,5 +1,9 @@
 'use client';
 
+import { useLocale } from 'next-intl';
+import { formattingLocale } from '@/i18n/locales';
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -47,6 +51,8 @@ export interface CombinedRequest {
 }
 
 export default function ContentRequestsPage() {
+  const locale = formattingLocale(useLocale());
+  const translateUi = useUiTranslations('Ui');
   const router = useRouter();
   const [items, setItems] = useState<CombinedRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -194,7 +200,7 @@ export default function ContentRequestsPage() {
 
   const handleDelete = async (it: CombinedRequest) => {
     if (it.isEdit) {
-      const confirmed = window.confirm('Bu bekleyen düzenleme talebini silmek istiyor musunuz?');
+      const confirmed = window.confirm(translateUi("bu_bekleyen_duzenleme_talebini_silmek_istiyor_27741ba"));
       if (!confirmed || !it.originalId) return;
       setDeletingId(it.originalId);
       try {
@@ -206,20 +212,20 @@ export default function ContentRequestsPage() {
         refreshPendingContentRequestsBadge();
       } catch (error) {
         console.error('Contribution delete failed:', error);
-        alert('Düzenleme talebi silinemedi');
+        alert(translateUi("duzenleme_talebi_silinemedi_47b8025"));
       } finally {
         setDeletingId(null);
       }
       return;
     }
 
-    const confirmed = window.confirm('Bu bekleyen talebi silmek istiyor musunuz?');
+    const confirmed = window.confirm(translateUi("bu_bekleyen_talebi_silmek_istiyor_musunuz_7bc2d5b"));
     if (!confirmed) return;
 
     setDeletingId(it.originalId!);
     const { error } = await deleteContentRequest(it.originalId!);
     if (error) {
-      alert('Talep silinemedi');
+      alert(translateUi("talep_silinemedi_df090e4"));
       setDeletingId(null);
       return;
     }
@@ -233,13 +239,13 @@ export default function ContentRequestsPage() {
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-semibold text-white">Taleplerim</h1>
+          <h1 className="text-2xl font-semibold text-white">{translateUi("taleplerim_c8dfc1b")}</h1>
           <button
             onClick={() => router.push('/add-content')}
             className="flex items-center gap-2 px-4 py-2.5 bg-white/10 text-white font-medium rounded-lg hover:bg-white/20 transition-colors border border-white/10"
           >
             <Plus className="w-5 h-5" />
-            İçerik İste
+            {translateUi("icerik_iste_ef5ee87")}
           </button>
         </div>
 
@@ -250,7 +256,7 @@ export default function ContentRequestsPage() {
             </div>
           ) : items.length === 0 ? (
             <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-center">
-              <p className="text-white/40">Henüz bir talebiniz yok.</p>
+              <p className="text-white/40">{translateUi("henuz_bir_talebiniz_yok_0133ef6")}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -277,11 +283,11 @@ export default function ContentRequestsPage() {
                       <span
                         className={`px-2 py-0.5 text-xs rounded ${it.isEdit ? 'bg-blue-500/20 text-blue-300' : 'bg-emerald-500/20 text-emerald-300'}`}
                       >
-                        {it.isEdit ? 'Düzenleme' : 'Yeni İçerik'}
+                        {it.isEdit ? translateUi("duzenleme_21df517") : translateUi("yeni_icerik_db46ac6")}
                       </span>
                     </div>
                     <div className="text-xs text-white/30">
-                      {new Date(it.createdAt).toLocaleDateString('tr-TR', {
+                      {new Date(it.createdAt).toLocaleDateString(locale, {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
@@ -307,7 +313,7 @@ export default function ContentRequestsPage() {
                         }}
                         className="px-3 py-1 text-xs rounded border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white transition-colors"
                       >
-                        Tekrar iste
+                        {translateUi("tekrar_iste_a529ed0")}
                       </button>
                     )}
                     {it.status === 'pending' && (
@@ -320,7 +326,7 @@ export default function ContentRequestsPage() {
                           }}
                           className="px-3 py-1 text-xs rounded border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white transition-colors"
                         >
-                          Düzenle
+                          {translateUi("duzenle_525fd6f")}
                         </button>
                         <button
                           type="button"
@@ -331,7 +337,7 @@ export default function ContentRequestsPage() {
                           disabled={deletingId === it.originalId}
                           className="px-3 py-1 text-xs rounded border border-red-500/20 bg-red-500/10 text-red-300 hover:bg-red-500/20 disabled:opacity-50 transition-colors"
                         >
-                          {deletingId === it.originalId ? 'Siliniyor...' : 'Sil'}
+                          {deletingId === it.originalId ? translateUi("siliniyor_d676da2") : translateUi("sil_353ad5e")}
                         </button>
                       </>
                     )}

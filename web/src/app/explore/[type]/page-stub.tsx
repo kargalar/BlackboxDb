@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 /**
  * Explore Page Stub
  *
@@ -19,6 +21,7 @@ const CONTENT_CONFIG = {
 };
 
 function ExploreContent() {
+  const translateUi = useUiTranslations('Ui');
   const params = useParams();
   const type = params.type as keyof typeof CONTENT_CONFIG;
   const config = CONTENT_CONFIG[type] || CONTENT_CONFIG.movie;
@@ -29,16 +32,14 @@ function ExploreContent() {
         <h1 className="text-3xl font-bold mb-4">{config.title}</h1>
         <p className="text-gray-400 mb-8">{config.subtitle}</p>
         <div className="bg-yellow-900/20 border border-yellow-700 rounded-lg p-6 max-w-2xl mx-auto">
-          <h2 className="text-xl font-semibold mb-2">🚧 Feature Under Reconstruction</h2>
+          <h2 className="text-xl font-semibold mb-2">{translateUi("feature_under_reconstruction_213ecb3")}</h2>
           <p className="text-gray-300 mb-4">
-            The explore/search feature is being redesigned to work with our new unified database
-            structure. This page will be available soon with improved search and filtering
-            capabilities.
+            {translateUi("the_explore_search_feature_is_being_0935f7a")}
           </p>
           <p className="text-gray-400">
-            In the meantime, you can browse content from the{' '}
+            {translateUi("in_the_meantime_you_can_browse_81755cc")}{' '}
             <Link href="/dashboard" className="text-blue-400 hover:underline">
-              Dashboard
+              {translateUi("dashboard_d87f47b")}
             </Link>
             .
           </p>
@@ -49,8 +50,9 @@ function ExploreContent() {
 }
 
 export default function ExplorePage() {
+  const translateUi = useUiTranslations('Ui');
   return (
-    <Suspense fallback={<div className="container mx-auto px-4 py-8 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="container mx-auto px-4 py-8 text-center">{translateUi("loading_b04ba49")}</div>}>
       <ExploreContent />
     </Suspense>
   );

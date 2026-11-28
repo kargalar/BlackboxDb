@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import type { AdminContent } from '@/services/graphql/admin';
 import { useTranslations } from 'next-intl';
 
@@ -18,6 +20,7 @@ export default function ContentEditForm({
   onCancel,
   saving,
 }: ContentEditFormProps) {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('AdminContentPage');
   const lockedFields = editData.lockedFields || [];
   const lockableFields = [
@@ -37,7 +40,7 @@ export default function ContentEditForm({
   return (
     <div className="space-y-4 p-5 bg-white/[0.03] rounded-xl border border-white/10">
       <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3">
-        <div className="text-xs font-medium text-amber-200 mb-2">Field locks</div>
+        <div className="text-xs font-medium text-amber-200 mb-2">{translateUi("field_locks_0134687")}</div>
         <div className="flex flex-wrap gap-2">
           {lockableFields.map((field) => {
             const isLocked = lockedFields.includes(field.key);
@@ -52,7 +55,7 @@ export default function ContentEditForm({
                     : 'bg-white/5 text-white/50 border-white/10 hover:text-white'
                 }`}
               >
-                {isLocked ? 'Locked: ' : 'Lock: '}
+                {isLocked ? translateUi("locked_098d248") : translateUi("lock_e41ff4e")}
                 {field.label}
               </button>
             );

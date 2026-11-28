@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import * as React from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -29,6 +30,7 @@ export function PosterCard({
   fallback,
   useNextImage = true,
 }: PosterCardProps) {
+  const translateUi = useUiTranslations('Ui');
   const roundedCls =
     rounded === 'xl' ? 'rounded-xl' : rounded === 'md' ? 'rounded-md' : 'rounded-lg';
   const zoomCls = hoverZoom ? 'group-hover:scale-105 transition-transform' : '';
@@ -62,7 +64,7 @@ export function PosterCard({
       ) : (
         (fallback ?? (
           <div className="h-full w-full grid place-items-center text-gray-400 text-xs text-center p-2">
-            No image
+            {translateUi("no_image_fc5e5bd")}
           </div>
         ))
       )}

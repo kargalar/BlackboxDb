@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Route } from 'next';
@@ -15,10 +16,11 @@ export default function ListItemAddedByMeta({
   picturePath,
   isEditing = false,
 }: ListItemAddedByMetaProps) {
+  const translateUi = useUiTranslations('Ui');
   return (
     <Link
       href={profileHref as Route}
-      aria-label={`${username} profiline git`}
+      aria-label={translateUi("value1_profiline_git_9e371a0", { value1: String(username) })}
       title={username}
       className={`absolute bottom-2 right-2 z-20 block transition-transform ${
         isEditing ? 'pointer-events-none' : 'hover:scale-105'

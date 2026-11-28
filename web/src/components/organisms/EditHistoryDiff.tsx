@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React from 'react';
 import Image from 'next/image';
 
@@ -14,12 +16,13 @@ interface EditHistoryDiffProps {
 }
 
 export const EditHistoryDiff: React.FC<EditHistoryDiffProps> = ({ history }) => {
+  const translateUi = useUiTranslations('Ui');
   const { changedFields, before, after, action } = history;
 
   if (action === 'CREATE') {
     return (
       <div className="bg-green-500/10 border border-green-500/20 text-green-400 p-4 rounded-lg">
-        <p className="font-semibold">✨ Content Created</p>
+        <p className="font-semibold">{translateUi("content_created_d47e53f")}</p>
       </div>
     );
   }
@@ -27,7 +30,7 @@ export const EditHistoryDiff: React.FC<EditHistoryDiffProps> = ({ history }) => 
   if (action === 'DELETE') {
     return (
       <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg">
-        <p className="font-semibold">🗑️ Content Deleted</p>
+        <p className="font-semibold">{translateUi("content_deleted_77c63c0")}</p>
       </div>
     );
   }
@@ -35,7 +38,7 @@ export const EditHistoryDiff: React.FC<EditHistoryDiffProps> = ({ history }) => 
   if (!changedFields || changedFields.length === 0) {
     return (
       <div className="bg-gray-800 p-4 rounded-lg text-gray-400">
-        <p>No specific field changes recorded.</p>
+        <p>{translateUi("no_specific_field_changes_recorded_6458d7e")}</p>
       </div>
     );
   }
@@ -79,7 +82,7 @@ export const EditHistoryDiff: React.FC<EditHistoryDiffProps> = ({ history }) => 
     const removed = beforeArr.filter((item) => !afterMap.has(getIdentifier(item)));
 
     if (added.length === 0 && removed.length === 0) {
-      return <div className="text-gray-400 text-sm">Order changed or minor update.</div>;
+      return <div className="text-gray-400 text-sm">{translateUi("order_changed_or_minor_update_5e5ef10")}</div>;
     }
 
     return (
@@ -155,10 +158,10 @@ export const EditHistoryDiff: React.FC<EditHistoryDiffProps> = ({ history }) => 
         <div className="flex flex-wrap items-center gap-4 text-sm">
           {beforeVal && (
             <div className="flex flex-col items-center gap-1 opacity-70">
-              <span className="text-red-400 line-through text-xs">Eski</span>
+              <span className="text-red-400 line-through text-xs">{translateUi("eski_da32382")}</span>
               <Image
                 src={beforeVal}
-                alt="Old"
+                alt={translateUi("old_fbb3c38")}
                 width={200}
                 height={128}
                 unoptimized
@@ -172,17 +175,17 @@ export const EditHistoryDiff: React.FC<EditHistoryDiffProps> = ({ history }) => 
                 }}
               />
               <div className="hidden text-red-400 text-xs mt-1 border border-red-400/30 p-1 px-2 rounded bg-red-400/10">
-                Silinmiş Görsel
+                {translateUi("silinmis_gorsel_0466c35")}
               </div>
             </div>
           )}
           {beforeVal && afterVal && <span className="text-slate-500">→</span>}
           {afterVal && (
             <div className="flex flex-col items-center gap-1">
-              <span className="text-green-400 text-xs">Yeni</span>
+              <span className="text-green-400 text-xs">{translateUi("yeni_c58a856")}</span>
               <Image
                 src={afterVal}
-                alt="New"
+                alt={translateUi("new_6403f2b")}
                 width={200}
                 height={128}
                 unoptimized
@@ -196,7 +199,7 @@ export const EditHistoryDiff: React.FC<EditHistoryDiffProps> = ({ history }) => 
                 }}
               />
               <div className="hidden text-red-400 text-xs mt-1 border border-red-400/30 p-1 px-2 rounded bg-red-400/10">
-                Görsel Bulunamadı
+                {translateUi("gorsel_bulunamadi_3829201")}
               </div>
             </div>
           )}

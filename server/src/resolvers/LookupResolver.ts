@@ -1,3 +1,4 @@
+import { catalogNameSearch } from "../lib/catalogTranslations";
 import {
   Resolver,
   Query,
@@ -154,7 +155,7 @@ export class LookupResolver {
         }
       }
       if (search?.trim()) {
-        where.name = { contains: search.trim(), mode: "insensitive" };
+        where.AND = [await catalogNameSearch(prisma, "genre", search.trim())];
       }
       const genres = await prisma.genre.findMany({
         where,
@@ -270,7 +271,7 @@ export class LookupResolver {
       );
       const where: any = {};
       if (search?.trim()) {
-        where.name = { contains: search.trim(), mode: "insensitive" };
+        where.AND = [await catalogNameSearch(prisma, "theme", search.trim())];
       }
       if (contentTypeId) {
         where.contentThemes = {
@@ -376,7 +377,7 @@ export class LookupResolver {
       );
       const where: any = {};
       if (search?.trim()) {
-        where.name = { contains: search.trim(), mode: "insensitive" };
+        where.AND = [await catalogNameSearch(prisma, "mood", search.trim())];
       }
       if (contentTypeId) {
         where.contentMoods = {
@@ -689,7 +690,7 @@ export class LookupResolver {
       );
       const where: any = {};
       if (search?.trim()) {
-        where.name = { contains: search.trim(), mode: "insensitive" };
+        where.AND = [await catalogNameSearch(prisma, "game_mode", search.trim())];
       }
       const modes = await prisma.gameMode.findMany({
         where,
@@ -899,7 +900,7 @@ export class LookupResolver {
       );
       const where: any = {};
       if (search?.trim()) {
-        where.name = { contains: search.trim(), mode: "insensitive" };
+        where.AND = [await catalogNameSearch(prisma, "perspective", search.trim())];
       }
       const perspectives = await prisma.perspective.findMany({
         where,
@@ -1013,7 +1014,7 @@ export class LookupResolver {
       );
       const where: any = {};
       if (search?.trim()) {
-        where.name = { contains: search.trim(), mode: "insensitive" };
+        where.AND = [await catalogNameSearch(prisma, "language", search.trim())];
       }
       const take = limit || 500;
       const skip = offset || 0;
@@ -1435,7 +1436,7 @@ export class LookupResolver {
         }
       }
       if (search?.trim()) {
-        where.label = { contains: search.trim(), mode: "insensitive" };
+        where.AND = [await catalogNameSearch(prisma, "person_role", search.trim(), "label")];
       }
       const roles = await prisma.personRole.findMany({
         where,
@@ -1566,7 +1567,7 @@ export class LookupResolver {
         }
       }
       if (search?.trim()) {
-        where.name = { contains: search.trim(), mode: "insensitive" };
+        where.AND = [await catalogNameSearch(prisma, "company_role", search.trim())];
       }
       const roles = await prisma.companyRole.findMany({
         where,

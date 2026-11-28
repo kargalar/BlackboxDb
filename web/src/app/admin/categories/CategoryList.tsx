@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 /**
  * Category list component — shows items with API search, infinite scroll, and genre content-type filter.
  * Single Responsibility: rendering the list of category items with scroll pagination.
@@ -60,10 +62,12 @@ export default function CategoryList({
   sortOrder = 'asc',
   onSortChange,
 }: CategoryListProps) {
+  const translateUi = useUiTranslations('Ui');
   const [roleMap, setRoleMap] = useState<Map<number, string>>(new Map());
   const [internalSearch, setInternalSearch] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const t = useTranslations('AdminCategoriesPage');
+  const sidebar = useTranslations('Sidebar');
 
   // Use external or internal search
   const searchQuery = externalSearch ?? internalSearch;
@@ -211,7 +215,7 @@ export default function CategoryList({
                   : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700'
               }`}
             >
-              {t(`contentTypes.${opt.value}`)} (
+              {opt.value === 5 ? sidebar('music') : t(`contentTypes.${opt.value}`)} (
               {
                 items.filter((g) =>
                   (opt.matchValues as readonly number[]).includes(g.contentTypeId as number)
@@ -227,7 +231,7 @@ export default function CategoryList({
         {TAB_CONFIG[activeTab].icon} {t(`tabs.${activeTab}`)}
         <span className="text-sm text-gray-400 ml-2">
           {searchQuery
-            ? `(${displayItems.length} sonuç)`
+            ? translateUi("value1_sonuc_fdb3455", { value1: String(displayItems.length) })
             : totalCount !== undefined
               ? `(${displayItems.length} / ${totalCount})`
               : `(${displayItems.length})`}

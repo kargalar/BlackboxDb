@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import Image from 'next/image';
 import type { MentionUser } from '@/hooks/useMention';
 
@@ -16,12 +17,13 @@ export default function MentionDropdown({
   loading,
   onSelect,
 }: MentionDropdownProps) {
+  const translateUi = useUiTranslations('Ui');
   if (!active || query.length < 1) return null;
 
   return (
     <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-lg border border-white/10 bg-surface-raised shadow-xl">
       {loading ? (
-        <div className="px-3 py-2 text-sm text-white/50">Kullanıcılar aranıyor...</div>
+        <div className="px-3 py-2 text-sm text-white/50">{translateUi("kullanicilar_araniyor_798a865")}</div>
       ) : results.length > 0 ? (
         results.map((u) => (
           <button
@@ -53,7 +55,7 @@ export default function MentionDropdown({
           </button>
         ))
       ) : (
-        <div className="px-3 py-2 text-sm text-white/50">Eşleşen kullanıcı yok.</div>
+        <div className="px-3 py-2 text-sm text-white/50">{translateUi("eslesen_kullanici_yok_49332f1")}</div>
       )}
     </div>
   );

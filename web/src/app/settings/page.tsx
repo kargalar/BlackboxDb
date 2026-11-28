@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { resolvePosterIconsPosition, type PosterIconsPosition } from '@/hooks/useUserPreferences';
@@ -18,10 +20,10 @@ import { useTranslations } from 'next-intl';
 type SettingsTab = 'data' | 'preferences' | 'notifications' | 'integrations';
 
 const CONTENT_TYPE_OPTIONS = [
-  { id: 1, label: 'Movies', icon: '🎬' },
-  { id: 2, label: 'TV Series', icon: '📺' },
-  { id: 3, label: 'Games', icon: '🎮' },
-  { id: 4, label: 'Books', icon: '📚' },
+  { id: 1, translation: 'movies', icon: '🎬' },
+  { id: 2, translation: 'tvShows', icon: '📺' },
+  { id: 3, translation: 'games', icon: '🎮' },
+  { id: 4, translation: 'books', icon: '📚' },
 ];
 
 const GRID_COLUMN_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10];
@@ -29,54 +31,19 @@ const GRID_ROW_OPTIONS = [4, 5, 6, 7, 8, 9, 10];
 const NOTIFICATION_TOGGLE_DEFAULT = true;
 
 const NOTIFICATION_OPTIONS = [
-  {
-    key: 'notifyOnFollows',
-    title: 'New followers',
-    description: 'Send notification when someone follows you.',
-  },
-  {
-    key: 'notifyOnContentRequestUpdates',
-    title: 'Content request status',
-    description: 'Notify when your content request is approved or rejected.',
-  },
-  {
-    key: 'notifyOnCommentVotes',
-    title: 'Comment votes',
-    description: 'Send notification when your comment receives a like or dislike.',
-  },
-  {
-    key: 'notifyOnCommentReplies',
-    title: 'Comment replies',
-    description: 'Notify replies to your comments and discussions.',
-  },
-  {
-    key: 'notifyOnMentions',
-    title: 'Mentions',
-    description: 'Notify when you are mentioned in a comment.',
-  },
-  {
-    key: 'notifyOnRecommendations',
-    title: 'Recommendation thanks',
-    description: 'Send notification when your recommendation is thanked.',
-  },
-  {
-    key: 'notifyOnNewSeasons',
-    title: 'New seasons',
-    description: 'Notify when a new season or episode is added to the shows you follow.',
-  },
-  {
-    key: 'notifyOnContentReleased',
-    title: 'Released contents',
-    description: 'Notify when content you are anticipating is released.',
-  },
-  {
-    key: 'notifyOnRoleUpdates',
-    title: 'Role updates',
-    description: 'Notify when roles or permissions are updated on your account.',
-  },
+  'notifyOnFollows',
+  'notifyOnContentRequestUpdates',
+  'notifyOnCommentVotes',
+  'notifyOnCommentReplies',
+  'notifyOnMentions',
+  'notifyOnRecommendations',
+  'notifyOnNewSeasons',
+  'notifyOnContentReleased',
+  'notifyOnRoleUpdates',
 ] as const;
 
 export default function SettingsPage() {
+  const translateUi = useUiTranslations('Ui');
   const letterboxdExportT = useTranslations('LetterboxdExport');
   const settingsT = useTranslations('Settings');
   const { user, updateUserPreferences } = useAuth();
@@ -97,6 +64,7 @@ export default function SettingsPage() {
   const [posterIconsPosition, setPosterIconsPosition] = useState<PosterIconsPosition>('below');
   const [posterRatingEnabled, setPosterRatingEnabled] = useState(false);
   const [showSensitiveContent, setShowSensitiveContent] = useState(false);
+  const [pendingTitlePreference, setPendingTitlePreference] = useState<boolean | null>(null);
   const [preferredGamePlatformIds, setPreferredGamePlatformIds] = useState<number[]>([]);
   const [splitHomePopularSections, setSplitHomePopularSections] = useState(false);
   const [notifyOnFollows, setNotifyOnFollows] = useState(NOTIFICATION_TOGGLE_DEFAULT);
@@ -122,6 +90,27 @@ export default function SettingsPage() {
     variables: { limit: 100, offset: 0 },
   });
   const platforms = platformsData?.listPlatforms ?? [];
+
+  const toggleOriginalTitles = async () => {
+    if (!user || pendingTitlePreference !== null) return;
+    const showOriginalTitles = !user.showOriginalTitles;
+    setPendingTitlePreference(showOriginalTitles);
+    try {
+      const result = await apolloClient.mutate<{ updatePreferences: { showOriginalTitles: boolean } }>({
+        mutation: UPDATE_PREFERENCES,
+        variables: { showOriginalTitles },
+      });
+      if (result.error || result.data?.updatePreferences.showOriginalTitles !== showOriginalTitles) {
+        throw result.error ?? new Error('Title preference was not saved');
+      }
+      updateUserPreferences(result.data.updatePreferences);
+      await apolloClient.resetStore();
+    } catch {
+      toast.error(settingsT('titlePreference.saveError'));
+    } finally {
+      setPendingTitlePreference(null);
+    }
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -222,9 +211,9 @@ export default function SettingsPage() {
         hasLoadedPrefs.current = false;
         if (data?.updatePreferences) updateUserPreferences(data.updatePreferences);
       }
-      toast.success('Preferences saved');
+      toast.success(translateUi("preferences_saved_c7c1686"));
     } catch (error) {
-      toast.error('Failed to save preferences');
+      toast.error(translateUi("failed_to_save_preferences_67f0605"));
       console.error('❌ Error saving preferences:', error);
     }
   }, [
@@ -311,7 +300,7 @@ export default function SettingsPage() {
 
     try {
       setIsExporting(true);
-      setExportMessage('Exporting data...');
+      setExportMessage(translateUi("exporting_data_1716606"));
 
       const { data: userLogs, error } = await getAllUserContentLogs(user.id);
       if (error) {
@@ -334,9 +323,9 @@ export default function SettingsPage() {
       linkElement.click();
       window.setTimeout(() => URL.revokeObjectURL(dataUri), 1000);
 
-      setExportMessage('Data exported successfully!');
+      setExportMessage(translateUi("data_exported_successfully_decb659"));
     } catch (error) {
-      setExportMessage('An error occurred during export');
+      setExportMessage(translateUi("an_error_occurred_during_export_90eb0f4"));
       console.error('❌ Export error:', error);
     } finally {
       setIsExporting(false);
@@ -454,24 +443,24 @@ export default function SettingsPage() {
 
     try {
       setIsImporting(true);
-      setImportMessage('This feature is currently unavailable.');
+      setImportMessage(translateUi("this_feature_is_currently_unavailable_ba25a6d"));
 
       setTimeout(() => {
         setIsImporting(false);
         setImportMessage('');
       }, 3000);
     } catch (error) {
-      setImportMessage('Import process failed');
+      setImportMessage(translateUi("import_process_failed_439fac5"));
       console.error('❌ Import error:', error);
       setIsImporting(false);
     }
   };
 
   const tabs = [
-    { id: 'data' as SettingsTab, label: 'Data Management', icon: '📊' },
-    { id: 'preferences' as SettingsTab, label: 'Preferences', icon: '⚙️' },
-    { id: 'notifications' as SettingsTab, label: 'Notifications', icon: '🔔' },
-    { id: 'integrations' as SettingsTab, label: 'Integrations', icon: '🔗' },
+    { id: 'data' as SettingsTab, label: settingsT('tabs.data'), icon: '📊' },
+    { id: 'preferences' as SettingsTab, label: settingsT('tabs.preferences'), icon: '⚙️' },
+    { id: 'notifications' as SettingsTab, label: settingsT('tabs.notifications'), icon: '🔔' },
+    { id: 'integrations' as SettingsTab, label: settingsT('tabs.integrations'), icon: '🔗' },
   ];
 
   if (!user) {
@@ -479,8 +468,8 @@ export default function SettingsPage() {
       <div className="min-h-screen">
         <div className="max-w-4xl mx-auto">
           <div className="glass-card p-8">
-            <h1 className="text-2xl font-bold mb-4">Settings</h1>
-            <p className="text-white/60">You must log in to access this page.</p>
+            <h1 className="text-2xl font-bold mb-4">{translateUi("settings_c7f73bb")}</h1>
+            <p className="text-white/60">{translateUi("you_must_log_in_to_access_b3aaf61")}</p>
           </div>
         </div>
       </div>
@@ -493,9 +482,9 @@ export default function SettingsPage() {
         return (
           <div className="space-y-8">
             <div>
-              <h2 className="text-xl font-semibold mb-2">Data Export</h2>
+              <h2 className="text-xl font-semibold mb-2">{translateUi("data_export_fd36993")}</h2>
               <p className="text-white/50 mb-4">
-                Export your watch logs, ratings, and favorites in JSON format.
+                {translateUi("export_your_watch_logs_ratings_and_15f832f")}
               </p>
               <div className="flex gap-3">
                 <button
@@ -503,7 +492,7 @@ export default function SettingsPage() {
                   disabled={isExporting}
                   className="btn-gradient disabled:opacity-50"
                 >
-                  {isExporting ? 'Exporting...' : 'Export Data'}
+                  {isExporting ? translateUi("exporting_d16aded") : translateUi("export_data_f601e90")}
                 </button>
                 <button
                   onClick={() => setShowResetConfirm(true)}
@@ -555,9 +544,9 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <h2 className="text-xl font-semibold mb-2">Data Import</h2>
+              <h2 className="text-xl font-semibold mb-2">{translateUi("data_import_0c25356")}</h2>
               <p className="text-white/50 mb-4">
-                Build your library by importing data from external sources.
+                {translateUi("build_your_library_by_importing_data_1e13995")}
               </p>
 
               {/* Letterboxd Import */}
@@ -570,7 +559,7 @@ export default function SettingsPage() {
 
               {/* Legacy JSON Import */}
               <div className="mt-6">
-                <h3 className="text-sm font-medium text-white/40 mb-2">JSON Import</h3>
+                <h3 className="text-sm font-medium text-white/40 mb-2">{translateUi("json_import_c4e14b0")}</h3>
                 <label className="glass-card inline-flex items-center gap-3 px-6 py-3 cursor-pointer hover:bg-white/10 transition-colors">
                   <svg
                     className="w-5 h-5 text-white/60"
@@ -585,7 +574,7 @@ export default function SettingsPage() {
                       d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                     />
                   </svg>
-                  <span className="text-white/80">Select JSON File</span>
+                  <span className="text-white/80">{translateUi("select_json_file_1743581")}</span>
                   <input
                     type="file"
                     accept=".json"
@@ -608,11 +597,24 @@ export default function SettingsPage() {
       case 'preferences':
         return (
           <div className="space-y-6">
+            <label className="glass-card flex cursor-pointer items-center justify-between gap-4 p-6">
+              <span>
+                <span className="block text-xl font-semibold">{settingsT('titlePreference.label')}</span>
+                <span className="mt-1 block text-sm text-white/60">{settingsT('titlePreference.description')}</span>
+              </span>
+              <input
+                type="checkbox"
+                className="size-5 shrink-0 accent-blue-500"
+                checked={pendingTitlePreference ?? (user?.showOriginalTitles === true)}
+                disabled={pendingTitlePreference !== null}
+                onChange={toggleOriginalTitles}
+              />
+            </label>
             {/* Content Type Preferences */}
             <div className="glass-card p-6">
-              <h2 className="text-xl font-semibold mb-2">Content Type Preferences</h2>
+              <h2 className="text-xl font-semibold mb-2">{translateUi("content_type_preferences_7f71aa9")}</h2>
               <p className="text-white/50 text-sm mb-4">
-                Select the content types you want to see on the explore and home pages
+                {translateUi("select_the_content_types_you_want_06490b9")}
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {CONTENT_TYPE_OPTIONS.map((ct) => {
@@ -632,7 +634,7 @@ export default function SettingsPage() {
                       }`}
                     >
                       <span className="text-2xl">{ct.icon}</span>
-                      <span className="text-sm font-medium">{ct.label}</span>
+                      <span className="text-sm font-medium">{settingsT(`contentTypes.${ct.translation}`)}</span>
                     </button>
                   );
                 })}
@@ -643,10 +645,9 @@ export default function SettingsPage() {
             <div className="glass-card p-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-semibold mb-1">Home Page List Separation</h2>
+                  <h2 className="text-xl font-semibold mb-1">{translateUi("home_page_list_separation_9b51406")}</h2>
                   <p className="text-white/50 text-sm">
-                    Display popular sections on the home page separately by content type instead of
-                    a single mixed list
+                    {translateUi("display_popular_sections_on_the_home_646cfb1")}
                   </p>
                 </div>
                 <button
@@ -667,9 +668,9 @@ export default function SettingsPage() {
 
             {/* Grid Columns */}
             <div className="glass-card p-6">
-              <h2 className="text-xl font-semibold mb-2">Grid Column Count</h2>
+              <h2 className="text-xl font-semibold mb-2">{translateUi("grid_column_count_2aba546")}</h2>
               <p className="text-white/50 text-sm mb-4">
-                How many columns should be shown in the poster grid view
+                {translateUi("how_many_columns_should_be_shown_8da9764")}
               </p>
               <div className="flex items-center gap-3">
                 {GRID_COLUMN_OPTIONS.map((col) => (
@@ -698,10 +699,9 @@ export default function SettingsPage() {
 
             {/* Grid Rows */}
             <div className="glass-card p-6">
-              <h2 className="text-xl font-semibold mb-2">Grid Row Count</h2>
+              <h2 className="text-xl font-semibold mb-2">{translateUi("grid_row_count_0695e16")}</h2>
               <p className="text-white/50 text-sm mb-4">
-                How many rows should be shown vertically in the poster grid view (recommended for
-                desktop)
+                {translateUi("how_many_rows_should_be_shown_d2b2fd4")}
               </p>
               <div className="flex items-center gap-3">
                 {GRID_ROW_OPTIONS.map((row) => (
@@ -754,18 +754,17 @@ export default function SettingsPage() {
             <div className="glass-card p-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-semibold mb-1">Poster Icons Position</h2>
+                  <h2 className="text-xl font-semibold mb-1">{translateUi("poster_icons_position_5ed2ea7")}</h2>
                   <p className="text-white/50 text-sm">
-                    Show status icons (watched, favorite, etc.) below or on top of the poster, or
-                    turn off to hide all overlays including poster ratings
+                    {translateUi("show_status_icons_watched_favorite_etc_5a25104")}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {(
                     [
-                      { value: 'above', label: 'Above' },
-                      { value: 'below', label: 'Below' },
-                      { value: 'off', label: 'Off' },
+                      { value: 'above', label: settingsT('posterIconPosition.above') },
+                      { value: 'below', label: settingsT('posterIconPosition.below') },
+                      { value: 'off', label: settingsT('posterIconPosition.off') },
                     ] as const
                   ).map((option) => (
                     <button
@@ -791,9 +790,9 @@ export default function SettingsPage() {
               <div className="glass-card p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-semibold mb-1">Poster Hover Zoom</h2>
+                    <h2 className="text-xl font-semibold mb-1">{translateUi("poster_hover_zoom_5d32cf1")}</h2>
                     <p className="text-white/50 text-sm">
-                      Zoom effect when hovering over the poster
+                      {translateUi("zoom_effect_when_hovering_over_the_4681ed9")}
                     </p>
                   </div>
                   <button
@@ -816,16 +815,16 @@ export default function SettingsPage() {
             <div className="glass-card p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold mb-1">Sensitive Content</h2>
+                  <h2 className="text-xl font-semibold mb-1">{translateUi("sensitive_content_77a120e")}</h2>
                   <p className="text-white/50 text-sm">
-                    Automatically show screenshots marked as spoilers
+                    {translateUi("automatically_show_screenshots_marked_as_spoilers_79df705")}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span
                     className={`text-xs ${showSensitiveContent ? 'text-white/40' : 'text-white/80'}`}
                   >
-                    Hide
+                    {translateUi("hide_34d8b60")}
                   </span>
                   <button
                     onClick={() => setShowSensitiveContent((prev) => !prev)}
@@ -842,7 +841,7 @@ export default function SettingsPage() {
                   <span
                     className={`text-xs ${showSensitiveContent ? 'text-white/80' : 'text-white/40'}`}
                   >
-                    Show
+                    {translateUi("show_d97d1ee")}
                   </span>
                 </div>
               </div>
@@ -852,9 +851,9 @@ export default function SettingsPage() {
             <div className="glass-card p-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-semibold mb-1">Game Platform Preference</h2>
+                  <h2 className="text-xl font-semibold mb-1">{translateUi("game_platform_preference_6ae7a99")}</h2>
                   <p className="text-white/50 text-sm">
-                    Always show only games that exist on these platforms
+                    {translateUi("always_show_only_games_that_exist_7a821f0")}
                   </p>
                 </div>
                 <div
@@ -877,13 +876,13 @@ export default function SettingsPage() {
                       <div className="min-w-0">
                         <div className="text-sm font-medium text-white">
                           {selectedPlatforms.length > 0
-                            ? `${selectedPlatforms.length} platforms selected`
-                            : 'Select platforms'}
+                            ? translateUi("value1_platforms_selected_c7cf97b", { value1: String(selectedPlatforms.length) })
+                            : translateUi("select_platforms_839079d")}
                         </div>
                         <div className="text-xs text-white/45">
                           {selectedPlatforms.length > 0
-                            ? 'Your selections will be applied as a filter'
-                            : 'If left empty, all platforms will be shown'}
+                            ? translateUi("your_selections_will_be_applied_as_21edfa3")
+                            : translateUi("if_left_empty_all_platforms_will_b075196")}
                         </div>
                       </div>
                     </div>
@@ -906,7 +905,7 @@ export default function SettingsPage() {
                             type="button"
                             onClick={() => togglePreferredPlatform(platform.id)}
                             className="rounded-full p-0.5 text-violet-200/80 transition-colors hover:bg-violet-500/20 hover:text-white"
-                            aria-label={`Remove ${platform.name} selection`}
+                            aria-label={translateUi("remove_value1_selection_cae37a8", { value1: String(platform.name) })}
                           >
                             <X className="h-3 w-3" />
                           </button>
@@ -914,7 +913,7 @@ export default function SettingsPage() {
                       ))
                     ) : (
                       <span className="text-xs text-white/40">
-                        No platform selected. All platforms will be shown.
+                        {translateUi("no_platform_selected_all_platforms_will_1d13452")}
                       </span>
                     )}
                   </div>
@@ -934,8 +933,8 @@ export default function SettingsPage() {
                         }`}
                       >
                         <div>
-                          <div className="font-medium">All</div>
-                          <div className="text-xs text-white/45">Do not apply platform filter</div>
+                          <div className="font-medium">{translateUi("all_6a72085")}</div>
+                          <div className="text-xs text-white/45">{translateUi("do_not_apply_platform_filter_7324ca2")}</div>
                         </div>
                         {preferredGamePlatformIds.length === 0 && <Check className="h-4 w-4" />}
                       </button>
@@ -985,9 +984,9 @@ export default function SettingsPage() {
                   <Bell className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold mb-2">Notification Preferences</h2>
+                  <h2 className="text-xl font-semibold mb-2">{translateUi("notification_preferences_a92e15b")}</h2>
                   <p className="text-white/50 text-sm">
-                    Specify here which events you want to receive notifications for.
+                    {translateUi("specify_here_which_events_you_want_2f69bd9")}
                   </p>
                 </div>
               </div>
@@ -995,15 +994,15 @@ export default function SettingsPage() {
 
             <div className="space-y-4">
               {NOTIFICATION_OPTIONS.map((option) => {
-                const enabled = notificationState[option.key];
-                const setEnabled = notificationSetters[option.key];
+                const enabled = notificationState[option];
+                const setEnabled = notificationSetters[option];
 
                 return (
-                  <div key={option.key} className="glass-card p-6">
+                  <div key={option} className="glass-card p-6">
                     <div className="flex items-center justify-between gap-4">
                       <div>
-                        <h3 className="text-lg font-semibold mb-1">{option.title}</h3>
-                        <p className="text-sm text-white/50">{option.description}</p>
+                        <h3 className="text-lg font-semibold mb-1">{settingsT(`notificationPreferences.${option}.title`)}</h3>
+                        <p className="text-sm text-white/50">{settingsT(`notificationPreferences.${option}.description`)}</p>
                       </div>
                       <button
                         onClick={() => setEnabled((prev) => !prev)}
@@ -1037,9 +1036,9 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">
-          <span className="gradient-text">Settings</span>
+          <span className="gradient-text">{translateUi("settings_c7f73bb")}</span>
         </h1>
-        <p className="text-white/50">Manage your account and application preferences</p>
+        <p className="text-white/50">{translateUi("manage_your_account_and_application_preferences_00b8555")}</p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">

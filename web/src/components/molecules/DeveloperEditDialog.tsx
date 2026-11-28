@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState } from 'react';
 import { FormInput } from '@/components/atoms/FormInput';
 import ImageUploadField from '@/components/molecules/ImageUploadField';
@@ -32,6 +34,7 @@ export function DeveloperEditDialog({
   mode = 'edit',
   title,
 }: DeveloperEditDialogProps) {
+  const translateUi = useUiTranslations('Ui');
   const [formData, setFormData] = useState({
     name: developer?.name || initialName,
     description: developer?.description || '',
@@ -62,7 +65,7 @@ export function DeveloperEditDialog({
       onClose();
     } catch (error) {
       console.error('[DeveloperEditDialog] Failed to save company:', error);
-      toast.error('Kaydetme başarısız oldu. Lütfen tekrar deneyin.');
+      toast.error(translateUi("kaydetme_basarisiz_oldu_lutfen_tekrar_deneyin_2d074bb"));
       setSaving(false);
     }
   };
@@ -98,51 +101,51 @@ export function DeveloperEditDialog({
         <fieldset disabled={saving} className="w-full min-w-0 p-6 space-y-4">
           {/* Name */}
           <FormInput
-            label="Şirket Adı"
+            label={translateUi("sirket_adi_5ed83c8")}
             name="name"
             value={formData.name}
             onChange={(value) => setFormData({ ...formData, name: value })}
-            placeholder="Örn: CD Projekt Red"
+            placeholder={translateUi("orn_cd_projekt_red_c0f3857")}
             required
           />
 
           {/* Headquarters */}
           <FormInput
-            label="Merkez"
+            label={translateUi("merkez_08f3ec9")}
             name="headquarters"
             value={formData.headquarters}
             onChange={(value) => setFormData({ ...formData, headquarters: value })}
-            placeholder="Örn: Warsaw, Poland"
+            placeholder={translateUi("orn_warsaw_poland_d677e51")}
           />
 
           {/* Founding Year */}
           <FormInput
-            label="Kuruluş Yılı"
+            label={translateUi("kurulus_yili_27d0e35")}
             name="foundingYear"
             type="number"
             value={formData.foundingYear}
             onChange={(value) => setFormData({ ...formData, foundingYear: value })}
-            placeholder="Örn: 1994"
+            placeholder={translateUi("orn_1994_e079e6b")}
           />
 
           {/* Website */}
           <FormInput
-            label="Web Sitesi"
+            label={translateUi("web_sitesi_9e502f3")}
             name="website"
             value={formData.website}
             onChange={(value) => setFormData({ ...formData, website: value })}
-            placeholder="Örn: https://www.cdprojektred.com"
+            placeholder={translateUi("orn_https_www_cdprojektred_com_a6db198")}
           />
 
           {/* Description */}
           <div>
             <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-              Açıklama
+              {translateUi("aciklama_6f80065")}
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Geliştirici hakkında kısa bilgi..."
+              placeholder={translateUi("gelistirici_hakkinda_kisa_bilgi_91abb6d")}
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
@@ -150,7 +153,7 @@ export function DeveloperEditDialog({
 
           {/* Logo */}
           <ImageUploadField
-            label="Logo"
+            label={translateUi("logo_83fce83")}
             name="logoUrl"
             value={formData.logoUrl}
             onChange={(url) => setFormData({ ...formData, logoUrl: url })}
@@ -166,7 +169,7 @@ export function DeveloperEditDialog({
             disabled={saving}
             className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors font-medium disabled:opacity-50"
           >
-            İptal
+            {translateUi("iptal_85e2d08")}
           </button>
           <button
             type="button"
@@ -177,7 +180,7 @@ export function DeveloperEditDialog({
             {saving ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Kaydediliyor...
+                {translateUi("kaydediliyor_5bb599b")}
               </>
             ) : (
               <>

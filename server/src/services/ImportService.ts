@@ -1,3 +1,4 @@
+import { fillContentTranslations } from "../lib/contentTranslations";
 import { logger } from "../lib/logger";
 import { inferNormalizedContentStatus } from "../lib/contentStatus";
 import {
@@ -152,6 +153,7 @@ export async function findOrCreateContentFromTmdb(
       OR: [
         { title: { equals: title, mode: "insensitive" } },
         { originalTitle: { equals: title, mode: "insensitive" } },
+        { translations: { some: { title: { equals: title, mode: "insensitive" } } } },
       ],
     },
     select: { id: true, releaseDate: true, contentTypeId: true },
@@ -301,6 +303,8 @@ export async function findOrCreateContentFromTmdb(
       },
     });
 
+    await fillContentTranslations(prisma, contentId, tmdbDetails.translations);
+
     if (tmdbDetails.posterPath) {
       const posterImage = await prisma.contentImage.create({
         data: {
@@ -434,6 +438,7 @@ export async function findOrCreateGameContent(
       select: { id: true },
     });
     if (existingByIgdbId) {
+      await fillContentTranslations(prisma, existingByIgdbId.id, details.translations);
       cache.set(cacheKey, existingByIgdbId.id);
       return existingByIgdbId.id;
     }
@@ -463,6 +468,7 @@ export async function findOrCreateGameContent(
       select: { id: true },
     });
     if (existingByApiTitle) {
+      await fillContentTranslations(prisma, existingByApiTitle.id, details.translations);
       cache.set(cacheKey, existingByApiTitle.id);
       return existingByApiTitle.id;
     }
@@ -488,6 +494,8 @@ export async function findOrCreateGameContent(
         franchiseId: franchiseId || null,
       },
     });
+
+    await fillContentTranslations(prisma, contentId, details.translations);
 
     await saveImages(
       prisma,
@@ -646,6 +654,7 @@ export async function findOrCreateSeriesContent(
       select: { id: true },
     });
     if (existingByApiTitle) {
+      await fillContentTranslations(prisma, existingByApiTitle.id, details.translations);
       cache.set(cacheKey, existingByApiTitle.id);
       return existingByApiTitle.id;
     }
@@ -675,6 +684,7 @@ export async function findOrCreateSeriesContent(
       select: { id: true },
     });
     if (existingByTitle) {
+      await fillContentTranslations(prisma, existingByTitle.id, details.translations);
       cache.set(cacheKey, existingByTitle.id);
       return existingByTitle.id;
     }
@@ -722,6 +732,8 @@ export async function findOrCreateSeriesContent(
         seasonsData: details.seasons ? JSON.stringify(details.seasons) : null,
       },
     });
+
+    await fillContentTranslations(prisma, contentId, details.translations);
 
     await saveImages(
       prisma,

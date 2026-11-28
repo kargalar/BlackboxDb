@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import { Palette, Loader2 } from 'lucide-react';
 import { FilterSection } from './FilterSection';
 import { useScrollableFilter } from './useScrollableFilter';
@@ -32,6 +33,7 @@ export function ThemeFilter({
   otherFilterId,
   contentTypeId,
 }: ThemeFilterProps) {
+  const translateUi = useUiTranslations('Ui');
   const {
     displayItems: themes,
     searchTerm,
@@ -51,7 +53,7 @@ export function ThemeFilter({
 
   return (
     <FilterSection
-      title="Tema"
+      title={translateUi("tema_6ae1bca")}
       icon={<Palette className="w-4 h-4 text-purple-400" />}
       isExpanded={isExpanded}
       onToggle={onToggleSection}
@@ -64,7 +66,7 @@ export function ThemeFilter({
         type="text"
         value={searchTerm}
         onChange={(e) => handleSearchChange(e.target.value)}
-        placeholder="Tema ara..."
+        placeholder={translateUi("tema_ara_3018fc4")}
         className="w-full px-2 py-1.5 text-xs bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-white/20"
       />
       <div
@@ -75,7 +77,7 @@ export function ThemeFilter({
         {isSearching && themes.length === 0 ? (
           <div className="flex items-center justify-center py-3">
             <Loader2 className="w-4 h-4 animate-spin text-white/40" />
-            <span className="ml-2 text-xs text-white/40">Aranıyor...</span>
+            <span className="ml-2 text-xs text-white/40">{translateUi("araniyor_1f83d73")}</span>
           </div>
         ) : themes.length > 0 ? (
           <>
@@ -108,7 +110,7 @@ export function ThemeFilter({
             {isLoadingMore && (
               <div className="flex items-center justify-center py-2">
                 <Loader2 className="w-3 h-3 animate-spin text-white/30" />
-                <span className="ml-1 text-xs text-white/30">Yükleniyor...</span>
+                <span className="ml-1 text-xs text-white/30">{translateUi("yukleniyor_317109f")}</span>
               </div>
             )}
             {hasMore && !isLoadingMore && (
@@ -116,12 +118,12 @@ export function ThemeFilter({
                 onClick={loadMore}
                 className="w-full text-center text-xs text-purple-400 hover:text-purple-300 py-1.5 hover:bg-purple-500/10 rounded transition-colors"
               >
-                Daha fazla yükle...
+                {translateUi("daha_fazla_yukle_d36c840")}
               </button>
             )}
           </>
         ) : (
-          <p className="text-sm text-white/30 py-2">Tema bulunamadı</p>
+          <p className="text-sm text-white/30 py-2">{translateUi("tema_bulunamadi_c8e96ce")}</p>
         )}
       </div>
       <label className="flex items-center cursor-pointer group p-1.5 rounded-lg hover:bg-white/5 transition-colors border-t border-white/5 mt-2 pt-2">
@@ -132,7 +134,7 @@ export function ThemeFilter({
           className="w-4 h-4 rounded border-purple-500/50 bg-white/5 text-purple-500 focus:ring-purple-500/30 focus:ring-offset-0"
         />
         <span className="ml-2 text-sm text-white/50 group-hover:text-white transition-colors flex-1 italic">
-          Diğer (Temasız)
+          {translateUi("diger_temasiz_e3eb031")}
         </span>
         {(filterCounts?.[otherFilterId] || 0) > 0 && (
           <span className="text-xs text-white/30 bg-white/5 px-1.5 py-0.5 rounded-full">

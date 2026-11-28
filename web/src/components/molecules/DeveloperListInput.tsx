@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { DeveloperEditDialog, DeveloperData } from '@/components/molecules/DeveloperEditDialog';
@@ -67,6 +69,7 @@ export function DeveloperListInput({
   placeholder = 'Geliştirici adı girin',
   roleIds,
 }: DeveloperListInputProps) {
+  const translateUi = useUiTranslations('Ui');
   const [searchTerm, setSearchTerm] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [allDevelopers, setAllDevelopers] = useState<DeveloperData[]>([]);
@@ -260,7 +263,7 @@ export function DeveloperListInput({
             onClick={handleCreateNew}
             className="px-3 py-2 rounded-lg bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition-colors whitespace-nowrap"
           >
-            + Yeni
+            {translateUi("yeni_f0678d4")}
           </button>
         </div>
 
@@ -269,7 +272,7 @@ export function DeveloperListInput({
           <div className="absolute z-50 w-full mt-1 bg-white dark:bg-surface-raised rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 max-h-60 overflow-y-auto">
             {loading ? (
               <div className="p-3 text-center text-gray-500 dark:text-gray-400 text-sm">
-                Yükleniyor...
+                {translateUi("yukleniyor_317109f")}
               </div>
             ) : filteredSuggestions.length > 0 ? (
               filteredSuggestions.map((dev) => (
@@ -308,14 +311,14 @@ export function DeveloperListInput({
             ) : searchTerm.trim() ? (
               <div className="p-3">
                 <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">
-                  &quot;{searchTerm}&quot; için sonuç bulunamadı
+                  {translateUi("quot_e2bbf20")}{searchTerm}{translateUi("quot_icin_sonuc_bulunamadi_b6b9493")}
                 </p>
                 <button
                   type="button"
                   onClick={handleCreateNew}
                   className="w-full px-3 py-2 bg-violet-600 text-white rounded-lg text-sm hover:bg-violet-700 transition-colors"
                 >
-                  + &quot;{searchTerm}&quot; adında oluştur
+                  {translateUi("quot_79ebfa3")}{searchTerm}{translateUi("quot_adinda_olustur_1fac8a8")}
                 </button>
               </div>
             ) : null}
@@ -360,7 +363,7 @@ export function DeveloperListInput({
                   type="button"
                   onClick={() => handleEditDeveloper(developer, index)}
                   className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-violet-500 transition-colors"
-                  title="Düzenle"
+                  title={translateUi("duzenle_525fd6f")}
                 >
                   ✏️
                 </button>
@@ -368,7 +371,7 @@ export function DeveloperListInput({
                   type="button"
                   onClick={() => removeDeveloper(index)}
                   className="p-1.5 text-red-400 hover:text-red-300 transition-colors"
-                  title="Kaldır"
+                  title={translateUi("kaldir_d38bc7b")}
                 >
                   🗑️
                 </button>
@@ -380,7 +383,7 @@ export function DeveloperListInput({
 
       {value.length === 0 && (
         <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-2">
-          Henüz şirket eklenmedi
+          {translateUi("henuz_sirket_eklenmedi_1fbce8d")}
         </p>
       )}
 

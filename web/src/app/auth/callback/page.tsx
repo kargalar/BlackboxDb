@@ -1,10 +1,13 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function AuthCallback() {
+  const translateUi = useUiTranslations('Ui');
   const router = useRouter();
   const { user } = useAuth();
 
@@ -29,8 +32,8 @@ export default function AuthCallback() {
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
         <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Giriş yapılıyor...</h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">Lütfen bekleyin</p>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{translateUi("giris_yapiliyor_bbe364f")}</h2>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">{translateUi("lutfen_bekleyin_24d78d1")}</p>
       </div>
     </div>
   );

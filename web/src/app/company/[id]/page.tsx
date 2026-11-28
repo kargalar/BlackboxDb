@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -57,6 +59,7 @@ export function getTabCategory(roleId: number): string {
 }
 
 export default function CompanyPage() {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('CompanyPage');
   const params = useParams();
   const id = params?.id as string;
@@ -205,7 +208,7 @@ export default function CompanyPage() {
         // Fetch company details
         const companyData = await fetchCompany(companyId);
         if (!companyData) {
-          setError('Company not found');
+          setError(translateUi("company_not_found_b596aa2"));
           console.error(`❌ [CompanyPage] Company not found: ${companyId}`);
           return;
         }
@@ -226,7 +229,7 @@ export default function CompanyPage() {
         setItemStates(nextStates);
         console.log(`✅ [CompanyPage] Item states initialized: ${Object.keys(nextStates).length}`);
       } catch (err) {
-        setError('Error loading data');
+        setError(translateUi("error_loading_data_709022d"));
         console.error(`❌ [CompanyPage] Error loading company data:`, err);
       } finally {
         setLoading(false);
@@ -476,10 +479,10 @@ export default function CompanyPage() {
                     <button
                       onClick={() => setIsReportModalOpen(true)}
                       className="px-4 py-2 bg-white/5 hover:bg-white/10 text-red-400 border border-white/10 rounded-xl transition-all text-sm font-medium flex items-center gap-2"
-                      title="Bu şirketi raporla"
+                      title={translateUi("bu_sirketi_raporla_f7b6b58")}
                     >
                       <Flag className="w-4 h-4" />
-                      Raporla
+                      {translateUi("raporla_36d9ae7")}
                     </button>
                   )}
                 </div>

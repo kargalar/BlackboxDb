@@ -1,3 +1,4 @@
+import type { ContentTranslation } from '@/types/content-translation';
 import type { ContentRelease } from '@/lib/contentReleases';
 import { gql } from '@apollo/client';
 
@@ -12,6 +13,7 @@ export const SEARCH_LOCAL_CONTENT = gql`
         posterUrl
         releaseDate
         contentType {
+          slug
           name
         }
       }
@@ -44,6 +46,7 @@ const AUTO_FILL_BOOK_DETAIL_FRAGMENT = gql`
   fragment AutoFillBookDetailFields on AutoFillBookDetail {
     sourceId
     title
+    translations { language title description }
     overview
     posterPath
     releaseDate
@@ -86,6 +89,7 @@ const AUTO_FILL_GAME_DETAIL_FRAGMENT = gql`
     sourceId
     title
     originalTitle
+    translations { language title description }
     overview
     posterPath
     backdropPath
@@ -233,6 +237,7 @@ export interface AutoFillBookEditionData {
 }
 
 export interface AutoFillBookDetailData {
+  translations?: ContentTranslation[];
   releases?: ContentRelease[] | null;
   sourceId: string;
   title: string;
@@ -259,6 +264,7 @@ export interface AutoFillSimpleItemData {
 }
 
 export interface AutoFillGameDetailData {
+  translations?: ContentTranslation[];
   releases?: ContentRelease[] | null;
   sourceId: number;
   title: string;

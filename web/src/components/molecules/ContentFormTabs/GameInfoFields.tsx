@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 /**
  * GameInfoFields - Game-specific tag selectors (modes, perspectives, platforms, developers, publishers).
  * Expansion/DLC/Remake sections are in a separate tab via GameExpansionFields.
@@ -31,6 +33,7 @@ interface GameInfoFieldsProps {
 }
 
 export function GameInfoFields({ formData, setFormData }: GameInfoFieldsProps) {
+  const translateUi = useUiTranslations('Ui');
   const normalizeToItems = (value: any[]): SimpleItem[] => {
     if (!Array.isArray(value)) return [];
     return value.map((v) => (typeof v === 'string' ? { name: v } : v));
@@ -51,11 +54,11 @@ export function GameInfoFields({ formData, setFormData }: GameInfoFieldsProps) {
             igdbId: value ? Number(value) : undefined,
           })
         }
-        placeholder="Örn: 1942"
+        placeholder={translateUi("orn_1942_3b570ea")}
       />
 
       <FormInput
-        label="Dosya Boyutu"
+        label={translateUi("dosya_boyutu_61f61b6")}
         name="fileSize"
         type="text"
         value={formData.fileSize || ''}
@@ -65,17 +68,17 @@ export function GameInfoFields({ formData, setFormData }: GameInfoFieldsProps) {
             fileSize: value,
           })
         }
-        placeholder="Örn: 70 GB, 500 MB"
+        placeholder={translateUi("orn_70_gb_500_mb_21d00e3")}
       />
 
       {/* Game Modes */}
       <CompactTagSelector
-        label="Oyun Modları"
+        label={translateUi("oyun_modlari_ad035f3")}
         icon="🎮"
         value={normalizeToItems(formData.gameModes || [])}
         onChange={(items) => setFormData({ ...formData, gameModes: items })}
-        placeholder="Tek oyunculu, çoklu oyuncu..."
-        emptyMessage="Mod eklenmedi"
+        placeholder={translateUi("tek_oyunculu_coklu_oyuncu_449287b")}
+        emptyMessage={translateUi("mod_eklenmedi_d4525b6")}
         listQuery={LIST_GAME_MODES}
         createMutation={CREATE_GAME_MODE}
         queryKey="listGameModes"
@@ -86,12 +89,12 @@ export function GameInfoFields({ formData, setFormData }: GameInfoFieldsProps) {
 
       {/* Perspectives */}
       <CompactTagSelector
-        label="Oyun Motorları"
+        label={translateUi("oyun_motorlari_afd7dd6")}
         icon="GE"
         value={normalizeToItems(formData.gameEngines || [])}
         onChange={(items) => setFormData({ ...formData, gameEngines: items })}
-        placeholder="Unreal Engine, Unity, Source..."
-        emptyMessage="Oyun motoru eklenmedi"
+        placeholder={translateUi("unreal_engine_unity_source_93e7732")}
+        emptyMessage={translateUi("oyun_motoru_eklenmedi_1496da1")}
         listQuery={LIST_GAME_ENGINES}
         createMutation={CREATE_GAME_ENGINE}
         queryKey="listGameEngines"
@@ -102,12 +105,12 @@ export function GameInfoFields({ formData, setFormData }: GameInfoFieldsProps) {
 
       {/* Perspectives */}
       <CompactTagSelector
-        label="Perspektifler"
+        label={translateUi("perspektifler_dac2765")}
         icon="👁️"
         value={normalizeToItems(formData.perspectives || [])}
         onChange={(items) => setFormData({ ...formData, perspectives: items })}
-        placeholder="Birinci şahıs, üçüncü şahıs..."
-        emptyMessage="Perspektif eklenmedi"
+        placeholder={translateUi("birinci_sahis_ucuncu_sahis_01a08ae")}
+        emptyMessage={translateUi("perspektif_eklenmedi_51a8292")}
         listQuery={LIST_PERSPECTIVES}
         createMutation={CREATE_PERSPECTIVE}
         queryKey="listPerspectives"
@@ -118,12 +121,12 @@ export function GameInfoFields({ formData, setFormData }: GameInfoFieldsProps) {
 
       {/* Platforms */}
       <CompactTagSelector
-        label="Platformlar"
+        label={translateUi("platformlar_ba389bc")}
         icon="🖥️"
         value={normalizeToItems(formData.platforms || [])}
         onChange={(items) => setFormData({ ...formData, platforms: items })}
-        placeholder="Windows, PlayStation, Xbox..."
-        emptyMessage="Platform eklenmedi"
+        placeholder={translateUi("windows_playstation_xbox_9d57517")}
+        emptyMessage={translateUi("platform_eklenmedi_22adea4")}
         listQuery={LIST_PLATFORMS}
         createMutation={CREATE_PLATFORM}
         queryKey="listPlatforms"
@@ -134,11 +137,11 @@ export function GameInfoFields({ formData, setFormData }: GameInfoFieldsProps) {
 
       {/* Developers */}
       <CompactTagSelector
-        label="Geliştiriciler"
+        label={translateUi("gelistiriciler_26dd698")}
         icon="🏗️"
         value={formData.developerCompanies || []}
         onChange={(companies) => setFormData({ ...formData, developerCompanies: companies })}
-        placeholder="CD Projekt Red, Rockstar Games..."
+        placeholder={translateUi("cd_projekt_red_rockstar_games_835c621")}
         listQuery={LIST_COMPANIES}
         queryKey="listCompanies"
         queryVariables={{ roleIds: [5] }}
@@ -151,11 +154,11 @@ export function GameInfoFields({ formData, setFormData }: GameInfoFieldsProps) {
 
       {/* Publishers */}
       <CompactTagSelector
-        label="Yayıncılar"
+        label={translateUi("yayincilar_cffc0f8")}
         icon="🏢"
         value={formData.publisherCompanies || []}
         onChange={(companies) => setFormData({ ...formData, publisherCompanies: companies })}
-        placeholder="Electronic Arts, Ubisoft..."
+        placeholder={translateUi("electronic_arts_ubisoft_243ea0d")}
         listQuery={LIST_COMPANIES}
         queryKey="listCompanies"
         queryVariables={{ roleIds: [4] }}

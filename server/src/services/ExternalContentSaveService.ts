@@ -6,6 +6,11 @@ import { bookReleaseDates } from "../lib/contentReleases";
 import { generateContentSlug, slugify } from "../lib/slugUtils";
 import { convertContentForGraphQL } from "../resolvers/content/ContentUtils";
 import { localizeContentImage, type ContentImageKind } from "../lib/localContentImage";
+import { fillContentTranslations, type LocalizedContentText } from "../lib/contentTranslations";
+import { fetchTmdbTranslations } from "../lib/tmdb/translations";
+import { fetchIgdbGameTranslations } from "../lib/igdbFetcher";
+import { bookTitleTranslations } from "../lib/bookTranslations";
+import { logger } from "../lib/logger";
 
 const CONTENT_TYPE_MOVIE = 1;
 const CONTENT_TYPE_TV = 2;
@@ -266,6 +271,18 @@ export async function saveExternalContent(
   const normalized = normalizeExternalData(input, raw);
   const id = await generateStableId(prisma, input);
   const externalId = getExternalId(input);
+  const description = asString(firstValue(input.description, raw.overview, raw.description, readBookValue(raw, "description")));
+  const bookLanguage = asString(readBookValue(raw, "language"));
+  const translations = await (async () => {
+    if (externalId === null)
+      return bookTitleTranslations([{ title: normalizedTitle, description, language: bookLanguage }]);
+    if (input.contentTypeId === CONTENT_TYPE_GAME)
+      return (await fetchIgdbGameTranslations([externalId])).get(externalId);
+    return fetchTmdbTranslations(externalId, input.contentTypeId === CONTENT_TYPE_TV ? "tv" : "movie");
+  })().catch((error): LocalizedContentText[] => {
+    logger.warn(`[ExternalContentSave] Could not fetch translations for ${id}`, error);
+    return [];
+  });
   const imageRecords = await Promise.all(
     getImageRecords(input, raw).map(async (record) => ({
       ...record,
@@ -295,7 +312,7 @@ export async function saveExternalContent(
           igdbId: input.contentTypeId === CONTENT_TYPE_GAME ? externalId : null,
           contentType: { connect: { id: input.contentTypeId } },
           releaseDate: normalized.releaseDate,
-          description: asString(firstValue(input.description, raw.overview, raw.description)),
+          description,
           status: normalized.status,
           runtime: asPositiveInt(firstValue(input.runtime, raw.runtime)),
           isbn: normalized.isbn,
@@ -319,6 +336,7 @@ export async function saveExternalContent(
             ? {
                 create: {
                   title: bookTitle,
+                  language: bookLanguage,
                   isbn: normalized.isbn,
                   pageCount: normalized.pageCount,
                   publishedDate: normalized.bookPublishedDate ?? normalized.releaseDate?.toISOString().slice(0, 10) ?? null,
@@ -331,6 +349,7 @@ export async function saveExternalContent(
         include: contentInclude,
       });
 
+      await fillContentTranslations(tx, content.id, translations);
       return content;
     });
 

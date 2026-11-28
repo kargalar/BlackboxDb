@@ -1,3 +1,4 @@
+import type { ContentTranslation } from '@/types/content-translation';
 import type { ContentRelease } from '@/lib/contentReleases';
 import { gql } from '@apollo/client';
 
@@ -26,6 +27,7 @@ const TMDB_DETAIL_RESULT_FRAGMENT = gql`
     tmdbId
     title
     originalTitle
+    translations { language title description }
     overview
     releaseDate
     releases {
@@ -283,6 +285,7 @@ export interface TmdbFranchiseData {
 }
 
 export interface TmdbDetailResultData {
+  translations?: ContentTranslation[];
   releases?: ContentRelease[] | null;
   tmdbId: number;
   title: string;

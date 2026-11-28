@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Crown, ShieldCheck, Trash2 } from 'lucide-react';
 import type { AdminUser } from '@/services/graphql/admin';
@@ -22,6 +23,7 @@ export default function UserCard({
   onToggleRole: (role: 'isAdmin' | 'isModerator') => void;
   onDelete: () => void;
 }) {
+  const translateUi = useUiTranslations('Ui');
   const initials = user.username.charAt(0).toUpperCase();
   const t = useTranslations('AdminUsersPage');
   const locale = useLocale();
@@ -66,14 +68,14 @@ export default function UserCard({
         {/* Actions */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <UserRoleBadge
-            label="Admin"
+            label={translateUi("admin_4e7afeb")}
             active={!!user.isAdmin}
             icon={Crown}
             color="amber"
             onToggle={() => onToggleRole('isAdmin')}
           />
           <UserRoleBadge
-            label="Mod"
+            label={translateUi("mod_f388dbf")}
             active={!!user.isModerator}
             icon={ShieldCheck}
             color="violet"

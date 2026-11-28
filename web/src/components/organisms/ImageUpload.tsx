@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import React, { useState, useRef, ChangeEvent } from 'react';
 import { useMutation } from '@apollo/client/react';
 import { DocumentNode } from 'graphql';
@@ -31,6 +33,7 @@ export default function ImageUpload({
   allowedTypes = ['image/jpeg', 'image/png', 'image/webp'],
   label = 'Upload Image',
 }: ImageUploadProps) {
+  const translateUi = useUiTranslations('Ui');
   const [preview, setPreview] = useState<string | null>(currentImageUrl || null);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -85,7 +88,7 @@ export default function ImageUpload({
       });
     } catch (err) {
       console.error('Upload error:', err);
-      setError('Yükleme başarısız oldu');
+      setError(translateUi("yukleme_basarisiz_oldu_64a38cf"));
     }
   };
 
@@ -161,7 +164,7 @@ export default function ImageUpload({
         onClick={() => fileInputRef.current?.click()}
       >
         {preview ? (
-          <Image src={preview} alt="Upload preview" fill className="object-cover" unoptimized />
+          <Image src={preview} alt={translateUi("upload_preview_0917d21")} fill className="object-cover" unoptimized />
         ) : (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
             <svg
@@ -178,10 +181,10 @@ export default function ImageUpload({
               />
             </svg>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Drag & drop or click to upload
+              {translateUi("drag_drop_or_click_to_upload_989889f")}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-              Max 10MB • {allowedTypes.map((t) => t.split('/')[1].toUpperCase()).join(', ')}
+              {translateUi("max_10mb_1abde06") + " "} {allowedTypes.map((t) => t.split('/')[1].toUpperCase()).join(', ')}
             </p>
           </div>
         )}

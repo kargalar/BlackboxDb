@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -19,6 +21,7 @@ import {
 } from '@/services/graphql/notificationService';
 
 export default function NotificationsMenu() {
+  const translateUi = useUiTranslations('Ui');
   const t = useTranslations('Notifications');
   const translateNotification: NotificationTranslator = (key, values) => t(key, values as never);
   const { user } = useAuth();
@@ -210,7 +213,7 @@ export default function NotificationsMenu() {
                   <div className="h-8 w-8 flex-shrink-0">
                     <PosterCard
                       src={n.actor?.picturePath ?? undefined}
-                      alt={n.actor?.username ? `${n.actor.username} avatar` : t('userAvatar')}
+                      alt={n.actor?.username ? translateUi("value1_avatar_e729f5c", { value1: String(n.actor.username) }) : t('userAvatar')}
                       aspectClassName="aspect-square"
                       hoverZoom={false}
                       useNextImage={false}

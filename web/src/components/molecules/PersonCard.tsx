@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from 'next-intl';
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -10,6 +11,7 @@ interface PersonCardProps {
 }
 
 export const PersonCard: React.FC<PersonCardProps> = ({ person }) => {
+  const translateUi = useUiTranslations('Ui');
   return (
     <Link href={`/person/${person.id}` as Route} className="group block">
       <div className="glass-card overflow-hidden h-full flex flex-col hover:scale-[1.02] transition-all duration-300">
@@ -37,10 +39,10 @@ export const PersonCard: React.FC<PersonCardProps> = ({ person }) => {
             {person.name}
           </h3>
           <p className="text-sm text-gray-400 line-clamp-1">
-            {person.roles?.join(', ') || person.gender || 'Bilinmiyor'}
+            {person.roles?.join(', ') || person.gender || translateUi("bilinmiyor_7e644fb")}
           </p>
           {person.roleCount !== undefined && person.roleCount > 0 && (
-            <p className="text-xs text-amber-500/80 mt-2">{person.roleCount} Yapımda</p>
+            <p className="text-xs text-amber-500/80 mt-2">{person.roleCount} {" " + translateUi("yapimda_1ff8aed")}</p>
           )}
         </div>
       </div>

@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from 'next-intl';
 import AuthShell from '../components/AuthShell';
 import GoogleIcon from '../components/GoogleIcon';
+import { authErrorMessage } from '../auth-errors';
 
 export default function RegisterPage() {
   const t = useTranslations('Auth');
@@ -27,7 +28,7 @@ export default function RegisterPage() {
   };
 
   const getErrorMessage = (error: unknown) =>
-    error instanceof Error ? error.message : t('register.errorDefault');
+    t(authErrorMessage(error, 'register.errorDefault'));
 
   const handleEmailSignUp = async (event: React.FormEvent) => {
     event.preventDefault();

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations as useUiTranslations } from 'next-intl';
+
 import {
   ArrowUpDown,
   ArrowUp,
@@ -31,6 +33,7 @@ export function ProfileSortingBar({
   hideOptions,
   onHideChange,
 }: ProfileSortingBarProps) {
+  const translateUi = useUiTranslations('Ui');
   const hasActiveShowFilter = Object.values(hideOptions ?? {}).some((value) => value === 'show');
   const userDateLabel = hasActiveShowFilter ? 'Eklenme Tarihi' : 'İzlenme Tarihi';
 
@@ -94,7 +97,7 @@ export function ProfileSortingBar({
                     ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/25'
                     : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white'
                 }`}
-                title={`${option.label} - Çoktan Aza → Azdan Çoka → Kapalı`}
+                title={translateUi("value1_coktan_aza_azdan_coka_kapali_f9da933", { value1: String(option.label) })}
               >
                 <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-white/40'}`} />
                 {option.label}
